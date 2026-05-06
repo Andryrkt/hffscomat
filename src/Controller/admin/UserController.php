@@ -1,0 +1,135 @@
+<?php
+
+namespace App\Controller\admin;
+
+use App\Controller\Controller;
+use App\Dto\admin\UserDTO;
+use App\Entity\admin\utilisateur\AgenceServiceDefautSociete;
+use App\Entity\admin\utilisateur\User;
+use App\Factory\admin\UserFactory;
+use App\Form\admin\utilisateur\UserType;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Annotation\Route;
+
+class UserController extends Controller
+{
+    private UserFactory $userFactory;
+
+    public function __construct(UserFactory $userFactory)
+    {
+        $this->userFactory = $userFactory;
+    }
+
+    /**
+     * @Route("/admin/utilisateur", name="utilisateur_index")
+     *
+     * @return void
+     */
+    public function index()
+    {
+        $data = $this->getEntityManager()->getRepository(User::class)->findBy([], ['id' => 'DESC']);
+        $preparedData = $this->prepareDataForListDisplay($data);
+
+        return $this->render('admin/utilisateur/list.html.twig', [
+            'rows' => $preparedData
+        ]);
+    }
+
+    /**
+     * @Route("/admin/utilisateur/show/{id}", name="utilisateur_show")
+     *
+     * @return void
+     */
+    public function show($id)
+    {
+        $data = $this->getEntityManager()->getRepository(User::class)->find($id);
+
+        return $this->render('admin/utilisateur/details.html.twig', [
+            'data' => $data
+        ]);
+    }
+
+    /**
+     * @Route("/admin/utilisateur/new", name="utilisateur_new")
+     */
+    public function new(Request $request)
+    {
+        $dto = new UserDTO();
+
+        $profilIdAdmin = $this->getSecurityService()->getProfilId();
+
+        $form = $this->getFormFactory()->createBuilder(UserType::class, $dto, ['canSeeAll' => $profilIdAdmin === 98])->getForm();
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $utilisateur = $this->userFactory->createFromDto($dto);
+
+            $this->getEntityManager()->persist($utilisateur);
+            $this->getEntityManager()->flush();
+
+            $this->redirectToRoute("utilisateur_index");
+        }
+
+        return $this->render('admin/utilisateur/new.html.twig', [
+            'form' => $form->createView()
+        ]);
+    }
+
+    /**
+     * @Route("/admin/utilisateur/edit/{id}", name="utilisateur_update")
+     *
+     * @return void
+     */
+    public function edit(Request $request, $id)
+    {
+        $user = $this->getEntityManager()->getRepository(User::class)->find($id);
+        $profilIdAdmin = $this->getSecurityService()->getProfilId();
+        $dto = $this->userFactory->createDTOFromUser($user);
+        $form = $this->getFormFactory()->createBuilder(UserType::class, $dto, ['canSeeAll' => $profilIdAdmin === 98])->getForm();
+        $form->handleRequest($request);
+
+        // Vérifier si le formulaire est soumis et valide
+        if ($form->isSubmitted() && $form->isValid()) {
+            $this->userFactory->updateFromDTO($dto, $user);
+
+            $this->getEntityManager()->flush();
+            return $this->redirectToRoute("utilisateur_index");
+        }
+
+        return $this->render('admin/utilisateur/edit.html.twig', [
+            'form' => $form->createView(),
+        ]);
+    }
+
+    /** 
+     * Fonction pour préparer les données avant de donner à twig
+     * @param  User[] $dataUsers
+     * @return array
+     */
+    private function prepareDataForListDisplay(array $dataUsers): array
+    {
+        $rows = [];
+        $urlGenerator = $this->getUrlGenerator();
+
+        foreach ($dataUsers as $user) {
+            $id = $user->getId();
+            $profils = $user->getProfils();
+            $agServDefSoc = $user->getAgenceServiceDefautSocietes();
+
+            /** @var AgenceServiceDefautSociete $entity */
+            foreach ($agServDefSoc as $entity) {
+                $rows[] = [
+                    'username'   => $user->getNomUtilisateur(),
+                    'matricule'  => $user->getMatricule(),
+                    'email'      => $user->getMail(),
+                    'codeSage'   => $entity->getCodeSage(),
+                    'profils'    => $profils,
+                    'url_show'   => $urlGenerator->generate('utilisateur_show', ['id' => $id]),
+                    'url_edit'   => $urlGenerator->generate('utilisateur_update', ['id' => $id]),
+                ];
+            }
+        }
+
+        return $rows;
+    }
+}

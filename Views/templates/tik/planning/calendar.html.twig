@@ -1,0 +1,35 @@
+{% extends 'baseTemplate.html.twig' %}
+
+{% block title %}planning ticket
+{% endblock %}
+
+{% block stylesheets %}
+	<!-- Flatpickr CSS -->
+	<link href="/Hffintranet/Views/css/new.css?v=2025.10.22.08.00" rel="stylesheet"/>
+	<link href="/Hffintranet/Views/css/tik/calendar.css?v=2025.10.22.08.00" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+{% endblock %}
+
+{% block content %}
+	<div class="position-sticky sticky-header">
+		<div class="container">
+			<h3 class="perso-titre">
+				Calendrier du planning
+			</h3>
+			{% include "/tik/planning/shared/_formulaireRecherche.html.twig" %}
+		</div>
+	</div>
+	<div class="container">
+		<div id="calendar"></div>
+	</div>
+
+	{% include "/tik/planning/shared/_modalCalendar.html.twig" %}
+{% endblock %}
+
+{% block javascript %}
+	<!-- Flatpickr JavaScript -->
+	<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+	<!-- Fullcalendar JavaScript -->
+	<script src="https://cdn.jsdelivr.net/npm/fullcalendar/index.global.min.js"></script>
+	<script type="module" src="/Hffintranet/Views/js/tik/calendar.js?v=2025.10.22.08.00"></script>
+{% endblock %}

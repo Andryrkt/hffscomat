@@ -1,0 +1,60 @@
+{% extends "baseTemplate.html.twig" %}
+
+{% block title %}
+	Services
+{% endblock %}
+
+{% block breadCrumb %}{% endblock %}
+
+{% block content %}
+	<div class="container my-4">
+		<div class="card">
+			<div class="card-body">
+				<h3 class="perso-titre">
+					Liste des Services
+				</h3>
+				<a href="{{ path("service_new")}}" class="btn btn-success fw-bold my-3">
+					Ajouter une nouvelle service
+				</a>
+				<a href="{{ path("agence_index")}}" class="btn btn-primary fw-bold my-3 ms-2">
+					Liste des agences
+				</a>
+				<table class="table">
+					<thead class="table-dark">
+						<tr>
+							<th>Actions</th>
+							<th>Code Service</th>
+							<th>Libelle Service</th>
+						</tr>
+					</thead>
+
+					<tbody>
+						{% for item in data %}
+
+							<tr>
+								<td>
+									<div class="dropdown">
+										<button class="btn btn-warning dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false" style="text-decoration: none; color: #000; font-weight: 700">
+											Actions
+										</button>
+										<ul class="dropdown-menu dropdown-menu-end" id="dropdown-menu" aria-labelledby="dropdownMenuButton" style="">
+
+											<li>
+												<a class="dropdown-item fw-bold" href="{{ path("service_update", {id: item.id})}}">Modifier</a>
+											</li>
+											<li>
+												<a class="dropdown-item fw-bold" style="color: red;" href="#">Supprimer</a>
+											</li>
+										</ul>
+									</div>
+								</td>
+								<td>{{item.codeService}}</td>
+								<td>{{item.libelleService}}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends "baseTemplate.html.twig" %}
+
+{% block title %}
+	Planning Interne de l’Atelier
+{% endblock %}
+
+{% block stylesheets %}
+	<link rel="stylesheet" href="{{ App.base_path }}/Views/css/list.css?v=2025.10.22.08.00">
+	<link rel="stylesheet" href="{{ App.base_path }}/Views/css/planning/planning.css?v=2025.10.22.08.00">
+{% endblock %}
+
+{% block overlay %}
+	{% include "/shared/_overlay.html.twig"  %}
+{% endblock %}
+
+{% block content %}
+	<div class="sticky-header-titre">
+		<div class="container">
+			{% include "/planningAtelier/_formulaire.html.twig" %}
+			<div class="d-flex justify-content-between">
+				<div>
+					<a href="{{ path('export_planningAtelier') }}" id="" name="" class="btn btn bg-success text-white my-3 fw-bold" data-bs-toggle="tooltip" title="Exporter en Excel">
+						<i class="fas fa-table"></i>
+						Excel
+					</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<table class="table table-sticky">
+		<thead class="table-dark position-sticky align-middle">
+			<tr>
+				<th rowspan="2">Agence Travaux</th>
+				<th rowspan="2">Section</th>
+				<th rowspan="2">Intitulé Travaux</th>
+				<th rowspan="2">OR</th>
+				<th rowspan="2">Itv</th>
+				<th rowspan="2">Ressource</th>
+				<th rowspan="2">Nb jour</th>
+				{% for date in dates %}
+					<th colspan="2">{{ date|date('l d/m') }}</th>
+				{% endfor %}
+			</tr>
+			<tr>
+				{% for date in dates %}
+					<th>mtn</th>
+					<th>apm</th>
+				{% endfor %}
+			</tr>
+		</thead>
+		<tbody id="tableBody">
+			{% for row in planning %}
+				<tr>
+					<td class="fw-bold text-start align-baseline">{{ row.agenceem }}</td>
+					<td class="fw-bold text-start align-baseline">{{ row.section }}</td>
+					<td>{{ row.intitule }}</td>
+					<td>{{ row.numor }}</td>
+					<td>{{ row.itv }}</td>
+					<td>{{ row.ressource }}</td>
+					<td>{{ row.nbTotalJ }}</td>
+					{% for date in dates %}
+						{% set dateStr = date|date('Y-m-d') %}
+						<td {% if row.presence[dateStr].matin %} style="background:#fabb18;" {% endif %}></td>
+						<td {% if row.presence[dateStr].apm %} style="background:#fabb18;" {% endif %}></td>
+					{% endfor %}
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+{% endblock %}
+{% block javascript %}
+	<script src="{{ App.base_path }}/Views/js/utils/positionSticky.js?v=2025.10.22.08.00"></script>
+	<script src="{{ App.base_path }}/Views/js/planningAtelier/semaine.js?v=2025.10.22.08.00" type="module"></script>
+	<script src="{{ App.base_path }}/Views/js/planningAtelier/agServPlanning.js?v=2025.10.22.08.00" type="module"></script>
+{% endblock %}

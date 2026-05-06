@@ -1,0 +1,111 @@
+<?php
+
+use Symfony\Component\Yaml\Yaml;
+use App\Service\security\SecurityService;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Exception\ResourceNotFoundException;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+
+// Chargement du bootstrap runtime (adaptatif)
+$services = require __DIR__ . '/config/bootstrap_runtime.php';
+
+// Récupérer les services nécessaires
+$twig               = $services['twig'];
+$matcher            = $services['matcher'];
+$argumentResolver   = $services['argumentResolver'];
+$controllerResolver = $services['controllerResolver'];
+/** @var SecurityService $securityService */
+$securityService    = $services['securityService'];
+$response           = new Response();
+
+// Créer la requête depuis les variables globales
+$request = Request::createFromGlobals();
+
+try {
+    // 1. Matcher la route (utilise l'objet Request complet pour gérer les méthodes HTTP, etc.)
+    $currentRoute = $matcher->matchRequest($request);
+    $request->attributes->add($currentRoute);
+
+    // 2. Contrôler l'accès
+    $securityResponse = $securityService->controlerAcces($request);
+
+    if ($securityResponse !== null) {
+        // L'utilisateur n'est pas connecté : on le redirige vers le login
+        $securityResponse->send();
+        exit;
+    }
+
+    // 3. Résoudre le contrôleur
+    $controller = $controllerResolver->getController($request);
+    $arguments  = $argumentResolver->getArguments($request, $controller);
+
+    // 4. Exécuter le contrôleur
+    $result     = call_user_func_array($controller, $arguments);
+
+    // 5. Construire la réponse
+    if ($result instanceof Response) {
+        $response = $result;
+    } elseif (is_string($result)) {
+        $response->setContent($result);
+    }
+} catch (ResourceNotFoundException $e) {
+    // Route non trouvée
+    $htmlContent = $twig->render('erreur/404.html.twig');
+    $response->setContent($htmlContent);
+    $response->setStatusCode(404);
+} catch (\Symfony\Component\Routing\Exception\MethodNotAllowedException $e) {
+    // Méthode HTTP non autorisée
+    $allowedMethods = $e->getAllowedMethods();
+    $response->setContent(json_encode([
+        'success' => false,
+        'message' => 'Méthode HTTP non autorisée. Méthodes autorisées : ' . implode(', ', $allowedMethods),
+        'method' => $request->getMethod(),
+        'allowed' => $allowedMethods
+    ]));
+    $response->headers->set('Content-Type', 'application/json');
+    $response->setStatusCode(405);
+} catch (AccessDeniedException $e) {
+    // Accès refusé
+    $htmlContent = $twig->render('erreur/403.html.twig');
+    $response->setContent($htmlContent);
+    $response->setStatusCode(403);
+} catch (Exception $e) {
+    // Erreur générale - Ajouter plus de détails
+    $errorDetails = [
+        'message'        => $e->getMessage(),
+        'file'           => $e->getFile(),
+        'line'           => $e->getLine(),
+        'trace'          => $e->getTraceAsString(),
+        'code'           => $e->getCode(),
+        'previous'       => $e->getPrevious() ? $e->getPrevious()->getMessage() : null,
+        'timestamp'      => date('Y-m-d H:i:s'),
+        'request_uri'    => $request->getRequestUri(),
+        'request_method' => $request->getMethod(),
+        'user_agent'     => $request->headers->get('User-Agent'),
+    ];
+    // Charger la configuration d'environnement
+    $envConfig = Yaml::parseFile(__DIR__ . '/config/environment.yaml');
+    $isDevMode = $envConfig['app']['env'] === 'dev';
+
+    // En mode développement, afficher tous les détails
+    if ($isDevMode) {
+        $htmlContent = $twig->render('erreur/500.html.twig', $errorDetails);
+    } else {
+        // En production, masquer les détails sensibles
+        $htmlContent = $twig->render('erreur/500.html.twig', [
+            'message'   => 'Une erreur interne est survenue. Veuillez contacter l\'administrateur.',
+            'error_id'  => uniqid('ERR_', true),
+            'timestamp' => $errorDetails['timestamp']
+        ]);
+    }
+
+    $response->setContent($htmlContent);
+    $response->setStatusCode(500);
+
+    // Logger l'erreur complète
+    error_log("Erreur 500 - " . json_encode($errorDetails));
+}
+
+// Envoyer la réponse
+$response->send();
