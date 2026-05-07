@@ -17,14 +17,19 @@ class LdapModel
         $this->Domain = $_ENV['LDAP_DOMAIN'];
         $this->ldap_dn = $_ENV['LDAP_DN'];
 
-        $this->ldapconn = ldap_connect("ldap://{$this->ldapHost}:{$this->ldapPort}");
+        ldap_set_option(NULL, LDAP_OPT_X_TLS_REQUIRE_CERT, LDAP_OPT_X_TLS_NEVER);
+
+        $this->ldapconn = ldap_connect("ldaps://{$this->ldapHost}:{$this->ldapPort}");
+
+        if (!$this->ldapconn) {
+            die("❌ Impossible de contacter le serveur LDAPS");
+        }
 
         ldap_set_option($this->ldapconn, LDAP_OPT_PROTOCOL_VERSION, 3);
         ldap_set_option($this->ldapconn, LDAP_OPT_REFERRALS, 0);
 
-        if (!$this->ldapconn) {
-            die("Connexion au serveur LDAP échouée.");
-        }
+        // Also set on the connection handle after connecting
+        ldap_set_option($this->ldapconn, LDAP_OPT_X_TLS_REQUIRE_CERT, LDAP_OPT_X_TLS_NEVER);
     }
 
     public function showconnect()
