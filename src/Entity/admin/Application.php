@@ -44,11 +44,6 @@ class Application
     private ?string $derniereId = null;
 
     /**
-     * @ORM\ManyToMany(targetEntity=CategorieAteApp::class, mappedBy="applications")
-     */
-    private $categorieAtes;
-
-    /**
      * @ORM\ManyToOne(targetEntity=Vignette::class, inversedBy="applications")
      * @ORM\JoinColumn(name="vignette_id", referencedColumnName="id", nullable=true)
      */
@@ -67,7 +62,6 @@ class Application
     public function __construct()
     {
         $this->applicationProfils = new ArrayCollection();
-        $this->categorieAtes = new ArrayCollection();
         $this->pages = new ArrayCollection();
     }
 
@@ -121,29 +115,6 @@ class Application
     {
         $this->derniereId = $derniereId;
 
-        return $this;
-    }
-
-    public function getCategorieAtes(): Collection
-    {
-        return $this->categorieAtes;
-    }
-
-    public function addCategorieAte(CategorieAteApp $categorieAteApp): self
-    {
-        if (!$this->categorieAtes->contains($$categorieAteApp)) {
-            $this->categorieAtes[] = $$categorieAteApp;
-            $$categorieAteApp->addApplication($this);
-        }
-        return $this;
-    }
-
-    public function removeCategorieAte(CategorieAteApp $categorieAteApp): self
-    {
-        if ($this->categorieAtes->contains($$categorieAteApp)) {
-            $this->categorieAtes->removeElement($$categorieAteApp);
-            $$categorieAteApp->removeApplication($this);
-        }
         return $this;
     }
 

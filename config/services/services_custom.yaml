@@ -28,13 +28,6 @@ services:
   App\Model\LdapModel:
     public: true
 
-  App\Controller\da\ListeDa\listeDaController:
-    autowire: true
-    autoconfigure: true
-    arguments:
-      - "@doctrine.orm.default_entity_manager"
-    public: true
-
   App\Controller\authentification\LoginController:
     autowire: true
     autoconfigure: true
@@ -43,52 +36,7 @@ services:
       - '@App\Model\LdapModel'
     public: true
 
-  App\Service\da\FileUploaderForDAService:
-    public: true
 
-  App\Service\da\DaService:
-    arguments:
-      $em: "@doctrine.orm.default_entity_manager"
-      $daFileUploader: '@App\Service\da\FileUploaderForDAService'
-    public: true
-
-  App\Service\da\DaAfficherService:
-    arguments:
-      $em: "@doctrine.orm.default_entity_manager"
-    public: true
-
-  App\Service\da\DwDataService:
-    arguments:
-      $em: "@doctrine.orm.default_entity_manager"
-    public: true
-
-  App\Service\da\DaTimelineService:
-    arguments:
-      $em: "@doctrine.orm.default_entity_manager"
-    public: true
-
-  App\Service\da\DocRattacheService:
-    arguments:
-      $daService: '@App\Service\da\DaService'
-      $dwDataService: '@App\Service\da\DwDataService'
-    public: true
-
-  App\Controller\da\Detail\DaDetailReapproController:
-    arguments:
-      $daService: '@App\Service\da\DaService'
-      $docRattacheService: '@App\Service\da\DocRattacheService'
-      $daTimelineService: '@App\Service\da\DaTimelineService'
-    public: true
-
-  App\Controller\da\Detail\DaDetailAvecDitController:
-    arguments:
-      $daTimelineService: '@App\Service\da\DaTimelineService'
-    public: true
-
-  App\Controller\da\Detail\DaDetailDirectController:
-    arguments:
-      $daTimelineService: '@App\Service\da\DaTimelineService'
-    public: true
 
   App\Service\Admin\PermissionsService:
     arguments:

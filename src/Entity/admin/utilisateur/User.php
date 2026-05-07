@@ -57,12 +57,6 @@ class User implements UserInterface
     private $personnels;
 
     /**
-     * @ORM\ManyToOne(targetEntity=AgenceServiceIrium::class, inversedBy="userAgenceService")
-     * @ORM\JoinColumn(name="agence_utilisateur", referencedColumnName="id")
-     */
-    private $agenceServiceIrium;
-
-    /**
      * @ORM\Column(type="string", length=10, name="num_tel")
      *
      * @var string 
@@ -215,18 +209,6 @@ class User implements UserInterface
     public function setPersonnels($personnel): self
     {
         $this->personnels = $personnel;
-
-        return $this;
-    }
-
-    public function getAgenceServiceIrium()
-    {
-        return $this->agenceServiceIrium;
-    }
-
-    public function setAgenceServiceIrium($agenceServiceIrium)
-    {
-        $this->agenceServiceIrium = $agenceServiceIrium;
 
         return $this;
     }

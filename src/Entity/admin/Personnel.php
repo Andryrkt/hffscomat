@@ -95,18 +95,6 @@ class Personnel
      */
     private $users;
 
-    /**
-     * @ORM\ManyToOne(targetEntity=AgenceServiceIrium::class, inversedBy="personnelId")
-     * @ORM\JoinColumn(name="agence_service_irium_id", referencedColumnName="id")
-     */
-    private ?AgenceServiceIrium $agenceServiceIriumId = null;
-
-
-    /**
-     * @ORM\OneToMany(targetEntity=AgenceServiceIrium::class, mappedBy="chefServiceId")
-     */
-    private $agServIriumChefService;
-
 
     /**
      * @ORM\Column(type="boolean", name="group_direction")
@@ -119,7 +107,6 @@ class Personnel
     {
         $this->Date_creation = new \DateTime();
         $this->users = new ArrayCollection();
-        $this->agServIriumChefService = new ArrayCollection();
     }
 
     /**
@@ -319,52 +306,6 @@ class Personnel
         return $this;
     }
 
-    public function getAgServIriumChefService(): Collection
-    {
-        return $this->agServIriumChefService;
-    }
-
-    public function addAgServIriumChefService(AgenceServiceIrium $agServIriumChefService): self
-    {
-        if (!$this->agServIriumChefService->contains($agServIriumChefService)) {
-            $this->agServIriumChefService[] = $agServIriumChefService;
-            $agServIriumChefService->setChefServiceId($this);
-        }
-
-        return $this;
-    }
-
-    public function removeAgServIriumChefService(AgenceServiceIrium $agServIriumChefService): self
-    {
-        if ($this->agServIriumChefService->contains($agServIriumChefService)) {
-            $this->agServIriumChefService->removeElement($agServIriumChefService);
-            if ($agServIriumChefService->getChefServiceId() === $this) {
-                $agServIriumChefService->setChefServiceId(null);
-            }
-        }
-
-        return $this;
-    }
-
-    public function setAgServIriumChefService($agServIriumChefService): self
-    {
-        $this->agServIriumChefService = $agServIriumChefService;
-
-        return $this;
-    }
-
-    public function getAgenceServiceIriumId(): ?AgenceServiceIrium
-    {
-        return $this->agenceServiceIriumId;
-    }
-
-
-    public function setAgenceServiceIriumId(?AgenceServiceIrium $agenceServiceIriumId): self
-    {
-        $this->agenceServiceIriumId = $agenceServiceIriumId;
-
-        return $this;
-    }
 
     public function toArray(): array
     {

@@ -50,7 +50,6 @@
 
 		{% include "/shared/_notificationToast.html.twig" %}
 		{% include "/shared/_modalConfirmation.html.twig" %}
-		{% include "/shared/_modalNouveauTicket.html.twig" %}
 		{{ renderMenuModals() }}
 
 		<!-- JAVASCRIPT-numeral js pour manipuler les nombre en js -->
@@ -71,18 +70,20 @@
 		<script src="{{ App.base_path }}/Views/js/scripts.js?v=2026.03.17.09.21" type="module"></script>
 		<script>
 			// Afficher le spinner lors du déchargement de la page (navigation)
-			window.addEventListener('beforeunload', function() {
-				const overlay = document.getElementById('loading-overlays');
-				if (overlay) overlay.classList.add('active');
-			});
+window.addEventListener('beforeunload', function () {
+const overlay = document.getElementById('loading-overlays');
+if (overlay) 
+overlay.classList.add('active');
+
+});
 
 // Optionnel : s'assurer que le spinner est caché si l'utilisateur revient en arrière (BFCache)
-			window.addEventListener('pageshow', function(event) {
-				const overlay = document.getElementById('loading-overlays');
-				if (overlay && event.persisted) {
-					overlay.classList.remove('active');
-				}
-			});
+window.addEventListener('pageshow', function (event) {
+const overlay = document.getElementById('loading-overlays');
+if (overlay && event.persisted) {
+overlay.classList.remove('active');
+}
+});
 		</script>
 		{% block javascript %}{% endblock %}
 	</body>
