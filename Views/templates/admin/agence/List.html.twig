@@ -1,0 +1,69 @@
+{% extends "baseTemplate.html.twig" %}
+
+{% block title %}
+	Agences
+{% endblock %}
+
+{% block breadCrumb %}{% endblock %}
+
+{% block content %}
+	<div class="container my-4">
+		<div class="card">
+			<div class="card-body">
+				<h3 class="perso-titre">
+					Liste des Agences
+				</h3>
+				<a href="{{ path("agence_new")}}" class="btn btn-success fw-bold my-3">
+					Ajouter nouvelle agence
+				</a>
+				<a href="{{ path("service_index")}}" class="btn btn-primary ms-2 fw-bold my-3">
+					Liste des services
+				</a>
+				<table class="table">
+					<thead class="table-dark align-middle">
+						<tr>
+							<th class="pe-3">Actions</th>
+							<th>Code Agence</th>
+							<th>Libelle Agence</th>
+							<th>Code Societe</th>
+							<th>Libelle Societe</th>
+							<th>Code Service</th>
+							<th>Libelle Service</th>
+						</tr>
+					</thead>
+					<tbody id="tableBody" class="align-middle">
+						{% for row in data %}
+							<tr>
+								<td class="p-0">
+									<div class="dropdown">
+										<button class="btn btn-warning dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false" style="text-decoration: none; color: #000; font-weight: 700">
+											Actions
+										</button>
+										<ul class="dropdown-menu dropdown-menu-end" id="dropdown-menu" aria-labelledby="dropdownMenuButton" style="">
+											<li>
+												<a class="dropdown-item fw-bold" href="{{ row.urlUpdate }}">Modifier</a>
+											</li>
+											<li>
+												<a class="dropdown-item fw-bold" style="color: red;" href="#">Supprimer</a>
+											</li>
+										</ul>
+									</div>
+								</td>
+								<td>{{row.codeAgence}}</td>
+								<td>{{row.libelleAgence}}</td>
+								<td class="fw-bold">{{row.codeSociete}}</td>
+								<td class="fw-bold">{{row.libelleSociete}}</td>
+								<td class="fw-bold">{{row.codeService}}</td>
+								<td class="fw-bold">{{row.libelleService}}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+{% endblock %}
+
+{% block javascript %}
+	<script src="{{ App.base_path }}/Views/js/admin/agence/list.js?v=2025.10.22.08.00" type="module"></script>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "baseTemplate.html.twig" %}
+
+{% block title %}
+	Listes des utilisateurs
+{% endblock %}
+
+{% block stylesheets %}
+	<link rel="stylesheet" href="{{ App.base_path }}/Views/css/new.css?v=2025.10.22.08.00">
+	<link rel="stylesheet" href="{{ App.base_path }}/Views/css/list.css?v=2025.10.22.08.00">
+{% endblock %}
+
+{% block breadCrumb %}{% endblock %}
+
+{% block content %}
+	<div class="container my-4">
+		<div class="card">
+			<div class="card-body">
+				<h3 class="perso-titre">
+					Liste des utilisateurs
+				</h3>
+				{% include "admin/utilisateur/shared/_formulaireRecherche.html.twig" %}
+				<a href="{{ path("utilisateur_new")}}" class="btn btn-success fw-bold my-3">
+					Ajouter nouvel utilisateur
+				</a>
+				<table class="table align-middle">
+					<thead class="table-dark">
+						<tr>
+							<th></th>
+							<th class="text-start">Nom d'utilisateur</th>
+							<th class="text-center">Matricule</th>
+							<th class="text-start">Email</th>
+							<th class="text-center">Code Sage</th>
+							<th class="text-start ps-4">Profil</th>
+						</tr>
+					</thead>
+					<tbody id="tableBody">
+						{% for row in rows %}
+							<tr>
+								<td class="text-center">
+									<div class="dropdown">
+										<button class="btn  dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false" style="text-decoration: none; color: #000; font-weight: 700">
+											<i class="fas fa-ellipsis-vertical"></i>
+										</button>
+										<ul class="dropdown-menu dropdown-menu-end" id="dropdown-menu" aria-labelledby="dropdownMenuButton" style="">
+											<li>
+												<a class="dropdown-item fw-bold" href="{{ row.url_show }}">Détails</a>
+											</li>
+											<li>
+												<a class="dropdown-item fw-bold" href="{{ row.url_edit }}">Modifier</a>
+											</li>
+										</ul>
+									</div>
+								</td>
+								<td class="text-start" data-label="username">{{ row.username }}</td>
+								<td class="text-center" data-label="matricule">{{ row.matricule }}</td>
+								<td class="text-start" data-label="mail">{{ row.email }}</td>
+								<td class="text-center" data-label="code-sage">{{ row.codeSage }}</td>
+								<td class="text-start p-0" data-label="profil">
+									{% if row.profils.isEmpty() %}
+										-
+									{% else %}
+										<ul class="list-group list-group-flush">
+											{% for profil in row.profils %}
+												<li class="list-group-item">{{ profil.designation }}</li>
+											{% endfor %}
+										</ul>
+									{% endif %}
+								</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+{% endblock %}
+
+{% block javascript %}
+	<script src="{{ App.base_path }}/Views/js/utils/list/searchList.js?v=2025.10.22.08.00" type="module"></script>
+{% endblock %}

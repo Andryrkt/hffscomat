@@ -1,0 +1,27 @@
+{% extends "baseTemplate.html.twig"%}
+
+{% block stylesheets %}
+	{{ parent() }}
+	<link rel="stylesheet" href="{{ App.base_path }}/Views/css/accueil.css?v=2025.10.22.08.00">
+{% endblock %}
+
+{% block title %}
+	Accueil
+{% endblock %}
+
+{% block breadCrumb %}{% endblock %}
+
+{% block bandeau %}
+	{% include "/partials/_bandeau.html.twig" %}
+{% endblock %}
+
+{% block content %}
+	<div class="container">
+		{% include "/partials/_notification.html.twig" %}
+		{% include "/partials/_vignettes.html.twig" with {"menuItems": menuItems} %}
+	</div>
+{% endblock %}
+
+{% block javascript %}
+	<script src="{{ App.base_path }}/Views/js/accueil/script.js?v=2026.01.19.15.37" type="module"></script>
+{% endblock %}

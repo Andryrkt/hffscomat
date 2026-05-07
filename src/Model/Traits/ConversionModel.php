@@ -1,0 +1,100 @@
+<?php
+
+namespace App\Model\Traits;
+
+trait ConversionModel
+{
+    public function convertirEnUtf8($element)
+    {
+        if (is_array($element)) {
+            foreach ($element as $key => $value) {
+                $element[$key] = $this->convertirEnUtf8($value);
+            }
+        } elseif (is_string($element)) {
+            // Vérifier si la chaîne est déjà en UTF-8
+            if (mb_check_encoding($element, 'UTF-8')) {
+                return $element;
+            }
+
+            // Essayer avec ISO-8859-1 d'abord (encodage le plus courant)
+            $converted = @mb_convert_encoding($element, 'UTF-8', 'ISO-8859-1');
+            if ($converted !== false && mb_check_encoding($converted, 'UTF-8')) {
+                return $converted;
+            }
+
+            // Fallback vers Windows-1252
+            $converted = @mb_convert_encoding($element, 'UTF-8', 'Windows-1252');
+            if ($converted !== false && mb_check_encoding($converted, 'UTF-8')) {
+                return $converted;
+            }
+
+            // Dernier recours : nettoyer et forcer UTF-8
+            $cleaned = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', '', $element);
+            return mb_convert_encoding($cleaned, 'UTF-8', 'UTF-8');
+        }
+        return $element;
+    }
+
+    public function convertirVersInformix($element)
+    {
+        if (is_array($element)) {
+            foreach ($element as $key => $value) {
+                $element[$key] = $this->convertirVersInformix($value);
+            }
+        } elseif (is_string($element)) {
+            // Convertir de UTF-8 vers ISO-8859-1 pour Informix
+            if (mb_check_encoding($element, 'UTF-8')) {
+                return mb_convert_encoding($element, 'ISO-8859-1', 'UTF-8');
+            }
+        }
+        return $element;
+    }
+
+    public function clean_string($string)
+    {
+        return mb_convert_encoding($string, 'UTF-8', 'ISO-8859-1');
+    }
+
+    private function clean_string_1($string)
+    {
+        return mb_convert_encoding($string, 'ASCII', 'UTF-8');
+    }
+
+    public function TestCaractereSpeciaux(array $tab)
+    {
+        function contains_special_characters($string)
+        {
+            // Expression régulière pour vérifier les caractères spéciaux
+            return preg_match('/[^\x20-\x7E\t\r\n]/', $string);
+        }
+
+        // Parcours de chaque élément du tableau $tab
+        foreach ($tab as $key => $value) {
+            // Parcours de chaque valeur de l'élément
+            foreach ($value as $inner_value) {
+                // Vérification de la présence de caractères spéciaux
+                if (contains_special_characters($inner_value)) {
+                    echo "Caractère spécial trouvé dans la valeur : $inner_value<br>";
+                }
+            }
+        }
+    }
+
+    /**
+     * c'est une foncion qui décode les caractères speciaux en html
+     */
+    public function decode_entities_in_array($array)
+    {
+        // Parcourir chaque élément du tableau
+        foreach ($array as $key => $value) {
+            // Si la valeur est un tableau, appeler récursivement la fonction
+            if (is_array($value)) {
+                $array[$key] = $this->decode_entities_in_array($value);
+            } else {
+                // Si la valeur est une chaîne, appliquer la fonction decode_entities()
+                $array[$key] = html_entity_decode($value);
+            }
+        }
+        return $array;
+    }
+}
