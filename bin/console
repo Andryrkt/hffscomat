@@ -5,7 +5,7 @@ require dirname(__DIR__) . DIRECTORY_SEPARATOR . 'vendor/autoload.php';
 require_once dirname(__DIR__) . '/config/dotenv.php';
 $entitymanager = require_once dirname(__DIR__) . "/doctrineBootstrap.php";
 
-use App\Command\AncienDitCommand;
+
 use App\Command\cache\CacheWarmupAgServCommand;
 use App\Command\cache\CacheWarmupAllCommand;
 use App\Command\cache\CacheWarmupSecurityCommand;
@@ -24,7 +24,6 @@ use Symfony\Component\Cache\Adapter\FilesystemTagAwareAdapter;
 
 // Ajouter la commande à l'application Symfony Console
 $application = new Application();
-$application->add(new AncienDitCommand($entityManager));
 $application->add(new MigrationPdfCommand($entityManager));
 $application->add(new MigrationDataCommand($entityManager));
 $application->add(new MigrationProfilsCommand($entityManager));

@@ -134,18 +134,7 @@ class MenuService
     public function construireMenuPrincipal(): array
     {
         $modules = [
-            ['id' => 'documentationModal', 'title' => 'Documentation', 'icon' => 'book',           'groupes' => MenuGroupe::documentationGroupes()],
-            ['id' => 'reportingModal',     'title' => 'Reporting',     'icon' => 'chart-line',     'groupes' => MenuGroupe::reportingBIGroupes()],
-            ['id' => 'comptaModal',        'title' => 'Compta',        'icon' => 'calculator',     'groupes' => MenuGroupe::comptaGroupes()],
-            ['id' => 'rhModal',            'title' => 'RH',            'icon' => 'users',          'groupes' => MenuGroupe::rhGroupes()],
-            ['id' => 'materielModal',      'title' => 'Matériel',      'icon' => 'snowplow',       'groupes' => MenuGroupe::materielGroupes()],
-            ['id' => 'atelierModal',       'title' => 'Atelier',       'icon' => 'tools',          'groupes' => MenuGroupe::atelierGroupes()],
-            ['id' => 'magasinModal',       'title' => 'Magasin',       'icon' => 'dolly',          'groupes' => MenuGroupe::magasinGroupes()],
-            ['id' => 'approModal',         'title' => 'Appro',         'icon' => 'shopping-cart',  'groupes' => MenuGroupe::approGroupes()],
-            ['id' => 'itModal',            'title' => 'IT',            'icon' => 'laptop-code',    'groupes' => MenuGroupe::itGroupes()],
-            ['id' => 'polModal',           'title' => 'POL',           'icon' => 'ring rotate-90', 'groupes' => MenuGroupe::polGroupes()],
-            ['id' => 'energieModal',       'title' => 'Energie',       'icon' => 'bolt',           'groupes' => MenuGroupe::energieGroupes()],
-            ['id' => 'hseModal',           'title' => 'HSE',           'icon' => 'shield-alt',     'groupes' => MenuGroupe::hseGroupes()],
+            ['id' => 'magasinModal',       'title' => 'Magasin',       'icon' => 'dolly',          'groupes' => MenuGroupe::magasinGroupes()]
         ];
 
         $vignettes = [];
