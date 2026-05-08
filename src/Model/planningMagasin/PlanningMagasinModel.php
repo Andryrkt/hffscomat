@@ -381,4 +381,17 @@ class PlanningMagasinModel extends Model
         $resultat = $this->convertirEnUtf8($data);
         return $resultat;
     }
+
+
+    public function findnumBCAll()
+    {
+        $statement = "SELECT DISTINCT b.numero_devis as numeroDevis
+                    from {$this->dbIrium}:Informix.bc_client_soumis_neg b
+                    WHERE b.statut_bc = 'Validé - Devis à transferer'
+                    ";
+        $result = $this->connect->executeQuery($statement);
+        $data = $this->connect->fetchResults($result);
+        $resultat = $this->convertirEnUtf8($data);
+        return array_column($resultat, 'numeroDevis');
+    }
 }

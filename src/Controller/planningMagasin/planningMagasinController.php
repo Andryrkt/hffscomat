@@ -96,7 +96,7 @@ class planningMagasinController extends Controller
     private function allBCs(): array
     {
         /** @var array */
-        $numBc = $this->BcMagasinRepository->findnumBCAll();
+        $numBc = $this->planningMagasinModel->findnumBCAll();
         return $numBc;
     }
 }
