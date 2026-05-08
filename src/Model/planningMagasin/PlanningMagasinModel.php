@@ -130,7 +130,8 @@ class PlanningMagasinModel extends Model
                 $numCmd = $this->numcommande($criteria);
                 break;
         }
-        $agDebit = $this->agenceDebite($criteria, $codeAgence);
+        // $agDebit = $this->agenceDebite($criteria, $codeAgence);
+        $agDebit = "";
         $servDebit = $this->serviceDebite($criteria);
         $codeClient  = $this->codeClient($criteria);
         $commercial = $this->commercial($criteria);
@@ -173,7 +174,8 @@ class PlanningMagasinModel extends Model
                         END QteALL 
 
                         from neg_ent, neg_lig, agr_succ, agr_tab ser, agr_usr ope, cli_bse, cli_soc
-                        where nent_soc = 'HF'
+                        where 
+                        nent_soc = 'CO'
                         and nlig_soc = nent_soc and nlig_numcde = nent_numcde
                         and asuc_numsoc = nent_soc and asuc_num = nent_succ
                         and csoc_soc = nent_soc and csoc_numcli = cbse_numcli and cbse_numcli = nent_numcli
@@ -183,9 +185,9 @@ class PlanningMagasinModel extends Model
                         AND nent_posf not in ('CP', 'FC')
                         AND to_char(nent_numcli) not like '150%'
                         AND not nent_numcli between 1800000 and 1999999
-                        AND trim(nent_succ) in ('01', '20', '30', '40')
-                        AND trim(nent_servcrt) <> 'ASS'
-                        AND nlig_constp IN ($piecesMagasin)
+                        --AND trim(nent_succ) in ('01', '20', '30', '40')
+                        --AND trim(nent_servcrt) <> 'ASS'
+                        --AND nlig_constp IN ($piecesMagasin)
                 
                         $numDevis
                         $numCmd

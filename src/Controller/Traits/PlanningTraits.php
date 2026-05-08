@@ -61,8 +61,7 @@ trait PlanningTraits
                         $moisDetail['qteAll'],
                         $moisDetail['numDit'],
                         $moisDetail['migration'],
-                        $moisDetail['commentaire'],
-                        $moisDetail['back']
+                        $moisDetail['commentaire']
                     );
                 }
             }
@@ -98,8 +97,7 @@ trait PlanningTraits
                         $moisDetail['qteCdm'],
                         $moisDetail['qteLiv'],
                         $moisDetail['qteAll'],
-                        $moisDetail['commentaire'],
-                        $moisDetail['back']
+                        $moisDetail['commentaire']
                     );
                 }
             }
