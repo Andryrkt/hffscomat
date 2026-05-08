@@ -8,6 +8,8 @@ vendor
 /Views/images/
 /logPerfLogger
 .env
+.env.exemple.scomat
+.env.exemple.hffintranet
 configuration_lanto_hasina.txt
 configuration_prod.txt
 /var

@@ -69,17 +69,17 @@ class DevisNegModel extends Model
                 ,TRIM(ausr.ausr_nom)                                        AS utilisateur_createur_devis
                 ,dneg.utilisateur                                           AS soumis_par
                 ,nent.nent_devise                                           AS devise
-                ,(SELECT MAX(nlig_constp) FROM ips_hffprod:informix.neg_lig WHERE nlig_numcde = nent.nent_numcde) AS constructeur
+                ,(SELECT MAX(nlig_constp) FROM {$this->dbIps}:informix.neg_lig WHERE nlig_numcde = nent.nent_numcde) AS constructeur
 
-            FROM ips_hffprod:informix.neg_ent nent
+            FROM {$this->dbIps}:informix.neg_ent nent
 
-            LEFT JOIN ips_hffprod:informix.agr_usr ausr
+            LEFT JOIN {$this->dbIps}:informix.agr_usr ausr
                 ON ausr.ausr_num = nent.nent_usr
                 AND ausr.ausr_soc = nent.nent_soc
 
-            LEFT JOIN ir_prod108:Informix.devis_soumis_a_validation_neg dneg
+            LEFT JOIN {$this->dbIrium}:Informix.devis_soumis_a_validation_neg dneg
                 ON dneg.numero_devis = nent.nent_numcde
-                AND dneg.numero_version = (SELECT MAX(numero_version) FROM ir_prod108:Informix.devis_soumis_a_validation_neg WHERE numero_devis = nent.nent_numcde)
+                AND dneg.numero_version = (SELECT MAX(numero_version) FROM {$this->dbIrium}:Informix.devis_soumis_a_validation_neg WHERE numero_devis = nent.nent_numcde)
 
             LEFT JOIN (
                 SELECT
@@ -90,7 +90,7 @@ class DevisNegModel extends Model
                     ,COUNT(*) AS nb_relances
                     ,MAX(date_de_relance) AS derniere_relance
                     ,(TODAY - DATE(MAX(date_de_relance))) AS delai_jours
-                FROM ir_prod108:Informix.pointage_relance
+                FROM {$this->dbIrium}:Informix.pointage_relance
                 GROUP BY 1
             ) rl ON rl.num_dev = nent.nent_numcde
 
@@ -103,7 +103,7 @@ class DevisNegModel extends Model
                 AND nent.nent_succ <> '60'
                 AND nent.nent_soc = '$codeSociete'
                 AND EXISTS (
-                                SELECT 1 FROM ips_hffprod:informix.neg_lig nl
+                                SELECT 1 FROM {$this->dbIps}:informix.neg_lig nl
                                 WHERE nl.nlig_numcde = nent.nent_numcde
                                 AND nl.nlig_constp IN ('AGR','ATC','AUS','CAT','CGM','CMX','DNL','DYN','GRO','HYS','JDR','KIT','MAN','MNT','OLY','OOM','PAR','PDV','PER','PUB','REM','SHM','TBI','THO')
                             )
@@ -231,18 +231,18 @@ class DevisNegModel extends Model
     ,TRIM(ausr.ausr_nom)                                        AS utilisateur_createur_devis
     ,dneg.utilisateur                                           AS soumis_par
     ,nent.nent_devise                                           AS devise
-    ,(SELECT MAX(nlig_constp) FROM ips_hffprod:informix.neg_lig WHERE nlig_numcde = nent.nent_numcde) AS constructeur
+    ,(SELECT MAX(nlig_constp) FROM {$this->dbIps}:informix.neg_lig WHERE nlig_numcde = nent.nent_numcde) AS constructeur
 
-FROM ips_hffprod:informix.neg_ent nent
+FROM {$this->dbIps}:informix.neg_ent nent
 
-LEFT JOIN ips_hffprod:informix.agr_usr ausr
+LEFT JOIN {$this->dbIps}:informix.agr_usr ausr
     ON ausr.ausr_num = nent.nent_usr
     AND ausr.ausr_soc = nent.nent_soc
 
-LEFT JOIN ir_prod108:Informix.devis_soumis_a_validation_neg dneg
+LEFT JOIN {$this->dbIrium}:Informix.devis_soumis_a_validation_neg dneg
     ON dneg.numero_devis = nent.nent_numcde
     AND dneg.code_societe = nent.nent_soc
-    AND dneg.numero_version = (SELECT MAX(numero_version) FROM ir_prod108:Informix.devis_soumis_a_validation_neg WHERE numero_devis = nent.nent_numcde AND code_societe = nent.nent_soc)
+    AND dneg.numero_version = (SELECT MAX(numero_version) FROM {$this->dbIrium}:Informix.devis_soumis_a_validation_neg WHERE numero_devis = nent.nent_numcde AND code_societe = nent.nent_soc)
 
 LEFT JOIN (
     SELECT
@@ -254,7 +254,7 @@ LEFT JOIN (
         ,COUNT(*) AS nb_relances
         ,MAX(date_de_relance) AS derniere_relance
         ,(TODAY - DATE(MAX(date_de_relance))) AS delai_jours
-    FROM ir_prod108:Informix.pointage_relance
+    FROM {$this->dbIrium}:Informix.pointage_relance
     GROUP BY 1,2
 ) rl ON rl.numero_devis = nent.nent_numcde AND rl.code_societe = nent.nent_soc
 WHERE nent.nent_natop    = 'DEV'
@@ -267,7 +267,7 @@ WHERE nent.nent_natop    = 'DEV'
     AND nent.nent_succ <> '60'
     AND nent.nent_soc = '$codeSociete'
     AND EXISTS (
-                    SELECT 1 FROM ips_hffprod:informix.neg_lig nl
+                    SELECT 1 FROM {$this->dbIps}:informix.neg_lig nl
                     WHERE nl.nlig_numcde = nent.nent_numcde
                     AND nl.nlig_constp IN ('AGR','ATC','AUS','CAT','CGM','CMX','DNL','DYN','GRO','HYS','JDR','KIT','MAN','MNT','OLY','OOM','PAR','PDV','PER','PUB','REM','SHM','TBI','THO')
                 )
@@ -461,7 +461,7 @@ WHERE nent.nent_natop    = 'DEV'
         try {
             // On récupère l'état actuel pour savoir si on stoppe ou si on réactive
             $sqlCheck = "SELECT FIRST 1 stop_progression_global 
-                        FROM ir_prod108:Informix.devis_soumis_a_validation_neg dneg
+                        FROM {$this->dbIrium}:Informix.devis_soumis_a_validation_neg dneg
                         WHERE dneg.numero_devis = '$numeroDevis' 
                         ORDER BY dneg.numero_version DESC";
 
@@ -476,7 +476,7 @@ WHERE nent.nent_natop    = 'DEV'
             if ($newState === 1) {
                 // On stoppe
                 $motifStop = $motif ? $this->convertirEnUtf8(str_replace("'", "''", $motif)) : "";
-                $sql = "UPDATE ir_prod108:Informix.devis_soumis_a_validation_neg
+                $sql = "UPDATE {$this->dbIrium}:Informix.devis_soumis_a_validation_neg
                         SET stop_progression_global = 1, 
                             date_stop_global = CURRENT,
                             motif_stop_global = '$motifStop',
@@ -484,16 +484,16 @@ WHERE nent.nent_natop    = 'DEV'
                             date_reprise_manuel = NULL,
                             utilisateur_reprise = NULL
                         WHERE numero_devis = '$numeroDevis' 
-                        AND numero_version = (SELECT MAX(numero_version) FROM ir_prod108:Informix.devis_soumis_a_validation_neg WHERE numero_devis = '$numeroDevis')";
+                        AND numero_version = (SELECT MAX(numero_version) FROM {$this->dbIrium}:Informix.devis_soumis_a_validation_neg WHERE numero_devis = '$numeroDevis')";
             } else {
                 // On réactive : on efface le motif et on note l'utilisateur qui réactive
-                $sql = "UPDATE ir_prod108:Informix.devis_soumis_a_validation_neg
+                $sql = "UPDATE {$this->dbIrium}:Informix.devis_soumis_a_validation_neg
                         SET stop_progression_global = 0, 
                             motif_stop_global = NULL,
                             date_reprise_manuel = CURRENT,
                             utilisateur_reprise = '$utilisateurSql'
                         WHERE numero_devis = '$numeroDevis' 
-                        AND numero_version = (SELECT MAX(numero_version) FROM ir_prod108:Informix.devis_soumis_a_validation_neg WHERE numero_devis = '$numeroDevis')";
+                        AND numero_version = (SELECT MAX(numero_version) FROM {$this->dbIrium}:Informix.devis_soumis_a_validation_neg WHERE numero_devis = '$numeroDevis')";
             }
 
             $this->connect->executeQuery($sql);
@@ -549,9 +549,9 @@ WHERE nent.nent_natop    = 'DEV'
                                 WHEN COUNT(pr.numero_devis) = 0 THEN (TODAY - DATE(NVL(dneg.date_envoye_devis_client, nent.nent_datecde)))
                                 ELSE (TODAY - DATE(MAX(pr.date_de_relance)))
                             END AS delai_jours
-                        FROM ips_hffprod:informix.neg_ent nent
-                        LEFT JOIN ir_prod108:Informix.devis_soumis_a_validation_neg dneg ON dneg.numero_devis = nent.nent_numcde
-                        LEFT JOIN ir_prod108:Informix.pointage_relance pr ON pr.numero_devis = nent.nent_numcde
+                        FROM {$this->dbIps}:informix.neg_ent nent
+                        LEFT JOIN {$this->dbIrium}:Informix.devis_soumis_a_validation_neg dneg ON dneg.numero_devis = nent.nent_numcde
+                        LEFT JOIN {$this->dbIrium}:Informix.pointage_relance pr ON pr.numero_devis = nent.nent_numcde
                         WHERE nent.nent_numcde = '$numeroDevis' AND nent.nent_soc = '$codeSociete'
                         GROUP BY nent.nent_numcde, dneg.date_envoye_devis_client, dneg.statut_bc, dneg.numero_version, dneg.stop_progression_global, nent.nent_datecde
                     ) rs

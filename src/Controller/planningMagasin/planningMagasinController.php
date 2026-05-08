@@ -23,14 +23,13 @@ class planningMagasinController extends Controller
 
     private PlanningMagasinModel $planningMagasinModel;
     private PlanningMagasinSearch $planningMagasinSearch;
-    private $BcMagasinRepository;
+
 
     public function __construct()
     {
         parent::__construct();
         $this->planningMagasinModel = new PlanningMagasinModel();
         $this->planningMagasinSearch = new PlanningMagasinSearch();
-        $this->BcMagasinRepository = $this->getEntityManager()->getRepository(BcMagasin::class);
     }
     /**
      * @Route("/Planning", name = "interface_planningMag")
@@ -96,7 +95,7 @@ class planningMagasinController extends Controller
     private function allBCs(): array
     {
         /** @var array */
-        $numBc = $this->BcMagasinRepository->findnumBCAll();
+        $numBc = $this->planningMagasinModel->findnumBCAll();
         return $numBc;
     }
 }

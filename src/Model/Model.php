@@ -14,8 +14,8 @@ class Model
     protected $connect;
     protected $sqlServer;
     protected $informix;
-    protected $connexion04;
-    protected $connexion04Gcot;
+    protected $dbIrium;
+    protected $dbIps;
 
 
     public function __construct()
@@ -25,7 +25,10 @@ class Model
 
         $this->connexion = new Connexion();
         $this->connect = new DatabaseInformix($logger);
-        
+
+        $this->dbIrium = $_ENV['DB_NAME_IRIUM'] ?? 'ir_prod108';
+        $this->dbIps = $_ENV['DB_NAME_IPS'] ?? 'ips_hffprod';
+
         // On force la connexion pour ne pas casser les modèles enfants existants
         try {
             $this->connect->connect();
@@ -34,9 +37,6 @@ class Model
             // mais on ne bloque pas forcément l'instanciation ici 
             // pour rester proche de l'ancien comportement.
         }
-
-        $this->connexion04 = new ConnexionDote4();
-        $this->connexion04Gcot = new connexionDote4Gcot();
     }
 
 
@@ -161,26 +161,6 @@ class Model
     public function retournerResult28($sql)
     {
         $statement = $this->connexion->query($sql);
-        $data = [];
-        while ($tabType = odbc_fetch_array($statement)) {
-            $data[] = $tabType;
-        }
-        return $data;
-    }
-
-    public function retournerResultGcot04($sql)
-    {
-        $statement = $this->connexion04Gcot->query($sql);
-        $data = [];
-        while ($tabType = odbc_fetch_array($statement)) {
-            $data[] = $tabType;
-        }
-        return $data;
-    }
-
-    public function retournerResult04($sql)
-    {
-        $statement = $this->connexion04->query($sql);
         $data = [];
         while ($tabType = odbc_fetch_array($statement)) {
             $data[] = $tabType;

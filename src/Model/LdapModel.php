@@ -17,7 +17,7 @@ class LdapModel
         $this->Domain = $_ENV['LDAP_DOMAIN'];
         $this->ldap_dn = $_ENV['LDAP_DN'];
 
-        $this->ldapconn = ldap_connect("ldap://{$this->ldapHost}:{$this->ldapPort}");
+        $this->ldapconn = ldap_connect("ldaps://{$this->ldapHost}:{$this->ldapPort}");
 
         ldap_set_option($this->ldapconn, LDAP_OPT_PROTOCOL_VERSION, 3);
         ldap_set_option($this->ldapconn, LDAP_OPT_REFERRALS, 0);
