@@ -136,7 +136,7 @@ class MagasinListeOrLivrerModel extends Model
                         (SELECT DATE(Min(ska_d_start)) FROM ska, skw WHERE ofh_id = sitv_numor AND ofs_id=sitv_interv AND skw.skw_id = ska.skw_id ) 
                 END as datePlanning
                     FROM sav_lor
-                INNER JOIN sav_itv on sitv_numor = slor_numor and slor_soc = sitv_soc and slor_succ = sitv_succ and slor_soc = 'HF'
+                INNER JOIN sav_itv on sitv_numor = slor_numor and slor_soc = sitv_soc and slor_succ = sitv_succ and slor_soc = 'CO'
                     WHERE  slor_numor = '$numOr'
                         and slor_typlig = 'P'
                         -- and slor_refp not like ('PREST%')
@@ -164,7 +164,7 @@ class MagasinListeOrLivrerModel extends Model
                                 and sitv_numor = slor_numor 
                                 and sitv_interv = slor_nogrp / 100 
                                 and sitv_numor || '-' || sitv_interv in (' $numOrValideItv') 
-                                and sitv_soc = 'HF'
+                                and sitv_soc = 'CO'
                         WHERE slor_typlig = 'P'
                             $piece
                             GROUP BY 1
@@ -199,7 +199,7 @@ class MagasinListeOrLivrerModel extends Model
                 and sitv_numor = slor_numor 
                 and sitv_interv = slor_nogrp / 100 
                 and sitv_numor || '-' || sitv_interv in ('$numOrValideItv') 
-                and sitv_soc = 'HF'
+                and sitv_soc = 'CO'
                         WHERE  slor_typlig = 'P'
                             $piece
                         GROUP BY 1
@@ -234,7 +234,7 @@ class MagasinListeOrLivrerModel extends Model
                 and sitv_numor = slor_numor 
                 and sitv_interv = slor_nogrp / 100 
                 and sitv_numor || '-' || sitv_interv in ('$numOrValideItv') 
-                and sitv_soc = 'HF'
+                and sitv_soc = 'CO'
                         WHERE slor_typlig = 'P'
                             $piece
                         GROUP BY 1
@@ -574,7 +574,7 @@ class MagasinListeOrLivrerModel extends Model
             and seor_succ = slor_succ 
             and seor_numor = slor_numor
             where 
-            slor_soc = 'HF'
+            slor_soc = 'CO'
             and slor_typlig = 'P'
     	    and slor_constp <> '---'
             and slor_constp not like 'Z%'
@@ -640,7 +640,7 @@ class MagasinListeOrLivrerModel extends Model
             from sav_lor 
             
             where 
-            slor_soc = 'HF'
+            slor_soc = 'CO'
 
             and slor_desi like '%" . $designations . "%'
             and slor_typlig = 'P'
@@ -667,7 +667,7 @@ class MagasinListeOrLivrerModel extends Model
             from sav_lor 
             
             where 
-            slor_soc = 'HF'
+            slor_soc = 'CO'
             and slor_refp like '%" . $refPiece . "%'
             and slor_typlig = 'P'
             and slor_pos = 'EC'
@@ -689,7 +689,7 @@ class MagasinListeOrLivrerModel extends Model
                             slor_succdeb||'-'||(select trim(asuc_lib) from agr_succ where asuc_numsoc = slor_soc and asuc_num = slor_succdeb) as agence
                         FROM sav_lor
                         WHERE slor_succdeb||'-'||(select trim(asuc_lib) from agr_succ where asuc_numsoc = slor_soc and asuc_num = slor_succdeb) <> ''
-                        AND slor_soc = 'HF'
+                        AND slor_soc = 'CO'
                     ";
 
         $result = $this->connect->executeQuery($statement);
@@ -705,7 +705,7 @@ class MagasinListeOrLivrerModel extends Model
                             slor_servdeb||'-'||(select trim(atab_lib) from agr_tab where atab_nom = 'SER' and atab_code = slor_servdeb) as service
                         FROM sav_lor
                         WHERE slor_servdeb||'-'||(select trim(atab_lib) from agr_tab where atab_nom = 'SER' and atab_code = slor_servdeb) <> ''
-                        AND slor_soc = 'HF'
+                        AND slor_soc = 'CO'
                         AND slor_succdeb||'-'||(select trim(asuc_lib) from agr_succ where asuc_numsoc = slor_soc and asuc_num = slor_succdeb) = '$agence'
                     ";
 
@@ -731,7 +731,7 @@ class MagasinListeOrLivrerModel extends Model
                             slor_succdeb||'-'||(select trim(asuc_lib) from agr_succ where asuc_numsoc = slor_soc and asuc_num = slor_succdeb) as agence
                         FROM informix.sav_lor
                         WHERE slor_succdeb||'-'||(select trim(asuc_lib) from agr_succ where asuc_numsoc = slor_soc and asuc_num = slor_succdeb) <> ''
-                        AND slor_soc = 'HF'
+                        AND slor_soc = 'CO'
                     ";
 
         if ($codeAgence <> "''") {

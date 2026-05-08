@@ -265,7 +265,7 @@ ORDER BY 6,2, A.NLIG_NOLIGN
                         nent_numcli as numclient,
                         trim(cbse_nomcli) as nom_client
                         from neg_ent, neg_lig, agr_succ, agr_tab ser, agr_usr ope, cli_bse, cli_soc
-                        where nent_soc = 'HF'
+                        where nent_soc = 'CO'
                         and nlig_soc = nent_soc and nlig_numcde = nent_numcde
                         and asuc_numsoc = nent_soc and asuc_num = nent_succ
                         and csoc_soc = nent_soc and csoc_numcli = cbse_numcli and cbse_numcli = nent_numcli

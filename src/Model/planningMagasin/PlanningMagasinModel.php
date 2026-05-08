@@ -15,7 +15,7 @@ class PlanningMagasinModel extends Model
         $statement = " SELECT  trim(asuc_num) as asuc_num ,
                                trim(asuc_lib) as asuc_lib
                       FROM agr_succ
-                      WHERE asuc_codsoc = 'HF'
+                      WHERE asuc_codsoc = 'CO'
                       AND  (ASUC_NUM like '01' 
                       or ASUC_NUM like '20' 
                       or ASUC_NUM like '30'
@@ -39,7 +39,7 @@ class PlanningMagasinModel extends Model
                             trim(asuc_num) as asuc_num
                     FROM  agr_succ , sav_itv 
                     WHERE asuc_num = sitv_succdeb 
-                    AND asuc_codsoc = 'HF'
+                    AND asuc_codsoc = 'CO'
                     --AND asuc_lib <> 'ANTALAHA'
                     AND asuc_num in ('01', '20', '30', '40')
                     --group by 1,2
@@ -173,7 +173,7 @@ class PlanningMagasinModel extends Model
                         END QteALL 
 
                         from neg_ent, neg_lig, agr_succ, agr_tab ser, agr_usr ope, cli_bse, cli_soc
-                        where nent_soc = 'HF'
+                        where nent_soc = 'CO'
                         and nlig_soc = nent_soc and nlig_numcde = nent_numcde
                         and asuc_numsoc = nent_soc and asuc_num = nent_succ
                         and csoc_soc = nent_soc and csoc_numcli = cbse_numcli and cbse_numcli = nent_numcli
@@ -210,7 +210,7 @@ class PlanningMagasinModel extends Model
         $statement = "  SELECT    DISTINCT
                         nent_numcde as orIntv
                         from neg_ent, neg_lig, agr_succ, agr_tab ser, agr_usr ope, cli_bse, cli_soc
-                        where nent_soc = 'HF'
+                        where nent_soc = 'CO'
                         and nlig_soc = nent_soc and nlig_numcde = nent_numcde
                         and asuc_numsoc = nent_soc and asuc_num = nent_succ
                         and csoc_soc = nent_soc and csoc_numcli = cbse_numcli and cbse_numcli = nent_numcli
@@ -249,7 +249,7 @@ class PlanningMagasinModel extends Model
         $statement = " SELECT    DISTINCT
                         nent_numcde as orIntv
                         from neg_ent, neg_lig, agr_succ, agr_tab ser, agr_usr ope, cli_bse, cli_soc
-                        where nent_soc = 'HF'
+                        where nent_soc = 'CO'
                         and nlig_soc = nent_soc and nlig_numcde = nent_numcde
                         and asuc_numsoc = nent_soc and asuc_num = nent_succ
                         and csoc_soc = nent_soc and csoc_numcli = cbse_numcli and cbse_numcli = nent_numcli
@@ -289,7 +289,7 @@ class PlanningMagasinModel extends Model
         $statement = " SELECT    DISTINCT
                         nent_numcde as orIntv
                         from neg_ent, neg_lig, agr_succ, agr_tab ser, agr_usr ope, cli_bse, cli_soc
-                        where nent_soc = 'HF'
+                        where nent_soc = 'CO'
                         and nlig_soc = nent_soc and nlig_numcde = nent_numcde
                         and asuc_numsoc = nent_soc and asuc_num = nent_succ
                         and csoc_soc = nent_soc and csoc_numcli = cbse_numcli and cbse_numcli = nent_numcli
@@ -330,7 +330,7 @@ class PlanningMagasinModel extends Model
         $statement = " SELECT  TRIM(atab_lib) as nom, 
         TRIM(nent_codope) as value
         from agr_tab, neg_ent
-            where nent_soc = 'HF'
+            where nent_soc = 'CO'
             and nent_servcrt in ('NEG','FLE','MAP')
             and atab_nom = 'OPE' and atab_code = nent_codope
                         

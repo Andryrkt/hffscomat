@@ -96,7 +96,7 @@ class SoumissionModel extends Model
                     END AS retour
 
                     from {$this->dbIps}:informix.neg_lig 
-                    where nlig_soc='HF' 
+                    where nlig_soc='CO' 
                     and nlig_natop='DEV'
                     and nlig_constp <> 'Nmc' 
                     and nlig_numcde = '$numeroDevis'

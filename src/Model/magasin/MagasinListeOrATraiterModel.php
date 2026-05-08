@@ -135,7 +135,7 @@ class MagasinListeOrATraiterModel extends Model
             , trim(mmat_numparc) as casie
 
             from sav_lor 
-            inner join sav_eor on seor_soc = slor_soc and seor_succ = slor_succ and seor_numor = slor_numor and seor_soc = 'HF'
+            inner join sav_eor on seor_soc = slor_soc and seor_succ = slor_succ and seor_numor = slor_numor and seor_soc = 'CO'
             inner join mat_mat on mmat_nummat =  seor_nummat
             inner join agr_usr on ausr_num = seor_usr
             inner join agr_tab on atab_nom = 'OPE' and atab_code = ausr_ope
@@ -145,11 +145,11 @@ class MagasinListeOrATraiterModel extends Model
                 and sitv_numor = slor_numor 
                 and sitv_interv = slor_nogrp / 100 
                 and sitv_numor || '-' || sitv_interv in ({$lesOrSelonCondition['numOrValideString']}) 
-                and sitv_soc = 'HF'
+                and sitv_soc = 'CO'
             and seor_succ = slor_succ 
             and seor_numor = slor_numor
             where 
-            slor_soc = 'HF'
+            slor_soc = 'CO'
             and seor_typeor not in('950', '501')
             $agenceUser
             $designation
@@ -230,7 +230,7 @@ class MagasinListeOrATraiterModel extends Model
             , trim(mmat_numparc) as casie
 
             from sav_lor 
-            inner join sav_eor on seor_soc = slor_soc and seor_succ = slor_succ and seor_numor = slor_numor and seor_soc = 'HF'
+            inner join sav_eor on seor_soc = slor_soc and seor_succ = slor_succ and seor_numor = slor_numor and seor_soc = 'CO'
             inner join mat_mat on mmat_nummat =  seor_nummat
             inner join agr_usr on ausr_num = seor_usr
             inner join agr_tab on atab_nom = 'OPE' and atab_code = ausr_ope
@@ -240,11 +240,11 @@ class MagasinListeOrATraiterModel extends Model
                 and sitv_numor = slor_numor 
                 and sitv_interv = slor_nogrp / 100 
                 and sitv_numor || '-' || sitv_interv in ('" . $lesOrSelonCondition['numOrValideString'] . "') 
-                and sitv_soc = 'HF'
+                and sitv_soc = 'CO'
             and seor_succ = slor_succ 
             and seor_numor = slor_numor
             where 
-            slor_soc = 'HF'
+            slor_soc = 'CO'
             and seor_typeor not in('950', '501')
             $agenceUser
             $designation
@@ -282,7 +282,7 @@ class MagasinListeOrATraiterModel extends Model
             and seor_succ = slor_succ 
             and seor_numor = slor_numor
             where 
-            slor_soc = 'HF'
+            slor_soc = 'CO'
             and slor_typlig = 'P'
     	    and slor_constp <> '---'
             and slor_constp not like 'Z%'
@@ -368,7 +368,7 @@ class MagasinListeOrATraiterModel extends Model
             from sav_lor 
             
             where 
-            slor_soc = 'HF'
+            slor_soc = 'CO'
 
             and slor_desi like '%" . $designations . "%'
             and slor_typlig = 'P'
@@ -394,7 +394,7 @@ class MagasinListeOrATraiterModel extends Model
             from sav_lor 
             
             where 
-            slor_soc = 'HF'
+            slor_soc = 'CO'
 
             and slor_refp like '%" . $refPiece . "%'
             and slor_typlig = 'P'
@@ -417,7 +417,7 @@ class MagasinListeOrATraiterModel extends Model
                             slor_succdeb||'-'||(select trim(asuc_lib) from agr_succ where asuc_numsoc = slor_soc and asuc_num = slor_succdeb) as agence
                         FROM sav_lor
                         WHERE slor_succdeb||'-'||(select trim(asuc_lib) from agr_succ where asuc_numsoc = slor_soc and asuc_num = slor_succdeb) <> ''
-                        AND slor_soc = 'HF'
+                        AND slor_soc = 'CO'
                     ";
 
         $result = $this->connect->executeQuery($statement);
@@ -440,7 +440,7 @@ class MagasinListeOrATraiterModel extends Model
                             slor_servdeb||'-'||(select trim(atab_lib) from agr_tab where atab_nom = 'SER' and atab_code = slor_servdeb) as service
                         FROM sav_lor
                         WHERE slor_servdeb||'-'||(select trim(atab_lib) from agr_tab where atab_nom = 'SER' and atab_code = slor_servdeb) <> ''
-                        AND slor_soc = 'HF'
+                        AND slor_soc = 'CO'
                         AND slor_succdeb||'-'||(select trim(asuc_lib) from agr_succ where asuc_numsoc = slor_soc and asuc_num = slor_succdeb) = '$agence'
             ";
 
@@ -466,7 +466,7 @@ class MagasinListeOrATraiterModel extends Model
                             slor_succdeb||'-'||(select trim(asuc_lib) from informix.agr_succ where asuc_numsoc = slor_soc and asuc_num = slor_succdeb) as agence
                         FROM informix.sav_lor
                         WHERE slor_succdeb||'-'||(select trim(asuc_lib) from informix.agr_succ where asuc_numsoc = slor_soc and asuc_num = slor_succdeb) <> ''
-                        AND slor_soc = 'HF'
+                        AND slor_soc = 'CO'
                     ";
 
         if ($codeAgence <> "''") {

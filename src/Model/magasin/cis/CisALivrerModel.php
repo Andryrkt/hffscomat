@@ -111,7 +111,7 @@ class CisALivrerModel extends Model
                             neg_lig
                         WHERE 
                             nlig_constp NOT IN ('LUB')
-                            AND nlig_soc = 'HF'
+                            AND nlig_soc = 'CO'
                             -- Ajouter des conditions supplémentaires ici si nécessaire
                         GROUP BY 
                             nlig_numcde 
@@ -145,7 +145,7 @@ class CisALivrerModel extends Model
         $dateFinCis = $this->conditionDateSigne('nlig_datecde', 'dateFinCis', $criteria, '<=');
         $dateDebutOr = $this->conditionDateSigne('seor_dateor', 'dateDebutOr', $criteria, '>=');
         $dateFinOr = $this->conditionDateSigne('seor_dateor', 'dateFinOr', $criteria, '<=');
-       $value = GlobalVariablesService::get('pneumatique');
+        $value = GlobalVariablesService::get('pneumatique');
         if (!empty($value)) {
             $piece = " AND slor_constp in ($value) AND (slor_refp not like '%-L' and slor_refp not like '%-CTRL')";
         } else {
@@ -236,7 +236,7 @@ class CisALivrerModel extends Model
                             neg_lig
                         WHERE 
                             nlig_constp NOT IN ('LUB')
-                            AND nlig_soc = 'HF'
+                            AND nlig_soc = 'CO'
                             -- Ajouter des conditions supplémentaires ici si nécessaire
                         GROUP BY 
                             nlig_numcde 

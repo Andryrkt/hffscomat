@@ -270,7 +270,7 @@ trait ConditionModelTrait
                                 'OR' as obs
 
                                 from frn_cde, sav_lor
-                                where fcde_soc = 'HF' and fcde_succ = '01' and fcde_serv = 'NEG'
+                                where fcde_soc = 'CO' and fcde_succ = '01' and fcde_serv = 'NEG'
                                 and fcde_posl = '--'
                                 and (slor_soc = fcde_soc and slor_numcf = fcde_numcde)
                                 group by 1,2,3,4,5,6,7,8,9,10
@@ -299,7 +299,7 @@ trait ConditionModelTrait
                                 end as obs
 
                                 from frn_cde, neg_lig, outer hff_ctrmarq_agence_" . $vinstant . "
-                                where fcde_soc = 'HF' and fcde_succ = '01' and fcde_serv = 'NEG'
+                                where fcde_soc = 'CO' and fcde_succ = '01' and fcde_serv = 'NEG'
                                 and fcde_posl = '--'
                                 and (nlig_soc = fcde_soc and nlig_numcf = fcde_numcde)
                                 and (ctr_marque = nlig_numcde)
@@ -320,7 +320,7 @@ trait ConditionModelTrait
                                 'REAPPRO' as obs
 
                                 from frn_cde
-                                where fcde_soc = 'HF' and fcde_succ = '01' and fcde_serv = 'NEG'
+                                where fcde_soc = 'CO' and fcde_succ = '01' and fcde_serv = 'NEG'
                                 and fcde_posl = '--'
                                 and not exists (select slor_numcf from sav_lor where slor_soc = fcde_soc and slor_numcf = fcde_numcde)
                                 and not exists (select nlig_numcf from neg_lig where nlig_soc = fcde_soc and nlig_numcf = fcde_numcde)
@@ -348,7 +348,7 @@ trait ConditionModelTrait
                             'OR' as obs
 
                             from frn_cde, sav_lor
-                            where fcde_soc = 'HF' and fcde_succ = '01' and fcde_serv = 'NEG'
+                            where fcde_soc = 'CO' and fcde_succ = '01' and fcde_serv = 'NEG'
                             and fcde_posl = '--'
                             and (slor_soc = fcde_soc and slor_numcf = fcde_numcde)
                             group by 1,2,3,4,5,6,7,8,9,10 ) as  requete_base ";
@@ -376,7 +376,7 @@ trait ConditionModelTrait
                                 end as obs
 
                                 from frn_cde, neg_lig, outer hff_ctrmarq_agence_" . $vinstant . "
-                                where fcde_soc = 'HF' and fcde_succ = '01' and fcde_serv = 'NEG'
+                                where fcde_soc = 'CO' and fcde_succ = '01' and fcde_serv = 'NEG'
                                 and fcde_posl = '--'
                                 and (nlig_soc = fcde_soc and nlig_numcf = fcde_numcde)
                                 and (ctr_marque = nlig_numcde)
@@ -396,7 +396,7 @@ trait ConditionModelTrait
                             'REAPPRO' as obs
 
                             from frn_cde
-                            where fcde_soc = 'HF' and fcde_succ = '01' and fcde_serv = 'NEG'
+                            where fcde_soc = 'CO' and fcde_succ = '01' and fcde_serv = 'NEG'
                             and fcde_posl = '--'
                             and not exists (select slor_numcf from sav_lor where slor_soc = fcde_soc and slor_numcf = fcde_numcde)
                             and not exists (select nlig_numcf from neg_lig where nlig_soc = fcde_soc and nlig_numcf = fcde_numcde)
