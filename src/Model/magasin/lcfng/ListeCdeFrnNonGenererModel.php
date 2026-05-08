@@ -15,26 +15,26 @@ class ListeCdeFrnNonGenererModel extends Model
     {
         // dd($criteria);
         //condition de recherche
-        $designation = $this->conditionLike('resultat.Designations', 'designation',$criteria);
-        $referencePiece = $this->conditionLike('resultat.referencePiece', 'referencePiece',$criteria);
-        $constructeur = $this->conditionLike('resultat.constructeur', 'constructeur',$criteria);
-        $numDit = $this->conditionLike('resultat.numDit', 'numDit',$criteria);
+        $designation = $this->conditionLike('resultat.Designations', 'designation', $criteria);
+        $referencePiece = $this->conditionLike('resultat.referencePiece', 'referencePiece', $criteria);
+        $constructeur = $this->conditionLike('resultat.constructeur', 'constructeur', $criteria);
+        $numDit = $this->conditionLike('resultat.numDit', 'numDit', $criteria);
         $numDoc = $this->conditionLike('TO_CHAR(resultat.NumDocument)', 'numDoc', $criteria);
         $typeDoc = $this->conditionSigne('resultat.type_document', 'typeDoc', '=', $criteria);
-        $dateDebutDoc = $this->conditionDateSigne( 'resultat.DateDocument', 'dateDebutDoc', $criteria, '>=');
-        $dateFinDoc = $this->conditionDateSigne( 'resultat.DateDocument', 'dateFinDoc', $criteria, '<=');
-        
-        $piece = $this->conditionPieceLcfng('resultat.constructeur', 'typeLigne', $criteria); 
+        $dateDebutDoc = $this->conditionDateSigne('resultat.DateDocument', 'dateDebutDoc', $criteria, '>=');
+        $dateFinDoc = $this->conditionDateSigne('resultat.DateDocument', 'dateFinDoc', $criteria, '<=');
+
+        $piece = $this->conditionPieceLcfng('resultat.constructeur', 'typeLigne', $criteria);
 
         $numCli = $this->conditionLike('resultat.agenceServiceDebiteur', 'numClient', $criteria);
-        $agence = $this->conditionAgenceLcfng("resultat.agenceServiceDebiteur", 'agence',$criteria); 
-        $service = $this->conditionServiceLcfng("resultat.agenceServiceDebiteur", 'service',$criteria); 
+        $agence = $this->conditionAgenceLcfng("resultat.agenceServiceDebiteur", 'agence', $criteria);
+        $service = $this->conditionServiceLcfng("resultat.agenceServiceDebiteur", 'service', $criteria);
 
-        $agenceEmetteur = $this->conditionAgenceLcfng("resultat.agenceServiceCrediteur", 'agenceEmetteur',$criteria);
-        $serviceEmetteur = $this->conditionServiceLcfng("resultat.agenceServiceCrediteur", 'serviceEmetteur',$criteria);
+        $agenceEmetteur = $this->conditionAgenceLcfng("resultat.agenceServiceCrediteur", 'agenceEmetteur', $criteria);
+        $serviceEmetteur = $this->conditionServiceLcfng("resultat.agenceServiceCrediteur", 'serviceEmetteur', $criteria);
 
-        if($criteria['orValide']) {
-            $numOrValide = " AND resultat.NumDocument in ('".$numOrValide."')";
+        if ($criteria['orValide']) {
+            $numOrValide = " AND resultat.NumDocument in ('" . $numOrValide . "')";
         } else {
             $numOrValide = "";
         }
@@ -61,7 +61,7 @@ class ListeCdeFrnNonGenererModel extends Model
                 inner join sav_eor on seor_soc = slor_soc
                 and seor_succ = slor_succ
                 and seor_numor = slor_numor
-                where slor_soc = 'HF'
+                where slor_soc = 'CO'
                 and slor_succ in ('01')
                 AND seor_typeor not in('950', '501')
                 AND slor_typlig = 'P'
@@ -97,7 +97,7 @@ class ListeCdeFrnNonGenererModel extends Model
                 END as type_document
                 FROM neg_lig, neg_ent
 
-                WHERE nlig_soc = 'HF' and nlig_succ = '01' and nvl(nlig_numcf,0) = 0
+                WHERE nlig_soc = 'CO' and nlig_succ = '01' and nvl(nlig_numcf,0) = 0
                 and nlig_qtecde <> nlig_qteliv and nlig_qtewait =0 and nlig_qtealiv= 0
                 and nlig_constp not in ('Nmc','ZDI','ZAR')
                 and nent_numcde = nlig_numcde and nent_natop not in ('DEV')

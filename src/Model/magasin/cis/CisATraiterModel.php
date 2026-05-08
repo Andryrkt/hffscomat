@@ -94,7 +94,7 @@ class CisATraiterModel extends Model
                     mat_mat on mmat_nummat =  seor_nummat
                     
                 WHERE
-                    slor_soc = 'HF' 
+                    slor_soc = 'CO' 
                     AND slor_numcf > 0 -- Ne filtre que les lignes d'OR contremarquées 
                     AND (
                         NVL(nlig_numcf, 0) = 0 -- La CIS n'est pas contremarquée
@@ -219,7 +219,7 @@ class CisATraiterModel extends Model
     //                 mat_mat on mmat_nummat =  seor_nummat
 
     //             WHERE
-    //                 slor_soc = 'HF' 
+    //                 slor_soc = 'CO' 
     //                 AND slor_numcf > 0 -- Ne filtre que les lignes d'OR contremarquées 
     //                 AND (
     //                     NVL(nlig_numcf, 0) = 0 -- La CIS n'est pas contremarquée
