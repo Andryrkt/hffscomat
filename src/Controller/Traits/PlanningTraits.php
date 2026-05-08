@@ -8,17 +8,13 @@ use App\Entity\planning\PlanningMateriel;
 trait PlanningTraits
 {
 
-    private function creationTableauObjetPlanningMagasin(array $data, array $back): array
+    private function creationTableauObjetPlanningMagasin(array $data): array
     {
         $objetPlanning = [];
         //Recuperation de idmat et les truc
         foreach ($data as $item) {
             $planningMateriel = new PlanningMateriel();
-            if (in_array($item['orintv'], array_column($back, 'intervention'))) {
-                $backOrder = 'Okey';
-            } else {
-                $backOrder = '';
-            }
+
             //initialisation
             $planningMateriel
                 ->setCommercial($item['commercial'])
@@ -38,9 +34,7 @@ trait PlanningTraits
                 ->setQteCdm($item['qtecdm'])
                 ->setQteLiv($item['qtliv'])
                 ->setQteAll($item['qteall'])
-                ->setBack($backOrder)
-                // ->setNumeroOr($item['numeroor'])
-                ->addMoisDetailMagasin($item['mois'], $item['annee'], $item['orintv'], $item['qtecdm'], $item['qtliv'], $item['qteall'], $item['commentaire'], $backOrder)
+                ->addMoisDetailMagasin($item['mois'], $item['annee'], $item['orintv'], $item['qtecdm'], $item['qtliv'], $item['qteall'], $item['commentaire'])
             ;
             $objetPlanning[] = $planningMateriel;
         }

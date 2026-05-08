@@ -88,13 +88,9 @@ class PlanningMagasinModel extends Model
     }
 
 
-    public function recuperationCommadeplanifier(PlanningMagasinSearch $criteria, string $back, string $condition, array $tousLesBCSoumis, string $codeAgence)
+    public function recuperationCommadeplanifier(PlanningMagasinSearch $criteria, string $condition, array $tousLesBCSoumis, string $codeAgence)
     {
-        if ($criteria->getOrBackOrder() == true) {
-            $numCmd = "AND nent_numcde in (" . $back . ")";
-        } else {
-            $numCmd = $this->numcommande($criteria);
-        }
+
         if ($criteria->getOrNonValiderDw() == true) {
             $value = TableauEnStringService::like($tousLesBCSoumis, 'nent_libcde');
             $numDevis = " AND  ($value) ";
@@ -129,9 +125,6 @@ class PlanningMagasinModel extends Model
                     $partcompleString = '';
                 }
                 $numCmd = "AND nent_numcde in (" . $partcompleString . ")";
-                break;
-            case 'back_order':
-                $numCmd = "AND nent_numcde in (" . $back . ")";
                 break;
             default:
                 $numCmd = $this->numcommande($criteria);
@@ -211,35 +204,7 @@ class PlanningMagasinModel extends Model
         return $resultat;
     }
 
-    public function backOrderplanningMagasin(PlanningMagasinSearch $criteria)
-    {
-        //    if ($criteria->getOrNonValiderDw() == true) {
-        //         $value = TableauEnStringService::like($tousLesBCSoumis, 'nent_libcde');
-        //        $numCmd = " AND  ($value) ";
-        //     }else {
-        //         $numCmd = $this->numcommande($criteria);
-        //     }
-        $statement = "SELECT distinct 
-                    nlig_numcde AS intervention
-                  FROM neg_lig AS lig
-                  INNER JOIN gcot_acknow_cat AS cat
-                  ON CAST(lig.nlig_numcf  as varchar(50))= CAST(cat.numero_po as varchar(50))
-                  AND (lig.nlig_nolign = cat.line_number OR  lig.nlig_noligncm = cat.line_number)
-                  AND lig.nlig_refp = cat.parts_number
-                  WHERE (  CAST(cat.libelle_type as varchar(10))= 'Error'  or CAST(cat.libelle_type as varchar(10))= 'Back Order'  ) 
-                  AND cat.id_gcot_acknow_cat = (
-                                              SELECT MAX(sub.id_gcot_acknow_cat )
-                                              FROM gcot_acknow_cat AS sub
-                                              WHERE sub.parts_number = cat.parts_number
-                                                AND sub.numero_po = cat.numero_po
-                                                AND sub.line_number = cat.line_number
-                                          )
-      ";
-        $result = $this->connect->executeQuery($statement);
-        $data = $this->connect->fetchResults($result);
-        $resultat = $this->convertirEnUtf8($data);
-        return $resultat;
-    }
+
     public function bcCompletNonFacturer()
     {
         $statement = "  SELECT    DISTINCT

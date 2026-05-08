@@ -52,35 +52,6 @@ CASE WHEN A.NLIG_QTEALIV = A.NLIG_QTECDE AND (CASE WHEN nvl(A.NLIG_numcf,0) > 0 
                         trim('DISPO STOCK')
                       WHEN A.NLIG_QTELIV =  A.NLIG_QTECDE THEN
                          trim('LIVRE')
-                      WHEN A.NLIG_natcm = 'C' THEN
-                                ( SELECT libelle_type
-                                  FROM  gcot_acknow_cat
-                                  WHERE CAST( Numero_PO as varchar(10)) = CAST(A.NLIG_numcf  as varchar(10))
-                                  AND Parts_Number = A.NLIG_refp  
-                                  AND Parts_CST = A.NLIG_constp
-                                  AND Line_Number = A.NLIG_noligncm
-                         AND id_gcot_acknow_cat = ( SELECT MAX(id_gcot_acknow_cat)
-                                                             FROM gcot_acknow_cat
-                                                             WHERE CAST( Numero_PO as varchar(10)) = CAST(A.NLIG_numcf  as varchar(10))  
-                                                             AND Parts_Number = A.NLIG_refp  
-                                                             AND Parts_CST = A.NLIG_constp
-                                                             AND Line_Number = A.NLIG_noligncm )
-                 )
-                      WHEN A.NLIG_typcf = 'CIS' THEN
-                           ( SELECT libelle_type
-                                  FROM  gcot_acknow_cat
-                                  WHERE  CAST( Numero_PO as varchar(10)) = CAST(B.nlig_numcf  as varchar(10))
-                                  AND Parts_Number = B.NLIG_refp  
-                                  AND Parts_CST = B.NLIG_constp
-                                  AND (Line_Number = B.nlig_noligncm )
-                               AND id_gcot_acknow_cat = ( SELECT MAX(id_gcot_acknow_cat)
-                                                             FROM gcot_acknow_cat
-                                                             WHERE  CAST( Numero_PO as varchar(10)) = CAST(B.nlig_numcf  as varchar(10))
-                                                             AND Parts_Number = B.NLIG_refp  
-                                                             AND Parts_CST = B.NLIG_constp
-                                                             AND (Line_Number = B.nlig_noligncm ) )
-
-                        group by 1)
                    END as Statut,
 
 CASE WHEN A.NLIG_QTEALIV = A.NLIG_QTECDE AND (CASE WHEN nvl(A.NLIG_numcf,0) > 0 THEN (A.NLIG_QTECDE - A.NLIG_QTEALIV) ELSE 0 END) > 0 THEN
@@ -105,69 +76,7 @@ WHEN A.NLIG_QTELIV = A.NLIG_QTECDE THEN
                        FROM neg_llf
                             WHERE nllf_numcde = A.NLIG_numcde
                        AND nllf_nolign = A.NLIG_nolign)), '%Y-%m-%d')
-                 WHEN A.NLIG_natcm = 'C' THEN
-                    TO_CHAR((
-                                  ( SELECT date_creation
-                                    FROM  gcot_acknow_cat
-                                    WHERE CAST( Numero_PO as varchar(10)) = CAST(A.NLIG_numcf  as varchar(10))
-                                    AND Parts_Number = A.NLIG_refp  
-                                    AND Parts_CST = A.NLIG_constp
-                                    AND (Line_Number = A.NLIG_noligncm OR Line_Number = A.NLIG_nolign)
-                                    AND id_gcot_acknow_cat = ( SELECT MAX(id_gcot_acknow_cat)
-                                                               FROM gcot_acknow_cat
-                                                               WHERE CAST( Numero_PO as varchar(10)) = CAST(A.NLIG_numcf  as varchar(10))  
-                                                               AND Parts_Number = A.NLIG_refp  
-                                                               AND Parts_CST = A.NLIG_constp
-                                                               AND (Line_Number = A.NLIG_noligncm OR Line_Number = A.NLIG_nolign) )
-                             )
-                                 ),
-                                 '%Y-%m-%d')
-                    WHEN A.NLIG_typcf = 'CIS' THEN
-                      TO_CHAR((
-                                  ( SELECT date_creation
-                                    FROM  gcot_acknow_cat
-                                    WHERE  CAST( Numero_PO as varchar(10)) = CAST(B.nlig_numcf  as varchar(10))
-                                    AND Parts_Number = B.NLIG_refp  
-                                    AND Parts_CST = B.NLIG_constp
-                                    AND (Line_Number = B.nlig_noligncm )
-                                    AND id_gcot_acknow_cat = ( SELECT MAX(id_gcot_acknow_cat)
-                                                               FROM gcot_acknow_cat
-                                                               WHERE  CAST( Numero_PO as varchar(10)) = CAST(B.nlig_numcf  as varchar(10))
-                                                               AND Parts_Number = B.NLIG_refp  
-                                                               AND Parts_CST = B.NLIG_constp
-                                                               AND (Line_Number = B.nlig_noligncm ))
-                                    )
-                                 ), '%Y-%m-%d')
                  END AS dateStatut,
-
-CASE  WHEN A.NLIG_QTELIV <> A.NLIG_QTECDE and A.NLIG_typcf = 'C' THEN
-                    ( SELECT message FROM  gcot_acknow_cat
-                          WHERE CAST( Numero_PO as varchar(10)) = CAST(A.NLIG_numcf  as varchar(10))
-                          AND Parts_Number = A.NLIG_refp  
-                          AND Parts_CST = A.NLIG_constp
-                          AND (Line_Number = A.NLIG_noligncm OR Line_Number = A.NLIG_nolign)
-                 AND id_gcot_acknow_cat = ( SELECT MAX(id_gcot_acknow_cat)
-                                                      FROM gcot_acknow_cat
-                                                      WHERE CAST( Numero_PO as varchar(10)) = CAST(B.NLIG_NUMCF  as varchar(10))  
-                                                      AND Parts_Number = A.NLIG_refp  
-                                                      AND Parts_CST = A.NLIG_constp
-                                                      AND (Line_Number = A.NLIG_noligncm))
-         )
-                        WHEN A.NLIG_QTELIV <> A.NLIG_QTECDE and A.NLIG_typcf = 'CIS' THEN
-                                  ( SELECT message FROM  gcot_acknow_cat
-                                            WHERE  CAST( Numero_PO as varchar(10)) = CAST(B.nlig_numcf  as varchar(10))
-                                            AND Parts_Number = B.NLIG_refp  
-                                            AND Parts_CST = B.NLIG_constp
-                                            AND (Line_Number = B.nlig_noligncm )
-                                            AND id_gcot_acknow_cat = ( SELECT MAX(id_gcot_acknow_cat)
-                                                                         FROM gcot_acknow_cat
-                                                                         WHERE  CAST( Numero_PO as varchar(10)) = CAST(B.nlig_numcf  as varchar(10))
-                                                                         AND Parts_Number = B.NLIG_refp  
-                                                                         AND Parts_CST = B.NLIG_constp
-                                                                         AND (Line_Number = B.nlig_noligncm ) )
-
-                                  )
-                   END as Message,
 
    CASE  
                       WHEN B.nlig_natcm = 'C' THEN 'COMMANDE'
