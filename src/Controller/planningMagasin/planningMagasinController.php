@@ -70,18 +70,11 @@ class planningMagasinController extends Controller
         $tousLesBCSoumis = $this->allBCs();
         //recupère le condition clicsur la légende
         $condition = $request->query->get('condition', "1");
-        // dd($condition);
-        $back = $this->planningMagasinModel->backOrderplanningMagasin($criteria, $tousLesBCSoumis);
-
-        if (is_array($back)) {
-            $backString = TableauEnStringService::orEnString($back);
-        } else {
-            $backString = '';
-        }
 
 
-        $data = $this->planningMagasinModel->recuperationCommadeplanifier($criteria, $backString, $condition, $tousLesBCSoumis, $codeAgence);
-        $tabObjetPlanning = $this->creationTableauObjetPlanningMagasin($data, $back);
+
+        $data = $this->planningMagasinModel->recuperationCommadeplanifier($criteria, $condition, $tousLesBCSoumis, $codeAgence);
+        $tabObjetPlanning = $this->creationTableauObjetPlanningMagasin($data);
         $fusionResult = $this->ajoutMoiDetailMagasin($tabObjetPlanning);
         $forDisplay = $this->prepareDataForDisplay($fusionResult, $criteria->getMonths() == null ? 3 : $criteria->getMonths());
         return $this->render('planningMagasin/planning.html.twig', [
