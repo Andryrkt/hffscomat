@@ -65,49 +65,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
     document.getElementById("dataContent").style.display = "block";
   }
 
-  function fetchTechnicienInterv(numOr, numItv, signal) {
-    fetch(`${baseUrl}/api/technicien-intervenant/${numOr}/${numItv}`, {
-      signal,
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        return response.json();
-      })
-      .then((data) => {
-        const tableBody = document.getElementById("technicienTableBody");
-
-        tableBody.innerHTML = ""; // Clear previous data
-
-        if (data.length > 0) {
-          data.forEach((technicien) => {
-            let nomPrenom = technicien.matriculenomprenom.split("-")[1];
-            // Affichage
-            let row = `<tr>
-              <td>${technicien.matricule}</td> 
-              <td>${nomPrenom}</td> 
-          </tr>`;
-            tableBody.innerHTML += row;
-          });
-        } else {
-          // Si les données sont vides, afficher un message vide
-          tableBody.innerHTML =
-            '<tr><td colspan="5">Aucune donnée disponible.</td></tr>';
-        }
-      })
-      .catch((error) => {
-        if (error.name === "AbortError") {
-          console.log("Requête annulée !");
-        } else {
-          const tableBody = document.getElementById("technicienTableBody");
-          tableBody.innerHTML =
-            '<tr><td colspan="5">Could not retrieve data.</td></tr>';
-          console.error("There was a problem with the fetch operation:", error);
-        }
-      });
-  }
-
   function fetchDetailModal(id, signal) {
     // Fetch request to get the data
     fetch(`${baseUrl}/api/detail-plannigMagasin-modal/${id}`, { signal })
