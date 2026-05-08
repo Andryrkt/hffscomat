@@ -32,7 +32,7 @@ class VerificationPrixFactory
         } else {
             $dto->tacheValidateur = ['AUTOVALIDATION'];
         }
-        
+
         $dto->suffix = $devisNegModel->constructeurPieceMagasin($dto->numeroDevis);
         $dto->numeroVersion = VersionService::autoIncrement($devisNegModel->getNumeroVersion($dto->numeroDevis));
         $dto->userName = $userName;
@@ -46,7 +46,6 @@ class VerificationPrixFactory
      * Methode pour savoir si tous les constructeur du Devis 
      * est CAT ou non ou partielement
      *
-     * @param [type] $dto
      * @return string 'TOUS NEST PAS CAT' ou 'TOUT CAT'
      */
     private static function getContructeur($dto): string
@@ -59,7 +58,8 @@ class VerificationPrixFactory
     {
         $filePath = '';
         $destination = '';
-        $dossier = "\\\\192.168.0.15\\hff_pdf\\VALIDATION VENTE NEGOCE\\";   // dossier contenant les fichiers
+        // $dossier = "\\\\192.168.0.15\\hff_pdf\\VALIDATION VENTE NEGOCE\\";   // dossier contenant les fichiers
+        $dossier = "";   // dossier contenant les fichiers
         $dernierFichier = null;
         $derniereDate = 0;
 
