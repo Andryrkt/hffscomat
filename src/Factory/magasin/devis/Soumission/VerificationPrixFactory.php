@@ -59,7 +59,7 @@ class VerificationPrixFactory
         $filePath = '';
         $destination = '';
         // $dossier = "\\\\192.168.0.15\\hff_pdf\\VALIDATION VENTE NEGOCE\\";   // dossier contenant les fichiers
-        $dossier = "";   // dossier contenant les fichiers
+        $dossier = "/";   // dossier contenant les fichiers
         $dernierFichier = null;
         $derniereDate = 0;
 

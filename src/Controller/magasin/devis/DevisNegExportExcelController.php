@@ -71,9 +71,7 @@ class DevisNegExportExcelController extends Controller
 
         $listeDevisNegModel = new DevisNegModel();
         if (!$numDeviAExclure) {
-            $rawExclusions = $listeDevisNegModel->getNumeroDevisExclure();
-            $numDeviAExclure = TableauEnStringService::simpleNumeric(array_map('intval', $rawExclusions));
-            // Si la liste est vide, on met une valeur bidon pour éviter une erreur SQL
+   
             if (empty($numDeviAExclure)) $numDeviAExclure = "'0'";
             $session->set('devis_neg_exclure_cache', $numDeviAExclure);
         }
