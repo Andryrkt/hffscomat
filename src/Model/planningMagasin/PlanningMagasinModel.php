@@ -332,9 +332,8 @@ class PlanningMagasinModel extends Model
         TRIM(nent_codope) as value
         from agr_tab, neg_ent
             where nent_soc = 'CO'
-            and nent_servcrt in ('NEG','FLE','MAP')
+            -- and nent_servcrt in ('NEG','FLE','MAP')
             and atab_nom = 'OPE' and atab_code = nent_codope
-                        
         ";
         if ($codeAgence != "-0") {
             $statement .= " AND trim(nent_succ) = $codeAgence";
