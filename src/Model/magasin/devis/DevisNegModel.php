@@ -95,28 +95,28 @@ class DevisNegModel extends Model
             ) rl ON rl.num_dev = nent.nent_numcde
 
             WHERE nent.nent_natop    = 'DEV'
-                AND nent.nent_servcrt  <> 'ASS'
-                AND nent.nent_numcli   NOT BETWEEN 1990000 AND 1999999
-                AND nent.nent_numcli   <> 1990000
-                AND nent.nent_numcde   NOT IN (19407989,19407991,19408971,19410383,19409906,19409996)
+                --AND nent.nent_servcrt  <> 'ASS'
+                --AND nent.nent_numcli   NOT BETWEEN 1990000 AND 1999999
+                --AND nent.nent_numcli   <> 1990000
+                --AND nent.nent_numcde   NOT IN (19407989,19407991,19408971,19410383,19409906,19409996)
                 AND nent.nent_datecde  >= MDY(9, 1, 2025)
-                AND nent.nent_succ <> '60'
-                AND nent.nent_soc = '$codeSociete'
+                --AND nent.nent_succ <> '60'
+                --AND nent.nent_soc = '$codeSociete'
                 AND EXISTS (
                                 SELECT 1 FROM {$this->dbIps}:informix.neg_lig nl
                                 WHERE nl.nlig_numcde = nent.nent_numcde
-                                AND nl.nlig_constp IN ('AGR','ATC','AUS','CAT','CGM','CMX','DNL','DYN','GRO','HYS','JDR','KIT','MAN','MNT','OLY','OOM','PAR','PDV','PER','PUB','REM','SHM','TBI','THO')
+                                AND nl.nlig_constp IN ('ABX','ADM','AGX','AHA','ALG','AMA','APC','APS','ARD','ARN','ASA','ASL','AVR','AXI','BBG','BEL','BHA','BIT','BJF','BOD','BRA','BRG','CAE','CAG','CAN','CAR','CAS','CAT','CFT','CGM','CIF','CIT','CLI','COL','CRR','CSB','DDP','DED','DEL','DEV','DEZ','DIC','DIV','DND','DUC','EDE','EMS','ENG','ENT','ERG','ERI','EUL','EUR','EXX','FAL','FAS','FER','FGS','FGW','FIO','FLI','FLU','FOU','FOZ','GES','GKN','GLY','GRO','GRP','GUI','HAM','HES','HID','HIG','HOD','HYD','IHD','IND','INS','IVE','JAY','JOS','KEE','KIP','KIT','KME','KMH','KMP','KRA','KUB','KUH','KUT','KVE','LAS','LFP','LIL','LIP','LOC','LPI','LSA','LTS','MAC','MAN','MAT','MAV','MCF','MDA','MDI','MED','MEN','MFN','MGE','MHV','MIL','MIS','MIT','MON','MOS','MPD','MSX','MXP','NCI','NCW','NOR','NPH','NUM','NUS','Nmc','PAL','PCP','PEK','PEN','PES','PIU','POQ','PRA','PSA','PTH','QUI','REF','REL','REM','RIC','RKB','ROC','SAM','SAP','SCA','SEC','SED','SES','SHA','SHI','SIC','SIM','SIT','SKF','SOD','SPD','SRG','STA','STD','SUL','SUN','SWA','SXD','TEC','TIE','TIR','TIT','TRE','TRX','UNI','UPS','USS','VAD','VAN','VMT','VVT','WAL','WIF','YAD','ZCA','ZDL','ZDS','ZED','ZFS','ZLO','ZSS','ZST','ZZD','ZZP','ZZS','ZZZ')
                             )
                 ";
 
-            // Filtre par agences autorisées
-            if (!$multiSuccursale) {
-                if ($codeAgenceAutoriserString !== "''") {
-                    $statement .= " AND nent.nent_succ IN ($codeAgenceAutoriserString) ";
-                } else {
-                    $statement .= " AND nent.nent_succ = '$codeAgenceDefaut' ";
-                }
-            }
+            // ? Filtre par agences autorisées |  commenter pour scommat, en attente de vrai agnec eet service
+            // if (!$multiSuccursale) {
+            //     if ($codeAgenceAutoriserString !== "''") {
+            //         $statement .= " AND nent.nent_succ IN ($codeAgenceAutoriserString) ";
+            //     } else {
+            //         $statement .= " AND nent.nent_succ = '$codeAgenceDefaut' ";
+            //     }
+            // }
 
             // if (empty($criteria['statutDw']) && empty($criteria['statutBc']) && empty($criteria['filterRelance'])) {
             //     $statement .= " AND (dneg.statut_dw in ('A envoyer client', 'A soumettre') or  dneg.statut_dw is null) ";
@@ -391,13 +391,13 @@ WHERE nent.nent_natop    = 'DEV'
             $whereClauses[] = " TRIM(nent.nent_posl) = '" . $criteria['statutIps'] . "' ";
         }
 
-        // Filtre par agence émetteur
+        //Filtre par agence émetteur
         if (!empty($criteria['emetteur']['agence']) && method_exists($criteria['emetteur']['agence'], 'getCodeAgence')) {
             $agenceCode = $criteria['emetteur']['agence']->getCodeAgence();
             $whereClauses[] = " nent.nent_succ = '" . $agenceCode . "' ";
         }
 
-        // Filtre par service émetteur
+        //Filtre par service émetteur
         if (!empty($criteria['emetteur']['service']) && method_exists($criteria['emetteur']['service'], 'getCodeService')) {
             $serviceCode = $criteria['emetteur']['service']->getCodeService();
             $whereClauses[] = " nent.nent_servcrt = '" . $serviceCode . "' ";

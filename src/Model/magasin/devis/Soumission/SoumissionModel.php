@@ -15,7 +15,6 @@ class SoumissionModel extends Model
      * si 100% TOUT CAT sion TOUT N'EST PAS CAT
      *
      * @param string $numeroDevis
-     * @return void
      */
     public function getConstructeur(string $numeroDevis)
     {
