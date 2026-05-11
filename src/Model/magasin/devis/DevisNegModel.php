@@ -69,7 +69,7 @@ class DevisNegModel extends Model
                 ,TRIM(ausr.ausr_nom)                                        AS utilisateur_createur_devis
                 ,dneg.utilisateur                                           AS soumis_par
                 ,nent.nent_devise                                           AS devise
-                ,(SELECT MAX(nlig_constp) FROM {$this->dbIps}:informix.neg_lig WHERE nlig_numcde = nent.nent_numcde) AS constructeur
+                ,(SELECT MAX(nlig_constp) FROM {$this->dbIps}:informix.neg_lig WHERE nlig_numcde = nent.nent_numcde AND nlig_codg='ST') AS constructeur
 
             FROM {$this->dbIps}:informix.neg_ent nent
 
@@ -100,16 +100,17 @@ class DevisNegModel extends Model
                 --AND nent.nent_numcli   <> 1990000
                 --AND nent.nent_numcde   NOT IN (19407989,19407991,19408971,19410383,19409906,19409996)
                 AND nent.nent_datecde  >= MDY(9, 1, 2025)
-                --AND nent.nent_succ <> '60'
+                AND nent.nent_succ = '1'
                 --AND nent.nent_soc = '$codeSociete'
                 AND EXISTS (
                                 SELECT 1 FROM {$this->dbIps}:informix.neg_lig nl
                                 WHERE nl.nlig_numcde = nent.nent_numcde
-                                AND nl.nlig_constp IN ('ABX','ADM','AGX','AHA','ALG','AMA','APC','APS','ARD','ARN','ASA','ASL','AVR','AXI','BBG','BEL','BHA','BIT','BJF','BOD','BRA','BRG','CAE','CAG','CAN','CAR','CAS','CAT','CFT','CGM','CIF','CIT','CLI','COL','CRR','CSB','DDP','DED','DEL','DEV','DEZ','DIC','DIV','DND','DUC','EDE','EMS','ENG','ENT','ERG','ERI','EUL','EUR','EXX','FAL','FAS','FER','FGS','FGW','FIO','FLI','FLU','FOU','FOZ','GES','GKN','GLY','GRO','GRP','GUI','HAM','HES','HID','HIG','HOD','HYD','IHD','IND','INS','IVE','JAY','JOS','KEE','KIP','KIT','KME','KMH','KMP','KRA','KUB','KUH','KUT','KVE','LAS','LFP','LIL','LIP','LOC','LPI','LSA','LTS','MAC','MAN','MAT','MAV','MCF','MDA','MDI','MED','MEN','MFN','MGE','MHV','MIL','MIS','MIT','MON','MOS','MPD','MSX','MXP','NCI','NCW','NOR','NPH','NUM','NUS','Nmc','PAL','PCP','PEK','PEN','PES','PIU','POQ','PRA','PSA','PTH','QUI','REF','REL','REM','RIC','RKB','ROC','SAM','SAP','SCA','SEC','SED','SES','SHA','SHI','SIC','SIM','SIT','SKF','SOD','SPD','SRG','STA','STD','SUL','SUN','SWA','SXD','TEC','TIE','TIR','TIT','TRE','TRX','UNI','UPS','USS','VAD','VAN','VMT','VVT','WAL','WIF','YAD','ZCA','ZDL','ZDS','ZED','ZFS','ZLO','ZSS','ZST','ZZD','ZZP','ZZS','ZZZ')
+                                AND   nl.nlig_codg='ST'
+                                AND   nl.nlig_constp IN ('ABX','ADM','AGX','AHA','ALG','AMA','APC','APS','ARD','ARN','ASA','ASL','AVR','AXI','BBG','BEL','BHA','BIT','BJF','BOD','BRA','BRG','CAE','CAG','CAN','CAR','CAS','CAT','CFT','CGM','CIF','CIT','CLI','COL','CRR','CSB','DDP','DED','DEL','DEV','DEZ','DIC','DIV','DND','DUC','EDE','EMS','ENG','ENT','ERG','ERI','EUL','EUR','EXX','FAL','FAS','FER','FGS','FGW','FIO','FLI','FLU','FOU','FOZ','GES','GKN','GLY','GRO','GRP','GUI','HAM','HES','HID','HIG','HOD','HYD','IHD','IND','INS','IVE','JAY','JOS','KEE','KIP','KIT','KME','KMH','KMP','KRA','KUB','KUH','KUT','KVE','LAS','LFP','LIL','LIP','LOC','LPI','LSA','LTS','MAC','MAN','MAT','MAV','MCF','MDA','MDI','MED','MEN','MFN','MGE','MHV','MIL','MIS','MIT','MON','MOS','MPD','MSX','MXP','NCI','NCW','NOR','NPH','NUM','NUS','Nmc','PAL','PCP','PEK','PEN','PES','PIU','POQ','PRA','PSA','PTH','QUI','REF','REL','REM','RIC','RKB','ROC','SAM','SAP','SCA','SEC','SED','SES','SHA','SHI','SIC','SIM','SIT','SKF','SOD','SPD','SRG','STA','STD','SUL','SUN','SWA','SXD','TEC','TIE','TIR','TIT','TRE','TRX','UNI','UPS','USS','VAD','VAN','VMT','VVT','WAL','WIF','YAD','ZCA','ZDL','ZDS','ZED','ZFS','ZLO','ZSS','ZST','ZZD','ZZP','ZZS','ZZZ')
                             )
                 ";
 
-            // ? Filtre par agences autorisées |  commenter pour scommat, en attente de vrai agnec eet service
+            // ? Filtre par agences autorisées |  commenter pour scommat, en attente de vrai agnec et service
             // if (!$multiSuccursale) {
             //     if ($codeAgenceAutoriserString !== "''") {
             //         $statement .= " AND nent.nent_succ IN ($codeAgenceAutoriserString) ";
@@ -231,7 +232,7 @@ class DevisNegModel extends Model
     ,TRIM(ausr.ausr_nom)                                        AS utilisateur_createur_devis
     ,dneg.utilisateur                                           AS soumis_par
     ,nent.nent_devise                                           AS devise
-    ,(SELECT MAX(nlig_constp) FROM {$this->dbIps}:informix.neg_lig WHERE nlig_numcde = nent.nent_numcde) AS constructeur
+    ,(SELECT MAX(nlig_constp) FROM {$this->dbIps}:informix.neg_lig WHERE nlig_numcde = nent.nent_numcde AND nlig_codg='ST') AS constructeur
 
 FROM {$this->dbIps}:informix.neg_ent nent
 
@@ -259,17 +260,18 @@ LEFT JOIN (
 ) rl ON rl.numero_devis = nent.nent_numcde AND rl.code_societe = nent.nent_soc
 WHERE nent.nent_natop    = 'DEV'
     --AND nent.nent_soc      = 'CO'
-    AND nent.nent_servcrt  <> 'ASS'
-    AND nent.nent_numcli   NOT BETWEEN 1990000 AND 1999999
-    AND nent.nent_numcli   <> 1990000
-    AND nent.nent_numcde   NOT IN (19407989,19407991,19408971,19410383,19409906,19409996)
+    -- AND nent.nent_servcrt  <> 'ASS'
+    -- AND nent.nent_numcli   NOT BETWEEN 1990000 AND 1999999
+    -- AND nent.nent_numcli   <> 1990000
+    -- AND nent.nent_numcde   NOT IN (19407989,19407991,19408971,19410383,19409906,19409996)
     AND nent.nent_datecde  >= MDY(9, 1, 2025)
-    AND nent.nent_succ <> '60'
-    AND nent.nent_soc = '$codeSociete'
+    AND nent.nent_succ = '1'
+    -- AND nent.nent_soc = '$codeSociete'
     AND EXISTS (
                     SELECT 1 FROM {$this->dbIps}:informix.neg_lig nl
                     WHERE nl.nlig_numcde = nent.nent_numcde
-                    AND nl.nlig_constp IN ('AGR','ATC','AUS','CAT','CGM','CMX','DNL','DYN','GRO','HYS','JDR','KIT','MAN','MNT','OLY','OOM','PAR','PDV','PER','PUB','REM','SHM','TBI','THO')
+                    AND   nl.nlig_codg = 'ST'
+                    AND   nl.nlig_constp IN ('ABX','ADM','AGX','AHA','ALG','AMA','APC','APS','ARD','ARN','ASA','ASL','AVR','AXI','BBG','BEL','BHA','BIT','BJF','BOD','BRA','BRG','CAE','CAG','CAN','CAR','CAS','CAT','CFT','CGM','CIF','CIT','CLI','COL','CRR','CSB','DDP','DED','DEL','DEV','DEZ','DIC','DIV','DND','DUC','EDE','EMS','ENG','ENT','ERG','ERI','EUL','EUR','EXX','FAL','FAS','FER','FGS','FGW','FIO','FLI','FLU','FOU','FOZ','GES','GKN','GLY','GRO','GRP','GUI','HAM','HES','HID','HIG','HOD','HYD','IHD','IND','INS','IVE','JAY','JOS','KEE','KIP','KIT','KME','KMH','KMP','KRA','KUB','KUH','KUT','KVE','LAS','LFP','LIL','LIP','LOC','LPI','LSA','LTS','MAC','MAN','MAT','MAV','MCF','MDA','MDI','MED','MEN','MFN','MGE','MHV','MIL','MIS','MIT','MON','MOS','MPD','MSX','MXP','NCI','NCW','NOR','NPH','NUM','NUS','Nmc','PAL','PCP','PEK','PEN','PES','PIU','POQ','PRA','PSA','PTH','QUI','REF','REL','REM','RIC','RKB','ROC','SAM','SAP','SCA','SEC','SED','SES','SHA','SHI','SIC','SIM','SIT','SKF','SOD','SPD','SRG','STA','STD','SUL','SUN','SWA','SXD','TEC','TIE','TIR','TIT','TRE','TRX','UNI','UPS','USS','VAD','VAN','VMT','VVT','WAL','WIF','YAD','ZCA','ZDL','ZDS','ZED','ZFS','ZLO','ZSS','ZST','ZZD','ZZP','ZZS','ZZZ')
                 )
     ";
 
@@ -566,7 +568,7 @@ WHERE nent.nent_natop    = 'DEV'
         }
     }
 
-     /**
+    /**
      * Récupère le code et le libellé du client
      * 
      * cette méthode utilise la table neg_ent pour récupérer le code et le libellé du client
