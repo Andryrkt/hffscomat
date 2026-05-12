@@ -2,9 +2,11 @@
 
 namespace App\Mapper\Magasin\Devis\Pointage;
 
+use App\Entity\magasin\devis\PointageRelance;
+
 class PointageRelanceMapper
 {
-    public static function toArrayPointageRelance($pointageRelanceEntity)
+    public static function toArrayPointageRelance(PointageRelance $pointageRelanceEntity): array
     {
         return [
             'numero_devis' => $pointageRelanceEntity->getNumeroDevis(),
@@ -19,7 +21,7 @@ class PointageRelanceMapper
         ];
     }
 
-    public static function toArrayUpdatePointageRelance()
+    public static function toArrayUpdatePointageRelance(PointageRelance $pointageRelanceEntity): array
     {
         return [
             'statut_relance' => 'Relancé',
