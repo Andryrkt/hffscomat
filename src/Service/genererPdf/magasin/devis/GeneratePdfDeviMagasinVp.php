@@ -2,16 +2,16 @@
 
 namespace App\Service\genererPdf\magasin\devis;
 
-use App\Service\genererPdf\HeaderPdf;
-use App\Entity\admin\utilisateur\User;
+use App\Dto\Magasin\Devis\Soumission\SoumissionDto;
 use App\Service\genererPdf\GeneratePdf;
+use App\Service\genererPdf\HeaderPdf;
 use App\Service\TableauEnStringService;
 
 class GeneratePdfDeviMagasinVp extends GeneratePdf
 {
     /**
      * copie la page de garde fusionner du devis magasin dans docuware
-     *
+     * pour verification prix
      * @param string $fileName
      * @param string $numeroDevis
      * @return void
@@ -23,7 +23,7 @@ class GeneratePdfDeviMagasinVp extends GeneratePdf
         $this->copyFile($cheminDestinationLocal, $cheminFichierDistant);
     }
 
-    public function genererPdf($dto, string $filePath)
+    public function genererPdf(SoumissionDto $dto, string $filePath)
     {
         $pdf = new HeaderPdf(null);
         // $font1 = "pdfatimesbi";
@@ -40,6 +40,8 @@ class GeneratePdfDeviMagasinVp extends GeneratePdf
         $pdf->SetFont($font2, 'B', 12);
         $pdf->Cell(63, 10, 'Opération à faire sur le devis : ', 0, 0, 'L');
         $pdf->SetFont($font2, '', 10);
+        $y = $pdf->GetY();
+        $pdf->setAbsY($y + 3);
         $pdf->MultiCell(0, 10, TableauEnStringService::orEnString($dto->tacheValidateur), 0, 'L');
 
         $pdf->Ln(5, true);

@@ -124,7 +124,7 @@ class ListeDevisNegController extends Controller
 
         $urlGenerator = function ($dto) {
             $dto->pointagedevis = in_array($dto->statutDw, [DevisMagasin::STATUT_PRIX_VALIDER_TANA, DevisMagasin::STATUT_PRIX_MODIFIER_TANA, DevisMagasin::STATUT_VALIDE_AGENCE]);
-            $dto->relanceClient = ($dto->statutDw === DevisMagasin::STATUT_ENVOYER_CLIENT && $dto->statutBc === BcMagasin::STATUT_EN_ATTENTE_BC);
+            $dto->relanceClient =true;
 
             return [];
         };
