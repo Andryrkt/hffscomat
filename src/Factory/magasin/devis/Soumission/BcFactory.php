@@ -4,6 +4,7 @@ namespace App\Factory\magasin\devis\Soumission;
 
 use App\Constants\Magasin\Devis\StatutBcNegConstant;
 use App\Dto\Magasin\Devis\Soumission\BcDto;
+use App\Dto\Magasin\Devis\Soumission\BcLigneDto;
 use App\Model\magasin\devis\Soumission\BcModel;
 use App\Model\magasin\devis\Soumission\SoumissionModel;
 use App\Service\autres\VersionService;
@@ -15,7 +16,24 @@ class BcFactory
         $bcDto = new BcDto();
         $bcDto->numeroDevis = $numeroDevis;
         $bcDto->codeSociete = $codeSociete;
+        if ($numeroDevis) {
+            $bcModel = new BcModel();
+            $infoDevis = $bcModel->getInformaitonDevisMagasin($numeroDevis);
 
+            foreach ($infoDevis as $ligneData) {
+                $ligneDto = new BcLigneDto();
+                $ligneDto->numeroLigne = $ligneData['numero_ligne'];
+                $ligneDto->constructeur = $ligneData['constructeur'];
+                $ligneDto->ref = $ligneData['ref'];
+                $ligneDto->designation = $ligneData['designation'];
+                $ligneDto->qte = $ligneData['qte'];
+                $ligneDto->prixHt = $ligneData['prix_ht'];
+                $ligneDto->montantNet = $ligneData['montant_net'];
+                $ligneDto->remise1 = $ligneData['remise1'];
+                $ligneDto->remise2 = $ligneData['remise2'];
+                $bcDto->lignes[] = $ligneDto;
+            }
+        }
 
         return $bcDto;
     }
