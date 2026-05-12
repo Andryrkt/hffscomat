@@ -3,10 +3,13 @@
 namespace App\Controller\magasin\devis\Soumission;
 
 use App\Controller\Controller;
+use App\Controller\Traits\PdfConversionTrait;
 use App\Factory\magasin\devis\Soumission\ValidationDevisFactory;
 use App\Form\magasin\devis\Soumission\ValidationDevisType;
 use App\Model\magasin\devis\Soumission\SoumissionModel;
+use App\Service\fichier\TraitementDeFichier;
 use App\Service\fichier\UploderFileService;
+use App\Service\genererPdf\magasin\devis\GeneratePdfDeviMagasinVp;
 use App\Service\historiqueOperation\HistoriqueOperationDevisMagasinService;
 use App\Service\magasin\devis\Fichier\DevisMagasinGenererNameFileService;
 use App\Service\magasin\devis\Validation\ValidationSoumissionValidationDevis;
@@ -20,11 +23,14 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class DevisNegValidationDevisController extends Controller
 {
+    use PdfConversionTrait;
+
     private HistoriqueOperationDevisMagasinService $historiqueOperationDeviMagasinService;
     private string $cheminBaseUpload;
     private string $cheminCourtUpload;
     private DevisMagasinGenererNameFileService $nameGenerator;
     private UploderFileService $uploader;
+    private TraitementDeFichier $traitementDeFichier;
 
     public function __construct()
     {
@@ -35,6 +41,7 @@ class DevisNegValidationDevisController extends Controller
         $this->cheminCourtUpload = $_ENV['BASE_PATH_FICHIER_COURT'] . '/magasin/devis/';
         $this->nameGenerator = new DevisMagasinGenererNameFileService();
         $this->uploader = new UploderFileService($this->cheminBaseUpload, $this->nameGenerator);
+        $this->traitementDeFichier = new TraitementDeFichier();
     }
 
     /**
@@ -85,10 +92,18 @@ class DevisNegValidationDevisController extends Controller
             [$nomEtCheminFichiersEnregistrer, $nomAvecCheminFichier, $nomFichier] = $this->enregistrementFichier($form, $dto->numeroDevis, $dto->numeroVersion, $dto->suffix, explode('@', $dto->userMail)[0], $dto->remoteUrlCourt);
 
 
+            /** @var array $nomEtCheminFichierConvertie fusions des fichiers */
+            $nomEtCheminFichierConvertie = $this->ConvertirLesPdf($nomEtCheminFichiersEnregistrer);
+            $this->traitementDeFichier->fusionFichers($nomEtCheminFichierConvertie, $nomAvecCheminFichier);
+
             // Enregistrement de la soumission en base de données
             $soumissionModel = new SoumissionModel();
             $soumissionModel->enregistrerSoumissionValidationDevis($dto, $nomFichier);
 
+
+            // copier des fichiers uploder dans DOCUWARE
+            $generatePdfDevisMagasin = new GeneratePdfDeviMagasinVp();
+            $generatePdfDevisMagasin->copyToDWDevisMagasin($nomFichier, $dto->numeroDevis);
 
             //HISTORISATION DE L'OPERATION
             $message = "la validation du devis numero : " . $dto->numeroDevis . " a été envoyée avec succès .";
