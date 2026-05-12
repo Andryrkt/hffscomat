@@ -61,7 +61,7 @@ class RelanceApi extends Controller
     }
 
     /**
-     * @Route("/api/stop-relance/{numeroDevis}", name="devis_magasin_stop_relance", methods={"GET", "POST"})
+     * @Route("/api/stop-relance/{numeroDevis}", name="api_devis_magasin_stop_relance", methods={"GET", "POST"})
      */
     public function stopRelance(Request $request, string $numeroDevis)
     {
