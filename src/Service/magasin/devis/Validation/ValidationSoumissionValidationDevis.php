@@ -12,7 +12,7 @@ class ValidationSoumissionValidationDevis
     use ValidatorNotificationTrait;
 
     private const FILE_FIELD_NAME = 'pieceJoint01';
-    private const FILENAME_PATTERN = '/^(DEVIS MAGASIN|CONTROLE DEVIS)_(\d+)_(\d+)_(\d+)\\.pdf$/';
+    private const FILENAME_PATTERN = '/^(QUOTATION)_(\d+)_(\d+)_(\d+)\\.pdf$/';
 
     public function validateSoumissionValidationDevisAvantAffichageFormulaire($numeroDevis, $codeSociete): bool
     {
