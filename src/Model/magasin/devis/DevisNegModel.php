@@ -106,8 +106,7 @@ class DevisNegModel extends Model
                                 SELECT 1 FROM {$this->dbIps}:informix.neg_lig nl
                                 WHERE nl.nlig_numcde = nent.nent_numcde
                                 AND   nl.nlig_codg='ST'
-                                AND   nl.nlig_constp IN ('ABX','ADM','AGX','AHA','ALG','AMA','APC','APS','ARD','ARN','ASA','ASL','AVR','AXI','BBG','BEL','BHA','BIT','BJF','BOD','BRA','BRG','CAE','CAG','CAN','CAR','CAS','CAT','CFT','CGM','CIF','CIT','CLI','COL','CRR','CSB','DDP','DED','DEL','DEV','DEZ','DIC','DIV','DND','DUC','EDE','EMS','ENG','ENT','ERG','ERI','EUL','EUR','EXX','FAL','FAS','FER','FGS','FGW','FIO','FLI','FLU','FOU','FOZ','GES','GKN','GLY','GRO','GRP','GUI','HAM','HES','HID','HIG','HOD','HYD','IHD','IND','INS','IVE','JAY','JOS','KEE','KIP','KIT','KME','KMH','KMP','KRA','KUB','KUH','KUT','KVE','LAS','LFP','LIL','LIP','LOC','LPI','LSA','LTS','MAC','MAN','MAT','MAV','MCF','MDA','MDI','MED','MEN','MFN','MGE','MHV','MIL','MIS','MIT','MON','MOS','MPD','MSX','MXP','NCI','NCW','NOR','NPH','NUM','NUS','Nmc','PAL','PCP','PEK','PEN','PES','PIU','POQ','PRA','PSA','PTH','QUI','REF','REL','REM','RIC','RKB','ROC','SAM','SAP','SCA','SEC','SED','SES','SHA','SHI','SIC','SIM','SIT','SKF','SOD','SPD','SRG','STA','STD','SUL','SUN','SWA','SXD','TEC','TIE','TIR','TIT','TRE','TRX','UNI','UPS','USS','VAD','VAN','VMT','VVT','WAL','WIF','YAD','ZCA','ZDL','ZDS','ZED','ZFS','ZLO','ZSS','ZST','ZZD','ZZP','ZZS','ZZZ')
-                            )
+                                                 )
                 ";
 
             // ? Filtre par agences autorisées |  commenter pour scommat, en attente de vrai agnec et service
@@ -271,7 +270,6 @@ WHERE nent.nent_natop    = 'DEV'
                     SELECT 1 FROM {$this->dbIps}:informix.neg_lig nl
                     WHERE nl.nlig_numcde = nent.nent_numcde
                     AND   nl.nlig_codg = 'ST'
-                    AND   nl.nlig_constp IN ('ABX','ADM','AGX','AHA','ALG','AMA','APC','APS','ARD','ARN','ASA','ASL','AVR','AXI','BBG','BEL','BHA','BIT','BJF','BOD','BRA','BRG','CAE','CAG','CAN','CAR','CAS','CAT','CFT','CGM','CIF','CIT','CLI','COL','CRR','CSB','DDP','DED','DEL','DEV','DEZ','DIC','DIV','DND','DUC','EDE','EMS','ENG','ENT','ERG','ERI','EUL','EUR','EXX','FAL','FAS','FER','FGS','FGW','FIO','FLI','FLU','FOU','FOZ','GES','GKN','GLY','GRO','GRP','GUI','HAM','HES','HID','HIG','HOD','HYD','IHD','IND','INS','IVE','JAY','JOS','KEE','KIP','KIT','KME','KMH','KMP','KRA','KUB','KUH','KUT','KVE','LAS','LFP','LIL','LIP','LOC','LPI','LSA','LTS','MAC','MAN','MAT','MAV','MCF','MDA','MDI','MED','MEN','MFN','MGE','MHV','MIL','MIS','MIT','MON','MOS','MPD','MSX','MXP','NCI','NCW','NOR','NPH','NUM','NUS','Nmc','PAL','PCP','PEK','PEN','PES','PIU','POQ','PRA','PSA','PTH','QUI','REF','REL','REM','RIC','RKB','ROC','SAM','SAP','SCA','SEC','SED','SES','SHA','SHI','SIC','SIM','SIT','SKF','SOD','SPD','SRG','STA','STD','SUL','SUN','SWA','SXD','TEC','TIE','TIR','TIT','TRE','TRX','UNI','UPS','USS','VAD','VAN','VMT','VVT','WAL','WIF','YAD','ZCA','ZDL','ZDS','ZED','ZFS','ZLO','ZSS','ZST','ZZD','ZZP','ZZS','ZZZ')
                 )
     ";
 
