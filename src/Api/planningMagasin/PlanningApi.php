@@ -39,7 +39,9 @@ class PlanningApi extends Controller
      */
     public function nomCommercial(string $codeAgence)
     {
-        $commercial = $this->planningMagasinModel->recupCommercial($codeAgence);
+        $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
+
+        $commercial = $this->planningMagasinModel->recupCommercial($codeAgence, $codeSociete);
 
         header("Content-type:application/json");
 

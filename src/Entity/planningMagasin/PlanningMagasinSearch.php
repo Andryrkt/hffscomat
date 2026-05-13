@@ -31,6 +31,7 @@ class PlanningMagasinSearch
     private $commercial;
     private $refCde;
     private $numeroDevis;
+    private string $codeSociete;
 
     public function getNiveauUrgence()
     {
@@ -488,7 +489,8 @@ class PlanningMagasinSearch
             'orBackOrder' => $this->orBackOrder,
             'orNonValiderDw' => $this->orNonValiderDw,
             'commercial' => $this->commercial,
-            'refClient' => $this->refCde
+            'refClient' => $this->refCde,
+            'codeSociete' => $this->codeSociete
         ];
     }
 
@@ -545,6 +547,24 @@ class PlanningMagasinSearch
     public function setNumeroDevis($numeroDevis): self
     {
         $this->numeroDevis = $numeroDevis;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of codeSociete
+     */
+    public function getCodeSociete(): string
+    {
+        return $this->codeSociete;
+    }
+
+    /**
+     * Set the value of codeSociete
+     */
+    public function setCodeSociete(string $codeSociete): self
+    {
+        $this->codeSociete = $codeSociete;
 
         return $this;
     }

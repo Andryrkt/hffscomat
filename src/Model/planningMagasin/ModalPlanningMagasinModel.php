@@ -96,7 +96,7 @@ LEFT JOIN NEG_LIG B ON (A.nlig_soc = b.nlig_soc and A.nlig_numcf = B.nlig_numcde
 WHERE A.NLIG_NATOP in ('DIR')
 --AND A.NLIG_SUCC in ('01','20','30','40','50','60')
 --AND A.NLIG_QTEFAC = 0
-AND A.NLIG_constp  not in ('ZDI','Nmc')
+--AND A.NLIG_constp  not in ('ZDI','Nmc')
                 $numOr
    GROUP BY 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,dateStatut,Statut_ctrmq_cis,numerocdecis
 ORDER BY 6,2, A.NLIG_NOLIGN
@@ -111,7 +111,8 @@ ORDER BY 6,2, A.NLIG_NOLIGN
   // recupCIS
   public function recupOrcis($numOritv)
   {
-    $statement = "SELECT  decode(nent_succ,'1','','60','','80','','CIS') as succ
+    $sucNeg = $_ENV['SUC_NEG'];
+    $statement = "SELECT  decode(nent_succ,$sucNeg,'','CIS') as succ
                  from NEG_ENT, NEG_LIG 
                 where  nent_succ =nlig_succ
                 and nent_numcde = nlig_numcde
@@ -259,13 +260,13 @@ ORDER BY 6,2, A.NLIG_NOLIGN
     return $this->convertirEnUtf8($data);
   }
 
-  public function recupClientPlanningMagasin()
+  public function recupClientPlanningMagasin(string $codeSociete)
   {
     $statement = "SELECT 
                         nent_numcli as numclient,
                         trim(cbse_nomcli) as nom_client
                         from neg_ent, neg_lig, agr_succ, agr_tab ser, agr_usr ope, cli_bse, cli_soc
-                        where nent_soc = 'CO'
+                        where nent_soc = '$codeSociete'
                         and nlig_soc = nent_soc and nlig_numcde = nent_numcde
                         and asuc_numsoc = nent_soc and asuc_num = nent_succ
                         and csoc_soc = nent_soc and csoc_numcli = cbse_numcli and cbse_numcli = nent_numcli

@@ -9,6 +9,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class ModalPlanningApi extends Controller
 {
     private ModalPlanningMagasinModel $planningMagasinModel;
+    
 
     public function __construct()
     {
@@ -118,7 +119,8 @@ class ModalPlanningApi extends Controller
      */
     public function client()
     {
-        $client = $this->planningMagasinModel->recupClientPlanningMagasin();
+        $codeSociette = $this->getSecurityService()->getCodeSocieteUser();
+        $client = $this->planningMagasinModel->recupClientPlanningMagasin($codeSociette);
         header("Content-type:application/json");
         echo json_encode($client);
     }

@@ -12,6 +12,7 @@ class DevisNegModel extends Model
     {
         $this->connect->connect();
         $skip = ($page - 1) * $limit;
+        $sucNeg = $_ENV['SUC_NEG'];
 
         try {
 
@@ -100,8 +101,8 @@ class DevisNegModel extends Model
                 --AND nent.nent_numcli   <> 1990000
                 --AND nent.nent_numcde   NOT IN (19407989,19407991,19408971,19410383,19409906,19409996)
                 AND nent.nent_datecde  >= MDY(9, 1, 2025)
-                AND nent.nent_succ = '1'
-                --AND nent.nent_soc = '$codeSociete'
+                AND nent.nent_succ = '$sucNeg'
+                AND nent.nent_soc = '$codeSociete'
                 AND EXISTS (
                                 SELECT 1 FROM {$this->dbIps}:informix.neg_lig nl
                                 WHERE nl.nlig_numcde = nent.nent_numcde
@@ -162,6 +163,7 @@ class DevisNegModel extends Model
     public function getDevisNegExportExcel($criteria, $codeAgenceAutoriserString, $numDeviAExclure, $codeSociete)
     {
         $this->connect->connect();
+        $sucNeg = $_ENV['SUC_NEG'];
 
         try {
 
@@ -258,14 +260,13 @@ LEFT JOIN (
     GROUP BY 1,2
 ) rl ON rl.numero_devis = nent.nent_numcde AND rl.code_societe = nent.nent_soc
 WHERE nent.nent_natop    = 'DEV'
-    --AND nent.nent_soc      = 'CO'
     -- AND nent.nent_servcrt  <> 'ASS'
     -- AND nent.nent_numcli   NOT BETWEEN 1990000 AND 1999999
     -- AND nent.nent_numcli   <> 1990000
     -- AND nent.nent_numcde   NOT IN (19407989,19407991,19408971,19410383,19409906,19409996)
     AND nent.nent_datecde  >= MDY(9, 1, 2025)
-    AND nent.nent_succ = '1'
-    -- AND nent.nent_soc = '$codeSociete'
+    AND nent.nent_succ = '$sucNeg'
+    AND nent.nent_soc = '$codeSociete'
     AND EXISTS (
                     SELECT 1 FROM {$this->dbIps}:informix.neg_lig nl
                     WHERE nl.nlig_numcde = nent.nent_numcde

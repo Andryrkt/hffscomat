@@ -24,7 +24,7 @@ class ValidationDevisFactory
     {
         $devisNegModel = new SoumissionModel();
 
-        $dto->suffix = $devisNegModel->constructeurPieceMagasin($dto->numeroDevis);
+        $dto->suffix = $devisNegModel->constructeurPieceMagasin($dto->numeroDevis, $dto->codeSociete);
         $dto->numeroVersion = VersionService::autoIncrement($devisNegModel->getNumeroVersion($dto->numeroDevis));
         $dto->userName = $userName;
         $dto->userMail = $userMail;

@@ -36,6 +36,8 @@ class planningMagasinController extends Controller
      */
     public function headPlanning(Request $request)
     {
+        $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
+
         // Vérifier la permission de voir tous les données
         $multisuccursale = $this->getSecurityService()->verifierPermission(SecurityService::PERMISSION_MULTI_SUCCURSALE);
 
@@ -50,6 +52,7 @@ class planningMagasinController extends Controller
             ->setTypeLigne('TOUETS')
             ->setMonths(3)
             ->setAgence($codeAgence)
+            ->setCodeSociete($codeSociete)
         ;
 
         $form = $this->getFormFactory()->createBuilder(
@@ -73,7 +76,7 @@ class planningMagasinController extends Controller
 
 
 
-        $data = $this->planningMagasinModel->recuperationCommadeplanifier($criteria, $condition, $tousLesBCSoumis, $codeAgence);
+        $data = $this->planningMagasinModel->recuperationCommadeplanifier($criteria, $condition, $tousLesBCSoumis, $codeAgence, $codeSociete);
         $tabObjetPlanning = $this->creationTableauObjetPlanningMagasin($data);
         $fusionResult = $this->ajoutMoiDetailMagasin($tabObjetPlanning);
         $forDisplay = $this->prepareDataForDisplay($fusionResult, $criteria->getMonths() == null ? 3 : $criteria->getMonths());
