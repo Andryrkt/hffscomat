@@ -9,7 +9,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class ModalPlanningApi extends Controller
 {
     private ModalPlanningMagasinModel $planningMagasinModel;
-    
+
 
     public function __construct()
     {
@@ -45,7 +45,7 @@ class ModalPlanningApi extends Controller
                     if (!empty($details[$i]['numerocmd']) && $details[$i]['numerocmd'] !== "0") {
                         $recupPariel[] = $this->planningMagasinModel->recupPartiel($details[$i]['numerocmd'], $details[$i]['ref']);
                         $detailes[] = $this->planningMagasinModel->recuperationEtaMag($details[$i]['numerocdecis']);
-                    } 
+                    }
                 }
 
                 if (!empty($detailes[0])) {

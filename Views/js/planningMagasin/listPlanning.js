@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
       event.preventDefault();
       window.open(
         `${baseUrl}/atelier/demande-intervention/dw-intervention-atelier-avec-dit/${numDit}`,
-        "_blank"
+        "_blank",
       );
     };
 
@@ -80,11 +80,11 @@ document.addEventListener("DOMContentLoaded", (event) => {
         const planningTableHead = document.getElementById("planningTableHead");
         const tableBodyOR = document.getElementById("commandesTableBodyOR");
         const planningTableHeadOR = document.getElementById(
-          "planningTableHeadOR"
+          "planningTableHeadOR",
         );
         const tableBodyLign = document.getElementById("commandesTableBodyLign");
         const planningTableHeadLign = document.getElementById(
-          "planningTableHeadLign"
+          "planningTableHeadLign",
         );
         tableBody.innerHTML = ""; // Clear previous data
         tableBodyOR.innerHTML = "";
@@ -116,6 +116,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
                             <th>Statut</th>
                             <th>Date Statut</th>
                             <th>Eta maurice</th>
+                            <th>Eta magasin</th>
                             `;
             planningTableHead.innerHTML += rowHeader;
             planningTableHeadOR.innerHTML += rowHeader;
@@ -135,6 +136,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
                             <th>Statut</th>
                             <th>Date Statut</th>
                             <th>Eta maurice</th>
+                            <th>Eta magasin</th>
 
                           `;
             planningTableHead.innerHTML += rowHeader;
@@ -143,11 +145,11 @@ document.addEventListener("DOMContentLoaded", (event) => {
             Ornum.innerHTML = `${detail.numor} | intitulé : ${detail.commentaire} | `;
             if (detail.plan == "PLANIFIE") {
               Ornum.innerHTML += `délai client  : ${formaterDate(
-                detail.dateplanning
+                detail.dateplanning,
               )}`;
             } else {
               Ornum.innerHTML += `date début : ${formaterDate(
-                detail.dateplanning
+                detail.dateplanning,
               )}`;
             }
             // Formater la date
@@ -160,6 +162,8 @@ document.addEventListener("DOMContentLoaded", (event) => {
             let statut;
             let cmdColorRmq = "";
             let numRef;
+            let dateEtaPays;
+            let dateEtaMagasin;
             if (
               formaterDate(detail.datestatut) == "01/01/1970" ||
               formaterDate(detail.datestatut) == "01/01/1900" ||
@@ -169,6 +173,25 @@ document.addEventListener("DOMContentLoaded", (event) => {
             } else {
               dateStatut = formaterDate(detail.datestatut);
             }
+            // Formater les dates ETA pays
+            if (
+              detail.Eta_pays == "" ||
+              formaterDate(detail.Eta_pays) === "01/01/1900"
+            ) {
+              dateEtaPays = "";
+            } else {
+              dateEtaPays = formaterDate(detail.Eta_pays);
+            }
+            // formater les dates ETA magasin
+            if (
+              detail.Eta_magasin == "" ||
+              formaterDate(detail.Eta_magasin) === "01/01/1900"
+            ) {
+              dateEtaMagasin = "";
+            } else {
+              dateEtaMagasin = formaterDate(detail.Eta_magasin);
+            }
+
             if (detail.numerocmd == null) {
               numCde = "";
             } else {
@@ -271,7 +294,8 @@ document.addEventListener("DOMContentLoaded", (event) => {
                         <td>${parseInt(detail.qteliv) === 0 ? "" : parseInt(detail.qteliv)}</td> 
                         <td  >${statut} </td> 
                         <td>${dateStatut}</td> 
-                        <td>'-'</td> 
+                        <td>${dateEtaPays}</td> 
+                        <td>${dateEtaMagasin}</td> 
                     </tr>`;
               // tableBody.innerHTML += row;
               tableBodyOR.innerHTML += row;
@@ -315,7 +339,8 @@ document.addEventListener("DOMContentLoaded", (event) => {
                         }</td> 
                         <td >${statutCIS === null ? "" : statutCIS}</td> 
                         <td>${dateStatutCIS}</td> 
-                        <td>'-'</td> 
+                        <td>${dateEtaPays}</td> 
+                        <td>${dateEtaMagasin}</td> 
                     </tr>`;
                 tableBodyLign.innerHTML += row1;
               }
@@ -335,7 +360,8 @@ document.addEventListener("DOMContentLoaded", (event) => {
                       <td>${parseInt(detail.qteliv) === 0 ? "" : parseInt(detail.qteliv)}</td> 
                       <td >${statut}</td> 
                       <td>${dateStatut}</td>
-                      <td>'-'</td>
+                      <td>${dateEtaPays}</td>
+                      <td>${dateEtaMagasin}</td>
                   </tr>`;
               tableBody.innerHTML += row;
             }

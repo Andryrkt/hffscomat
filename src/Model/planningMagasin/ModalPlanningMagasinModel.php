@@ -291,16 +291,15 @@ ORDER BY 6,2, A.NLIG_NOLIGN
   public function recuperationEtaMag($numeroContremarque)
   {
 
-    $squery = " SELECT etat_pays, eta_magasin
-            FROM Ces_magasin
+    $statement = " SELECT etat_pays, eta_magasin
+            FROM {$this->dbIrium}:informix.Ces_magasin
         WHERE po_number = '$numeroContremarque'
         ";
 
-        $result = $this->connect->executeQuery($statement);
+    $result = $this->connect->executeQuery($statement);
 
-        $data = $this->connect->fetchResults($result);
+    $data = $this->connect->fetchResults($result);
 
-        return $this->convertirEnUtf8($data);
+    return $this->convertirEnUtf8($data);
   }
-
 }
