@@ -2,18 +2,22 @@
 
 namespace App\Service;
 
-use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
+use PHPMailer\PHPMailer\PHPMailer;
+use Twig\Environment;
+use Psr\Log\LoggerInterface;
 
 class EmailService
 {
-    private $mailer;
-    private $twig;
-    private $twigMailer;
+    private PHPMailer $mailer;
+    private Environment $twig;
+    private TwigMailerService $twigMailer;
+    private LoggerInterface $logger;
 
-    public function __construct($twig)
+    public function __construct(Environment $twig, LoggerInterface $logger)
     {
         $this->twig = $twig;
+        $this->logger = $logger;
 
         $this->mailer = new PHPMailer(true);
 
@@ -37,7 +41,7 @@ class EmailService
         $this->twigMailer = new TwigMailerService($this->mailer, $this->twig);
     }
 
-    public function setFrom($fromEmail, $fromName)
+    public function setFrom(string $fromEmail, string $fromName)
     {
 
         if (filter_var($fromEmail, FILTER_VALIDATE_EMAIL)) {
@@ -47,7 +51,7 @@ class EmailService
         }
     }
 
-    public function sendEmail($to, $cc, $template, $variables = [], $attachments = [])
+    public function sendEmail(string $to, ?array $cc, string $template, array $variables = [], array $attachments = [])
     {
         try {
             // Créer le contenu de l'email via le template
@@ -88,9 +92,20 @@ class EmailService
             // Envoyer l'e-mail
             $this->twigMailer->send();
 
+            $this->logger->info("Email envoyé avec succès à : {to}", [
+                'to' => $to,
+                'template' => $template,
+                'cc' => $cc
+            ]);
+
             return true;
         } catch (\Exception $e) {
             // Gérer l'erreur
+            $this->logger->error("Échec de l'envoi de l'email à : {to}. Erreur : {error}", [
+                'to' => $to,
+                'template' => $template,
+                'error' => $e->getMessage()
+            ]);
             //dd('erreur: ' . $e->getMessage());
             return false;
         }
@@ -110,7 +125,7 @@ class EmailService
      *
      * @return  self
      */
-    public function setMailer($mailer)
+    public function setMailer(PHPMailer $mailer)
     {
         $this->mailer = $mailer;
 

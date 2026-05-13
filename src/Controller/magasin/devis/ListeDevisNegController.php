@@ -6,7 +6,6 @@ use App\Constants\admin\ApplicationConstant;
 use App\Constants\Magasin\Devis\TypeSoumissionConstant;
 use App\Controller\Controller;
 use App\Dto\Magasin\Devis\DevisSearchDto;
-use App\Entity\magasin\bc\BcMagasin;
 use App\Entity\magasin\devis\DevisMagasin;
 use App\Form\magasin\devis\DevisNegSearchType;
 use App\Mapper\Magasin\Devis\DevisNegMapper;
@@ -87,7 +86,7 @@ class ListeDevisNegController extends Controller
         }
     }
 
-    private function creationEtTraitementformulaireDeRecherche($request): array
+    private function creationEtTraitementformulaireDeRecherche(Request $request): array
     {
         $form = $this->getFormFactory()->createBuilder(DevisNegSearchType::class, null, [
             'em' => $this->getEntityManager(),
@@ -124,7 +123,7 @@ class ListeDevisNegController extends Controller
 
         $urlGenerator = function ($dto) {
             $dto->pointagedevis = in_array($dto->statutDw, [DevisMagasin::STATUT_PRIX_VALIDER_TANA, DevisMagasin::STATUT_PRIX_MODIFIER_TANA, DevisMagasin::STATUT_VALIDE_AGENCE]);
-            $dto->relanceClient =true;
+            $dto->relanceClient = true;
 
             return [];
         };

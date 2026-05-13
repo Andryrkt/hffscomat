@@ -21,6 +21,7 @@ use Twig\Environment;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
+use Psr\Log\LoggerInterface;
 
 /**
  * Classe Controller avec injection de dépendances
@@ -39,6 +40,7 @@ class Controller
     protected $sessionService;
     protected $securityService;
     protected $menuService;
+    protected $logger;
 
     // Propriétés publiques avec getters lazy pour les modèles et services
     public $request;
@@ -69,6 +71,17 @@ class Controller
         if (!$container) throw new \RuntimeException('Le conteneur de services n\'est pas disponible');
 
         return $container->get($serviceId);
+    }
+
+    /**
+     * Récupérer le Logger
+     */
+    public function getLogger(): LoggerInterface
+    {
+        if ($this->logger === null) {
+            $this->logger = $this->getService('logger');
+        }
+        return $this->logger;
     }
 
     protected function getSessionService(): SessionInterface
