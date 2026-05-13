@@ -76,6 +76,7 @@ class DevisNegVerificationPrixController extends Controller
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            /** @var SoumissionDto $dto */
             $dto = $form->getData();
 
             $dto = VerificationPrixFactory::CreateBeforeSoumission($dto, $this->getUserName(), $this->getUserMail());
@@ -172,7 +173,7 @@ class DevisNegVerificationPrixController extends Controller
         return [$nomEtCheminFichiersEnregistrer, $nomAvecCheminFichier, $nomFichier];
     }
 
-    private function estValidationPm($dto): bool
+    private function estValidationPm(SoumissionDto $dto): bool
     {
         if ($dto->constructeur === 'TOUS NEST PAS CAT') {
             return true;
@@ -205,7 +206,7 @@ class DevisNegVerificationPrixController extends Controller
     {
         $emailTemplate = "magasin/devis/email/emailDevis.html.twig";
 
-        $emailService = new EmailService($this->getTwig());
+        $emailService = new EmailService($this->getTwig(), $this->getLogger());
 
         $emailService->getMailer()->setFrom($_ENV['MAIL_FROM_ADDRESS'], 'noreply.neg');
 
