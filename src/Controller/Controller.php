@@ -76,10 +76,15 @@ class Controller
     /**
      * Récupérer le Logger
      */
-    public function getLogger(): LoggerInterface
+    public function getLogger(): ?LoggerInterface
     {
         if ($this->logger === null) {
-            $this->logger = $this->getService('logger');
+            try {
+                $this->logger = $this->getService('logger');
+            } catch (\Exception $e) {
+                // Si le service logger n'est pas encore configuré dans le conteneur
+                return null;
+            }
         }
         return $this->logger;
     }

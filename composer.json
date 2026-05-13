@@ -86,7 +86,8 @@
         "symfony/property-access": "^5.4",
         "friendsofsymfony/ckeditor-bundle": "^2.4",
         "doctrine/orm": "^2.19",
-        "ocramius/proxy-manager": "*"
+        "ocramius/proxy-manager": "*",
+        "monolog/monolog": "^2.11"
     },
     "require-dev": {
         "symfony/maker-bundle": "^1.43",

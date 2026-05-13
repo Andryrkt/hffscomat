@@ -14,10 +14,16 @@ class EmailService
     private TwigMailerService $twigMailer;
     private LoggerInterface $logger;
 
-    public function __construct(Environment $twig, LoggerInterface $logger)
+    public function __construct(Environment $twig, ?LoggerInterface $logger = null)
     {
         $this->twig = $twig;
-        $this->logger = $logger;
+        // Fallback sur un logger minimaliste ou null si non fourni
+        $this->logger = $logger ?? new class implements LoggerInterface {
+            use \Psr\Log\LoggerTrait;
+            public function log($level, $message, array $context = []) {
+                error_log(sprintf("[%s] %s %s", strtoupper($level), $message, json_encode($context)));
+            }
+        };
 
         $this->mailer = new PHPMailer(true);
 

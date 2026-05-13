@@ -144,6 +144,20 @@ $loader->load('services.yaml');
 $loader->load('parameters.yaml');
 
 // =============================
+// 🔥 LOGGER (Monolog)
+// =============================
+$loggerDef = new Definition(\Monolog\Logger::class, ['app']);
+$loggerDef->addMethodCall('pushHandler', [
+    new Definition(\Monolog\Handler\StreamHandler::class, [
+        dirname(__DIR__) . '/var/log/app.log',
+        \Monolog\Logger::DEBUG
+    ])
+]);
+$loggerDef->setPublic(true);
+
+$container->setDefinition('logger', $loggerDef);
+
+// =============================
 // Pagination
 // =============================
 Paginator::useBootstrap();
