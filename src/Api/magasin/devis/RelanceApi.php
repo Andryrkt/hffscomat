@@ -73,8 +73,8 @@ class RelanceApi extends Controller
         }
 
         try {
-            // Code Société de l'utilisateur (on force 'CO' si vide pour éviter les échecs de requêtes)
-            $codeSociete = $this->getSecurityService()->getCodeSocieteUser() ?: 'CO';
+            // Code Société de l'utilisateur (on force 'HF' si vide pour éviter les échecs de requêtes)
+            $codeSociete = $this->getSecurityService()->getCodeSocieteUser() ?: 'HF';
 
             $body = json_decode($request->getContent(), true);
             $motif = $body['motif'] ?? null;

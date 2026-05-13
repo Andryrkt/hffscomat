@@ -31,7 +31,7 @@ class VerificationPrixFactory
             $dto->tacheValidateur = $dto->validationPm ? ['Vérification prix'] : ['AUTOVALIDATION'];
         }
 
-        $dto->suffix = $devisNegModel->constructeurPieceMagasin($dto->numeroDevis);
+        $dto->suffix = $devisNegModel->constructeurPieceMagasin($dto->numeroDevis, $dto->codeSociete);
         $dto->numeroVersion = VersionService::autoIncrement($devisNegModel->getNumeroVersion($dto->numeroDevis));
         $dto->userName = $userName;
         $dto->userMail = $userMail;

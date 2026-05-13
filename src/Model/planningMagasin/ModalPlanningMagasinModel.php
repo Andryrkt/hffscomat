@@ -19,8 +19,8 @@ class ModalPlanningMagasinModel extends Model
     $numOr  = "AND A.NLIG_NUMCDE ='" . $numOrIntv . "' ";
 
     $statement = " SELECT 'PLANIFIE' as plan,
-A.NLIG_NUMCDE as numOr,
-A.NLIG_NUMCF as numCis,
+        A.NLIG_NUMCDE as numOr,
+        A.NLIG_NUMCF as numCis,
         A.NLIG_NOLIGN as Intv,
         (select NENT_REFCDE from NEG_ENT where NENT_SOC = A.NLIG_SOC and NENT_SUCC = A.NLIG_SUCC and NENT_NUMCDE = A.NLIG_NUMCDE group by 1) as commentaire,
         (select NENT_DATEXP from NEG_ENT where NENT_SOC = A.NLIG_SOC and NENT_SUCC = A.NLIG_SUCC and NENT_NUMCDE = A.NLIG_NUMCDE group by 1)   as datePlanning,
@@ -31,7 +31,7 @@ A.NLIG_NUMCF as numCis,
             WHEN nvl(A.NLIG_numcf,0) > 0 THEN (A.NLIG_QTECDE - A.NLIG_QTEALIV)
             ELSE 0
         END AS QteReliquat,
-     A.NLIG_QTECDE AS QteRes_Or,
+        A.NLIG_QTECDE AS QteRes_Or,
         A.NLIG_QTELIV AS Qteliv,
         A.NLIG_QTEALIV AS QteAll,                 
         CASE  
@@ -46,7 +46,7 @@ A.NLIG_NUMCF as numCis,
                           AND fllf_ligne = A.NLIG_noligncm
                           AND fllf_refp = A.NLIG_refp)
          END  AS numeroCmd,
-CASE WHEN A.NLIG_QTEALIV = A.NLIG_QTECDE AND (CASE WHEN nvl(A.NLIG_numcf,0) > 0 THEN (A.NLIG_QTECDE - A.NLIG_QTEALIV) ELSE 0 END) > 0 THEN
+        CASE WHEN A.NLIG_QTEALIV = A.NLIG_QTECDE AND (CASE WHEN nvl(A.NLIG_numcf,0) > 0 THEN (A.NLIG_QTECDE - A.NLIG_QTEALIV) ELSE 0 END) > 0 THEN
                         trim('A LIVRER')
                       WHEN A.NLIG_QTECDE = A.NLIG_QTEALIV AND (CASE WHEN nvl(A.NLIG_numcf,0) > 0 THEN (A.NLIG_QTECDE - A.NLIG_QTEALIV) ELSE 0 END) = 0 AND A.NLIG_QTELIV = 0 THEN
                         trim('DISPO STOCK')
@@ -96,12 +96,12 @@ LEFT JOIN NEG_LIG B ON (A.nlig_soc = b.nlig_soc and A.nlig_numcf = B.nlig_numcde
 WHERE A.NLIG_NATOP in ('DIR')
 --AND A.NLIG_SUCC in ('01','20','30','40','50','60')
 --AND A.NLIG_QTEFAC = 0
-AND A.NLIG_constp  not in ('ZDI','Nmc')
+--AND A.NLIG_constp  not in ('ZDI','Nmc')
                 $numOr
    GROUP BY 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,dateStatut,Statut_ctrmq_cis,numerocdecis
 ORDER BY 6,2, A.NLIG_NOLIGN
       ";
-    // dump($statement);
+
     $result = $this->connect->executeQuery($statement);
     $data = $this->connect->fetchResults($result);
     $resultat = $this->convertirEnUtf8($data);
@@ -111,7 +111,8 @@ ORDER BY 6,2, A.NLIG_NOLIGN
   // recupCIS
   public function recupOrcis($numOritv)
   {
-    $statement = "SELECT  decode(nent_succ,'1','','60','','80','','CIS') as succ
+    $sucNeg = $_ENV['SUC_NEG'];
+    $statement = "SELECT  decode(nent_succ,$sucNeg,'','CIS') as succ
                  from NEG_ENT, NEG_LIG 
                 where  nent_succ =nlig_succ
                 and nent_numcde = nlig_numcde
@@ -259,13 +260,13 @@ ORDER BY 6,2, A.NLIG_NOLIGN
     return $this->convertirEnUtf8($data);
   }
 
-  public function recupClientPlanningMagasin()
+  public function recupClientPlanningMagasin(string $codeSociete)
   {
     $statement = "SELECT 
                         nent_numcli as numclient,
                         trim(cbse_nomcli) as nom_client
                         from neg_ent, neg_lig, agr_succ, agr_tab ser, agr_usr ope, cli_bse, cli_soc
-                        where nent_soc = 'CO'
+                        where nent_soc = '$codeSociete'
                         and nlig_soc = nent_soc and nlig_numcde = nent_numcde
                         and asuc_numsoc = nent_soc and asuc_num = nent_succ
                         and csoc_soc = nent_soc and csoc_numcli = cbse_numcli and cbse_numcli = nent_numcli
@@ -276,6 +277,25 @@ ORDER BY 6,2, A.NLIG_NOLIGN
                         AND to_char(nent_numcli) not like '150%'
                         group by 1,2
          ";
+    $result = $this->connect->executeQuery($statement);
+
+    $data = $this->connect->fetchResults($result);
+
+    return $this->convertirEnUtf8($data);
+  }
+
+
+  /**
+   * eta mag
+   */
+  public function recuperationEtaMag($numeroContremarque)
+  {
+
+    $statement = " SELECT etat_pays, eta_magasin
+            FROM {$this->dbIrium}:informix.Ces_magasin
+        WHERE po_number = '$numeroContremarque'
+        ";
+
     $result = $this->connect->executeQuery($statement);
 
     $data = $this->connect->fetchResults($result);

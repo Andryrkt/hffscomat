@@ -110,7 +110,7 @@ class ListeDevisNegController extends Controller
         }
 
         // Code Société de l'utilisateur
-        $codeSociete = $this->getSecurityService()->getCodeSocieteUser() ?? 'CO';
+        $codeSociete = $this->getSecurityService()->getCodeSocieteUser() ?? 'HF';
 
         // Code Agence par défaut
         $codeAgenceDefaut = $this->getSecurityService()->getCodeAgenceUser();

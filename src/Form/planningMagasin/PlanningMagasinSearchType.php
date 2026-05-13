@@ -75,10 +75,7 @@ class PlanningMagasinSearchType extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        //$serviceDebite = $planningModel->recuperationServiceDebite();
-        // $agence = $this->transformEnSeulTableauAvecKey($this->planningMagasinModel->recuperationAgenceIrium());
-        //$commercial = $this->planningMagasinModel->recupCommercial();
-        $agenceDebite = $this->planningMagasinModel->recuperationAgenceDebite();
+        $agenceDebite = $this->planningMagasinModel->recuperationAgenceDebite($options['data']->getCodeSociete());
         $codeAgence = $options['data']->getAgence();
 
         // $section = $this->planningMagasinModel->recuperationSection();

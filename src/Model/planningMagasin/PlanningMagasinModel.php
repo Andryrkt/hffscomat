@@ -10,36 +10,15 @@ use App\Entity\planningMagasin\PlanningMagasinSearch;
 class PlanningMagasinModel extends Model
 {
     use planningMagasinModelTrait;
-    public function recuperationAgenceIrium()
-    {
-        $statement = " SELECT  trim(asuc_num) as asuc_num ,
-                               trim(asuc_lib) as asuc_lib
-                      FROM agr_succ
-                      WHERE asuc_codsoc = 'CO'
-                      AND  (ASUC_NUM like '01' 
-                      or ASUC_NUM like '20' 
-                      or ASUC_NUM like '30'
-                       or ASUC_NUM like '40'
-                       or ASUC_NUM like '50'
-                       )
-                      order by 1
-        ";
-        $result = $this->connect->executeQuery($statement);
-        $data = $this->connect->fetchResults($result);
-        $dataUtf8 = $this->convertirEnUtf8($data);
-        return
-            array_map(function ($item) {
-                return [$item['asuc_num'] . '-' . $item['asuc_lib'] => $item['asuc_num']];
-            }, $dataUtf8);
-    }
+    
 
-    public function recuperationAgenceDebite()
+    public function recuperationAgenceDebite(string $codeSociete)
     {
         $statement = "SELECT  trim(asuc_lib) as asuc_lib,
                             trim(asuc_num) as asuc_num
                     FROM  agr_succ , sav_itv 
                     WHERE asuc_num = sitv_succdeb 
-                    AND asuc_codsoc = 'CO'
+                    AND asuc_codsoc = '$codeSociete'
                     --AND asuc_lib <> 'ANTALAHA'
                     AND asuc_num in ('01', '20', '30', '40')
                     --group by 1,2
@@ -88,7 +67,13 @@ class PlanningMagasinModel extends Model
     }
 
 
-    public function recuperationCommadeplanifier(PlanningMagasinSearch $criteria, string $condition, array $tousLesBCSoumis, string $codeAgence)
+    public function recuperationCommadeplanifier(
+        PlanningMagasinSearch $criteria, 
+        string $condition, 
+        array $tousLesBCSoumis, 
+        string $codeAgence,
+        string $codeSociete
+        )
     {
 
         if ($criteria->getOrNonValiderDw() == true) {
@@ -100,7 +85,7 @@ class PlanningMagasinModel extends Model
 
         switch ($condition) {
             case 'partiel_facture':
-                $partFact = $this->bcPartielFacture();
+                $partFact = $this->bcPartielFacture($codeSociete);
                 if (is_array($partFact)) {
                     $factString = TableauEnStringService::orEnString($partFact);
                 } else {
@@ -109,7 +94,7 @@ class PlanningMagasinModel extends Model
                 $numCmd = "AND nent_numcde in (" . $factString . ")";
                 break;
             case 'partiel_dispo':
-                $partDispo = $this->bcPartielDispo();
+                $partDispo = $this->bcPartielDispo($codeSociete);
                 if (is_array($partDispo)) {
                     $dispoString = TableauEnStringService::orEnString($partDispo);
                 } else {
@@ -118,7 +103,7 @@ class PlanningMagasinModel extends Model
                 $numCmd = "AND nent_numcde in (" . $dispoString . ")";
                 break;
             case 'complet_non_facture':
-                $partcompletnonfac = $this->bcCompletNonFacturer();
+                $partcompletnonfac = $this->bcCompletNonFacturer($codeSociete);
                 if (is_array($partcompletnonfac)) {
                     $partcompleString = TableauEnStringService::orEnString($partcompletnonfac);
                 } else {
@@ -174,7 +159,7 @@ class PlanningMagasinModel extends Model
                         END QteALL 
 
                         from neg_ent, neg_lig, agr_succ, agr_tab ser, agr_usr ope, cli_bse, cli_soc
-                        where nent_soc = 'CO'
+                        where nent_soc = '$codeSociete'
                         and nlig_soc = nent_soc and nlig_numcde = nent_numcde
                         and asuc_numsoc = nent_soc and asuc_num = nent_succ
                         and csoc_soc = nent_soc and csoc_numcli = cbse_numcli and cbse_numcli = nent_numcli
@@ -206,12 +191,12 @@ class PlanningMagasinModel extends Model
     }
 
 
-    public function bcCompletNonFacturer()
+    public function bcCompletNonFacturer(string $codeSociete)
     {
         $statement = "  SELECT    DISTINCT
                         nent_numcde as orIntv
                         from neg_ent, neg_lig, agr_succ, agr_tab ser, agr_usr ope, cli_bse, cli_soc
-                        where nent_soc = 'CO'
+                        where nent_soc = '$codeSociete'
                         and nlig_soc = nent_soc and nlig_numcde = nent_numcde
                         and asuc_numsoc = nent_soc and asuc_num = nent_succ
                         and csoc_soc = nent_soc and csoc_numcli = cbse_numcli and cbse_numcli = nent_numcli
@@ -245,12 +230,12 @@ class PlanningMagasinModel extends Model
         $resultat = $this->convertirEnUtf8($data);
         return $resultat;
     }
-    public function bcPartielDispo()
+    public function bcPartielDispo(string $codeSociete)
     {
         $statement = " SELECT    DISTINCT
                         nent_numcde as orIntv
                         from neg_ent, neg_lig, agr_succ, agr_tab ser, agr_usr ope, cli_bse, cli_soc
-                        where nent_soc = 'CO'
+                        where nent_soc = '$codeSociete'
                         and nlig_soc = nent_soc and nlig_numcde = nent_numcde
                         and asuc_numsoc = nent_soc and asuc_num = nent_succ
                         and csoc_soc = nent_soc and csoc_numcli = cbse_numcli and cbse_numcli = nent_numcli
@@ -285,12 +270,12 @@ class PlanningMagasinModel extends Model
         $resultat = $this->convertirEnUtf8($data);
         return $resultat;
     }
-    public function bcPartielFacture()
+    public function bcPartielFacture(string $codeSociete)
     {
         $statement = " SELECT    DISTINCT
                         nent_numcde as orIntv
                         from neg_ent, neg_lig, agr_succ, agr_tab ser, agr_usr ope, cli_bse, cli_soc
-                        where nent_soc = 'CO'
+                        where nent_soc = '$codeSociete'
                         and nlig_soc = nent_soc and nlig_numcde = nent_numcde
                         and asuc_numsoc = nent_soc and asuc_num = nent_succ
                         and csoc_soc = nent_soc and csoc_numcli = cbse_numcli and cbse_numcli = nent_numcli
@@ -326,12 +311,12 @@ class PlanningMagasinModel extends Model
         return $resultat;
     }
 
-    public function recupCommercial(string $codeAgence)
+    public function recupCommercial(string $codeAgence, string $codeSociete)
     {
         $statement = " SELECT  TRIM(atab_lib) as nom, 
         TRIM(nent_codope) as value
         from agr_tab, neg_ent
-            where nent_soc = 'CO'
+            where nent_soc = '$codeSociete'
             -- and nent_servcrt in ('NEG','FLE','MAP')
             and atab_nom = 'OPE' and atab_code = nent_codope
         ";

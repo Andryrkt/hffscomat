@@ -29,6 +29,7 @@ class SoumissionModel extends Model
             WHERE nlig_numcde = '$numeroDevis' 
             --AND nlig_constp NOT LIKE 'Nmc%'
             --AND nlig_constp IN ($cstMagasin)
+            and nlig_codg = 'ST'
     ";
 
         $result = $this->connect->executeQuery($statement);
@@ -46,7 +47,7 @@ class SoumissionModel extends Model
      * @param string $numeroDevis Le numéro de devis à vérifier
      * @return string Le constructeur de la pièce magasin
      */
-    public function constructeurPieceMagasin(string $numeroDevis)
+    public function constructeurPieceMagasin(string $numeroDevis, string $codeSociete)
     {
         $constructeurMagasinSansCat = GlobalVariablesService::get('pieceMagasinSansCat');
         $constructeurPneumatique = GlobalVariablesService::get('pneumatique');
@@ -80,7 +81,7 @@ class SoumissionModel extends Model
                         WHEN COUNT(CASE WHEN nlig_constp  = 'CAT' THEN 1 END) > 0
                         AND COUNT(CASE WHEN nlig_constp  IN ($constructeurMagasinSansCat) THEN 1 END) = 0
                         AND COUNT(CASE WHEN nlig_constp IN($constructeurPneumatique) THEN 1 END) > 0
-                        THEN TRIM('CO')
+                        THEN TRIM('HF')
                     -- si autre constructeur magasin et constructeur pneumatique
                         WHEN COUNT(CASE WHEN nlig_constp  = 'CAT' THEN 1 END) = 0
                         AND COUNT(CASE WHEN nlig_constp IN ($constructeurMagasinSansCat) THEN 1 END) > 0
@@ -96,7 +97,7 @@ class SoumissionModel extends Model
                     END AS retour
 
                     from {$this->dbIps}:informix.neg_lig 
-                    where nlig_soc='CO' 
+                    where nlig_soc='$codeSociete' 
                     and nlig_natop='DEV'
                     and nlig_constp <> 'Nmc' 
                     and nlig_numcde = '$numeroDevis'
