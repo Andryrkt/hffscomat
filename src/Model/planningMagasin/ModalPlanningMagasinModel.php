@@ -291,7 +291,7 @@ ORDER BY 6,2, A.NLIG_NOLIGN
   public function recuperationEtaMag($numeroContremarque)
   {
 
-    $statement = " SELECT etat_pays, eta_magasin
+    $statement = " SELECT etat_pays, eta_magasin, milestone , statut_date 
             FROM {$this->dbIrium}:informix.Ces_magasin
         WHERE po_number = '$numeroContremarque'
         ";

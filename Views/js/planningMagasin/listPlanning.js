@@ -115,8 +115,8 @@ document.addEventListener("DOMContentLoaded", (event) => {
                             <th>QTé LIV</th>
                             <th>Statut</th>
                             <th>Date Statut</th>
-                            <th>Eta maurice</th>
-                            <th>Eta magasin</th>
+                            <th>Eta Maurice</th>
+                            <th>Eta Magasin</th>
                             `;
             planningTableHead.innerHTML += rowHeader;
             planningTableHeadOR.innerHTML += rowHeader;
@@ -135,8 +135,8 @@ document.addEventListener("DOMContentLoaded", (event) => {
                             <th>QTé LIV</th>
                             <th>Statut</th>
                             <th>Date Statut</th>
-                            <th>Eta maurice</th>
-                            <th>Eta magasin</th>
+                            <th>Eta Maurice</th>
+                            <th>Eta Magasin</th>
 
                           `;
             planningTableHead.innerHTML += rowHeader;
@@ -153,65 +153,22 @@ document.addEventListener("DOMContentLoaded", (event) => {
               )}`;
             }
             // Formater la date
-            let dateStatut;
-            let numCis;
-            let numCde;
-            let numeroCdeCis;
-            let statrmq;
-            let StatutCtrmqCis;
-            let statut;
-            let cmdColorRmq = "";
-            let numRef;
-            let dateEtatPays;
-            let dateEtaMagasin;
-            if (
-              formaterDate(detail.datestatut) == "01/01/1970" ||
-              formaterDate(detail.datestatut) == "01/01/1900" ||
-              detail.cst.startsWith("Z")
-            ) {
+            let dateStatut = formaterDate(detail.datestatut);
+            if (detail.cst && detail.cst.startsWith("Z")) {
               dateStatut = "";
-            } else {
-              dateStatut = formaterDate(detail.datestatut);
-            }
-            // Formater les dates ETA pays
-            if (
-              detail.Etat_pays == "" ||
-              formaterDate(detail.Etat_pays) === "01/01/1900"
-            ) {
-              dateEtatPays = "";
-            } else {
-              dateEtatPays = formaterDate(detail.Etat_pays);
-            }
-            // formater les dates ETA magasin
-            if (
-              detail.Eta_magasin == "" ||
-              formaterDate(detail.Eta_magasin) === "01/01/1900"
-            ) {
-              dateEtaMagasin = "";
-            } else {
-              dateEtaMagasin = formaterDate(detail.Eta_magasin);
             }
 
-            if (detail.numerocmd == null) {
-              numCde = "";
-            } else {
-              numCde = detail.numerocmd;
-            }
-            if (detail.ref == null) {
-              numRef = "";
-            } else {
-              numRef = detail.ref;
-            }
-            if (detail.statut_ctrmq == null) {
-              statrmq = "";
-            } else {
-              statrmq = detail.statut_ctrmq;
-            }
-            if (detail.statut == null || detail.cst.startsWith("Z")) {
-              statut = "";
-            } else {
-              statut = detail.statut;
-            }
+            let dateEtatPays = formaterDate(detail.Etat_pays);
+            let dateEtaMagasin = formaterDate(detail.Eta_magasin);
+
+            let numCis;
+            let numCde = detail.numerocmd || "";
+            let numeroCdeCis = detail.numerocdecis || "";
+            let statrmq = detail.statut_ctrmq || "";
+            let StatutCtrmqCis = (detail.statut_ctrmq_cis == null || detail.cst.startsWith("Z")) ? "" : detail.statut_ctrmq_cis;
+            let statut = (detail.statut == null || detail.cst.startsWith("Z")) ? "" : detail.statut;
+            let cmdColorRmq = "";
+            let numRef = detail.ref || "";
 
             if (detail.numcis == "0" || detail.numcis == null) {
               numCis = "";
@@ -401,12 +358,18 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   function formaterDate(daty) {
+    if (!daty || daty === "" || daty === "0000-00-00" || daty === "0000-00-00 00:00:00") return "";
     const date = new Date(daty);
-    return `${date.getDate().toString().padStart(2, "0")}/${(
-      date.getMonth() + 1
-    )
-      .toString()
-      .padStart(2, "0")}/${date.getFullYear()}`;
+    if (isNaN(date.getTime())) return "";
+
+    const d = date.getDate().toString().padStart(2, "0");
+    const m = (date.getMonth() + 1).toString().padStart(2, "0");
+    const y = date.getFullYear();
+    const formatted = `${d}/${m}/${y}`;
+
+    if (formatted === "01/01/1970" || formatted === "01/01/1900") return "";
+
+    return formatted;
   }
 
   /**
