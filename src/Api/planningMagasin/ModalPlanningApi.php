@@ -36,6 +36,7 @@ class ModalPlanningApi extends Controller
             $qteCIS = [];
             for ($i = 0; $i < count($details); $i++) {
                 if ($numOr[0] == '5' || $numOr[0] == '3' || $numOr[0] == '4' || $numOr[0] == '2') {
+                    $detailes[] = $this->planningMagasinModel->recuperationEtaMag($details[$i]['numerocdecis']);
                     $recupPariel[] = $this->planningMagasinModel->recupPartiel($details[$i]['numerocdecis'], $details[$i]['ref']);
                     $qteCIS[] = $this->planningMagasinModel->recupeQteCISlig($details[$i]['numcis'], $details[$i]['intv'], $details[$i]['ref']);
                     $dateLivLig[] = $this->planningMagasinModel->dateLivraisonCIS($details[$i]['numcis'], $details[$i]['ref'], $details[$i]['cst']);
@@ -43,7 +44,18 @@ class ModalPlanningApi extends Controller
                 } else {
                     if (!empty($details[$i]['numerocmd']) && $details[$i]['numerocmd'] !== "0") {
                         $recupPariel[] = $this->planningMagasinModel->recupPartiel($details[$i]['numerocmd'], $details[$i]['ref']);
-                    }
+                        $detailes[] = $this->planningMagasinModel->recuperationEtaMag($details[$i]['numerocdecis']);
+                    } 
+                }
+
+                if (!empty($detailes[0])) {
+                    $details[$i]['Eta_pays'] = $detailes[0][0]['Eta_pays'];
+                    $details[$i]['Eta_magasin'] =  $detailes[0][0]['Eta_magasin'];
+                    $detailes = [];
+                } else {
+                    $details[$i]['Eta_pays'] = "";
+                    $details[$i]['Eta_magasin'] = "";
+                    $detailes = [];
                 }
 
                 if (!empty($recupPariel[$i])) {

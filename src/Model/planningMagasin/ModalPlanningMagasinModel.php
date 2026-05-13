@@ -19,8 +19,8 @@ class ModalPlanningMagasinModel extends Model
     $numOr  = "AND A.NLIG_NUMCDE ='" . $numOrIntv . "' ";
 
     $statement = " SELECT 'PLANIFIE' as plan,
-A.NLIG_NUMCDE as numOr,
-A.NLIG_NUMCF as numCis,
+        A.NLIG_NUMCDE as numOr,
+        A.NLIG_NUMCF as numCis,
         A.NLIG_NOLIGN as Intv,
         (select NENT_REFCDE from NEG_ENT where NENT_SOC = A.NLIG_SOC and NENT_SUCC = A.NLIG_SUCC and NENT_NUMCDE = A.NLIG_NUMCDE group by 1) as commentaire,
         (select NENT_DATEXP from NEG_ENT where NENT_SOC = A.NLIG_SOC and NENT_SUCC = A.NLIG_SUCC and NENT_NUMCDE = A.NLIG_NUMCDE group by 1)   as datePlanning,
@@ -31,7 +31,7 @@ A.NLIG_NUMCF as numCis,
             WHEN nvl(A.NLIG_numcf,0) > 0 THEN (A.NLIG_QTECDE - A.NLIG_QTEALIV)
             ELSE 0
         END AS QteReliquat,
-     A.NLIG_QTECDE AS QteRes_Or,
+        A.NLIG_QTECDE AS QteRes_Or,
         A.NLIG_QTELIV AS Qteliv,
         A.NLIG_QTEALIV AS QteAll,                 
         CASE  
@@ -46,7 +46,7 @@ A.NLIG_NUMCF as numCis,
                           AND fllf_ligne = A.NLIG_noligncm
                           AND fllf_refp = A.NLIG_refp)
          END  AS numeroCmd,
-CASE WHEN A.NLIG_QTEALIV = A.NLIG_QTECDE AND (CASE WHEN nvl(A.NLIG_numcf,0) > 0 THEN (A.NLIG_QTECDE - A.NLIG_QTEALIV) ELSE 0 END) > 0 THEN
+        CASE WHEN A.NLIG_QTEALIV = A.NLIG_QTECDE AND (CASE WHEN nvl(A.NLIG_numcf,0) > 0 THEN (A.NLIG_QTECDE - A.NLIG_QTEALIV) ELSE 0 END) > 0 THEN
                         trim('A LIVRER')
                       WHEN A.NLIG_QTECDE = A.NLIG_QTEALIV AND (CASE WHEN nvl(A.NLIG_numcf,0) > 0 THEN (A.NLIG_QTECDE - A.NLIG_QTEALIV) ELSE 0 END) = 0 AND A.NLIG_QTELIV = 0 THEN
                         trim('DISPO STOCK')
@@ -283,4 +283,24 @@ ORDER BY 6,2, A.NLIG_NOLIGN
 
     return $this->convertirEnUtf8($data);
   }
+
+
+  /**
+   * eta mag
+   */
+  public function recuperationEtaMag($numeroContremarque)
+  {
+
+    $squery = " SELECT etat_pays, eta_magasin
+            FROM Ces_magasin
+        WHERE po_number = '$numeroContremarque'
+        ";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->connect->fetchResults($result);
+
+        return $this->convertirEnUtf8($data);
+  }
+
 }

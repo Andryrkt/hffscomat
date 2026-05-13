@@ -114,7 +114,9 @@ document.addEventListener("DOMContentLoaded", (event) => {
                             <th>QTé RLQ</th>
                             <th>QTé LIV</th>
                             <th>Statut</th>
-                            <th>Date Statut</th>`;
+                            <th>Date Statut</th>
+                            <th>Eta maurice</th>
+                            `;
             planningTableHead.innerHTML += rowHeader;
             planningTableHeadOR.innerHTML += rowHeader;
             planningTableHeadLign.innerHTML += rowHeader;
@@ -131,7 +133,10 @@ document.addEventListener("DOMContentLoaded", (event) => {
                             <th>QTé RLQ</th>
                             <th>QTé LIV</th>
                             <th>Statut</th>
-                            <th>Date Statut</th>`;
+                            <th>Date Statut</th>
+                            <th>Eta maurice</th>
+
+                          `;
             planningTableHead.innerHTML += rowHeader;
           }
           data.data.forEach((detail) => {
@@ -266,6 +271,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
                         <td>${parseInt(detail.qteliv) === 0 ? "" : parseInt(detail.qteliv)}</td> 
                         <td  >${statut} </td> 
                         <td>${dateStatut}</td> 
+                        <td>'-'</td> 
                     </tr>`;
               // tableBody.innerHTML += row;
               tableBodyOR.innerHTML += row;
@@ -309,6 +315,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
                         }</td> 
                         <td >${statutCIS === null ? "" : statutCIS}</td> 
                         <td>${dateStatutCIS}</td> 
+                        <td>'-'</td> 
                     </tr>`;
                 tableBodyLign.innerHTML += row1;
               }
@@ -328,6 +335,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
                       <td>${parseInt(detail.qteliv) === 0 ? "" : parseInt(detail.qteliv)}</td> 
                       <td >${statut}</td> 
                       <td>${dateStatut}</td>
+                      <td>'-'</td>
                   </tr>`;
               tableBody.innerHTML += row;
             }
