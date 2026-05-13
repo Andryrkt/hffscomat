@@ -27,8 +27,8 @@ class SoumissionModel extends Model
                 END as resultat
             FROM {$this->dbIps}:informix.neg_lig 
             WHERE nlig_numcde = '$numeroDevis' 
-            AND nlig_constp NOT LIKE 'Nmc%'
-            AND nlig_constp IN ($cstMagasin)
+            --AND nlig_constp NOT LIKE 'Nmc%'
+            --AND nlig_constp IN ($cstMagasin)
     ";
 
         $result = $this->connect->executeQuery($statement);
