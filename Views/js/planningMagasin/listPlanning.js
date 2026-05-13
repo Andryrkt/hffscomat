@@ -162,7 +162,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
             let statut;
             let cmdColorRmq = "";
             let numRef;
-            let dateEtaPays;
+            let dateEtatPays;
             let dateEtaMagasin;
             if (
               formaterDate(detail.datestatut) == "01/01/1970" ||
@@ -175,12 +175,12 @@ document.addEventListener("DOMContentLoaded", (event) => {
             }
             // Formater les dates ETA pays
             if (
-              detail.Eta_pays == "" ||
-              formaterDate(detail.Eta_pays) === "01/01/1900"
+              detail.Etat_pays == "" ||
+              formaterDate(detail.Etat_pays) === "01/01/1900"
             ) {
-              dateEtaPays = "";
+              dateEtatPays = "";
             } else {
-              dateEtaPays = formaterDate(detail.Eta_pays);
+              dateEtatPays = formaterDate(detail.Etat_pays);
             }
             // formater les dates ETA magasin
             if (
@@ -294,7 +294,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
                         <td>${parseInt(detail.qteliv) === 0 ? "" : parseInt(detail.qteliv)}</td> 
                         <td  >${statut} </td> 
                         <td>${dateStatut}</td> 
-                        <td>${dateEtaPays}</td> 
+                        <td>${dateEtatPays}</td> 
                         <td>${dateEtaMagasin}</td> 
                     </tr>`;
               // tableBody.innerHTML += row;
@@ -339,7 +339,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
                         }</td> 
                         <td >${statutCIS === null ? "" : statutCIS}</td> 
                         <td>${dateStatutCIS}</td> 
-                        <td>${dateEtaPays}</td> 
+                        <td>${dateEtatPays}</td> 
                         <td>${dateEtaMagasin}</td> 
                     </tr>`;
                 tableBodyLign.innerHTML += row1;
@@ -360,7 +360,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
                       <td>${parseInt(detail.qteliv) === 0 ? "" : parseInt(detail.qteliv)}</td> 
                       <td >${statut}</td> 
                       <td>${dateStatut}</td>
-                      <td>${dateEtaPays}</td>
+                      <td>${dateEtatPays}</td>
                       <td>${dateEtaMagasin}</td>
                   </tr>`;
               tableBody.innerHTML += row;

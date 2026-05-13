@@ -101,7 +101,7 @@ WHERE A.NLIG_NATOP in ('DIR')
    GROUP BY 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,dateStatut,Statut_ctrmq_cis,numerocdecis
 ORDER BY 6,2, A.NLIG_NOLIGN
       ";
-    // dump($statement);
+
     $result = $this->connect->executeQuery($statement);
     $data = $this->connect->fetchResults($result);
     $resultat = $this->convertirEnUtf8($data);
