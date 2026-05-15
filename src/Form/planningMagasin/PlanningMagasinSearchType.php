@@ -107,8 +107,7 @@ class PlanningMagasinSearchType extends AbstractType
                 'required' => false,
                 'choices' => $agenceDebite,
                 'placeholder' => " -- Choisir une agence --",
-                'data' => $codeAgence,
-                'disabled' => $codeAgence === "-0" ? false : true
+                'data' => $codeAgence
             ])
             ->add(
                 'orBackOrder',

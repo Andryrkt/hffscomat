@@ -19,9 +19,8 @@ class PlanningMagasinModel extends Model
                     FROM  agr_succ , sav_itv 
                     WHERE asuc_num = sitv_succdeb 
                     AND asuc_codsoc = '$codeSociete'
-                    --AND asuc_lib <> 'ANTALAHA'
-                    AND asuc_num in ('01', '20', '30', '40')
-                    --group by 1,2
+                    AND asuc_num in ('1')
+                    group by 1,2
                     order by asuc_num";
         $result = $this->connect->executeQuery($statement);
         $data = $this->connect->fetchResults($result);
@@ -52,7 +51,7 @@ class PlanningMagasinModel extends Model
                         FROM agr_succ , agr_tab a 
                         WHERE a.atab_nom = 'SER' 
                         and a.atab_code not in (select b.atab_code from agr_tab b where substr(b.atab_nom,10,2) = asuc_num and b.atab_nom like 'SERBLOSUC%') 
-                        AND a.atab_code in ('NEG','FLE','MAP')
+                        AND a.atab_code in ('300', '305', '310', '330', '335', '360', '380')
                         $codeAgence
         ";
         $result = $this->connect->executeQuery($statement);
