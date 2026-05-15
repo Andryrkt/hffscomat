@@ -13,6 +13,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Callback;
 use Symfony\Component\Validator\Constraints\File;
+use Symfony\Component\Validator\Constraints\LessThanOrEqual;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
@@ -48,10 +49,18 @@ class BcType extends AbstractType
                 [
                     'label' => 'Date BC *',
                     'widget' => 'single_text',
+                    'input'  => 'datetime_immutable',
                     'html5' => true,
                     'attr' => [
                         'data-field-name' => 'date BC',
+                        'max' => (new \DateTime())->format('Y-m-d')
                     ],
+                    'constraints' => [
+                        new LessThanOrEqual([
+                            'value' => 'today',
+                            'message' => 'La date ne peut pas être supérieure à la date du jour.'
+                        ])
+                    ]
                 ]
             )
             ->add(
