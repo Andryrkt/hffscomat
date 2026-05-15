@@ -7,6 +7,7 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\LessThanOrEqual;
 
 class EnvoyerAuClientType extends AbstractType
 {
@@ -29,6 +30,17 @@ class EnvoyerAuClientType extends AbstractType
                 'label' => 'Date envoi devis au client *',
                 'widget' => 'single_text',
                 'required' => true,
+                'input'  => 'datetime_immutable',
+                'html5' => true,
+                'attr' => [
+                    'max' => (new \DateTime())->format('Y-m-d')
+                ],
+                'constraints' => [
+                    new LessThanOrEqual([
+                        'value' => 'today',
+                        'message' => 'La date ne peut pas être supérieure à la date du jour.'
+                    ])
+                ]
             ])
         ;
     }

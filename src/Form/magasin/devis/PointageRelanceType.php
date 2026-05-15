@@ -4,9 +4,10 @@ namespace App\Form\magasin\devis;
 
 use App\Dto\Magasin\Devis\PointageRelanceDto;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Validator\Constraints\LessThanOrEqual;
 
 class PointageRelanceType extends AbstractType
 {
@@ -24,6 +25,16 @@ class PointageRelanceType extends AbstractType
                 'widget' => 'single_text',
                 'input'  => 'datetime_immutable',
                 'required' => true,
+                'html5' => true,
+                'attr' => [
+                    'max' => (new \DateTime())->format('Y-m-d')
+                ],
+                'constraints' => [
+                    new LessThanOrEqual([
+                        'value' => 'today',
+                        'message' => 'La date ne peut pas être supérieure à la date du jour.'
+                    ])
+                ]
             ])
         ;
     }

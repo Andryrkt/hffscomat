@@ -31,7 +31,7 @@ class GeneratePdfDeviMagasinVp extends GeneratePdf
 
         $pdf->AddPage();
         $pdf->SetFont($font2, 'B', 12);
-        $pdf->Cell(30, 10, 'Commercial : ', 0, 0, 'L');
+        $pdf->Cell(30, 10, 'Vendor : ', 0, 0, 'L');
         $pdf->SetFont($font2, '', 10);
         $pdf->Cell(0, 10, $dto->userName . ' - ' . $dto->userMail, 0, 1, 'L');
 

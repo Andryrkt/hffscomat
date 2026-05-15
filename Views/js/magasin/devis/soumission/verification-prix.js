@@ -43,52 +43,52 @@ document.addEventListener("DOMContentLoaded", function () {
 /**===================================================
  * devis magasin - est validation PM
  *===================================================*/
-document.addEventListener("DOMContentLoaded", function () {
-  const devisPMCheckboxOui = document.getElementById(
-    "verification_prix_validationPm_0",
-  );
-  const devisPMCheckboxNon = document.getElementById(
-    "verification_prix_validationPm_1",
-  );
-  const tacheValidateurInput = document.querySelectorAll(
-    "#verification_prix_tacheValidateur input",
-  );
-  const labelTacheValidateur = document.querySelector(
-    "#verification_prix_tacheValidateur",
-  );
-  const legendElement = labelTacheValidateur
-    .closest("fieldset")
-    .querySelector("legend");
+// document.addEventListener("DOMContentLoaded", function () {
+//   const devisPMCheckboxOui = document.getElementById(
+//     "verification_prix_validationPm_0",
+//   );
+//   const devisPMCheckboxNon = document.getElementById(
+//     "verification_prix_validationPm_1",
+//   );
+//   const tacheValidateurInput = document.querySelectorAll(
+//     "#verification_prix_tacheValidateur input",
+//   );
+//   const labelTacheValidateur = document.querySelector(
+//     "#verification_prix_tacheValidateur",
+//   );
+//   const legendElement = labelTacheValidateur
+//     .closest("fieldset")
+//     .querySelector("legend");
 
-  devisPMCheckboxOui.addEventListener("change", function () {
-    if (this.checked) {
-      disableTacheValidateurInput(true);
-    } else {
-      disableTacheValidateurInput(false);
-    }
-  });
+//   devisPMCheckboxOui.addEventListener("change", function () {
+//     if (this.checked) {
+//       disableTacheValidateurInput(true);
+//     } else {
+//       disableTacheValidateurInput(false);
+//     }
+//   });
 
-  devisPMCheckboxNon.addEventListener("change", function () {
-    if (this.checked) {
-      disableTacheValidateurInput(false);
-    } else {
-      disableTacheValidateurInput(true);
-    }
-  });
+//   devisPMCheckboxNon.addEventListener("change", function () {
+//     if (this.checked) {
+//       disableTacheValidateurInput(false);
+//     } else {
+//       disableTacheValidateurInput(true);
+//     }
+//   });
 
-  function disableTacheValidateurInput(shouldEnable) {
-    tacheValidateurInput.forEach((input) => {
-      input.disabled = !shouldEnable;
-      input.required = shouldEnable;
-    });
+//   function disableTacheValidateurInput(shouldEnable) {
+//     tacheValidateurInput.forEach((input) => {
+//       input.disabled = !shouldEnable;
+//       input.required = shouldEnable;
+//     });
 
-    if (shouldEnable) {
-      legendElement.classList.remove("text-secondary");
-    } else {
-      legendElement.classList.add("text-secondary");
-    }
-  }
-});
+//     if (shouldEnable) {
+//       legendElement.classList.remove("text-secondary");
+//     } else {
+//       legendElement.classList.add("text-secondary");
+//     }
+//   }
+// });
 
 /**==================================================
  * sweetalert pour le bouton Enregistrer

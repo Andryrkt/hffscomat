@@ -36,7 +36,7 @@ class VerificationPrixType extends AbstractType
         $fichier_initialise = $options['fichier_initialise'];
         $PJ1constraints = [];
 
-        $isDisabled = $options['data']->validationPm;
+        $isDisabled = false; // Par défaut, le champ n'est pas désactivé
         $isRequired =  !$isDisabled;
 
         $formOptions = [
@@ -137,11 +137,11 @@ class VerificationPrixType extends AbstractType
                 'multiple'      => false,
                 'placeholder'   => false,
                 'label'         => 'Envoyer à validation au PM *',
-                'data'          => $options['data']->constructeur == 'TOUS NEST PAS CAT' ? true : null,
-                'disabled'      => $options['data']->constructeur == 'TOUS NEST PAS CAT' ? true : false,
-                'required'      => $options['data']->typeSoumission == 'VP' ? ($options['data']->constructeur == 'TOUS NEST PAS CAT' ? false : true) : false,
+                'data'          =>  true,
+                'disabled'      =>  true,
+                'required'      =>  false,
                 'attr'          => [
-                    'required' => $options['data']->typeSoumission == 'VP' ? ($options['data']->constructeur == 'TOUS NEST PAS CAT' ? false : true) : false,
+                    'required' =>  false,
                     'data-error-message' => 'Veuillez sélectionner si le devis est envoyé à validation au Parts Manager ou NON.',
                 ],
             ])

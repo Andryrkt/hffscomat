@@ -6,16 +6,18 @@ use TCPDF;
 
 class HeaderPdf extends TCPDF
 {
-    private $email;
+    private ?string $email;
 
     // Constructeur pour passer l'email
-    public function __construct($email) {
+    public function __construct(?string $email)
+    {
         parent::__construct();
         $this->email = $email;
     }
 
     // Personnalisation de l'en-tête
-    public function Header() {
+    public function Header()
+    {
         // Ajouter un logo ou d'autres éléments si nécessaire
         // $this->Image('path/to/logo.png', 10, 10, 20);
 

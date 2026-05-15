@@ -31,28 +31,6 @@ class DevisMagasinGenererNameFileService extends AbstractFileNameGeneratorServic
     }
 
     /**
-     * Génère un nom pour validation devis
-     */
-    public function generateValidationDevisName(
-        UploadedFile $file,
-        string $numDevis,
-        int $numeroVersion,
-        string $suffix,
-        string $mail,
-        int $index = 1
-    ): string {
-        return $this->generateFileName($file, [
-            'format' => 'validationdevis_{numDevis}-{numeroVersion}#{suffix}!{mail}.{extension}',
-            'variables' => [
-                'numDevis' => $numDevis,
-                'numeroVersion' => $numeroVersion,
-                'suffix' => $suffix,
-                'mail' => $mail
-            ]
-        ], $index);
-    }
-
-    /**
      * Génère un nom pour le cas de fichier excel
      */
     public function generateFichierExcelName(string $numDevis, string $extension): string
@@ -70,7 +48,7 @@ class DevisMagasinGenererNameFileService extends AbstractFileNameGeneratorServic
         int $index = 1
     ): string {
         return $this->generateFileName($file, [
-            'format' => 'bon_commande_{numDevis}-{numeroVersion}.{extension}',
+            'format' => 'SCbon_commande_{numDevis}-{numeroVersion}.{extension}',
             'variables' => [
                 'numDevis' => $numDevis,
                 'numeroVersion' => $numeroVersion,
@@ -86,33 +64,6 @@ class DevisMagasinGenererNameFileService extends AbstractFileNameGeneratorServic
         string $numDevis,
         int $numeroVersion
     ): string {
-        return "bon_commande_{$numDevis}-{$numeroVersion}.pdf";
-    }
-
-    /**
-     * Génère un nom pour la facture
-     * TODO: mbola vao ho avy
-     */
-    public function generateFactureName(
-        UploadedFile $file,
-        string $numDevis,
-        string $typeFacture,
-        int $index = 1
-    ): string {
-        return $this->generateFileName($file, [
-            'format' => 'facture_{typeFacture}_{numDevis}.{extension}',
-            'variables' => [
-                'numDevis' => $numDevis,
-                'typeFacture' => $typeFacture,
-            ]
-        ], $index);
-    }
-
-    /**
-     * Nettoie le nom de fichier pour éviter les caractères spéciaux
-     */
-    private function sanitizeFileName(string $name): string
-    {
-        return preg_replace('/[^a-zA-Z0-9_-]/', '_', $name);
+        return "SCbon_commande_{$numDevis}-{$numeroVersion}.pdf";
     }
 }

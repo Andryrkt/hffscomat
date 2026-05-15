@@ -3,12 +3,11 @@
 namespace App\Model\magasin\devis;
 
 use App\Model\Model;
-use App\Service\GlobalVariablesService;
 
 
 class DevisNegModel extends Model
 {
-    public function getDevisNeg($criteria, $codeAgenceAutoriserString, $multiSuccursale, $codeAgenceDefaut, $codeSociete, $page = 1, $limit = 100)
+    public function getDevisNeg(array $criteria, string $codeAgenceAutoriserString, bool $multiSuccursale, string $codeAgenceDefaut, string $codeSociete, int $page = 1, int $limit = 100)
     {
         $this->connect->connect();
         $skip = ($page - 1) * $limit;
@@ -107,7 +106,7 @@ class DevisNegModel extends Model
                                 SELECT 1 FROM {$this->dbIps}:informix.neg_lig nl
                                 WHERE nl.nlig_numcde = nent.nent_numcde
                                 AND   nl.nlig_codg='ST'
-                                                 )
+)
                 ";
 
             // ? Filtre par agences autorisées |  commenter pour scommat, en attente de vrai agnec et service
