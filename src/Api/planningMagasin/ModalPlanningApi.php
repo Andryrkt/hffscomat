@@ -53,13 +53,15 @@ class ModalPlanningApi extends Controller
                     $details[$i]['Etat_pays'] = $detailes[0][0]['etat_pays'];
                     $details[$i]['Eta_magasin'] =  $detailes[0][0]['eta_magasin'];
                     $details[$i]['datestatut'] =  $detailes[0][0]['statut_date'];
-                    $details[$i]['statut'] =  $detailes[0][0]['milestone'];
+                    // $details[$i]['statut'] =  $detailes[0][0]['milestone'];
+                    $details[$i]['estDansCesMagasin'] = 1;
                     $detailes = [];
                 } else {
                     $details[$i]['Etat_pays'] = "";
                     $details[$i]['Eta_magasin'] = "";
                     $details[$i]['datestatut'] =  "";
-                    $details[$i]['statut'] =  "";
+                    // $details[$i]['statut'] =  "";
+                    $details[$i]['estDansCesMagasin'] = 0;
                     $detailes = [];
                 }
 

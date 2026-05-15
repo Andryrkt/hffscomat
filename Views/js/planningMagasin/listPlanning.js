@@ -201,6 +201,8 @@ document.addEventListener("DOMContentLoaded", (event) => {
               cmdColor = 'style="background-color: red; color: white;"';
             } else if (Ord == "ORD") {
               cmdColor = 'style="background-color:#9ACD32  ; color: white;"';
+            } else if (detail.estDansCesMagasin){
+              cmdColor = 'style="background-color:#9ACD32  ; color: white;"';
             }
             //onglet CIS
             let statutCIS;
