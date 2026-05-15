@@ -208,7 +208,7 @@ class DevisNegVerificationPrixController extends Controller
 
         $emailService = new EmailService($this->getTwig(), $this->getLogger());
 
-        $emailService->getMailer()->setFrom($_ENV['MAIL_FROM_ADDRESS'], 'noreply.neg');
+        $emailService->getMailer()->setFrom($_ENV['MAIL_FROM_ADDRESS'], 'noreply.scomat.neg');
 
         $emailService->sendEmail($content['to'], $content['cc'] ?? [], $emailTemplate, $content['variables'] ?? [], $content['attachments'] ?? []);
     }
