@@ -70,7 +70,20 @@ class DevisNegModel extends Model
                 ,dneg.utilisateur                                           AS soumis_par
                 ,nent.nent_devise                                           AS devise
                 ,(SELECT MAX(nlig_constp) FROM {$this->dbIps}:informix.neg_lig WHERE nlig_numcde = nent.nent_numcde AND nlig_codg='ST') AS constructeur
-
+                , (SELECT numero_bcc_neg 
+                    FROM magix_frm3300:informix.DW_BC_Client_Negoce 
+                    WHERE numero_devis = nent.nent_numcde 
+                        AND id_bcc_neg = (SELECT MAX(id_bcc_neg) 
+                                        FROM magix_frm3300:informix.DW_BC_Client_Negoce 
+                                        WHERE numero_devis = nent.nent_numcde)
+                ) AS numero_po
+                , (SELECT path
+                    FROM magix_frm3300:informix.DW_BC_Client_Negoce 
+                    WHERE numero_devis = nent.nent_numcde 
+                        AND id_bcc_neg = (SELECT MAX(id_bcc_neg) 
+                                        FROM magix_frm3300:informix.DW_BC_Client_Negoce 
+                                        WHERE numero_devis = nent.nent_numcde)
+                ) AS path
             FROM {$this->dbIps}:informix.neg_ent nent
 
             LEFT JOIN {$this->dbIps}:informix.agr_usr ausr

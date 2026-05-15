@@ -46,6 +46,10 @@ class DevisNegMapper
                 $dto->url = $urlGenerator($dto);
             }
 
+            // PO client
+            $dto->numeroPo = $item['numero_po'] ?? null;
+            $dto->urlPo = $item['path'] ? ($_ENV["BASE_PATH_FICHIER_COURT"] ."/". $item['path']) : null;
+            
             //Blockage de soumission
             // $dto->pointagedevis = in_array($dto->statutDw, [StatutDevisNegContant::PRIX_VALIDER_TANA, StatutDevisNegContant::PRIX_MODIFIER_TANA, StatutDevisNegContant::VALIDE_AGENCE]);
 
