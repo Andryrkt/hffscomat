@@ -58,29 +58,48 @@ class ListeDevisNegController extends Controller
      */
     public function getApiData(Request $request)
     {
-        // ob_start() capture TOUT output PHP (warnings, notices ODBC, etc.)
-        // pour éviter qu'un warning HTML ne corrompe la réponse JSON.
+        // On commence à capturer tout output inattendu
         ob_start();
 
         try {
+            $this->getLogger()->info("API Devis Neg: Début de la récupération des données.");
 
             $page = $request->query->getInt('page', 1);
             $limit = $request->query->getInt('limit', 500);
+            
             [, $criteria] = $this->creationEtTraitementformulaireDeRecherche($request);
+            $this->getLogger()->info("API Devis Neg: Critères de recherche extraits.", ['criteria' => json_encode($criteria)]);
 
             $devisNeg = $this->getDataDevisNegEnDto($page, $limit, $criteria);
+            
+            // Vérifier s'il y a eu de l'output parasite (Warning, Notice PHP)
+            $outputParasite = ob_get_contents();
+            if (!empty($outputParasite)) {
+                $this->getLogger()->warning("API Devis Neg: Sortie parasite détectée (sera nettoyée).", ['output' => $outputParasite]);
+            }
 
-            ob_end_clean(); // Supprime tout output parasite avant d'envoyer le JSON
+            ob_end_clean(); 
             return new JsonResponse([
                 'success' => true,
                 'data' => $devisNeg,
             ]);
         } catch (\Throwable $e) {
-            ob_end_clean(); // Supprime tout output parasite (warnings HTML, etc.)
+            $outputParasite = ob_get_contents();
+            ob_end_clean();
+
+            $this->getLogger()->error("API Devis Neg: Erreur critique lors de la récupération.", [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'output_parasite' => $outputParasite,
+                'trace' => $e->getTraceAsString()
+            ]);
+
             return new JsonResponse([
                 'success' => false,
                 'message' => 'Une erreur est survenue lors de la récupération des données.',
                 'error' => $e->getMessage(),
+                'output_detected' => !empty($outputParasite) ? 'Yes' : 'No'
             ], 500);
         }
     }
