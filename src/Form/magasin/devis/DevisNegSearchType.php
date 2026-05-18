@@ -90,6 +90,7 @@ class DevisNegSearchType extends AbstractType
                 'service_label' => 'Service Emetteur',
                 'agence_placeholder' => '-- Agence Emetteur --',
                 'service_placeholder' => '-- Service Emetteur --',
+                'service_codes' => ['300', '305', '310', '330', '335', '360', '380'],
                 'em' => $options['em'] ?? null,
                 // 'data_agence' => $options['data']->getEmetteur()['agence'] ?? null,
                 // 'data_service' => $options['data']->getEmetteur()['service'] ?? null,
