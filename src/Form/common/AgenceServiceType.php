@@ -56,6 +56,15 @@ class AgenceServiceType extends AbstractType
     private function addServiceField(FormInterface $form, ?Agence $agence, array $options): void
     {
         $services = $agence ? $agence->getServices() : (isset($options['data_agence']) && $options['data_agence'] ? $options['data_agence']->getServices() : null);
+        
+        // Filtrage par codes de service si spécifié
+        if (!empty($options['service_codes']) && $services !== null) {
+            if ($services instanceof \Doctrine\Common\Collections\Collection || is_array($services)) {
+                $services = array_filter(is_array($services) ? $services : $services->toArray(), function($s) use ($options) {
+                    return in_array($s->getCodeService(), $options['service_codes']);
+                });
+            }
+        }
 
         $em = $form->getConfig()->getOption('em') ?? EntityManagerHelper::getEntityManager();
 
@@ -63,11 +72,20 @@ class AgenceServiceType extends AbstractType
         // On construit un ChoiceType plat et on transforme le retour en objet métier via DataTransformer
         if ($services === null && $em) {
             try {
+                $whereServiceCodes = "";
+                if (!empty($options['service_codes'])) {
+                    $codes = implode("','", array_map(function($c) use ($em) { return $em->getConnection()->quote($c); }, $options['service_codes']));
+                    // Attention: $em->getConnection()->quote() ajoute déjà les quotes, on ne veut pas les doubler si on implode avec ','
+                    // On va plutôt utiliser une approche plus simple et sûre
+                    $quotedCodes = array_map(function($c) use ($em) { return $em->getConnection()->quote($c); }, $options['service_codes']);
+                    $whereServiceCodes = " WHERE s.code_service IN (" . implode(",", $quotedCodes) . ")";
+                }
+
                 $sql = "
                     SELECT s.id, s.code_service, s.libelle_service, asrv.agence_id 
                     FROM services s
                     LEFT JOIN agence_service asrv ON s.id = asrv.service_id
-                ";
+                    " . $whereServiceCodes;
                 $results = $em->getConnection()->fetchAllAssociative($sql);
 
                 $choices = [];
@@ -200,6 +218,7 @@ class AgenceServiceType extends AbstractType
             'service_placeholder' => '-- Choisir un service--',
             'service_required' => false,
             'agence_codes' => [],
+            'service_codes' => [],
             'data_agence' => null,
             'data_service' => null,
         ]);
