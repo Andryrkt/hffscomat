@@ -14,21 +14,22 @@ class PlanningMagasinModel extends Model
 
     public function recuperationAgenceDebite(string $codeSociete)
     {
+        $suc_neg = $_ENV['SUC_NEG'];
         $statement = "SELECT  trim(asuc_lib) as asuc_lib,
                             trim(asuc_num) as asuc_num
                     FROM  agr_succ , sav_itv 
                     WHERE asuc_num = sitv_succdeb 
                     AND asuc_codsoc = '$codeSociete'
-                    AND asuc_num in ('1')
+                    AND asuc_num in ($suc_neg)
                     group by 1,2
                     order by asuc_num";
         $result = $this->connect->executeQuery($statement);
         $data = $this->connect->fetchResults($result);
         $dataUtf8 = $this->convertirEnUtf8($data);
 
-        $result = []; // ex: "01 ANTANANARIVO" => "01"
+        $result = []; // ex: "1-SCOMAT PAILLES" => "1"
         foreach ($dataUtf8 as $item) {
-            $key = $item['asuc_num'] . ' ' . $item['asuc_lib'];
+            $key = $item['asuc_num'] . '-' . $item['asuc_lib'];
             $result[$key] = $item['asuc_num'];
         }
 
@@ -60,7 +61,7 @@ class PlanningMagasinModel extends Model
         return array_map(function ($item) {
             return [
                 "value" => $item['atab_code'],
-                "text"  => $item['atab_lib']
+                "text"  => $item['atab_code'].'-'.$item['atab_lib']
             ];
         }, $dataUtf8);
     }
