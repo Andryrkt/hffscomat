@@ -16,7 +16,7 @@ class VerificationPrixFactory
         $dto->typeSoumission = $typeSoumission;
         $dto->numeroDevis = $numeroDevis;
         $dto->constructeur = trim(self::getContructeur($dto));
-        $dto->validationPm = $dto->constructeur === 'TOUS NEST PAS CAT' ? TRUE : FALSE;
+        $dto->validationPm =  TRUE ;
         $dto->codeSociete = $codeSociete;
         $dto->remoteUrlCourt = self::getLastEditedDevis($numeroDevis)["court"];
 

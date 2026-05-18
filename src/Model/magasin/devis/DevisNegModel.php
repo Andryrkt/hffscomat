@@ -71,17 +71,17 @@ class DevisNegModel extends Model
                 ,nent.nent_devise                                           AS devise
                 ,(SELECT MAX(nlig_constp) FROM {$this->dbIps}:informix.neg_lig WHERE nlig_numcde = nent.nent_numcde AND nlig_codg='ST') AS constructeur
                 , (SELECT numero_bcc_neg 
-                    FROM magix_frm3300:informix.DW_BC_Client_Negoce 
+                    FROM {$this->dbIrium}:informix.DW_BC_Client_Negoce 
                     WHERE numero_devis = nent.nent_numcde 
                         AND id_bcc_neg = (SELECT MAX(id_bcc_neg) 
-                                        FROM magix_frm3300:informix.DW_BC_Client_Negoce 
+                                        FROM {$this->dbIrium}:informix.DW_BC_Client_Negoce 
                                         WHERE numero_devis = nent.nent_numcde)
                 ) AS numero_po
                 , (SELECT path
-                    FROM magix_frm3300:informix.DW_BC_Client_Negoce 
+                    FROM {$this->dbIrium}:informix.DW_BC_Client_Negoce 
                     WHERE numero_devis = nent.nent_numcde 
                         AND id_bcc_neg = (SELECT MAX(id_bcc_neg) 
-                                        FROM magix_frm3300:informix.DW_BC_Client_Negoce 
+                                        FROM {$this->dbIrium}:informix.DW_BC_Client_Negoce 
                                         WHERE numero_devis = nent.nent_numcde)
                 ) AS path
             FROM {$this->dbIps}:informix.neg_ent nent
@@ -233,10 +233,10 @@ class DevisNegModel extends Model
                 ,nent.nent_devise                                           AS devise
                 ,(SELECT MAX(nlig_constp) FROM {$this->dbIps}:informix.neg_lig WHERE nlig_numcde = nent.nent_numcde AND nlig_codg='ST') AS constructeur
 , (SELECT numero_bcc_neg 
-                    FROM magix_frm3300:informix.DW_BC_Client_Negoce 
+                    FROM {$this->dbIrium}:informix.DW_BC_Client_Negoce 
                     WHERE numero_devis = nent.nent_numcde 
                         AND id_bcc_neg = (SELECT MAX(id_bcc_neg) 
-                                        FROM magix_frm3300:informix.DW_BC_Client_Negoce 
+                                        FROM {$this->dbIrium}:informix.DW_BC_Client_Negoce 
                                         WHERE numero_devis = nent.nent_numcde)
                 ) AS numero_po
             FROM {$this->dbIps}:informix.neg_ent nent
@@ -259,7 +259,7 @@ class DevisNegModel extends Model
                     ,COUNT(*) AS nb_relances
                     ,MAX(date_de_relance) AS derniere_relance
                     ,(TODAY - DATE(MAX(date_de_relance))) AS delai_jours
-                FROM magix_frm3300:Informix.pointage_relance
+                FROM {$this->dbIrium}:Informix.pointage_relance
                 GROUP BY 1
             ) rl ON rl.num_dev = nent.nent_numcde
             WHERE nent.nent_natop    = 'DEV'

@@ -175,12 +175,7 @@ class DevisNegVerificationPrixController extends Controller
 
     private function estValidationPm(SoumissionDto $dto): bool
     {
-        if ($dto->constructeur === 'TOUS NEST PAS CAT') {
-            return true;
-        } elseif ($dto->constructeur === 'TOUT CAT' && $dto->validationPm === true) {
-            return true;
-        }
-        return false;
+        return true;
     }
 
     /** 
