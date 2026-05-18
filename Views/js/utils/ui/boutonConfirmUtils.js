@@ -181,7 +181,7 @@ async function showConfirmationDialog(messages) {
 // Affichage de l'avertissement après confirmation
 async function showWarningDialog(warningMessage) {
   await Swal.fire({
-    title: "Fait Attention!",
+    title: "Fais Attention!",
     text: warningMessage,
     icon: "warning",
   });
