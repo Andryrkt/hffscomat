@@ -66,6 +66,22 @@ class PlanningMagasinModel extends Model
         }, $dataUtf8);
     }
 
+    private function numcommande($criteria)
+    {
+        if (!empty($criteria->getNumOr())) {
+            $numCommande = "AND CASE
+            WHEN NLIG_natcm = 'C' THEN
+                NLIG_numcf
+            WHEN NLIG_natcm = 'L' THEN
+                (SELECT MAX(fllf_numcde) FROM frn_llf WHERE fllf_numliv = NLIG_numcf
+                          AND fllf_ligne = NLIG_noligncm
+                          AND fllf_refp = NLIG_refp)
+         END  = '" . $criteria->getNumOr() . "' ";
+        } else {
+            $numCommande = "";
+        }
+        return $numCommande;
+    }
 
     public function recuperationCommadeplanifier(
         PlanningMagasinSearch $criteria, 
