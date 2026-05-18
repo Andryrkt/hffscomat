@@ -58,24 +58,25 @@ class ListeDevisNegController extends Controller
      */
     public function getApiData(Request $request)
     {
+        $logger = $this->getLogger();
         // On commence à capturer tout output inattendu
         ob_start();
 
         try {
-            $this->getLogger()->info("API Devis Neg: Début de la récupération des données.");
+            if ($logger) $logger->info("API Devis Neg: Début de la récupération des données.");
 
             $page = $request->query->getInt('page', 1);
             $limit = $request->query->getInt('limit', 500);
             
             [, $criteria] = $this->creationEtTraitementformulaireDeRecherche($request);
-            $this->getLogger()->info("API Devis Neg: Critères de recherche extraits.", ['criteria' => json_encode($criteria)]);
+            if ($logger) $logger->info("API Devis Neg: Critères de recherche extraits.", ['criteria' => json_encode($criteria)]);
 
             $devisNeg = $this->getDataDevisNegEnDto($page, $limit, $criteria);
             
             // Vérifier s'il y a eu de l'output parasite (Warning, Notice PHP)
             $outputParasite = ob_get_contents();
-            if (!empty($outputParasite)) {
-                $this->getLogger()->warning("API Devis Neg: Sortie parasite détectée (sera nettoyée).", ['output' => $outputParasite]);
+            if (!empty($outputParasite) && $logger) {
+                $logger->warning("API Devis Neg: Sortie parasite détectée (sera nettoyée).", ['output' => $outputParasite]);
             }
 
             ob_end_clean(); 
@@ -87,13 +88,18 @@ class ListeDevisNegController extends Controller
             $outputParasite = ob_get_contents();
             ob_end_clean();
 
-            $this->getLogger()->error("API Devis Neg: Erreur critique lors de la récupération.", [
-                'message' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'output_parasite' => $outputParasite,
-                'trace' => $e->getTraceAsString()
-            ]);
+            if ($logger) {
+                $logger->error("API Devis Neg: Erreur critique lors de la récupération.", [
+                    'message' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'output_parasite' => $outputParasite,
+                    'trace' => $e->getTraceAsString()
+                ]);
+            } else {
+                // Fallback si le logger n'est pas dispo
+                error_log("API Devis Neg Error: " . $e->getMessage() . " in " . $e->getFile() . ":" . $e->getLine());
+            }
 
             return new JsonResponse([
                 'success' => false,
