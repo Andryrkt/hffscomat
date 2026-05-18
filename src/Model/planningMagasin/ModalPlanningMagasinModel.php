@@ -28,7 +28,7 @@ class ModalPlanningMagasinModel extends Model
         trim(A.NLIG_refp) as ref,
         trim(A.NLIG_desi) as desi,
         CASE  
-            WHEN nvl(A.NLIG_numcf,0) > 0 THEN (A.NLIG_QTECDE - A.NLIG_QTEALIV)
+            WHEN nvl(A.NLIG_numcf,0) > 0 THEN (A.NLIG_QTECDE - (A.NLIG_QTEALIV+A.NLIG_QTELIV))
             ELSE 0
         END AS QteReliquat,
         A.NLIG_QTECDE AS QteRes_Or,
