@@ -10,7 +10,7 @@ use App\Entity\planningMagasin\PlanningMagasinSearch;
 class PlanningMagasinModel extends Model
 {
     use planningMagasinModelTrait;
-    
+
 
     public function recuperationAgenceDebite(string $codeSociete)
     {
@@ -37,7 +37,7 @@ class PlanningMagasinModel extends Model
     }
 
 
-    public function recuperationServiceDebite($agence)
+    public function recuperationServiceDebite(string $agence)
     {
 
         if ($agence === null) {
@@ -61,7 +61,7 @@ class PlanningMagasinModel extends Model
         return array_map(function ($item) {
             return [
                 "value" => $item['atab_code'],
-                "text"  => $item['atab_code'].'-'.$item['atab_lib']
+                "text"  => $item['atab_code'] . '-' . $item['atab_lib']
             ];
         }, $dataUtf8);
     }
@@ -84,13 +84,12 @@ class PlanningMagasinModel extends Model
     }
 
     public function recuperationCommadeplanifier(
-        PlanningMagasinSearch $criteria, 
-        string $condition, 
-        array $tousLesBCSoumis, 
+        PlanningMagasinSearch $criteria,
+        string $condition,
+        array $tousLesBCSoumis,
         string $codeAgence,
         string $codeSociete
-        )
-    {
+    ) {
 
         if ($criteria->getOrNonValiderDw() == true) {
             $value = TableauEnStringService::like($tousLesBCSoumis, 'nent_libcde');
