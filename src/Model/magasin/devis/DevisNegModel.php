@@ -203,7 +203,6 @@ class DevisNegModel extends Model
                         THEN 'A relancer'
                     ELSE NULL
                 END AS statut_relance_1
-
                 -- Pour statut_relance_2
                 ,CASE
                     WHEN rl.date_relance2 IS NOT NULL
@@ -213,14 +212,7 @@ class DevisNegModel extends Model
                         AND rl.delai_jours >= 7
                         AND (dneg.stop_progression_global = 0 OR dneg.stop_progression_global IS NULL)
                         THEN 'A relancer'
-                    WHEN dneg.statut_bc = 'En attente bc'
-                        AND rl.nb_relances = 1
-                        AND rl.delai_jours < 7
-                        THEN NULL
-                    WHEN dneg.statut_bc = 'En attente bc'
-                        AND dneg.stop_progression_global = 1
-                        THEN NULL
-                    ELSE NVL(TO_CHAR(rl.date_relance2, '%d/%m/%Y'), TO_CHAR(rl.derniere_relance, '%d/%m/%Y'))
+                    ELSE NULL
                 END AS statut_relance_2
 
                 -- Pour statut_relance_3
@@ -232,13 +224,7 @@ class DevisNegModel extends Model
                         AND rl.delai_jours >= 7
                         AND (dneg.stop_progression_global = 0 OR dneg.stop_progression_global IS NULL)
                         THEN 'A relancer'
-                    WHEN dneg.statut_bc = 'En attente bc'
-                        AND (rl.nb_relances < 2 OR (rl.nb_relances = 2 AND rl.delai_jours < 7))
-                        THEN NULL
-                    WHEN dneg.statut_bc = 'En attente bc'
-                        AND dneg.stop_progression_global = 1
-                        THEN NULL
-                    ELSE TO_CHAR(rl.derniere_relance, '%d/%m/%Y')
+                    ELSE NULL
                 END AS statut_relance_3
 
                 ,nent.nent_posl                                             AS position_ips
@@ -246,7 +232,13 @@ class DevisNegModel extends Model
                 ,dneg.utilisateur                                           AS soumis_par
                 ,nent.nent_devise                                           AS devise
                 ,(SELECT MAX(nlig_constp) FROM {$this->dbIps}:informix.neg_lig WHERE nlig_numcde = nent.nent_numcde AND nlig_codg='ST') AS constructeur
-
+, (SELECT numero_bcc_neg 
+                    FROM magix_frm3300:informix.DW_BC_Client_Negoce 
+                    WHERE numero_devis = nent.nent_numcde 
+                        AND id_bcc_neg = (SELECT MAX(id_bcc_neg) 
+                                        FROM magix_frm3300:informix.DW_BC_Client_Negoce 
+                                        WHERE numero_devis = nent.nent_numcde)
+                ) AS numero_po
             FROM {$this->dbIps}:informix.neg_ent nent
 
             LEFT JOIN {$this->dbIps}:informix.agr_usr ausr
@@ -260,17 +252,16 @@ class DevisNegModel extends Model
 
             LEFT JOIN (
                 SELECT
-                    numero_devis
-                    ,code_societe
+                    numero_devis as num_dev
                     ,MAX(CASE WHEN numero_relance = 1 THEN date_de_relance ELSE NULL END) AS date_relance1
                     ,MAX(CASE WHEN numero_relance = 2 THEN date_de_relance ELSE NULL END) AS date_relance2
                     ,MAX(CASE WHEN numero_relance = 3 THEN date_de_relance ELSE NULL END) AS date_relance3
                     ,COUNT(*) AS nb_relances
                     ,MAX(date_de_relance) AS derniere_relance
                     ,(TODAY - DATE(MAX(date_de_relance))) AS delai_jours
-                FROM {$this->dbIrium}:Informix.pointage_relance
-                GROUP BY 1,2
-            ) rl ON rl.numero_devis = nent.nent_numcde AND rl.code_societe = nent.nent_soc
+                FROM magix_frm3300:Informix.pointage_relance
+                GROUP BY 1
+            ) rl ON rl.num_dev = nent.nent_numcde
             WHERE nent.nent_natop    = 'DEV'
                 -- AND nent.nent_servcrt  <> 'ASS'
                 -- AND nent.nent_numcli   NOT BETWEEN 1990000 AND 1999999
