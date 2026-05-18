@@ -112,7 +112,13 @@ class DatabaseInformix implements DatabaseConnectionInterface
             }
             return $result;
         } catch (\Exception $e) {
-            $this->logMessage('error', $e->getMessage());
+            $errorMsg = sprintf(
+                "ODBC Error: %s | Query: %s | Params: %s",
+                $e->getMessage(),
+                $query,
+                json_encode($params)
+            );
+            $this->logMessage('error', $errorMsg);
             throw $e;
         }
     }
