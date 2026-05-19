@@ -15,4 +15,5 @@ class DevisSearchDto
     public ?string $CreePar = null;
     public ?string $numeroPO = null;
     public ?string $filterRelance = null;
+    public $services;
 }

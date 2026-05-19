@@ -12,6 +12,7 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use App\Entity\admin\Agence;
 
 class DevisNegSearchType extends AbstractType
 {
@@ -33,6 +34,16 @@ class DevisNegSearchType extends AbstractType
         'Relance 1 en cours' => 'R1_EN_COURS',
         'Relance 2 en cours' => 'R2_EN_COURS',
         'Relance 3 en cours' => 'R3_EN_COURS',
+    ];
+
+    private const SERVICES = [
+        '300 - PARTS' => '300',
+'305 - HOSE CENTER' => '305',
+'310 - PARTS MACHINE' => '310',
+'330 - PARTS GENSET' => '330',
+'335 - PARTS AGRI' => '335',
+'360 - PARTS UPS' => '360',
+'380 - PARTS TRUCKS & BUSES' => '380'
     ];
 
     public function buildForm(FormBuilderInterface $builder, array $options)
@@ -83,18 +94,24 @@ class DevisNegSearchType extends AbstractType
                 'required' => false,
                 // 'data' => $options['data']->getFilterRelance(),
             ])
-            ->add('emetteur', AgenceServiceType::class, [
-                'label' => false,
-                'required' => false,
-                'agence_label' => 'Agence Emetteur',
-                'service_label' => 'Service Emetteur',
-                'agence_placeholder' => '-- Agence Emetteur --',
-                'service_placeholder' => '-- Service Emetteur --',
-                'service_codes' => ['300', '305', '310', '330', '335', '360', '380'],
-                'em' => $options['em'] ?? null,
-                // 'data_agence' => $options['data']->getEmetteur()['agence'] ?? null,
-                // 'data_service' => $options['data']->getEmetteur()['service'] ?? null,
+            ->add('services', ChoiceType::class, [
+                'label' => 'Services emetteur',
+                'placeholder' => '-- Service Emetteur -- ',
+                'choices' => self::SERVICES,
+                'required' => false
             ])
+            // ->add('emetteur', AgenceServiceType::class, [
+            //     'label' => false,
+            //     'required' => false,
+            //     'agence_label' => 'Agence Emetteur',
+            //     'service_label' => 'Service Emetteur',
+            //     'agence_placeholder' => '-- Agence Emetteur --',
+            //     'service_placeholder' => '-- Service Emetteur --',
+            //     'service_codes' => ['300', '305', '310', '330', '335', '360', '380'],
+            //     'em' => $options['em'] ?? null,
+            //     'data_agence' => $options['em']->getRepository(Agence::class)->find(1),
+            //     // 'data_service' => $options['data']->getEmetteur()['service'] ?? null,
+            // ])
             // ->add('debitteur', AgenceServiceType::class, [
             //     'label' => false,
             //     'required' => false,

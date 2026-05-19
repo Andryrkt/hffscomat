@@ -150,8 +150,11 @@ class DevisNegModel extends Model
                 $statement .= " AND " . implode(" AND ", $whereClauses);
             }
 
+            $statement .= " AND nent.nent_numcde not in (select nent2.nent_numcde from {$this->dbIps}:informix.neg_ent nent2 where nent2.nent_posl ='TR' and nent2.nent_numcde not in (select dneg2.numero_devis from {$this->dbIrium}:Informix.devis_soumis_a_validation_neg dneg2))";
+
             $statement .= " ORDER BY date_cde_brute DESC";
 
+            dump($statement);
             $result = $this->connect->executeQuery($statement);
             $rows = $this->connect->fetchResults($result);
 
@@ -391,20 +394,20 @@ class DevisNegModel extends Model
         }
 
         // Filtre par statut IPS (Position IPS) - on l'ajoute seulement s'il n'a pas déjà été traité dans getDevisNeg
-        if (!empty($criteria['statutIps']) && !in_array($criteria['statutIps'], ['RE', 'TR'])) {
+        if (!empty($criteria['statutIps'])) {
             $whereClauses[] = " TRIM(nent.nent_posl) = '" . $criteria['statutIps'] . "' ";
         }
 
         //Filtre par agence émetteur
-        if (!empty($criteria['emetteur']['agence']) && method_exists($criteria['emetteur']['agence'], 'getCodeAgence')) {
-            $agenceCode = $criteria['emetteur']['agence']->getCodeAgence();
-            $whereClauses[] = " nent.nent_succ = '" . $agenceCode . "' ";
-        }
+        // if (!empty($criteria['emetteur']['agence']) && method_exists($criteria['emetteur']['agence'], 'getCodeAgence')) {
+        //     $agenceCode = $criteria['emetteur']['agence']->getCodeAgence();
+        //     $whereClauses[] = " nent.nent_succ = '" . $agenceCode . "' ";
+        // }
 
         //Filtre par service émetteur
-        if (!empty($criteria['emetteur']['service']) && method_exists($criteria['emetteur']['service'], 'getCodeService')) {
-            $serviceCode = $criteria['emetteur']['service']->getCodeService();
-            $whereClauses[] = " nent.nent_servcrt = '" . $serviceCode . "' ";
+        if (!empty($criteria['services'])){
+            // $serviceCode = $criteria['emetteur']['service']->getCodeService();
+            $whereClauses[] = " nent.nent_servcrt = '".$criteria['services']."' ";
         }
 
         // Filtre par date de création (Plage de dates)

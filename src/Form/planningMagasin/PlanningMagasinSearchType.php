@@ -89,7 +89,7 @@ class PlanningMagasinSearchType extends AbstractType
                 'required' => false,
             ])
             ->add('numOr', TextType::class, [
-                'label' => "N° Commande",
+                'label' => "N° Commande FRN",
                 'required' => false
             ])
 
