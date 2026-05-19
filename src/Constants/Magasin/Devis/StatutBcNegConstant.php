@@ -7,6 +7,7 @@ class StatutBcNegConstant
     public const SOUMIS_VALIDATION = 'Soumis à validation';
     public const EN_ATTENTE_BC     = 'En attente bc';
     public const VALIDER           = 'Validé';
+    public const A_VALIDER_PM = 'A valider PM';
 
     public const STATUTS_BC = [
         self::SOUMIS_VALIDATION => self::SOUMIS_VALIDATION,
@@ -17,7 +18,8 @@ class StatutBcNegConstant
     public const CSS_CLASS_MAP_STATUT_BC = [
         self::SOUMIS_VALIDATION => 'bg-bc-soumis-validation',
         self::EN_ATTENTE_BC     => 'bg-bc-en-attente',
-        self::VALIDER           => 'bg-bc-valide'
+        self::VALIDER           => 'bg-bc-valide',
+        self::A_VALIDER_PM      => 'bg-prix-a-confirmer'
     ];
 
     public static function getCssClassBC(string $statut): string
