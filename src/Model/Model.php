@@ -26,8 +26,8 @@ class Model
         $this->connexion = new Connexion();
         $this->connect = new DatabaseInformix($logger);
 
-        $this->dbIrium = $_ENV['DB_NAME_IRIUM'] ?? 'ir_prod108';
-        $this->dbIps = $_ENV['DB_NAME_IPS'] ?? 'ips_hffprod';
+        $this->dbIrium = $_ENV['DB_NAME_IRIUM'] ?? 'magix_frm3300';
+        $this->dbIps = $_ENV['DB_NAME_IPS'] ?? 'ips_scomat';
 
         // On force la connexion pour ne pas casser les modèles enfants existants
         try {

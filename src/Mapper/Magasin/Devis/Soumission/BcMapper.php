@@ -12,8 +12,8 @@ class BcMapper
         return [
             'numero_devis' => $dto->numeroDevis,
             'numero_bc' => $dto->numeroBc,
-            'montant_devis' => $dto->montantDevis,
-            'montant_bc' => $dto->montantBc,
+            'montant_devis' => (float)$dto->montantDevis,
+            'montant_bc' => (float)$dto->montantBc,
             'numero_version' => $dto->numeroVersion,
             'statut_bc' => $dto->statutBc,
             'observations' => $dto->observation,
