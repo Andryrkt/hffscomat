@@ -337,10 +337,8 @@ class DevisNegModel extends Model
             $whereClauses[] = " dneg.utilisateur LIKE '%" . $criteria['Operateur'] . "%' ";
         }
 
-        // Filtre par numéro de PO
-        if (!empty($criteria['numeroPO'])) {
-            $whereClauses[] = " TRIM(nent.nent_refcde) LIKE '%" . $criteria['numeroPO'] . "%' ";
-        }
+        
+        
 
         // Filtre par utilisateur créateur
         if (!empty($criteria['CreePar'])) {
@@ -458,6 +456,17 @@ class DevisNegModel extends Model
                     $whereClauses[] = " (rl.date_relance3 IS NOT NULL) ";
                     break;
             }
+        }
+// Filtre par numéro de PO
+        if(!empty($criteria['numeroPO'])) {
+            $numeroPO = $criteria['numeroPO'];
+            $whereClauses[] = " (SELECT numero_bcc_neg 
+                    FROM {$this->dbIrium}:informix.DW_BC_Client_Negoce 
+                    WHERE numero_devis = nent.nent_numcde 
+                        AND id_bcc_neg = (SELECT MAX(id_bcc_neg) 
+                                        FROM {$this->dbIrium}:informix.DW_BC_Client_Negoce 
+                                        WHERE numero_devis = nent.nent_numcde)
+                ) LIKE '%$numeroPO%'";
         }
     }
 
