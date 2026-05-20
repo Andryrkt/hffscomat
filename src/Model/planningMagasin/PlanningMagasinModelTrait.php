@@ -103,4 +103,15 @@ trait planningMagasinModelTrait
 
         return $orNonValiderDW;
     }
+
+    private function orBackOrder($criteria)
+    {
+        if(!empty($criteria->getOrBackOrder()) && $criteria->getOrBackOrder()) {
+            $orBackOrder = " AND nent_numcde in ('0')";
+        } else {
+            $orBackOrder = "";
+        }
+
+        return $orBackOrder;
+    }
 }

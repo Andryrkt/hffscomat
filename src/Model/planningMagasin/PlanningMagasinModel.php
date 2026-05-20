@@ -133,6 +133,7 @@ class PlanningMagasinModel extends Model
         $refClient = $this->refClient($criteria);
         $numeroDevis = $this->numeroDevis($criteria);
         $orNonValideDW = $this->orNonValiderDW($criteria);
+        $orBackOrder = $this->orBackOrder($criteria);
         $piecesMagasin = GlobalVariablesService::get('pieces_magasin');
         $statement = "SELECT 
                         trim(nent_succ)                          AS codeSuc,
@@ -226,6 +227,7 @@ WHERE
    AND NOT nent_numcli BETWEEN 1800000 AND 1999999
                         
                         $orNonValideDW
+                        $orBackOrder
                         $numCmd
                         $agDebit
                         $servDebit
