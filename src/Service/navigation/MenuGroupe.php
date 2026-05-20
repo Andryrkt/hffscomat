@@ -24,8 +24,16 @@ class MenuGroupe
      * Si link
      *==========================================================================*/
 
-
-
+    public static function documentationGroupes(): array
+    {
+        return [
+            [
+                'route'    => 'documentation_interne',
+                'label'    => 'Documentation interne',
+                'icon'     => 'folder-tree',
+            ],
+        ];
+    }
 
     public static function magasinGroupes(): array
     {

@@ -134,6 +134,7 @@ class MenuService
     public function construireMenuPrincipal(): array
     {
         $modules = [
+            ['id' => 'documentationModal', 'title' => 'Documentation', 'icon' => 'book',           'groupes' => MenuGroupe::documentationGroupes()],
             ['id' => 'magasinModal',       'title' => 'Magasin',       'icon' => 'dolly',          'groupes' => MenuGroupe::magasinGroupes()]
         ];
 
