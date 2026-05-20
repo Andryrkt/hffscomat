@@ -4,19 +4,21 @@ import { displayOverlay } from "../utils/ui/overlay";
 
 document.addEventListener("DOMContentLoaded", function () {
   const fetchManager = new FetchManager();
-  const buttons = [
-    "partiellement-livre",
-    "partiellement-dispo",
-    "complet-non-livre",
-    "back-order",
-    "tout-afficher",
-  ];
-  buttons.forEach((buttonId) => {
-    const button = document.getElementById(buttonId);
-    button.addEventListener("click", function () {
-      displayOverlay(true);
-    });
-  });
+//   const buttons = [
+//     "partiellement-livre",
+//     "partiellement-dispo",
+//     "complet-non-livre",
+//     "back-order",
+//     "tout-afficher",
+//   ];
+//   buttons.forEach((buttonId) => {
+//     const button = document.getElementById(buttonId);
+//     button.addEventListener("click", function () {
+//       displayOverlay(true);
+//       console.log('okey');
+      
+//     });
+//   });
   // // Ajoute un gestionnaire d'événement pour chaque bouton
   // for (const [buttonId, filterClass] of Object.entries(buttons)) {
   //   const button = document.getElementById(buttonId);

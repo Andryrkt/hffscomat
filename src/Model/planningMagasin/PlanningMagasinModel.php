@@ -91,13 +91,6 @@ class PlanningMagasinModel extends Model
         string $codeSociete
     ) {
 
-        if ($criteria->getOrNonValiderDw() == true) {
-            $value = TableauEnStringService::like($tousLesBCSoumis, 'nent_libcde');
-            $numDevis = " AND  ($value) ";
-        } else {
-            $numDevis = "";
-        }
-
         switch ($condition) {
             case 'partiel_facture':
                 $partFact = $this->bcPartielFacture($codeSociete);
@@ -125,6 +118,9 @@ class PlanningMagasinModel extends Model
                     $partcompleString = '';
                 }
                 $numCmd = "AND nent_numcde in (" . $partcompleString . ")";
+                break;
+            case 'back_order':
+                $numCmd = " AND nent_numcde in ('0')";
                 break;
             default:
                 $numCmd = $this->numcommande($criteria);
@@ -184,11 +180,8 @@ class PlanningMagasinModel extends Model
                         AND nent_posf not in ('CP', 'FC')
                         AND to_char(nent_numcli) not like '150%'
                         AND not nent_numcli between 1800000 and 1999999
-                        --AND trim(nent_succ) in ('01', '20', '30', '40')
-                        --AND trim(nent_servcrt) <> 'ASS'
-                        --AND nlig_constp IN ($piecesMagasin)
+                        
                 
-                        $numDevis
                         $numCmd
                         $agDebit
                         $servDebit
@@ -198,7 +191,7 @@ class PlanningMagasinModel extends Model
                         $numeroDevis
                         group by 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15
                         order by 12 desc, 13 desc";
-        // dump($statement);
+        // dd($statement);
         $result = $this->connect->executeQuery($statement);
         $data = $this->connect->fetchResults($result);
         $resultat = $this->convertirEnUtf8($data);
