@@ -6,6 +6,7 @@ use App\Controller\Controller;
 use App\Entity\dw\DocInternesearch;
 use App\Form\dw\DocInterneSearchType;
 use App\Entity\dw\DwProcessusProcedure;
+use App\Repository\dw\DwProcessusProcedureRepository;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -36,7 +37,9 @@ class DocumentationProcessusController extends Controller
         $page = $request->query->getInt('page', 1);
         $limit = 30;
 
-        $paginationData = $this->getEntityManager()->getRepository(DwProcessusProcedure::class)->findPaginatedAndFiltered($page, $limit, $docInterneSearch);
+        /** @var DwProcessusProcedureRepository $repository */
+        $repository = $this->getEntityManager()->getRepository(DwProcessusProcedure::class);
+        $paginationData = $repository->findPaginatedAndFiltered($page, $limit, $docInterneSearch);
 
         return $this->render('dw/documentationInterne.html.twig', [
             'form'        => $form->createView(),
