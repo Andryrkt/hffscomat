@@ -2,7 +2,7 @@
 
 namespace App\Entity\planningMagasin;
 
-use App\Entity\admin\dit\WorNiveauUrgence;
+
 
 class PlanningMagasinSearch
 {
@@ -21,30 +21,19 @@ class PlanningMagasinSearch
     private $serviceDebite;
     private $typeligne;
     private $casier;
-    private ?WorNiveauUrgence $niveauUrgence = null;
+
     private $section;
     private $months;
     private ?bool $orBackOrder = false;
     private $typeDocument;
     private $reparationRealise;
-    private $orNonValiderDw;
+    private bool $orNonValiderDw = false;
     private $commercial;
     private $refCde;
     private $numeroDevis;
     private string $codeSociete;
 
-    public function getNiveauUrgence()
-    {
-        return $this->niveauUrgence;
-    }
 
-
-    public function setNiveauUrgence($niveauUrgence): self
-    {
-        $this->niveauUrgence = $niveauUrgence;
-
-        return $this;
-    }
 
     /**
      * Get the value of agence
