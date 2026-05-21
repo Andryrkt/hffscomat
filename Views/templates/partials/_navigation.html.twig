@@ -28,29 +28,6 @@
 
 				<!-- Menu utilisateur -->
 				<ul class="navbar-nav ms-lg-auto">
-					<li class="me-3">
-						<a class="app-version" href="{{ App.base_path_fichier }}/version/Versions Intranet 2026 04 13.pdf" target="_blank" role="button">
-							<i class="fas fas fa-tag"></i>
-							Version: V20260413.7.2.3
-						</a>
-					</li>
-					<li class="me-3">
-						<a class="guide-link" href="{{ App.base_path_fichier }}/documentation/Guide utilisateur intranet.pdf" target="_blank" role="button">
-							<i class="fas fa-info pe-2"></i>
-							Guide utilisateur intranet
-						</a>
-					</li>
-
-					{# Documentation Technique : visible uniquement si la route est accessible #}
-					{% if hasAcces('app_doc_tech_index') %}
-						<li class="me-3">
-							<a class="tech-doc-link" href="{{ path('app_doc_tech_index') }}" role="button">
-								<i class="fas fa-code pe-2"></i>
-								Documentation Technique
-							</a>
-						</li>
-					{% endif %}
-
 					<li class="nav-item dropdown">
 						<a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" id="userName" data-user-full-name="{{ App.userConnecter.fullname }}" aria-expanded="false" style="color: #fbbb01;">
 							<i class="fas fa-user pe-1"></i>
