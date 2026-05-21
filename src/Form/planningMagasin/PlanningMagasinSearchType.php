@@ -81,7 +81,7 @@ class PlanningMagasinSearchType extends AbstractType
         // $section = $this->planningMagasinModel->recuperationSection();
         $builder
             ->add('numeroDevis', TextType::class, [
-                'label' => 'N° Devis',
+                'label' => 'N° BC négoce',
                 'required' => false,
             ])
             ->add('commercial', TextType::class, [
