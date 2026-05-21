@@ -84,4 +84,12 @@ class TableauEnStringService
 
         return implode(' OR ', $tab);
     }
+    public static function notLike(array $numeroBc, string $nomColone): string
+    {
+        $tab = array_map(function ($value) use ($nomColone) {
+            return " $nomColone NOT LIKE '%$value%'";
+        }, $numeroBc);
+
+        return implode(' OR ', $tab);
+    }
 }

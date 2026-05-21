@@ -83,11 +83,22 @@ class PlanningMagasinModel extends Model
         return $numCommande;
     }
 
+    public function getNumeroDevisValideBcClient()
+    {
+        $statement = " SELECT bcsn.numero_devis from {$this->dbIrium}:informix.bc_client_soumis_neg bcsn where bcsn.statut_bc like 'Valid%'";
+        $result = $this->connect->executeQuery($statement);
+        $data = $this->connect->fetchResults($result);
+        $resultat = $this->convertirEnUtf8($data);
+
+        return array_column($resultat, 'numero_devis');
+    }
+
     public function recuperationCommadeplanifier(
         PlanningMagasinSearch $criteria,
         string $condition,
         string $codeAgence,
-        string $codeSociete
+        string $codeSociete,
+        array $numeroDevisValideBcClient
     ) {
 
         switch ($condition) {
@@ -132,99 +143,98 @@ class PlanningMagasinModel extends Model
         $commercial = $this->commercial($criteria);
         $refClient = $this->refClient($criteria);
         $numeroDevis = $this->numeroDevis($criteria);
-        $orNonValideDW = $this->orNonValiderDW($criteria);
+        $orNonValideDW = $this->orNonValiderDW($criteria, $numeroDevisValideBcClient);
         $orBackOrder = $this->orBackOrder($criteria);
         $piecesMagasin = GlobalVariablesService::get('pieces_magasin');
         $statement = "SELECT 
                         trim(nent_succ)                          AS codeSuc,
-    trim(asuc_lib)                           AS libSuc,
-    trim(nent_servcrt)                       AS codeServ,
-    trim(ser.atab_lib)                       AS libServ,
-    trim(nent_refcde)                        AS commentaire,
-    nent_numcli                              AS idMat,
-    trim(cbse_nomcli)                        AS markMat,
-    ''                                       AS typeMat,
-    ''                                       AS numSerie,
-    ''                                       AS numParc,
-    ''                                       AS casier,
-    year(nent_datexp)                        AS annee,
-    month(nent_datexp)                       AS mois,
-    nent_numcde                              AS orIntv,
-    TRIM((
-        SELECT atab_lib 
-        FROM ips_scomat:informix.agr_tab 
-        WHERE atab_code = nent_codope 
-          AND atab_nom  = 'OPE'
-    ))                                       AS commercial,
+                        trim(asuc_lib)                           AS libSuc,
+                        trim(nent_servcrt)                       AS codeServ,
+                        trim(ser.atab_lib)                       AS libServ,
+                        trim(nent_refcde)                        AS commentaire,
+                        nent_numcli                              AS idMat,
+                        trim(cbse_nomcli)                        AS markMat,
+                        ''                                       AS typeMat,
+                        ''                                       AS numSerie,
+                        ''                                       AS numParc,
+                        ''                                       AS casier,
+                        year(nent_datexp)                        AS annee,
+                        month(nent_datexp)                       AS mois,
+                        nent_numcde                              AS orIntv,
+                        TRIM((
+                            SELECT atab_lib 
+                            FROM ips_scomat:informix.agr_tab 
+                            WHERE atab_code = nent_codope 
+                            AND atab_nom  = 'OPE'
+                        ))                                       AS commercial,
 
-    -- QteCdm
-    CASE 
-        WHEN (
-                SUM(nlig_qteliv) > 0 
-                AND SUM(nlig_qteliv) != SUM(nlig_qtecde) 
-                AND SUM(nlig_qtecde) > (SUM(nlig_qteliv) + SUM(nlig_qtealiv))
-             )
-          OR (
-                SUM(nlig_qtecde) != SUM(nlig_qtealiv) 
-                AND SUM(nlig_qteliv) = 0 
-                AND SUM(nlig_qtealiv) > 0
-             )
-        THEN SUM(CASE WHEN nlig_constp NOT IN ('ZDI','Nmc') THEN nlig_qtecde ELSE 0 END)
-        ELSE SUM(nlig_qtecde) 
-    END                                      AS QteCdm,
+                        -- QteCdm
+                        CASE 
+                            WHEN (
+                                    SUM(nlig_qteliv) > 0 
+                                    AND SUM(nlig_qteliv) != SUM(nlig_qtecde) 
+                                    AND SUM(nlig_qtecde) > (SUM(nlig_qteliv) + SUM(nlig_qtealiv))
+                                )
+                            OR (
+                                    SUM(nlig_qtecde) != SUM(nlig_qtealiv) 
+                                    AND SUM(nlig_qteliv) = 0 
+                                    AND SUM(nlig_qtealiv) > 0
+                                )
+                            THEN SUM(CASE WHEN nlig_constp NOT IN ('ZDI','Nmc') THEN nlig_qtecde ELSE 0 END)
+                            ELSE SUM(nlig_qtecde) 
+                        END                                      AS QteCdm,
 
-    -- QteLiv
-    CASE 
-        WHEN (
-                SUM(nlig_qteliv) > 0 
-                AND SUM(nlig_qteliv) != SUM(nlig_qtecde) 
-                AND SUM(nlig_qtecde) > (SUM(nlig_qteliv) + SUM(nlig_qtealiv))
-             )
-          OR (
-                SUM(nlig_qtecde) != SUM(nlig_qtealiv) 
-                AND SUM(nlig_qteliv) = 0 
-                AND SUM(nlig_qtealiv) > 0
-             )
-        THEN SUM(CASE WHEN nlig_constp NOT IN ('ZDI','Nmc') THEN nlig_qteliv ELSE 0 END)
-        ELSE SUM(nlig_qteliv) 
-    END                                      AS qtliv,
+                        -- QteLiv
+                        CASE 
+                            WHEN (
+                                    SUM(nlig_qteliv) > 0 
+                                    AND SUM(nlig_qteliv) != SUM(nlig_qtecde) 
+                                    AND SUM(nlig_qtecde) > (SUM(nlig_qteliv) + SUM(nlig_qtealiv))
+                                )
+                            OR (
+                                    SUM(nlig_qtecde) != SUM(nlig_qtealiv) 
+                                    AND SUM(nlig_qteliv) = 0 
+                                    AND SUM(nlig_qtealiv) > 0
+                                )
+                            THEN SUM(CASE WHEN nlig_constp NOT IN ('ZDI','Nmc') THEN nlig_qteliv ELSE 0 END)
+                            ELSE SUM(nlig_qteliv) 
+                        END                                      AS qtliv,
 
-    -- QteALL
-    CASE 
-        WHEN (
-                SUM(nlig_qteliv) > 0 
-                AND SUM(nlig_qteliv) != SUM(nlig_qtecde) 
-                AND SUM(nlig_qtecde) > (SUM(nlig_qteliv) + SUM(nlig_qtealiv))
-             )
-          OR (
-                SUM(nlig_qtecde) != SUM(nlig_qtealiv) 
-                AND SUM(nlig_qteliv) = 0 
-                AND SUM(nlig_qtealiv) > 0
-             )
-        THEN SUM(CASE WHEN nlig_constp NOT IN ('ZDI','Nmc') THEN nlig_qtealiv ELSE 0 END)
-        ELSE SUM(nlig_qtealiv) 
-    END                                      AS QteALL
+                        -- QteALL
+                        CASE 
+                            WHEN (
+                                    SUM(nlig_qteliv) > 0 
+                                    AND SUM(nlig_qteliv) != SUM(nlig_qtecde) 
+                                    AND SUM(nlig_qtecde) > (SUM(nlig_qteliv) + SUM(nlig_qtealiv))
+                                )
+                            OR (
+                                    SUM(nlig_qtecde) != SUM(nlig_qtealiv) 
+                                    AND SUM(nlig_qteliv) = 0 
+                                    AND SUM(nlig_qtealiv) > 0
+                                )
+                            THEN SUM(CASE WHEN nlig_constp NOT IN ('ZDI','Nmc') THEN nlig_qtealiv ELSE 0 END)
+                            ELSE SUM(nlig_qtealiv) 
+                        END                                      AS QteALL
 
-FROM 
-    ips_scomat:informix.neg_ent
-    INNER JOIN ips_scomat:informix.neg_lig    ON  nlig_soc    = nent_soc
-                                              AND nlig_numcde = nent_numcde
-   	INNER JOIN ips_scomat:informix.agr_succ   ON  asuc_numsoc = nent_soc
-                                              AND asuc_num    = nent_succ
- 	INNER JOIN ips_scomat:informix.agr_tab ser ON  nent_servcrt  = ser.atab_code
-                                               AND ser.atab_nom  = 'SER'
-  
-    INNER JOIN ips_scomat:informix.agr_usr ope ON  ope.ausr_num  = nent_usr  
-    INNER JOIN ips_scomat:informix.cli_bse     ON  cbse_numcli   = nent_numcli
-    INNER JOIN ips_scomat:informix.cli_soc     ON  csoc_soc      = nent_soc
-                                               AND csoc_numcli   = cbse_numcli
+                    FROM 
+                        {$this->dbIps}:informix.neg_ent
+                        INNER JOIN {$this->dbIps}:informix.neg_lig      ON  nlig_soc      = nent_soc
+                                                                        AND nlig_numcde   = nent_numcde
+                        INNER JOIN {$this->dbIps}:informix.agr_succ     ON  asuc_numsoc   = nent_soc
+                                                                        AND asuc_num      = nent_succ
+                        INNER JOIN {$this->dbIps}:informix.agr_tab ser  ON  nent_servcrt  = ser.atab_code
+                                                                        AND ser.atab_nom  = 'SER'
+                        INNER JOIN {$this->dbIps}:informix.agr_usr ope  ON  ope.ausr_num  = nent_usr  
+                        INNER JOIN {$this->dbIps}:informix.cli_bse      ON  cbse_numcli   = nent_numcli
+                        INNER JOIN {$this->dbIps}:informix.cli_soc      ON  csoc_soc      = nent_soc
+                                                                        AND csoc_numcli   = cbse_numcli
 
-WHERE 
-    nent_soc     = '$codeSociete'
-   AND nent_natop NOT IN ('DEV')
-   AND nent_posf  NOT IN ('CP', 'FC')
-    AND TO_CHAR(nent_numcli) NOT LIKE '150%'
-   AND NOT nent_numcli BETWEEN 1800000 AND 1999999
+                    WHERE 
+                        nent_soc     = '$codeSociete'
+                    AND nent_natop NOT IN ('DEV')
+                    AND nent_posf  NOT IN ('CP', 'FC')
+                    AND TO_CHAR(nent_numcli) NOT LIKE '150%'
+                    AND NOT nent_numcli BETWEEN 1800000 AND 1999999
                         
                         $orNonValideDW
                         $orBackOrder
