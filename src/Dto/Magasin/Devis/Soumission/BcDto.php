@@ -2,10 +2,11 @@
 
 namespace App\Dto\Magasin\Devis\Soumission;
 
+
 class BcDto
 {
-    public $numeroDevis;
-    public $numeroBc;
+    public string $numeroDevis;
+    public ?string $numeroBc;
     public $montantDevis;
     public $montantBc;
     public $numeroVersion;
@@ -27,4 +28,6 @@ class BcDto
     public $modePayement;
 
     public $numeroVersionDevis;
+
+    public ?string $dateEnvoiDevisClient = null;
 }

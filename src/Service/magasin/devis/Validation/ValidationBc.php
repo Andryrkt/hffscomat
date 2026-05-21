@@ -47,6 +47,12 @@ class ValidationBc
             return true; // Validation failed
         }
 
+        // la date envoyer devis client est null (pointage client)
+        if (empty($bcDto->dateEnvoiDevisClient)) {
+            $message = 'Le pointage client est obligatoire pour la soumission du BC à validation.';
+            $this->sendNotificationDevisMagasin($message, $bcDto->numeroDevis, false);
+            return true; // Validation failed
+        }
 
         return false; // Validation passed
     }

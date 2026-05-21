@@ -5,17 +5,19 @@ namespace App\Factory\magasin\devis\Soumission;
 use App\Constants\Magasin\Devis\StatutBcNegConstant;
 use App\Dto\Magasin\Devis\Soumission\BcDto;
 use App\Dto\Magasin\Devis\Soumission\BcLigneDto;
+use App\Model\magasin\devis\DevisNegModel;
 use App\Model\magasin\devis\Soumission\BcModel;
 use App\Model\magasin\devis\Soumission\SoumissionModel;
 use App\Service\autres\VersionService;
 
 class BcFactory
 {
-    public function create($numeroDevis, $codeSociete): BcDto
+    public function create(string $numeroDevis, string $codeSociete): BcDto
     {
         $bcDto = new BcDto();
         $bcDto->numeroDevis = $numeroDevis;
         $bcDto->codeSociete = $codeSociete;
+        $bcDto->dateEnvoiDevisClient = $this->dateEnvoieDevisClient($bcDto);
         if ($numeroDevis) {
             $bcModel = new BcModel();
             $infoDevis = $bcModel->getInformaitonDevisMagasin($numeroDevis);
@@ -61,5 +63,12 @@ class BcFactory
         $bcDto->numeroVersionDevis = $devisNegModel->getNumeroVersion($bcDto->numeroDevis);
 
         return $bcDto;
+    }
+
+    private function dateEnvoieDevisClient(BcDto $bcDto): ?string
+    {
+        $devisNegModel = new DevisNegModel();
+        $dateEnvoiDevisClient = $devisNegModel->getDateEnvoyeDevisClient($bcDto->numeroDevis, $bcDto->codeSociete);
+        return $dateEnvoiDevisClient;
     }
 }
