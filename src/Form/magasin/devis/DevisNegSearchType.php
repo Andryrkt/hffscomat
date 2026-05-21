@@ -25,25 +25,25 @@ class DevisNegSearchType extends AbstractType
     ];
 
     private const FILTER_RELANCE = [
-        'À relancer' => 'A_RELANCER',
+        'À relancer'                        => 'A_RELANCER',
         '3 relances terminées (Non stoppé)' => '3_RELANCES_OK',
-        '3 relances terminées (Stoppé)' => '3_RELANCES_STOP',
-        'Stoppé avant relance 1' => 'STOP_AVANT_R1',
-        'Stoppé à la relance 1' => 'STOP_R1',
-        'Stoppé à la relance 2' => 'STOP_R2',
-        'Relance 1 en cours' => 'R1_EN_COURS',
-        'Relance 2 en cours' => 'R2_EN_COURS',
-        'Relance 3 en cours' => 'R3_EN_COURS',
+        '3 relances terminées (Stoppé)'     => '3_RELANCES_STOP',
+        'Stoppé avant relance 1'            => 'STOP_AVANT_R1',
+        'Stoppé à la relance 1'             => 'STOP_R1',
+        'Stoppé à la relance 2'             => 'STOP_R2',
+        'Relance 1 en cours'                => 'R1_EN_COURS',
+        'Relance 2 en cours'                => 'R2_EN_COURS',
+        'Relance 3 en cours'                => 'R3_EN_COURS',
     ];
 
     private const SERVICES = [
-        '300 - PARTS' => '300',
-'305 - HOSE CENTER' => '305',
-'310 - PARTS MACHINE' => '310',
-'330 - PARTS GENSET' => '330',
-'335 - PARTS AGRI' => '335',
-'360 - PARTS UPS' => '360',
-'380 - PARTS TRUCKS & BUSES' => '380'
+        '300 - PARTS'                => '300',
+        '305 - HOSE CENTER'          => '305',
+        '310 - PARTS MACHINE'        => '310',
+        '330 - PARTS GENSET'         => '330',
+        '335 - PARTS AGRI'           => '335',
+        '360 - PARTS UPS'            => '360',
+        '380 - PARTS TRUCKS & BUSES' => '380'
     ];
 
     public function buildForm(FormBuilderInterface $builder, array $options)
