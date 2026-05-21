@@ -614,4 +614,28 @@ class DevisNegModel extends Model
 
         return $this->convertirEnUtf8($data);
     }
+
+    public function getDateEnvoyeDevisClient(string $numeroDevis, string $codeSociete): ?string
+    {
+        $this->connect->connect();
+        try {
+            $statement = "SELECT TO_CHAR(date_envoye_devis_client, '%d/%m/%Y') as date_envoye_devis_client
+                        FROM {$this->dbIrium}:Informix.devis_soumis_a_validation_neg
+                        WHERE numero_devis = :numeroDevis 
+                        AND code_societe = :codeSociete
+                        ORDER BY numero_version DESC
+                        LIMIT 1";
+
+            $result = $this->connect->executeQuery($statement, [
+                'numeroDevis' => $numeroDevis,
+                'codeSociete' => $codeSociete
+            ]);
+            $row = $this->connect->fetchScalarResults($result);
+            return $row ? $row['date_envoye_devis_client'] : null;
+        } catch (\Exception $e) {
+            return null;
+        } finally {
+            $this->connect->close();
+        }
+    }
 }

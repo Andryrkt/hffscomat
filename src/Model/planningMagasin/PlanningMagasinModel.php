@@ -20,7 +20,7 @@ class PlanningMagasinModel extends Model
                     FROM  agr_succ , sav_itv 
                     WHERE asuc_num = sitv_succdeb 
                     AND asuc_codsoc = '$codeSociete'
-                    AND asuc_num in ($suc_neg)
+                    AND asuc_num in ('$suc_neg')
                     group by 1,2
                     order by asuc_num";
         $result = $this->connect->executeQuery($statement);
@@ -85,7 +85,7 @@ class PlanningMagasinModel extends Model
 
     public function getNumeroDevisValideBcClient()
     {
-        $statement = " SELECT bcsn.numero_devis from {$this->dbIrium}:informix.bc_client_soumis_neg bcsn where bcsn.statut_bc like 'Valid%'";
+        $statement = " SELECT DISTINCT bcsn.numero_devis from {$this->dbIrium}:informix.bc_client_soumis_neg bcsn where bcsn.statut_bc like 'Valid%'";
         $result = $this->connect->executeQuery($statement);
         $data = $this->connect->fetchResults($result);
         $resultat = $this->convertirEnUtf8($data);
@@ -163,7 +163,7 @@ class PlanningMagasinModel extends Model
                         nent_numcde                              AS orIntv,
                         TRIM((
                             SELECT atab_lib 
-                            FROM ips_scomat:informix.agr_tab 
+                            FROM {$this->dbIps}:informix.agr_tab 
                             WHERE atab_code = nent_codope 
                             AND atab_nom  = 'OPE'
                         ))                                       AS commercial,
