@@ -40,7 +40,6 @@ class Controller
     protected $sessionService;
     protected $securityService;
     protected $menuService;
-    protected $logger;
 
     // Propriétés publiques avec getters lazy pour les modèles et services
     public $request;
@@ -71,22 +70,6 @@ class Controller
         if (!$container) throw new \RuntimeException('Le conteneur de services n\'est pas disponible');
 
         return $container->get($serviceId);
-    }
-
-    /**
-     * Récupérer le Logger
-     */
-    public function getLogger(): ?LoggerInterface
-    {
-        if ($this->logger === null) {
-            try {
-                $this->logger = $this->getService('logger');
-            } catch (\Exception $e) {
-                // Si le service logger n'est pas encore configuré dans le conteneur
-                return null;
-            }
-        }
-        return $this->logger;
     }
 
     protected function getSessionService(): SessionInterface

@@ -5,26 +5,16 @@ namespace App\Service;
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;
 use Twig\Environment;
-use Psr\Log\LoggerInterface;
 
 class EmailService
 {
     private PHPMailer $mailer;
     private Environment $twig;
     private TwigMailerService $twigMailer;
-    private LoggerInterface $logger;
 
-    public function __construct(Environment $twig, ?LoggerInterface $logger = null)
+    public function __construct(Environment $twig)
     {
         $this->twig = $twig;
-        // Fallback sur un logger minimaliste ou null si non fourni
-        $this->logger = $logger ?? new class implements LoggerInterface {
-            use \Psr\Log\LoggerTrait;
-            public function log($level, $message, array $context = []) {
-                error_log(sprintf("[%s] %s %s", strtoupper($level), $message, json_encode($context)));
-            }
-        };
-
         $this->mailer = new PHPMailer(true);
 
         // Configurer les paramètres SMTP ici
@@ -98,21 +88,10 @@ class EmailService
             // Envoyer l'e-mail
             $this->twigMailer->send();
 
-            $this->logger->info("Email envoyé avec succès à : {to}", [
-                'to' => $to,
-                'template' => $template,
-                'cc' => $cc
-            ]);
-
             return true;
         } catch (\Exception $e) {
             // Gérer l'erreur
-            $this->logger->error("Échec de l'envoi de l'email à : {to}. Erreur : {error}", [
-                'to' => $to,
-                'template' => $template,
-                'error' => $e->getMessage()
-            ]);
-            //dd('erreur: ' . $e->getMessage());
+            // dd('erreur: ' . $e->getMessage());
             return false;
         }
     }

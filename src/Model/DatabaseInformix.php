@@ -3,7 +3,6 @@
 namespace App\Model;
 
 use App\Contract\DatabaseConnectionInterface;
-use Psr\Log\LoggerInterface;
 
 class DatabaseInformix implements DatabaseConnectionInterface
 {
@@ -11,15 +10,12 @@ class DatabaseInformix implements DatabaseConnectionInterface
     private $user;
     private $password;
     private $conn;
-    /** @var LoggerInterface|null */
-    private $logger;
 
-    public function __construct(?LoggerInterface $logger = null)
+    public function __construct()
     {
         $this->dsn = $_ENV['DB_DNS_INFORMIX'] ?? null;
         $this->user = $_ENV['DB_USERNAME_INFORMIX'] ?? null;
         $this->password = $_ENV['DB_PASSWORD_INFORMIX'] ?? null;
-        $this->logger = $logger;
     }
 
     /** 
@@ -63,14 +59,14 @@ class DatabaseInformix implements DatabaseConnectionInterface
                 // Préparation de la requête pour les paramètres
                 // Regex améliorée : ne matche les :nom que s'ils ne sont pas précédés d'un caractère de nom d'objet (ex: base:table)
                 $orderedParams = [];
-                $queryWithPlaceholders = preg_replace_callback('/(?<![a-zA-Z0-9_]):([a-zA-Z0-9_]+)/', function($matches) use ($params, &$orderedParams) {
+                $queryWithPlaceholders = preg_replace_callback('/(?<![a-zA-Z0-9_]):([a-zA-Z0-9_]+)/', function ($matches) use ($params, &$orderedParams) {
                     $key = $matches[1];
                     $fullKey = ':' . $key;
-                    
+
                     // Vérifier si la clé existe avec ou sans le ":"
                     if (array_key_exists($key, $params) || array_key_exists($fullKey, $params)) {
                         $value = array_key_exists($key, $params) ? $params[$key] : $params[$fullKey];
-                        
+
                         // Conversion des types pour ODBC/Informix
                         if (is_bool($value)) {
                             $value = $value ? 1 : 0;
@@ -81,7 +77,7 @@ class DatabaseInformix implements DatabaseConnectionInterface
                         } elseif (is_string($value)) {
                             $value = mb_convert_encoding($value, 'ISO-8859-1', 'UTF-8');
                         }
-                        
+
                         $orderedParams[] = $value;
                         return '?';
                     }
@@ -102,7 +98,7 @@ class DatabaseInformix implements DatabaseConnectionInterface
                 if (!$result) {
                     throw new \Exception("ODBC Execute failed: " . odbc_errormsg());
                 }
-                
+
                 // Pour ODBC, odbc_execute retourne un booléen, mais on a besoin du statement pour fetcher
                 $result = $stmt;
             }
@@ -187,25 +183,21 @@ class DatabaseInformix implements DatabaseConnectionInterface
      */
     private function logMessage(string $level, string $message)
     {
-        if ($this->logger) {
-            $this->logger->$level($message);
-        } else {
-            // Fallback si aucun logger n'est injecté (ancien mode)
-            $formattedMessage = sprintf("[%s][%s] %s\n", date("Y-m-d H:i:s"), strtoupper($level), $message);
-            $logPath = $_ENV['BASE_PATH_LOG'] ?? 'var/log/app_errors.log';
-            
-            // Assure que le chemin finit par le fichier de log si ce n'est pas déjà le cas
-            if (strpos($logPath, '.log') === false) {
-                $logPath = rtrim($logPath, '/') . '/app_errors.log';
-            }
+        // Fallback si aucun logger n'est injecté (ancien mode)
+        $formattedMessage = sprintf("[%s][%s] %s\n", date("Y-m-d H:i:s"), strtoupper($level), $message);
+        $logPath = $_ENV['BASE_PATH_LOG'] ?? 'var/log/app_errors.log';
 
-            // Création du répertoire si nécessaire
-            $logDir = dirname($logPath);
-            if (!is_dir($logDir)) {
-                @mkdir($logDir, 0777, true);
-            }
-
-            @error_log($formattedMessage, 3, $logPath);
+        // Assure que le chemin finit par le fichier de log si ce n'est pas déjà le cas
+        if (strpos($logPath, '.log') === false) {
+            $logPath = rtrim($logPath, '/') . '/app_errors.log';
         }
+
+        // Création du répertoire si nécessaire
+        $logDir = dirname($logPath);
+        if (!is_dir($logDir)) {
+            @mkdir($logDir, 0777, true);
+        }
+
+        @error_log($formattedMessage, 3, $logPath);
     }
 }

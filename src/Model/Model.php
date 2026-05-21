@@ -20,11 +20,8 @@ class Model
 
     public function __construct()
     {
-        global $container;
-        $logger = ($container && $container->has('logger')) ? $container->get('logger') : null;
-
         $this->connexion = new Connexion();
-        $this->connect = new DatabaseInformix($logger);
+        $this->connect = new DatabaseInformix();
 
         $this->dbIrium = $_ENV['DB_NAME_IRIUM'] ?? 'magix_frm3300';
         $this->dbIps = $_ENV['DB_NAME_IPS'] ?? 'ips_scomat';
