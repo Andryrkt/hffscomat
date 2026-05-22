@@ -154,7 +154,7 @@ class DevisNegModel extends Model
 
             $statement .= " ORDER BY date_cde_brute DESC";
 
-            dump($statement);
+            // dump($statement);
             $result = $this->connect->executeQuery($statement);
             $rows = $this->connect->fetchResults($result);
 

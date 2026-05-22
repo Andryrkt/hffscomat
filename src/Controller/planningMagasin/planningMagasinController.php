@@ -68,6 +68,7 @@ class planningMagasinController extends Controller
         $criteria = $this->planningMagasinSearch;
         if ($form->isSubmitted() && $form->isValid()) {
             $criteria =  $form->getdata();
+             $this->getSessionService()->set('criteria_for_search_planning_devis_neg', $criteria);
         }
         //recupère le condition clicsur la légende
         $condition = $request->query->get('condition', "1");
