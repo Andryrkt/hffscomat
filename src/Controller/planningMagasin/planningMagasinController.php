@@ -43,17 +43,25 @@ class planningMagasinController extends Controller
 
         $codeAgence = $multisuccursale ? "-0" : $this->getSecurityService()->getCodeAgenceUser();
         /** FIN AUtorisation acées */
-        //initialisation
-        $this->planningMagasinSearch
-            ->setAnnee(date('Y'))
-            ->setFacture('ENCOURS')
-            ->setPlan('PLANIFIE')
-            ->setInterneExterne('TOUS')
-            ->setTypeLigne('TOUETS')
-            ->setMonths(3)
-            ->setAgence($codeAgence)
-            ->setCodeSociete($codeSociete)
-        ;
+        
+        // Tentative de récupération des critères depuis la session
+        $sessionCriteria = $this->getSessionService()->get('criteria_for_search_planning_devis_neg');
+        
+        if ($sessionCriteria instanceof PlanningMagasinSearch && $sessionCriteria->getCodeSociete() === $codeSociete) {
+            $this->planningMagasinSearch = $sessionCriteria;
+        } else {
+            //initialisation par défaut si pas de session ou changement de société
+            $this->planningMagasinSearch
+                ->setAnnee(date('Y'))
+                ->setFacture('ENCOURS')
+                ->setPlan('PLANIFIE')
+                ->setInterneExterne('TOUS')
+                ->setTypeLigne('TOUETS')
+                ->setMonths(3)
+                ->setAgence($codeAgence)
+                ->setCodeSociete($codeSociete)
+            ;
+        }
 
         $form = $this->getFormFactory()->createBuilder(
             PlanningMagasinSearchType::class,
@@ -66,9 +74,10 @@ class planningMagasinController extends Controller
         $form->handleRequest($request);
         //initialisation criteria
         $criteria = $this->planningMagasinSearch;
+        
         if ($form->isSubmitted() && $form->isValid()) {
-            $criteria =  $form->getdata();
-             $this->getSessionService()->set('criteria_for_search_planning_devis_neg', $criteria);
+            $criteria =  $form->getData();
+            $this->getSessionService()->set('criteria_for_search_planning_devis_neg', $criteria);
         }
         //recupère le condition clicsur la légende
         $condition = $request->query->get('condition', "1");
