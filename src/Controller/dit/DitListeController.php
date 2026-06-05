@@ -50,7 +50,7 @@ class DitListeController extends Controller
         $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
 
         $ditListeModel = new DitListModel();
-        $ditSearch = new DitSearch();
+        // $ditSearch = new DitSearch();
 
         $this->initialisationRechercheDit($ditSearch, $this->getEntityManager());
 

@@ -331,12 +331,12 @@ trait DitOrSoumisAValidationTrait
         ];
     }
 
-    private function orSoumisValidataion($orSoumisValidationModel, $numeroVersionMax, DitOrsSoumisAValidation $ditInsertionOrSoumis, $numDit)
+    private function orSoumisValidataion($orSoumisValidationModel, $numeroVersionMax, $numDit, $numeroOR, $codeSociete)
     {
-        $codeSociete = $ditInsertionOrSoumis->getCodeSociete();
+
 
         /** @var array */
-        $pieceFaibleAchat = $this->preparationDesPiecesFaibleAchat($ditInsertionOrSoumis->getNumeroOR(), $codeSociete);
+        $pieceFaibleAchat = $this->preparationDesPiecesFaibleAchat($numeroOR, $codeSociete);
 
         $orSoumisValidataion = []; // Tableau pour stocker les objets
 
@@ -348,7 +348,7 @@ trait DitOrSoumisAValidationTrait
                 ->setNumeroVersion($this->autoIncrement($numeroVersionMax))
                 ->setHeureSoumission($this->getTime())
                 ->setDateSoumission(new \DateTime($this->getDatesystem()))
-                ->setNumeroOR($ditInsertionOrSoumis->getNumeroOR())
+                ->setNumeroOR($numeroOR)
                 ->setNumeroItv($orSoumis['numero_itv'])
                 ->setNombreLigneItv($orSoumis['nombre_ligne'])
                 ->setMontantItv($orSoumis['montant_itv'])
@@ -364,7 +364,7 @@ trait DitOrSoumisAValidationTrait
                 ->setCodeSociete($codeSociete)
             ;
 
-            $orSoumisValidataion[] = $ditInsertionOr; // Ajouter l'objet dans le tableau
+            $orSoumisValidataion[] = $ditInsertionOr; 
         }
 
         return $orSoumisValidataion;
@@ -403,10 +403,9 @@ trait DitOrSoumisAValidationTrait
         });
     }
 
-    private function verificationDatePlanning(DitOrsSoumisAValidation $ditInsertionOrSoumis, DitOrSoumisAValidationModel $ditOrsoumisAValidationModel): bool
+    private function verificationDatePlanning(string $numOr, string $codeSociete, DitOrSoumisAValidationModel $ditOrsoumisAValidationModel): bool
     {
-        $numOr = $ditInsertionOrSoumis->getNumeroOR();
-        $codeSociete = $ditInsertionOrSoumis->getCodeSociete();
+
 
         $datePlannig1 = $this->magasinListOrLivrerModel->recupDatePlanning1($numOr, $codeSociete);
         $datePlannig2 = $ditOrsoumisAValidationModel->recupNbDatePlanningVide($numOr, $codeSociete);
@@ -443,14 +442,12 @@ trait DitOrSoumisAValidationTrait
             return false;
         }
     }
-    private function premierSoumissionDatePlanningInferieurDateDuJour($numOr, string $codeSociete): bool
+    private function premierSoumissionDatePlanningInferieurDateDuJour(string $numOr, string $codeSociete, int $nmbrOr_soumis): bool
     {
-        /** @var DitOrsSoumisAValidationRepository $orRepository */
-        $orRepository = $this->getEntityManager()->getRepository(DitOrsSoumisAValidation::class);
-        $nbrOrSoumis = $orRepository->getNbrOrSoumis($numOr, $codeSociete); //première soumission
+
         $nbrPieceMagasin = $this->ditOrsoumisAValidationModel->recupNbPieceMagasin($numOr, $codeSociete); //nombre de piece magasin
 
-        if ((int)$nbrOrSoumis <= 0 && (int)$nbrPieceMagasin <= 0) { // si pas encore soumis et pas de piece magasin
+        if ((int)$nmbrOr_soumis <= 0 && (int)$nbrPieceMagasin <= 0) { // si pas encore soumis et pas de piece magasin
             $numItvs = $this->ditOrsoumisAValidationModel->getNumItv($numOr, $codeSociete);
             $dateDuJour = new DateTime('now');
             foreach ($numItvs as $numItv) {

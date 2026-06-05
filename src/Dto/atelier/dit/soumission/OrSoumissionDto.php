@@ -2,19 +2,22 @@
 
 namespace App\Dto\atelier\dit\soumission;
 
+use PhpOffice\PhpSpreadsheet\Calculation\Logical\Boolean;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+
 class OrSoumissionDto
 {
 
     public ?string $numeroDit = null;
 
 
-    public ?string $numeroOR = '';
+    public ?string $numeroOr = null;
 
 
     public int $numeroItv = 0;
 
 
-    public  $dateSoumission;
+    public $dateSoumission;
 
 
     public $heureSoumission;
@@ -51,15 +54,17 @@ class OrSoumissionDto
 
 
 
-    public $pieceJoint01;
+    public UploadedFile $pieceJoint01;
 
-    public $pieceJoint02;
+    public ?string $originalNamePj1 = null;
 
-    public $pieceJoint03;
+    public UploadedFile $pieceJoint02;
 
-    public $pieceJoint04;
+    public UploadedFile $pieceJoint03;
 
-    public $statut;
+    public UploadedFile $pieceJoint04;
+
+    public  $statut;
 
 
     public $migration;
@@ -69,4 +74,13 @@ class OrSoumissionDto
 
 
     public $codeSociete;
+
+
+    public bool $isExistDatePlaning = false;
+
+    public $id_materiel_ips;
+
+    public $info_materiel;
+
+    public int $nmbrOr_soumis;
 }

@@ -159,8 +159,9 @@ class DitOrSoumisAValidationModel extends Model
         $result = $this->connect->executeQuery($statement);
 
         $data = $this->connect->fetchResults($result);
-
-        return $this->convertirEnUtf8($data);
+        $data = $this->convertirEnUtf8($data);
+        $id_materiel_ips = (int) ($data[0]['nummatricule'] ?? 0);
+        return $id_materiel_ips;
     }
 
     public function recupNbDatePlanningVide($numOr, string $codeSociete)
@@ -265,7 +266,23 @@ class DitOrSoumisAValidationModel extends Model
 
         return $this->convertirEnUtf8($data);
     }
+    public function recupDatePlanning1($numOr, string $codeSociete)
+    {
+        $statement = " SELECT  
+                            min(ska_d_start) as datePlanning1
+                        from skw 
+                        inner join ska on ska.skw_id = skw.skw_id 
+                        where ofh_id ='$numOr'
+                        AND skw_soc ='$codeSociete'
+                        group by ofh_id 
+                    ";
 
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->connect->fetchResults($result);
+
+        return $this->convertirEnUtf8($data);
+    }
     // public function recupBlockageStatut($numOr)
     // {
     //     $sqlNumVersMax = " SELECT MAX(numeroVersion) as numversionMax
@@ -613,7 +630,7 @@ class DitOrSoumisAValidationModel extends Model
         $statement = "
         SELECT FIRST 1 *
         FROM {$this->dbIrium}:Informix.demande_intervention
-        WHERE numero_demande_dit = '$numDit' AND  AND code_societe = '$codeSociete'
+        WHERE numero_demande_dit = '$numDit' AND code_societe = '$codeSociete'
     ";
 
         $result = $this->connect->executeQuery($statement);
@@ -637,5 +654,45 @@ class DitOrSoumisAValidationModel extends Model
         $data = $this->connect->fetchResults($result);
 
         return (int)($data[0]['numero_version_max'] ?? 0);
+    }
+
+    public function findByStatut(string $numOr, string $codeSociete, int $maxVersion)
+    {
+        $statement = "
+        SELECT COUNT(o.id) AS total
+        FROM {$this->dbIrium}:Informix.ors_soumis_a_validation o
+        WHERE o.numeroor = '$numOr'
+        AND o.numeroVersion = '$maxVersion'
+        AND o.code_societe = '$codeSociete'
+        AND (
+            o.statut LIKE '%valide%'
+            OR o.statut LIKE '%refuse%'
+            OR o.statut LIKE '%livre_part%'
+            OR o.statut LIKE '%modif_client%'
+            OR o.statut LIKE '%modif_ca%'
+            OR o.statut LIKE '%modif_dt%'
+        )
+    ";
+        $result = $this->connect->executeQuery($statement);
+        $data = $this->connect->fetchResults($result);
+
+        $count = (int) ($data[0]['total'] ?? 0);
+
+        return ($count > 0) ? 'ne pas bloquer' : 'bloquer';
+    }
+
+    public function getNbrOrSoumis(string $numOr, string $codeSociete): int
+    {
+        $statement = "
+        SELECT COUNT(o.id) AS total
+        FROM {$this->dbIrium}:Informix.ors_soumis_a_validation o
+        WHERE o.numeroor = '$numOr'
+        AND o.code_societe = '$codeSociete'
+    ";
+
+        $result = $this->connect->executeQuery($statement);
+        $data = $this->connect->fetchResults($result);
+
+        return (int) ($data[0]['total'] ?? 0);
     }
 }

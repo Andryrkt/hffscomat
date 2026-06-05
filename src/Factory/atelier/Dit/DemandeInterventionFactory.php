@@ -2,10 +2,10 @@
 
 namespace App\Factory\Dit;
 
+use App\Dto\atelier\dit\DemandeInterventionDto;
 use App\Model\dit\DitModel;
 use App\Entity\admin\Agence;
 use App\Entity\admin\Service;
-use App\Dto\Dit\DemandeInterventionDto;
 use App\Entity\dit\DemandeIntervention;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\admin\dit\CategorieAteApp;

@@ -2,7 +2,10 @@
 
 namespace App\Model\dit;
 
-
+use App\Dto\atelier\dit\soumission\OrSoumissionDto;
+use App\Mapper\Atelier\Dit\DitMapper;
+use App\Model\Informix\InsertQueryBuilder;
+use App\Model\Informix\UpdateQueryBuilder;
 use App\Model\Model;
 use App\Model\Traits\ConversionModel;
 use App\Service\GlobalVariablesService;
@@ -240,6 +243,25 @@ class DitModel extends Model
 
 
     return $this->convertirEnUtf8($data);
+  }
+
+
+  public function recupInformationsDit($numDit, $codeSociete)
+  {
+
+    $statement = " SELECT FIRST 1 *
+        FROM {$this->dbIrium}:Informix.demande_intervention
+        WHERE numero_demande_dit = '$numDit'
+        AND code_societe = '$codeSociete'
+        ";
+
+
+    $result = $this->connect->executeQuery($statement);
+    $data = $this->connect->fetchResults($result);
+    $data = $this->convertirEnUtf8($data);
+    $info_materiel = $data[0] ?? [];
+
+    return $info_materiel;
   }
 
 
@@ -583,5 +605,73 @@ class DitModel extends Model
     $data = $this->connect->fetchResults($result);
 
     return array_column($this->convertirEnUtf8($data), 'position');
+  }
+
+
+  /**
+   * MOdification du statut demande d'intervention dans la 
+   * table demande_intervention
+   *
+   * @param string statut
+   * @return void
+   */
+  public function updateStatut($numDit, $codeSociete, $statut)
+  {
+    $donnees = DitMapper::toArrayUpdateDit($statut);
+
+    $updateBuilder = new UpdateQueryBuilder("{$this->dbIrium}:Informix.demande_intervention");
+
+    // // Définir les données à mettre à jour
+    $updateBuilder->setData($donnees);
+
+    // // Ajouter les conditions WHERE
+    $updateBuilder->where('numero_demande_dit', $numDit);
+    $updateBuilder->where('code_societe',  $codeSociete);
+
+    // Changer l'opérateur des conditions (optionnel)
+    // $updateBuilder->setConditionOperator('AND');
+    // Construire et exécuter la requête
+    try {
+      $result = $updateBuilder->build();
+      $this->connect->connect();
+      try {
+        // $this->connect->executeQuery($result['sql'], $result['params']);
+      } finally {
+        $this->connect->close();
+      }
+    } catch (\Exception $e) {
+      // Vous pouvez logger l'erreur ici
+      throw $e;
+    }
+  }
+
+
+
+  /**
+   * Methode pour enregistrer les données du formulaire Dit
+   *  dans la base de donnée
+   *
+   * @param OrSoumissionDto $dto
+   * @return void
+   */
+  public function enregistrerDit(OrSoumissionDto $dto): void
+  {
+    // Convertir le DTO en tableau associatif pour l'insertion
+    $donnees = DitMapper::toArrayDit($dto);
+
+    // Construire la requête d'insertion et l'exécuter
+    $builder = new InsertQueryBuilder("{$this->dbIrium}:Informix.bc_client_soumis_neg");
+    $builder->setData($donnees);
+    $result = $builder->build();
+
+    // Exécuter la requête d'insertion
+    // S'assurer que la connexion est ouverte
+    $this->connect->connect();
+    try {
+      $this->connect->executeQuery($result['sql'], $result['params']);
+    } finally {
+      // ne fermez ici que si vous êtes sûr que c'est la dernière opération
+      $this->connect->close();
+    }
   }
 }

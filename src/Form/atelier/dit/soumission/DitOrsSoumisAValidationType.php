@@ -37,7 +37,7 @@ class DitOrsSoumisAValidationType extends AbstractType
                 ]
             )
             ->add(
-                'numeroOR',
+                'numeroOr',
                 IntegerType::class,
                 [
                     'label' => 'Numéro OR *',
