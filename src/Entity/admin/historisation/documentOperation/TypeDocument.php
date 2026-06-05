@@ -15,11 +15,19 @@ use App\Entity\admin\historisation\documentOperation\HistoriqueOperationDocument
 class TypeDocument
 {
     const TYPE_DOCUMENT_DIT_NAME = 'DIT';
+    const TYPE_DOCUMENT_OR_NAME = 'OR';
+    const TYPE_DOCUMENT_FAC_NAME = 'FAC';
+    const TYPE_DOCUMENT_RI_NAME = 'RI';
+    const TYPE_DOCUMENT_TIK_NAME = 'TIK';
+    const TYPE_DOCUMENT_DA_NAME = 'DA';
+    const TYPE_DOCUMENT_DOM_NAME = 'DOM';
+    const TYPE_DOCUMENT_BADM_NAME = 'BADM';
+    const TYPE_DOCUMENT_CAS_NAME = 'CAS';
+    const TYPE_DOCUMENT_CDE_NAME = 'CDE';
     const TYPE_DOCUMENT_DEV_NAME = 'DEV';
-
-    const TYPE_DOCUMENT_DIT_ID = 1;
+    
     const TYPE_DOCUMENT_DEV_ID = 11;
-
+ 
 
     /**
      * @ORM\Id
