@@ -174,17 +174,17 @@ $twig->addRuntimeLoader(new \Twig\RuntimeLoader\FactoryRuntimeLoader([
 
 require_once __DIR__ . '/listeConstructeur.php';
 
-$_ENV['BASE_PATH_COURT'] ??= '/Hffintranet';
+$_ENV['BASE_PATH_COURT'] ??= '/scomat';
 $_SERVER['HTTP_HOST']    ??= 'localhost';
 $_SERVER['REQUEST_URI']  ??= '/';
 
 $request = Request::createFromGlobals();
 $container->get('request_stack')->push($request);
 
-// Correction casse /Hffintranet/
+// Correction casse /scomat/
 $pathInfo = $request->getPathInfo();
-if (stripos($pathInfo, '/hffintranet') === 0 && strpos($pathInfo, '/Hffintranet') !== 0) {
-    $correctUrl = preg_replace('#^/hffintranet#i', '/Hffintranet', $pathInfo);
+if (stripos($pathInfo, '/scomat') === 0 && strpos($pathInfo, '/scomat') !== 0) {
+    $correctUrl = preg_replace('#^/scomat#i', '/scomat', $pathInfo);
     (new \Symfony\Component\HttpFoundation\RedirectResponse($correctUrl, 301))->send();
     exit;
 }

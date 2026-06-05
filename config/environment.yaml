@@ -1,4 +1,4 @@
-# Configuration d'environnement pour l'application Hffintranet
+# Configuration d'environnement pour l'application scomat
 
 # Configuration de l'application
 app:
@@ -10,13 +10,13 @@ app:
 database:
     host: 'localhost'
     port: 3306
-    name: 'hffintranet'
+    name: 'scomat'
     user: 'root'
     password: ''
 
 # Configuration des chemins
 paths:
-    base_path: '/Hffintranet'
+    base_path: '/scomat'
     views_dir: '%kernel.project_dir%/Views/templates'
     public_dir: '%kernel.project_dir%/public'
 

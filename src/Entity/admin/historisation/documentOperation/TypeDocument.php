@@ -14,11 +14,12 @@ use App\Entity\admin\historisation\documentOperation\HistoriqueOperationDocument
  */
 class TypeDocument
 {
-    
+    const TYPE_DOCUMENT_DIT_NAME = 'DIT';
     const TYPE_DOCUMENT_DEV_NAME = 'DEV';
-    
+
+    const TYPE_DOCUMENT_DIT_ID = 1;
     const TYPE_DOCUMENT_DEV_ID = 11;
- 
+
 
     /**
      * @ORM\Id

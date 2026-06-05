@@ -1,7 +1,7 @@
 # Paramètres de l'application
 parameters:
     # Configuration de l'application
-    app.name: 'Hffintranet'
+    app.name: 'scomat'
     app.version: '1.0.0'
     app.locale: 'fr_FR'
     app.debug: true
