@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Form\atelier\dit;
+namespace App\Form\Atelier\Dit;
 
 
 use App\Dto\Atelier\Dit\DitDto;

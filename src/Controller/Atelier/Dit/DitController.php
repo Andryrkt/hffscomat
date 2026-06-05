@@ -2,20 +2,18 @@
 
 namespace App\Controller\Atelier\Dit;
 
-
-
 use App\Controller\Controller;
 use App\Controller\Traits\FormatageTrait;
 use App\Controller\Traits\PdfConversionTrait;
 use App\Factory\Atelier\Dit\DitFactory;
-use App\Form\atelier\dit\DitType;
+use App\Form\Atelier\Dit\DitType;
 use App\Model\Atelier\Dit\DitModel;
 use App\Service\historiqueOperation\Atelier\Dit\HistoriqueOperationDITService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
- * @Route("/atelier/demande-intervention")
+ * @Route("/atelier/dit/demande-intervention")
  */
 class DitController extends Controller
 {
@@ -43,7 +41,6 @@ class DitController extends Controller
      */
     public function new(Request $request)
     {
-
         // Code Société de l'utilisateur
         $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
 
