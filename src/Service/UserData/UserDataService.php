@@ -153,6 +153,15 @@ class UserDataService
     }
 
     /**
+     * Récupérer l'heure actuelle
+     */
+    public function getTime()
+    {
+        date_default_timezone_set('Indian/Antananarivo');
+        return date("H:i");
+    }
+
+    /**
      * Récupérer le profil id enregistré
      */
     public function getProfilId(): ?int

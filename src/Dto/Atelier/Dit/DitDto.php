@@ -14,9 +14,9 @@ class DitDto
     public ?string $detailDemande = null;
     public ?WorTypeDocumentDto $typeDocument = null;
     public ?string $categorieDemande = null;
-    public ?string $livraisonPartiel = null;
-    public ?string $demandeDevis = null;
-    public ?string $avisRecouvrement = null;
+    public string $livraisonPartiel = 'NON';
+    public string $demandeDevis = 'NON';
+    public string $avisRecouvrement = 'NON';
     public ?string $agenceEmetteur = null;
     public ?string $serviceEmetteur = null;
     public ?Agence $agence = null;
@@ -31,7 +31,7 @@ class DitDto
     public ?string $nomClient = null;
     public ?string $numeroTel = null;
     public ?string $mailClient = null;
-    public ?string $clientSousContrat = null;
+    public string $clientSousContrat = 'NON';
     // INFO MATERIEL
     public ?string $idMateriel = null;
     public ?string $numParc = null;
@@ -41,7 +41,7 @@ class DitDto
     public $pieceJoint02 = null;
     public $pieceJoint03 = null;
 
-    public ?StatutDemande $idStatutDemande = null;
+    public ?string $statutDemande = null;
     public ?string $numeroDemandeIntervention = null;
     public ?string $mailDemandeur = null;
     public ?DateTime $dateDemande = null;
