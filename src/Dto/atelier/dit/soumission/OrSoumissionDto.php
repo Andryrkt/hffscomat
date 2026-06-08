@@ -83,4 +83,48 @@ class OrSoumissionDto
     public $info_materiel;
 
     public int $nmbrOr_soumis;
+
+    public bool $isVerifiedDatePlanning = false;
+    public bool $isAgenceIriumInIPS = false;
+    public bool $isValidPosition = false;
+
+    public  $refClient;
+    public  $countAgServDebit;
+    public array $nbrNumcli;
+
+
+
+
+
+    public function estEgalParNumero(self $other): bool
+    {
+        return $this->numeroOr === $other->numeroOr
+            && $this->numeroItv === $other->numeroItv;
+    }
+    public function getNumeroItv(): int
+    {
+        return $this->numeroItv;
+    }
+
+    public function setNumeroItv(int $numeroItv): void
+    {
+        $this->numeroItv = $numeroItv;
+    }
+
+
+
+    public function getLibellelItv(): ?string
+    {
+        return $this->libellelItv;
+    }
+
+    public function getNombreLigneItv(): int
+    {
+        return $this->nombreLigneItv ?? 0;
+    }
+
+    public function getMontantItv(): float
+    {
+        return $this->montantItv ?? 0.0;
+    }
 }

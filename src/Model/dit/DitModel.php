@@ -644,6 +644,43 @@ class DitModel extends Model
       throw $e;
     }
   }
+  /**
+   * MOdification du numeroOr dans dans la 
+   * table demande_intervention
+   *
+   * @param OrSoummissionDto $dto
+   * @param string statut
+   * @return void
+   */
+  public function updateNumeroOr(OrSoumissionDto $dto, string $statut)
+  {
+    $donnees = DitMapper::toArrayUpdateDit($statut);
+
+    $updateBuilder = new UpdateQueryBuilder("{$this->dbIrium}:Informix.demande_intervention");
+
+    // // Définir les données à mettre à jour
+    $updateBuilder->setData($donnees);
+
+    // // Ajouter les conditions WHERE
+    $updateBuilder->where('numero_demande_dit', $dto->numero);
+    $updateBuilder->where('code_societe',  $codeSociete);
+
+    // Changer l'opérateur des conditions (optionnel)
+    // $updateBuilder->setConditionOperator('AND');
+    // Construire et exécuter la requête
+    try {
+      $result = $updateBuilder->build();
+      $this->connect->connect();
+      try {
+        // $this->connect->executeQuery($result['sql'], $result['params']);
+      } finally {
+        $this->connect->close();
+      }
+    } catch (\Exception $e) {
+      // Vous pouvez logger l'erreur ici
+      throw $e;
+    }
+  }
 
 
 
@@ -654,10 +691,10 @@ class DitModel extends Model
    * @param OrSoumissionDto $dto
    * @return void
    */
-  public function enregistrerDit(OrSoumissionDto $dto): void
+  public function enregistrerDit(OrSoumissionDto $dto, array $ors): void
   {
     // Convertir le DTO en tableau associatif pour l'insertion
-    $donnees = DitMapper::toArrayDit($dto);
+    $donnees = DitMapper::toArrayDit($dto, $ors);
 
     // Construire la requête d'insertion et l'exécuter
     $builder = new InsertQueryBuilder("{$this->dbIrium}:Informix.bc_client_soumis_neg");
@@ -673,5 +710,23 @@ class DitModel extends Model
       // ne fermez ici que si vous êtes sûr que c'est la dernière opération
       $this->connect->close();
     }
+  }
+
+  public function recupDitByStatut($numDit, $codeSociete, $statut)
+  {
+
+    $statement = " SELECT FIRST 1 *
+        FROM {$this->dbIrium}:Informix.demande_intervention
+        WHERE numero_demande_dit = '$numDit'
+        AND code_societe = '$codeSociete' 
+        ";
+
+
+    $result = $this->connect->executeQuery($statement);
+    $data = $this->connect->fetchResults($result);
+    $data = $this->convertirEnUtf8($data);
+    $demande_intervention = $data[0] ?? [];
+
+    return $info_materiel;
   }
 }

@@ -3,6 +3,7 @@
 namespace App\Mapper\Magasin\Devis\Soumission;
 
 use App\Constants\Magasin\Devis\StatutDevisNegContant;
+use App\Dto\atelier\dit\soumission\OrSoumissionDto;
 use App\Dto\Magasin\Devis\Soumission\SoumissionDto;
 use App\Model\magasin\devis\Soumission\SoumissionModel;
 
@@ -62,5 +63,16 @@ class SoumissionMapper
             'somme_numero_lignes' => $infoDevis['somme_numero_lignes'],
             'code_societe' => $dto->codeSociete,
         ];
+    }
+    public function fromArrayToCompareDto(array $row): OrSoumissionDto
+    {
+        $dto = new OrSoumissionDto();
+
+        $dto->numeroOr = $row['numeroor'] ?? null;
+        $dto->numeroItv = isset($row['numeroitv'])
+            ? (int) $row['numeroitv']
+            : 0;
+
+        return $dto;
     }
 }

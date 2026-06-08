@@ -5,6 +5,7 @@ namespace App\Service\genererPdf\dit\ors;
 use App\Service\genererPdf\HeaderPdf;
 use App\Service\genererPdf\GeneratePdf;
 use App\Controller\Traits\FormatageTrait;
+use App\Dto\atelier\dit\soumission\OrSoumissionDto;
 use App\Service\genererPdf\PdfTableGeneratorFlexible;
 
 class GenererPdfOrSoumisAValidation extends GeneratePdf
@@ -22,7 +23,7 @@ class GenererPdfOrSoumisAValidation extends GeneratePdf
     /**
      * generer pdf pour la soumission OR
      */
-    function GenererPdf($ditInsertionOr, $montantPdf, $quelqueaffichage, $email, string $suffix, array $pieceFaibleAchat = [], string $nomAvecCheminFichier)
+    function GenererPdf(OrSoumissionDto $dto, array $montantPdf, array $quelqueaffichage, string $email, string $suffix, array $pieceFaibleAchat = [], string $nomAvecCheminFichier)
     {
         $pdf = new HeaderPdf($email);
         $tableGenerator = new PdfTableGeneratorFlexible();
@@ -50,7 +51,7 @@ class GenererPdfOrSoumisAValidation extends GeneratePdf
         // Date de soumission
         $pdf->Cell(45, 6, 'Date soumission : ', 0, 0, 'L', false, '', 0, false, 'T', 'M');
         $pdf->setFont('helvetica', '', 10);
-        $pdf->cell(50, 6, $ditInsertionOr->getDateSoumission()->format('d/m/Y'), 0, 1, '', false, '', 0, false, 'T', 'M');
+        $pdf->cell(50, 6, $dto->dateSoumission->format('d/m/Y'), 0, 1, '', false, '', 0, false, 'T', 'M');
 
         // numero devis
         $pdf->setAbsX(130);
@@ -64,7 +65,7 @@ class GenererPdfOrSoumisAValidation extends GeneratePdf
         $pdf->setFont('helvetica', 'B', 10);
         $pdf->Cell(45, 6, 'Numéro OR : ', 0, 0, 'L', false, '', 0, false, 'T', 'M');
         $pdf->setFont('helvetica', '', 10);
-        $pdf->cell(50, 6, $ditInsertionOr->getNumeroOR(), 0, 1, '', false, '', 0, false, 'T', 'M');
+        $pdf->cell(50, 6, $dto->numeroOr, 0, 1, '', false, '', 0, false, 'T', 'M');
 
         //sortie pol
         $pdf->setAbsX(130);
@@ -78,7 +79,7 @@ class GenererPdfOrSoumisAValidation extends GeneratePdf
         $pdf->setFont('helvetica', 'B', 10);
         $pdf->Cell(45, 6, 'Version à valider : ', 0, 0, 'L', false, '', 0, false, 'T', 'M');
         $pdf->setFont('helvetica', '', 10);
-        $pdf->cell(50, 6, $ditInsertionOr->getNumeroVersion(), 0, 1, '', false, '', 0, false, 'T', 'M');
+        $pdf->cell(50, 6, $dto->numeroVersion, 0, 1, '', false, '', 0, false, 'T', 'M');
 
         // sortie magasin
         $pdf->SetXY($startX, $pdf->GetY() + 2);
@@ -173,7 +174,7 @@ class GenererPdfOrSoumisAValidation extends GeneratePdf
         $pdf->setFont('helvetica', 'B', 12);
         $pdf->Cell(30, 6, 'Observation : ', 0, 0, 'L', false, '', 0, false, 'T', 'M');
         $pdf->setFont('helvetica', '', 9);
-        $pdf->MultiCell(164, 60, $ditInsertionOr->getObservation(), 0, '', 0, 0, '', '', true);
+        $pdf->MultiCell(164, 60, $dto->observation, 0, '', 0, 0, '', '', true);
 
         //==========================================================================================================
 

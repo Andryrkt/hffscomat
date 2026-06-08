@@ -2,6 +2,7 @@
 
 namespace App\Controller\Traits\dit;
 
+use App\Dto\atelier\dit\soumission\OrSoumissionDto;
 use DateTime;
 use Exception;
 use App\Entity\admin\utilisateur\User;
@@ -218,20 +219,34 @@ trait DitOrSoumisAValidationTrait
 
 
         $recapAvantApres = [];
+        $count = count($OrSoumisAvant);
 
-        for ($i = 0; $i < count($OrSoumisAvant); $i++) {
+        for ($i = 0; $i < $count; $i++) {
 
-            $itv = $OrSoumisAvant[$i]->getNumeroItv();
-            $libelleItv = $OrSoumisAvant[$i]->getLibellelItv();
-            $nbLigAp = isset($OrSoumisAvant[$i]) ? $OrSoumisAvant[$i]->getNombreLigneItv() : 0;
-            $mttTotalAp = isset($OrSoumisAvant[$i]) ? $OrSoumisAvant[$i]->getMontantItv() : 0;
-            $nbLigAv = isset($OrSoumisAvantMax[$i]) ? $OrSoumisAvantMax[$i]->getNombreLigneItv() : 0;
-            $mttTotalAv = isset($OrSoumisAvantMax[$i]) ? $OrSoumisAvantMax[$i]->getMontantItv() : 0;
+            $avant = $OrSoumisAvant[$i] ?? null;
+            $avantMax = $OrSoumisAvantMax[$i] ?? null;
+
+            if (!$avant) {
+                continue;
+            }
+
+            $itv = $avant->getNumeroItv();
+            $libelleItv = $avant->getLibellelItv();
+
+            $nbLigAp = $avant->getNombreLigneItv() ?? 0;
+            $mttTotalAp = $avant->getMontantItv() ?? 0;
+
+            $nbLigAv = $avantMax->getNombreLigneItv() ?? 0;
+            $mttTotalAv = $avantMax->getMontantItv() ?? 0;
 
             $recapAvantApres[] = [
                 'itv' => $itv,
                 'libelleItv' => $libelleItv,
-                'datePlanning' => $this->datePlanning($OrSoumisAvant[$i]->getNumeroOR(), $itv, $codeSociete),
+                'datePlanning' => $this->datePlanning(
+                    $avant->getNumeroOR(),
+                    $itv,
+                    $codeSociete
+                ),
                 'nbLigAv' => $nbLigAv,
                 'nbLigAp' => $nbLigAp,
                 'mttTotalAv' => $mttTotalAv,
@@ -364,7 +379,7 @@ trait DitOrSoumisAValidationTrait
                 ->setCodeSociete($codeSociete)
             ;
 
-            $orSoumisValidataion[] = $ditInsertionOr; 
+            $orSoumisValidataion[] = $ditInsertionOr;
         }
 
         return $orSoumisValidataion;
@@ -374,24 +389,26 @@ trait DitOrSoumisAValidationTrait
     private function objetsManquantsParNumero($tableauA, $tableauB)
     {
         $manquants = [];
+
         foreach ($tableauB as $objetB) {
             $trouve = false;
+
             foreach ($tableauA as $objetA) {
                 if ($objetA->estEgalParNumero($objetB)) {
                     $trouve = true;
                     break;
                 }
             }
+
             if (!$trouve) {
-                $numeroItvExist = $objetB->getNumeroItv() === 0 ? $objetA->getNumeroItv() : $objetB->getNumeroItv();
-                $numeroOrExist = $objetB->getNumeroOR() === "" ? $objetA->getNumeroOR() : $objetB->getNumeroOR();
-                // Créer un nouvel objet avec uniquement le numero et les autres propriétés à null ou 0
-                $nouvelObjet = new DitOrsSoumisAValidation();
-                $nouvelObjet->setNumeroOR($numeroOrExist);
-                $nouvelObjet->setNumeroItv($numeroItvExist);
-                $manquants[] = $nouvelObjet;
+                $dto = new OrSoumissionDto();
+                $dto->numeroOr = $objetB->numeroOr;
+                $dto->numeroItv = $objetB->numeroItv ?? 0;
+
+                $manquants[] = $dto;
             }
         }
+
         return $manquants;
     }
 

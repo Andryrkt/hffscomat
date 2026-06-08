@@ -2,6 +2,9 @@
 
 namespace App\Service\atelier\dit\soumission\ORs;
 
+use App\Controller\Traits\dit\DitOrSoumisAValidationTrait;
+use App\Dto\atelier\dit\soumission\OrSoumissionDto;
+use App\Model\dit\DitOrSoumisAValidationModel;
 use App\Service\historiqueOperation\HistoriqueOperationORService;
 use App\Service\SessionManagerService;
 use Symfony\Component\Form\FormInterface;
@@ -9,6 +12,14 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class ValidationService
 {
+    use DitOrSoumisAValidationTrait;
+
+    private DitOrSoumisAValidationModel $ditOrSoumisAValidationModel;
+
+    public function __construct(DitOrSoumisAValidationModel $model)
+    {
+        $this->ditOrSoumisAValidationModel = $model;
+    }
     private const FILE_FIELD_NAME = 'pieceJoint01';
     private const FILENAME_PATTERN = '/^(Ordre de réparation)_(\d+)_(\d+)_(\d+)\\.pdf$/';
 
@@ -62,11 +73,67 @@ class ValidationService
      * 
      * @param FormInterface $form Le formulaire contenant le fichier à valider
      * @param string|null $remoteUrl L'URL distante du fichier soumis (optionnel, utilisé si le fichier est soumis via une URL)
-     * @param string|null $dto dto attendu pour la validation
+     * @param OrSoumissionDto $dto 
      * @return bool true si le fichier est valide, false sinon
      */
-    public function validateSubmittedFile(FormInterface $form, ?string $remoteUrl = null, $dto): bool
+    public function validateSubmittedFile(FormInterface $form, ?string $remoteUrl = null, OrSoumissionDto $dto): bool
     {
+        //  Verifie si la date du premier soummision est inferieur au date u jour
+        if ($this->premierSoumissionDatePlanningInferieurDateDuJour($dto->numeroOr, $dto->codeSociete, $dto->nmbrOr_soumis)) {
+            $message = "Impossible de soumettre l’OR, la date de planning est déjà dépassée ";
+            $this->sendNotificationOR($message, '', 'liste_dit', false);
+            return true;
+        }
+        //  Verifie le nombre d'agent de service est plus 1
+        if ($dto->nbrNumcli[0] != 'existe_bdd') {
+            $message = "Echec de la soumission de l'OR . . . le numéro OR ne correspond pas  ";
+            $this->sendNotificationOR($message, '', 'liste_dit', false);
+            return true;
+        }
+        //  Verifie le nombre d'agent de service est plus 1
+        if ($dto->countAgServDebit > 1) {
+            $message = "Echec de la soumission de l'OR . . . un OR a plusieurs service débiteur ";
+            $this->sendNotificationOR($message, '', 'liste_dit', false);
+            return true;
+        }
+
+        //  Verifie si la statue est bloquer
+        if ($dto->statut === 'bloquer') {
+            $message = "Echec de la soumission de l'OR . . . un OR est déjà en cours de validation ";
+            $this->sendNotificationOR($message, '', 'liste_dit', false);
+            return true;
+        }
+        //  Verifie si la refClient est vide
+        if ($dto->refClient) {
+            $message = "Echec de la soumission car la référence client est vide.";
+            $this->sendNotificationOR($message, '', 'liste_dit', false);
+            return true;
+        }
+        //  Validation des positions valides 
+        if ($dto->isValidPosition) {
+            $message = "Echec de la soumission car l'agence / service débiteur de l'OR ne correspond pas à l'agence / service de la DIT";
+            $this->sendNotificationOR($message, '', 'liste_dit', false);
+            return true;
+        }
+        //  Verification si agence debiteur est dans Irium et IPS sont egale 
+        if ($dto->isAgenceIriumInIPS) {
+            $message = "Echec de la soumission car l'agence / service débiteur de l'OR ne correspond pas à l'agence / service de la DIT";
+            $this->sendNotificationOR($message, '', 'liste_dit', false);
+            return true;
+        }
+        // Verifie si tous les intervention sont plannifiées
+        if ($dto->isVerifiedDatePlanning) {
+            $message = "Echec de la soumission car il existe une ou plusieurs interventions non planifiées dans l'OR";
+            $this->sendNotificationOR($message, '', 'liste_dit', false);
+            return true;
+        }
+        // Verifie si id_materiel_Ips correspond id_materiel_Irium 
+        if ($dto->id_materiel_ips !== (int)$dto->info_materiel['id']) {
+            $message = "Echec de la soumission car le materiel de l'OR ne correspond pas au materiel de la DIT";
+            $this->sendNotificationOR($message, '', 'liste_dit', false);
+            return true;
+        }
+
         // Vérifie si un fichier a été soumis
         if (!$remoteUrl && !$this->isFileSubmitted($form, self::FILE_FIELD_NAME)) {
             $message = "Aucun fichier n'a été soumis.";
@@ -91,8 +158,8 @@ class ValidationService
         }
 
         // Vérifie si le numéro de OR dans le nom du fichier correspond au numéro de dit attendu (S'assurer que le OR envoyé corresponde à la ligne de OR utilisé pour la soumission dans l'intranet)
-        if (!$this->matchNumberAfterUnderscore($fileName, $dto)) {
-            $message = "Le numéro de devis dans le nom du fichier ($fileName) ne correspond pas au OR du formulaire ( $dto->numeroOr )";
+        if (!$this->matchNumberAfterUnderscore($fileName, $dto->numeroOr)) {
+            $message = "Le numéro de l'OR dans le nom du fichier ($fileName) ne correspond pas au OR du formulaire ( $dto->numeroOr )";
             $this->sendNotificationOR($message, '', 'liste_dit', false);
             return true;
         }
