@@ -61,3 +61,8 @@ services:
       $permissionsService: '@App\Service\Admin\PermissionsService'
       $permissionsFactory: '@App\Factory\admin\PermissionsFactory'
     public: true
+
+  App\Controller\Atelier\Dit\DitListeController:
+    arguments:
+      - '@App\Model\Atelier\Dit\DitListeModel'
+    public: true

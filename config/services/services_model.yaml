@@ -1,0 +1,4 @@
+services:
+  App\Model\Atelier\Dit\DitListeModel:
+    arguments:
+    - '@security.service'

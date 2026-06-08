@@ -4,20 +4,14 @@ namespace App\Form\Atelier\Dit;
 
 use App\Constants\atelier\dit\soumission\ORs\ConstantStatutOr;
 use App\Dto\Atelier\Dit\DitSearchDto;
-use App\Entity\admin\dit\CategorieAteApp;
-use App\Entity\admin\dit\WorNiveauUrgence;
-use App\Entity\admin\dit\WorTypeDocument;
 use App\Entity\admin\StatutDemande;
-use App\Entity\dit\DemandeIntervention;
+use App\Model\admin\StatutDemande\StatutDemandeModel;
 use App\Model\Atelier\Dit\CategorieAteAppModel;
 use App\Model\Atelier\Dit\DitListeModel;
 use App\Model\Atelier\Dit\WorNiveauUrgenceModel;
 use App\Model\Atelier\Dit\WorTypeDocumentModel;
 use App\Repository\admin\StatutDemandeRepository;
-use App\Repository\dit\DitRepository;
 use App\Traits\PrepareAgenceServiceTrait;
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\EntityRepository;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
@@ -56,9 +50,9 @@ class DitSearchType extends AbstractType
 
     private DitListeModel $ditListeModel;
 
-    public function __construct()
+    public function __construct(DitListeModel $ditListeModel)
     {
-        $this->ditListeModel = new DitListeModel();
+        $this->ditListeModel = $ditListeModel;
     }
 
 
@@ -116,6 +110,13 @@ class DitSearchType extends AbstractType
         return array_combine($descriptions, $descriptions);
     }
 
+    public function getDescrionStatutDemande()
+    {
+        $statutDemande = new StatutDemandeModel();
+        $descriptions = $statutDemande->getAllDescriptionStatutDit();
+        return array_combine($descriptions, $descriptions);
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
@@ -130,21 +131,17 @@ class DitSearchType extends AbstractType
                     'required' => false,
                 ]
             )
-            ->add('statut', EntityType::class, [
-                'label'         => 'Statut',
-                'class'         => StatutDemande::class,
-                'choice_label'  => 'description',
-                'placeholder'   => '-- Choisir un statut --',
-                'required'      => false,
-                'attr'          => [
-                    'class' => 'statut'
-                ],
-                'query_builder' => function (StatutDemandeRepository $er) {
-                    return $er->createQueryBuilder('s')
-                        ->where('s.codeApp = :codeApp')
-                        ->setParameter('codeApp', 'DIT');
-                },
-            ])
+            ->add(
+                'statut',
+                ChoiceType::class,
+                [
+                    'label'         => 'Statut',
+                    'choices' => $this->getDescrionStatutDemande(),
+                    'placeholder'   => '-- Choisir un statut --',
+                    'required'      => false,
+
+                ]
+            )
             ->add('idMateriel', NumberType::class, [
                 'label'         => 'Id Matériel',
                 'required'      => false,

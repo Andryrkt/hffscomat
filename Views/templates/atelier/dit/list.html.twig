@@ -16,7 +16,7 @@
 <div class="sticky-header-titre">
 	<div class="container">
 		{% include "/partials/_notification.html.twig" %}
-		{# {% include "/dit/shared/_formulaireRecherche.html.twig" %} #}
+		{% include "/atelier/dit/shared/_formulaireRecherche.html.twig" %}
 		<div class="row">
 			<div class=" col-12 col-md-6 my-2">
 				<i class="fa-solid fa-circle text-info"></i>
@@ -31,10 +31,10 @@
 			</div>
 
 			<div class="col-12 col-md-6 my-2">
-				{% include "/dit/shared/_carteStatut.html.twig" %}
+				{% include "/atelier/dit/shared/_carteStatut.html.twig" %}
 			</div>
 		</div>
-		{% include "/dit/shared/_pagination.html.twig" %}
+		{% include "/atelier/dit/shared/_pagination.html.twig" %}
 	</div>
 </div>
 
@@ -173,17 +173,17 @@
 	{% include "/partials/_pagination.html.twig" %}
 	<!-- FIN tableau -->
 	{# body modal #}
-	{# {% include "/dit/shared/_modal.html.twig"  %} #}
-	{# {% include "/dit/shared/_modalDocDansDW.html.twig"  %} #}
-	{# {% include "/dit/shared/_modalSectionAffectee.html.twig"  %} #}
-	{# {% include "/dit/shared/_modalFacturation.html.twig"  %} #}
-	{# {% include "/dit/shared/_modalRi.html.twig"  %} #}
-	{# {% include "/dit/shared/_modalNiveauUrgence.html.twig"  %} #}
+	{% include "/atelier/dit/shared/_modal.html.twig"  %}
+	{# {% include "/atelier/dit/shared/_modalDocDansDW.html.twig"  %} #}
+	{% include "/atelier/dit/shared/_modalSectionAffectee.html.twig"  %}
+	{% include "/atelier/dit/shared/_modalFacturation.html.twig"  %}
+	{% include "/atelier/dit/shared/_modalRi.html.twig"  %}
+	{% include "/atelier/dit/shared/_modalNiveauUrgence.html.twig"  %}
 	
 {% endblock %}
 
 {% block javascript %}
 	<script src="{{ App.base_path }}/Views/js/utils/positionSticky.js?v=2025.09.15.08.00"></script>
-	<script src="{{ App.base_path }}/Views/js/dit/listDit.js?v=2025.09.15.08.00" type="module"></script>
-	<script src="{{ App.base_path }}/Views/js/dit/listDitModal.js?v=2025.09.15.08.00" type="module"></script>
+	<script src="{{ App.base_path }}/Views/js/atelier/dit/listDit.js?v=2025.09.15.08.00" type="module"></script>
+	<script src="{{ App.base_path }}/Views/js/atelier/dit/listDitModal.js?v=2025.09.15.08.00" type="module"></script>
 {% endblock %}

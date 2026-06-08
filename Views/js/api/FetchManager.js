@@ -1,5 +1,5 @@
 // FetchManager.js
-import { baseUrl } from "../utils/config";
+import { baseUrl } from "../utils/config.js";
 
 export class FetchManager {
   constructor() {

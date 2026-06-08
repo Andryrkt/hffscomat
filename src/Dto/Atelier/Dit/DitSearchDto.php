@@ -36,9 +36,9 @@ class DitSearchDto
 
     public ?string $statutOr = null;
 
-    public ?bool $ditSansOr = false;
+    public bool $ditSansOr = false;
 
-    public  ?string $categorie;
+    public  ?string $categorie = null;
 
     public ?string $utilisateur = null;
 
@@ -55,4 +55,6 @@ class DitSearchDto
     public ?string $numDevis = null;
 
     public ?string $reparationRealise = null;
+
+    public array $agenceServiceAutorises = [];
 }

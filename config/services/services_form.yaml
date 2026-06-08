@@ -7,11 +7,6 @@ services:
     public: false
 
   # Configuration spécifique pour les formulaires avec EntityManager
-  App\Form\dit\DitSearchType:
-    arguments:
-    - "@doctrine.orm.default_entity_manager"
-    public: true
-
   App\Form\dit\demandeInterventionType:
     arguments:
     - "@doctrine.orm.default_entity_manager"
@@ -100,4 +95,9 @@ services:
   App\Form\Atelier\Dit\DitType:
     arguments:
     - "@doctrine.orm.default_entity_manager"
+    public: true
+
+  App\Form\Atelier\Dit\DitSearchType:
+    arguments:
+    - '@App\Model\Atelier\Dit\DitListeModel'
     public: true
