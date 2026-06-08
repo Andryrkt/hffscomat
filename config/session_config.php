@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Configuration des sessions pour Hffintranet
+ * Configuration des sessions pour scomat
  * Ce fichier définit le répertoire de session personnalisé
  */
 

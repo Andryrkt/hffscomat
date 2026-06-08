@@ -25,26 +25,9 @@ class TypeDocument
     const TYPE_DOCUMENT_CAS_NAME = 'CAS';
     const TYPE_DOCUMENT_CDE_NAME = 'CDE';
     const TYPE_DOCUMENT_DEV_NAME = 'DEV';
-    const TYPE_DOCUMENT_BC_NAME = 'BC';
-    const TYPE_DOCUMENT_AC_NAME = 'AC';
-    const TYPE_DOCUMENT_SW_NAME = 'SW';
-    const TYPE_DOCUMENT_MUT_NAME = 'MUT';
-
-    const TYPE_DOCUMENT_DIT_ID = 1;
-    const TYPE_DOCUMENT_OR_ID = 2;
-    const TYPE_DOCUMENT_FAC_ID = 3;
-    const TYPE_DOCUMENT_RI_ID = 4;
-    const TYPE_DOCUMENT_TIK_ID = 5;
-    const TYPE_DOCUMENT_DA_ID = 6;
-    const TYPE_DOCUMENT_DOM_ID = 7;
-    const TYPE_DOCUMENT_BADM_ID = 8;
-    const TYPE_DOCUMENT_CAS_ID = 9;
-    const TYPE_DOCUMENT_CDE_ID = 10;
+    
     const TYPE_DOCUMENT_DEV_ID = 11;
-    const TYPE_DOCUMENT_BC_ID = 12;
-    const TYPE_DOCUMENT_AC_ID = 13;
-    const TYPE_DOCUMENT_SW_ID = 15;
-    const TYPE_DOCUMENT_MUT_ID = 16;
+ 
 
     /**
      * @ORM\Id
