@@ -343,4 +343,28 @@ class DitModel extends Model
 
         return $this->convertirEnUtf8($data);
     }
+
+    /**
+     * Constraint soumission 
+     */
+
+    public function recupeConstraintSoumission(string $numDit, string $codeSociete)
+    {
+        $statement = "SELECT d0_.internet_externe as client , 
+                            s2_.description as statut,
+                            d0_.numero_or as numero_or
+                from {$this->dbIrium}:Informix.demande_intervention d0_
+                LEFT JOIN {$this->dbIrium}:informix.statut_demande s2_
+                    ON d0_.id_statut_demande = s2_.ID_Statut_Demande
+                AND s2_.code_application = 'DIT'
+                where d0_.code_societe  = '$codeSociete'
+                and d0_.numero_demande_dit  = '$numDit'
+        ";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
+
+        return $data;
+    }
 }

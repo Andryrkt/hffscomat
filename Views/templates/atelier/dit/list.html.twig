@@ -101,11 +101,11 @@
 								<li>
 									<a class="dropdown-item fw-bold" href="{{ path("dit_duplication", {numDit: item.numeroDemandeIntervention})}}">Dupliquer</a>
 								</li>
-								{% if item.estOrASoumi %}
+								{# {% if item.estOrASoumi %} #}
 									<li>
 										<a class="dropdown-item fw-bold" href="#" data-bs-toggle="modal" data-bs-target="#docDansDw" data-id="{{item.numeroDemandeIntervention}}" id="">Soumission document à valider</a>
 									</li>
-								{% endif %}
+								{# {% endif %} #}
 								<li>
 									{# <a class="dropdown-item fw-bold" target="_blank" href="{{ path("dw_interv_ate_avec_dit", {numDit: item.numeroDemandeIntervention})}}">Dossier DIT</a> #}
 								</li>
@@ -174,7 +174,7 @@
 	<!-- FIN tableau -->
 	{# body modal #}
 	{% include "/atelier/dit/shared/_modal.html.twig"  %}
-	{# {% include "/atelier/dit/shared/_modalDocDansDW.html.twig"  %} #}
+	{% include "/atelier/dit/shared/_modalDocDansDW.html.twig"  %}
 	{% include "/atelier/dit/shared/_modalSectionAffectee.html.twig"  %}
 	{% include "/atelier/dit/shared/_modalFacturation.html.twig"  %}
 	{% include "/atelier/dit/shared/_modalRi.html.twig"  %}

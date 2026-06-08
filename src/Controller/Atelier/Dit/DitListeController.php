@@ -6,6 +6,7 @@ use App\Constants\admin\ApplicationConstant;
 use App\Controller\Controller;
 use App\Dto\Atelier\Dit\DitSearchDto;
 use App\Form\Atelier\Dit\DitSearchType;
+use App\Form\Atelier\Dit\DocDansDwType;
 use App\Mapper\Atelier\Dit\DitListeMapper;
 use App\Model\Atelier\Dit\DitListeModel;
 use Symfony\Component\Form\FormInterface;
@@ -41,6 +42,30 @@ class DitListeController extends Controller
         $dto = new DitSearchDto();
         $dtoSearch  = $this->traitementFormualireRecherhce($form, $request, $dto);
 
+        /**  Docs à intégrer dans DW * */
+        $formDocDansDW = $this->getFormFactory()->createBuilder(DocDansDwType::class, null, [
+            'method' => 'GET',
+        ])->getForm();
+
+        // $this->dossierDit($request, $formDocDansDW);
+        $formDocDansDW->handleRequest($request);
+
+        if ($formDocDansDW->isSubmitted() && $formDocDansDW->isValid()) {
+            if ($formDocDansDW->getData()['docDansDW'] === 'OR') {
+                $this->redirectToRoute("dit_insertion_or", ['numDit' => $formDocDansDW->getData()['numeroDit']]);
+            } elseif ($formDocDansDW->getData()['docDansDW'] === 'FACTURE') {
+                $this->redirectToRoute("dit_insertion_facture", ['numDit' => $formDocDansDW->getData()['numeroDit']]);
+            } elseif ($formDocDansDW->getData()['docDansDW'] === 'RI') {
+                $this->redirectToRoute("dit_insertion_ri", ['numDit' => $formDocDansDW->getData()['numeroDit']]);
+            } elseif ($formDocDansDW->getData()['docDansDW'] === 'DEVIS-VP') {
+                $this->redirectToRoute("dit_insertion_devis", ['numDit' => $formDocDansDW->getData()['numeroDit'], 'type' => 'VP']);
+            } elseif ($formDocDansDW->getData()['docDansDW'] === 'DEVIS-VA') {
+                $this->redirectToRoute("dit_insertion_devis", ['numDit' => $formDocDansDW->getData()['numeroDit'], 'type' => 'VA']);
+            } elseif ($formDocDansDW->getData()['docDansDW'] === 'BC') {
+                $this->redirectToRoute("dit_ac_bc_soumis", ['numDit' => $formDocDansDW->getData()['numeroDit']]);
+            }
+        }
+
         $dataDit = $this->getDataDitEnDto($dtoSearch);
 
         return $this->render('atelier/dit/list.html.twig', [
@@ -50,7 +75,8 @@ class DitListeController extends Controller
             'criteria'      => $criteria,
             'resultat'      => $dataDit['totalItems'],
             'statusCounts'  => $dataDit['statusCounts'],
-            'form'          => $form->createView()
+            'form'          => $form->createView(),
+            'formDocDansDW' => $formDocDansDW->createView()
         ]);
     }
 
@@ -79,13 +105,12 @@ class DitListeController extends Controller
         ];
     }
 
-    private function traitementFormualireRecherhce(FormInterface $form, Request $request, DitSearchDto $dto): DitSearchDto
+    private function traitementFormualireRecherhce(FormInterface $form, Request $request): DitSearchDto
     {
         $form->handleRequest($request);
+        $dto = $form->getData() ?? new DitSearchDto();
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $dto = $form->getData();
-
             //recupères les données du criteria dans une session nommé dit_serch_criteria
             $this->getSessionService()->set('dit_search_criteria', $dto);
         }
