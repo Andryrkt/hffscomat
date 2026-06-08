@@ -17,4 +17,19 @@ class ConstantStatutOr
     public const STATUT_REFUSE_DT                  = 'Refusé DT';
     public const STATUT_SOUMIS_A_VALIDATION        = 'Soumis à validation';
     public const STATUT_VALIDE                     = 'Validé';
+
+
+    public const STATUT_OR = [
+        self::STATUT_A_RESOUMETTRE_A_VALIDATION => self::STATUT_A_RESOUMETTRE_A_VALIDATION,
+        self::STATUT_A_VALIDER_CA               => self::STATUT_A_VALIDER_CA,
+        self::STATUT_A_VALIDER_CLIENT           => self::STATUT_A_VALIDER_CLIENT,
+        self::STATUT_A_VALIDER_DT               => self::STATUT_A_VALIDER_DT,
+        self::STATUT_MODIF_DEMANDE_PAR_CA       => self::STATUT_MODIF_DEMANDE_PAR_CA,
+        self::STATUT_MODIF_DEMANDE_PAR_CLIENT   => self::STATUT_MODIF_DEMANDE_PAR_CLIENT,
+        self::STATUT_REFUSE_CA                  => self::STATUT_REFUSE_CA,
+        self::STATUT_REFUSE_CLIENT              => self::STATUT_REFUSE_CLIENT,
+        self::STATUT_REFUSE_DT                  => self::STATUT_REFUSE_DT,
+        self::STATUT_SOUMIS_A_VALIDATION        => self::STATUT_SOUMIS_A_VALIDATION,
+        self::STATUT_VALIDE                     => self::STATUT_VALIDE
+    ];
 }

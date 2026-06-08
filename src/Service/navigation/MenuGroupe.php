@@ -42,7 +42,8 @@ class MenuGroupe
                 'label'    => "Demande d'intervention",
                 'icon'     => 'toolbox',
                 'subitems' => [
-                    ['label' => 'Nouvelle demande',            'icon' => 'plus-circle', 'route' => 'dit_new']
+                    ['label' => 'Nouvelle demande',            'icon' => 'plus-circle', 'route' => 'dit_new'],
+                    ['label' => 'Consultation',                'icon' => 'search',      'route' => 'dit_index'],
                 ],
             ],
         ];
