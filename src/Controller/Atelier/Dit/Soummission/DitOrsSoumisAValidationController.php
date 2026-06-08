@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\dit\Ors;
+namespace App\Controller\Atelier\Dit\Soummission;
 
 ini_set('upload_max_filesize', '5M');
 ini_set('post_max_size', '5M');
@@ -11,24 +11,15 @@ use App\Controller\Controller;
 
 use App\Controller\Traits\dit\DitOrSoumisAValidationTrait;
 use App\Controller\Traits\FormatageTrait;
-use App\Dto\atelier\dit\DemandeInterventionDto;
 use App\Dto\atelier\dit\soumission\OrSoumissionDto;
-use App\Entity\admin\StatutDemande;
-
-
-use App\Entity\dit\DemandeIntervention;
-use App\Entity\dit\DitOrsSoumisAValidation;
-use App\Factory\atelier\Dit\soumission\OrSoumissionFactory;
+use App\Factory\atelier\Dit\Soumission\OrSoumissionFactory;
 use App\Form\atelier\dit\soumission\DitOrsSoumisAValidationType;
-use App\Model\dit\DitModel;
-use App\Model\dit\DitOrSoumisAValidationModel;
+use App\Model\Atelier\Dit\DitModel;
+use App\Model\Atelier\Dit\Soumission\DitOrSoumisAValidationModel;
 use App\Model\magasin\MagasinListeOrLivrerModel;
-
-use App\Repository\dit\DitOrsSoumisAValidationRepository;
-use App\Repository\dit\DitRepository;
-use App\Service\atelier\dit\ors\OrGeneratorNameService as OrsOrGeneratorNameService;
 use App\Service\atelier\dit\soumission\ORs\ValidationService;
-use App\Service\dit\ors\OrGeneratorNameService;
+
+
 use App\Service\fichier\TraitementDeFichier;
 use App\Service\fichier\UploderFileService;
 use App\Service\FusionPdf;
@@ -49,27 +40,23 @@ class DitOrsSoumisAValidationController extends Controller
     use DitOrSoumisAValidationTrait;
     // use DaTrait;
 
-    private MagasinListeOrLivrerModel $magasinListOrLivrerModel;
+
     private HistoriqueOperationService $historiqueOperation;
+
     private DitOrSoumisAValidationModel $ditOrsoumisAValidationModel;
-    private DitRepository $ditRepository;
-    private DitOrsSoumisAValidationRepository $orRepository;
+
 
     private ValidationService $validationService;
 
-    // private DemandeApproLRepository $demandeApproLRepository;
-    // private DemandeApproLRRepository $demandeApproLRRepository;
-    // private DemandeApproRepository $demandeApproRepository;
-    // private DaAfficherRepository $daAfficherRepository;
 
-    private $ditModel;
+
+    private DitModel $ditModel;
     private $fusionPdf;
 
 
     public function __construct()
     {
         parent::__construct();
-        $this->magasinListOrLivrerModel = new MagasinListeOrLivrerModel();
         $this->historiqueOperation      = new HistoriqueOperationORService($this->getEntityManager());
         $this->ditOrsoumisAValidationModel = new DitOrSoumisAValidationModel();
         $this->ditModel = new DitModel();

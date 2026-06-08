@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Factory\atelier\Dit\soumission;
+namespace App\Factory\atelier\Dit\Soumission;
 
 use App\Dto\atelier\dit\soumission\OrSoumissionDto;
-use App\Model\dit\DitModel;
-use App\Model\dit\DitOrSoumisAValidationModel;
+use App\Model\Atelier\Dit\DitModel;
+use App\Model\Atelier\Dit\Soumission\DitOrSoumisAValidationModel;
 use DateTime;
 
 class OrSoumissionFactory
@@ -138,7 +138,7 @@ class OrSoumissionFactory
         $refClient = $ditOrsoumisAValidationModel->recupRefClient($dto->numeroOr, $dto->codeSociete);
         $countAgServDeb = $ditOrsoumisAValidationModel->countAgServDebit($dto->numeroOr, $dto->codeSociete);
         $nbrNumcli = $ditOrsoumisAValidationModel->numcliExiste($dto->numeroOr, $dto->codeSociete);
-        
+
 
         $dto->numeroDit = $numDit;
         $dto->numeroOr = $numOr;
@@ -157,7 +157,7 @@ class OrSoumissionFactory
         $dto->countAgServDebit = $countAgServDeb;
         $dto->nbrNumcli = $nbrNumcli;
 
-        
+
 
         // $dto->isValidPosition = in_array($pos[0]['position'], OrSoumissionFactory::invalidPositions);
 

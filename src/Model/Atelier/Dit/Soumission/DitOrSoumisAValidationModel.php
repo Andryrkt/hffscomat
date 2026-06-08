@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Model\dit;
+namespace App\Model\Atelier\Dit\Soumission;
 
 
 use App\Model\Model;

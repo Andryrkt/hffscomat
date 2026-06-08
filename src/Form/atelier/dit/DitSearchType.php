@@ -1,28 +1,26 @@
 <?php
 
-namespace App\Form\atelier\dit;
+namespace App\Form\Atelier\Dit;
 
-use App\Entity\admin\Agence;
-use App\Entity\dit\DitSearch;
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\EntityRepository;
+use App\Constants\atelier\dit\soumission\ORs\ConstantStatutOr;
+use App\Dto\Atelier\Dit\DitSearchDto;
 use App\Entity\admin\StatutDemande;
-use App\Entity\dit\DemandeIntervention;
-use Symfony\Component\Form\AbstractType;
-use App\Entity\admin\dit\CategorieAteApp;
-use App\Entity\admin\dit\WorTypeDocument;
-use App\Entity\admin\dit\WorNiveauUrgence;
-use Symfony\Component\Form\FormBuilderInterface;
+use App\Model\admin\StatutDemande\StatutDemandeModel;
+use App\Model\Atelier\Dit\CategorieAteAppModel;
+use App\Model\Atelier\Dit\DitListeModel;
+use App\Model\Atelier\Dit\WorNiveauUrgenceModel;
+use App\Model\Atelier\Dit\WorTypeDocumentModel;
 use App\Repository\admin\StatutDemandeRepository;
-use App\Repository\dit\DitRepository;
 use App\Traits\PrepareAgenceServiceTrait;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
-use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Form\Extension\Core\Type\DateType;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Extension\Core\Type\NumberType;
+use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class DitSearchType extends AbstractType
 {
@@ -50,26 +48,17 @@ class DitSearchType extends AbstractType
         'ENERGIE MAN'  => 'ENERGIE MAN'
     ];
 
-    private DitRepository $ditRepository;
+    private DitListeModel $ditListeModel;
 
-    private $em;
-
-    public function __construct(EntityManagerInterface $em)
+    public function __construct(DitListeModel $ditListeModel)
     {
-        $this->em = $em;
-        $this->ditRepository = $this->em->getRepository(DemandeIntervention::class);
+        $this->ditListeModel = $ditListeModel;
     }
 
-    private function statutOr()
-    {
-        $statutOr = $this->ditRepository->findStatutOr();
-
-        return array_combine($statutOr, $statutOr);
-    }
 
     private function sectionAffectee()
     {
-        $sectionAffecte = $this->ditRepository->findSectionAffectee();
+        $sectionAffecte = $this->ditListeModel->findSectionAffectee();
         $groupes = ['Chef section', 'Chef de section', 'Responsable section', 'Chef d\'équipe']; // Les groupes de mots à supprimer
         $sectionAffectee = str_replace($groupes, "", $sectionAffecte);
         return array_combine($sectionAffectee, $sectionAffectee);
@@ -77,7 +66,7 @@ class DitSearchType extends AbstractType
 
     private function sectionSupport1()
     {
-        $sectionSupport1 = $this->ditRepository->findSectionSupport1();
+        $sectionSupport1 = $this->ditListeModel->findSectionSupport1();
         $groupes = ['Chef section', 'Chef de section', 'Responsable section', 'Chef d\'équipe']; // Les groupes de mots à supprimer
         $sectionSupport1 = str_replace($groupes, "", $sectionSupport1);
         return array_combine($sectionSupport1, $sectionSupport1);
@@ -85,7 +74,7 @@ class DitSearchType extends AbstractType
 
     private function sectionSupport2()
     {
-        $sectionSupport2 = $this->ditRepository->findSectionSupport2();
+        $sectionSupport2 = $this->ditListeModel->findSectionSupport2();
         $groupes = ['Chef section', 'Chef de section', 'Responsable section', 'Chef d\'équipe']; // Les groupes de mots à supprimer
         $sectionSupport2 = str_replace($groupes, "", $sectionSupport2);
         return array_combine($sectionSupport2, $sectionSupport2);
@@ -93,56 +82,80 @@ class DitSearchType extends AbstractType
 
     private function sectionSupport3()
     {
-        $sectionSupport3 = $this->ditRepository->findSectionSupport3();
+        $sectionSupport3 = $this->ditListeModel->findSectionSupport3();
         $groupes = ['Chef section', 'Chef de section', 'Responsable section', 'Chef d\'équipe']; // Les groupes de mots à supprimer
         $sectionSupport3 = str_replace($groupes, "", $sectionSupport3);
         return array_combine($sectionSupport3, $sectionSupport3);
     }
 
+
+    public function getDesctionCategorieAteApp()
+    {
+        $categorieAteAppModel = new CategorieAteAppModel();
+        $descriptions = $categorieAteAppModel->getDescription();
+        return array_combine($descriptions, $descriptions);
+    }
+
+    public function getDescriptionWorNiveauUrgence()
+    {
+        $worNiveauUrgenceModel = new WorNiveauUrgenceModel();
+        $descriptions = $worNiveauUrgenceModel->getDescription();
+        return array_combine($descriptions, $descriptions);
+    }
+
+    public function getDescriptionWorTypeDocument()
+    {
+        $worTypeDocumentModel = new WorTypeDocumentModel();
+        $descriptions = $worTypeDocumentModel->getDescription();
+        return array_combine($descriptions, $descriptions);
+    }
+
+    public function getDescrionStatutDemande()
+    {
+        $statutDemande = new StatutDemandeModel();
+        $descriptions = $statutDemande->getAllDescriptionStatutDit();
+        return array_combine($descriptions, $descriptions);
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('niveauUrgence', EntityType::class, [
-                'label'         => 'Niveau d\'urgence',
-                'label_html'    => true,
-                'class'         => WorNiveauUrgence::class,
-                'choice_label'  => 'description',
-                'placeholder'   => '-- Choisir un niveau--',
-                'required'      => false,
-                'query_builder' => function (EntityRepository $er) {
-                    return $er->createQueryBuilder('n')
-                        ->orderBy('n.description', 'DESC');
-                },
-                'attr'          => [
-                    'class' => 'niveauUrgence'
+            ->add(
+                'niveauUrgence',
+                ChoiceType::class,
+                [
+                    'label' => 'Niveau d\'urgence',
+                    'label_html' => true,
+                    'placeholder' => false,
+                    'choices' => $this->getDescriptionWorNiveauUrgence(),
+                    'required' => false,
                 ]
-            ])
-            ->add('statut', EntityType::class, [
-                'label'         => 'Statut',
-                'class'         => StatutDemande::class,
-                'choice_label'  => 'description',
-                'placeholder'   => '-- Choisir un statut --',
-                'required'      => false,
-                'attr'          => [
-                    'class' => 'statut'
-                ],
-                'query_builder' => function (StatutDemandeRepository $er) {
-                    return $er->createQueryBuilder('s')
-                        ->where('s.codeApp = :codeApp')
-                        ->setParameter('codeApp', 'DIT');
-                },
-            ])
+            )
+            ->add(
+                'statut',
+                ChoiceType::class,
+                [
+                    'label'         => 'Statut',
+                    'choices' => $this->getDescrionStatutDemande(),
+                    'placeholder'   => '-- Choisir un statut --',
+                    'required'      => false,
+
+                ]
+            )
             ->add('idMateriel', NumberType::class, [
                 'label'         => 'Id Matériel',
                 'required'      => false,
             ])
-            ->add('typeDocument', EntityType::class, [
-                'label'         => 'Type de Document',
-                'class'         => WorTypeDocument::class,
-                'choice_label'  => 'description',
-                'placeholder'   => '-- Choisir un type de document--',
-                'required'      => false,
-            ])
+            ->add(
+                'typeDocument',
+                ChoiceType::class,
+                [
+                    'label' => 'Type de document',
+                    'placeholder' => '-- Choisir--',
+                    'choices' => $this->getDescriptionWorTypeDocument(),
+                    'required' => false
+                ]
+            )
             ->add(
                 'internetExterne',
                 ChoiceType::class,
@@ -195,7 +208,7 @@ class DitSearchType extends AbstractType
                 [
                     'label' => 'Statut OR',
                     'required' => false,
-                    'choices' => $this->statutOr(),
+                    'choices' => ConstantStatutOr::STATUT_OR,
                     'placeholder' => '-- choisir une statut --'
                 ]
             )
@@ -210,12 +223,11 @@ class DitSearchType extends AbstractType
 
             ->add(
                 'categorie',
-                EntityType::class,
+                ChoiceType::class,
                 [
-                    'label' => 'Catégorie de demande',
+                    'label' => 'Catégorie de demande *',
                     'placeholder' => '-- Choisir une catégorie --',
-                    'class' => CategorieAteApp::class,
-                    'choice_label' => 'libelleCategorieAteApp',
+                    'choices' => $this->getDesctionCategorieAteApp(),
                     'required' => false,
                 ]
             )
@@ -357,7 +369,7 @@ class DitSearchType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'data_class'             => DitSearch::class,
+            'data_class'             => DitSearchDto::class,
             'allAgenceServices' => [],
         ]);
     }

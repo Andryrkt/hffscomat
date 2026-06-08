@@ -4,28 +4,19 @@ namespace App\Factory\Atelier\Dit;
 
 use App\Constants\atelier\dit\StatutDitConstant;
 use App\Dto\Atelier\Dit\DitDto;
-use App\Model\Atelier\Dit\DitModel;
 use App\Model\Atelier\Dit\WorNiveauUrgenceModel;
-use App\Service\historiqueOperation\Atelier\Dit\HistoriqueOperationDITService;
 use App\Service\security\SecurityService;
-use Doctrine\ORM\EntityManagerInterface;
 
 class DitFactory
 {
-    private EntityManagerInterface $entityManager;
-    private DitModel $ditModel;
-    private HistoriqueOperationDITService $historiqueOperation;
+
     private SecurityService $securityService;
 
     public function __construct(
-        EntityManagerInterface $entityManager,
-        DitModel $ditModel,
-        HistoriqueOperationDITService $historiqueOperation,
+
         SecurityService $securityService
     ) {
-        $this->entityManager = $entityManager;
-        $this->ditModel = $ditModel;
-        $this->historiqueOperation = $historiqueOperation;
+
         $this->securityService = $securityService;
     }
 
@@ -52,7 +43,7 @@ class DitFactory
 
         // TODO
         $dto->numeroDemandeIntervention = '';
-        
+
 
         return $dto;
     }
