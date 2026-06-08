@@ -6,9 +6,7 @@ ini_set('upload_max_filesize', '5M');
 ini_set('post_max_size', '5M');
 
 use App\Constants\atelier\dit\soumission\ORs\ConstantStatutOr;
-use App\Constants\da\StatutDaConstant;
 use App\Controller\Controller;
-
 use App\Controller\Traits\dit\DitOrSoumisAValidationTrait;
 use App\Controller\Traits\FormatageTrait;
 use App\Dto\atelier\dit\soumission\OrSoumissionDto;
@@ -16,13 +14,8 @@ use App\Factory\atelier\Dit\Soumission\OrSoumissionFactory;
 use App\Form\atelier\dit\soumission\DitOrsSoumisAValidationType;
 use App\Model\Atelier\Dit\DitModel;
 use App\Model\Atelier\Dit\Soumission\DitOrSoumisAValidationModel;
-use App\Model\magasin\MagasinListeOrLivrerModel;
-use App\Service\atelier\dit\soumission\ORs\ValidationService;
-
-
 use App\Service\fichier\TraitementDeFichier;
 use App\Service\fichier\UploderFileService;
-use App\Service\FusionPdf;
 use App\Service\genererPdf\dit\ors\GenererPdfOrSoumisAValidation;
 use App\Service\historiqueOperation\HistoriqueOperationORService;
 use App\Service\historiqueOperation\HistoriqueOperationService;
@@ -45,14 +38,7 @@ class DitOrsSoumisAValidationController extends Controller
 
     private DitOrSoumisAValidationModel $ditOrsoumisAValidationModel;
 
-
-    private ValidationService $validationService;
-
-
-
     private DitModel $ditModel;
-    private $fusionPdf;
-
 
     public function __construct()
     {
@@ -60,8 +46,6 @@ class DitOrsSoumisAValidationController extends Controller
         $this->historiqueOperation      = new HistoriqueOperationORService($this->getEntityManager());
         $this->ditOrsoumisAValidationModel = new DitOrSoumisAValidationModel();
         $this->ditModel = new DitModel();
-        $this->fusionPdf = new FusionPdf();
-        // $this->userService = $validationService;
     }
 
     /**
@@ -71,36 +55,22 @@ class DitOrsSoumisAValidationController extends Controller
      */
     public function insertionOr(Request $request, string $numDit)
     {
-
         // Code Société de l'utilisateur
         $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
 
-        // verification si l'OR est lié à un DA
-        $lierAUnDa = false;
+        $numOr = $this->ditOrsoumisAValidationModel->recupNumeroOr($numDit, $codeSociete);
 
-
-
-        $numOrBaseDonner = $this->ditOrsoumisAValidationModel->recupNumeroOr($numDit, $codeSociete);
-
-        if (empty($numOrBaseDonner)) {
+        if (empty($numOr)) {
             $message = "Le DIT n'a pas encore de numéro OR";
             $this->historiqueOperation->sendNotificationSoumission($message, '-', 'dit_index');
         }
-        $numOr = $numOrBaseDonner[0]['numor'];
 
         // vérifier si le catégorie de la DIT est DAILY CHECK et le type de l'OR est 930 sinon bloqué
-        // $demandeIntervention = $this->getEntityManager()->getRepository(DemandeIntervention::class)->findOneBy(['numeroDemandeIntervention' => $numDit]);
-
-        // Informix
-        $demandeIntervention = $this->ditOrsoumisAValidationModel->findByNumeroDit($numDit);
-
+        $idCategorieDemande = $this->ditModel->findIdCategorieByNumeroDit($numDit, $codeSociete);
         $typeOr = $this->ditOrsoumisAValidationModel->recupTypeOr($numOr);
-        // $condition1 = $demandeIntervention->getCategorieDemande()->getId() === 10;
 
         // Informix
-        $condition1 = $demandeIntervention["categorie_demande"] === 10;
-
-
+        $condition1 = $idCategorieDemande === 10;
         $condition2 = $typeOr !== 930;
         if ($condition1 && $condition2) {
             $message = "Merci de vérifier l'OR car le type de l'OR ne correspond pas à la DIT rattaché qui est un DAILY CHECK";

@@ -18,6 +18,8 @@ class OrSoumissionFactory
         $dto->numeroDit = $numDit;
         $dto->numeroOr = $numOr;
         $dto->codeSociete = $codeSociete;
+        $dto->idCategorieDemande = '';
+        $dto->typeOr = '';
         return $dto;
     }
     public function fromArrayToDto(array $data): OrSoumissionDto

@@ -1,7 +1,7 @@
 <?php
 
 
-namespace App\Service\atelier\dit\ors;
+namespace App\Service\atelier\dit\soumission\ORs;
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use App\Service\fichier\AbstractFileNameGeneratorService;

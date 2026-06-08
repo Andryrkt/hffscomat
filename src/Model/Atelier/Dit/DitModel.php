@@ -367,4 +367,27 @@ class DitModel extends Model
 
         return $data;
     }
+
+
+
+    /**
+     * recupère l'ID du categorie de demande d'intervention
+     *
+     * @param string $numDit
+     * @param string $codeSociete
+     * @return string|null
+     */
+    public function findIdCategorieByNumeroDit(string $numDit, string $codeSociete): ?string
+    {
+        $statement = " SELECT FIRST 1 categorie_demande
+            FROM {$this->dbIrium}:Informix.demande_intervention
+            WHERE numero_demande_dit = '$numDit'
+            AND code_societe = '$codeSociete'
+    ";
+
+        $result = $this->connect->executeQuery($statement);
+        $data = $this->connect->fetchResults($result);
+
+        return $data[0]['categorie_demande'] ?? null;
+    }
 }

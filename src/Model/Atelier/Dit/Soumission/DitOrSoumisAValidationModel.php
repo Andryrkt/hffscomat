@@ -130,20 +130,19 @@ class DitOrSoumisAValidationModel extends Model
         return $this->convertirEnUtf8($data);
     }
 
-    public function recupNumeroOr($numDit, string $codeSociete)
+    public function recupNumeroOr($numDit, string $codeSociete): ?string
     {
-        $statement = " SELECT 
-            seor_numor as numOr
-            from sav_eor
-            where seor_refdem = '$numDit'
-            AND seor_serv = 'SAV'
-            AND seor_soc = '$codeSociete'
-        ";
+        $statement = " SELECT FIRST 1 
+        seor_numor as numOr
+        from sav_eor
+        where seor_refdem = '$numDit'
+        AND seor_serv = 'SAV'
+        AND seor_soc = '$codeSociete'
+    ";
         $result = $this->connect->executeQuery($statement);
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
 
-        $data = $this->connect->fetchResults($result);
-
-        return $this->convertirEnUtf8($data);
+        return $data[0]['numOr'] ?? null;
     }
 
     public function recupNumeroMatricule($numDit, $numOr, string $codeSociete)
@@ -190,15 +189,15 @@ class DitOrSoumisAValidationModel extends Model
         return  $this->convertirEnUtf8($data);
     }
 
-    public function recupTypeOr($numor)
+    public function recupTypeOr(string $numor): int
     {
-        $statement = " SELECT seor_typeor as type_or from informix.sav_eor where seor_numor = '" . $numor . "'";
+        $statement = " SELECT seor_typeor as type_or from informix.sav_eor where seor_numor = '$numor'";
 
         $result = $this->connect->executeQuery($statement);
 
-        $data = $this->connect->fetchResults($result);
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
 
-        return  $this->convertirEnUtf8($data);
+        return  $data[0]['type_or'] ?? 0;
     }
 
     public function recupNbPieceMagasin($numOr, string $codeSociete)
@@ -610,21 +609,8 @@ class DitOrSoumisAValidationModel extends Model
         return $this->convertirEnUtf8($data);
     }
 
-    // New
-    public function findByNumeroDit(string $numDit): array
-    {
-        $statement = "
-        SELECT FIRST 1 *
-        FROM {$this->dbIrium}:Informix.demande_intervention
-        WHERE numero_demande_dit = '$numDit'
-    ";
 
-        $result = $this->connect->executeQuery($statement);
 
-        $data = $this->connect->fetchResults($result);
-
-        return $data[0] ?? [];
-    }
     public function findByNumeroDitAndSociete(string $numDit, string $codeSociete): array
     {
         $statement = "
