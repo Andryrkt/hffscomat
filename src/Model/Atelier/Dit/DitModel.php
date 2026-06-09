@@ -3,8 +3,8 @@
 
 namespace App\Model\Atelier\Dit;
 
-use App\Dto\atelier\dit\soumission\OrSoumissionDto;
-use App\Mapper\Atelier\Dit\DitMapper;
+
+use App\Dto\Atelier\Dit\DitDto;
 use App\Model\Informix\InsertQueryBuilder;
 use App\Model\Informix\UpdateQueryBuilder;
 use App\Model\Model;
@@ -54,8 +54,8 @@ class DitModel extends Model
         (select nvl(sum(mofi_mt),0) from mat_ofi where mofi_classe = 40 and mofi_ssclasse in (100,110) and mofi_numbil = mbil_numbil and mofi_typmt = 'R') as ChargeLocative,
         (select nvl(sum(mofi_mt),0) from mat_ofi where mofi_classe = 40 and mofi_ssclasse in (21,22,23) and mofi_numbil = mbil_numbil and mofi_typmt = 'R') as ChargeEntretien
 
-      FROM MAT_MAT
-      LEFT JOIN mat_bil on mbil_nummat = mmat_nummat and mbil_dateclot <= '01/01/1900' and mbil_dateclot = '12/31/1899'
+      FROM {$this->dbIps}:Informix.MAT_MAT
+      LEFT JOIN {$this->dbIps}:Informix.mat_bil on mbil_nummat = mmat_nummat and mbil_dateclot <= '01/01/1900' and mbil_dateclot = '12/31/1899'
       WHERE MMAT_ETSTOCK in ('ST','AT', '--')
       AND MMAT_AFFECT <> 'CAS'
       " . $conditionNummat . "
@@ -71,10 +71,16 @@ class DitModel extends Model
         return $this->convertirEnUtf8($data);
     }
 
-    public function getAllClients()
+    /**
+     * Recupe tous les numéro et nom des clients
+     *
+     * @return array
+     */
+    public function getAllClients(): array
     {
-        $statement = "SELECT DISTINCT nent_numcli as num_client, nent_nomcli as nom_client
-                        from neg_ent
+        $statement = "SELECT DISTINCT nent_numcli as num_client, 
+                            nent_nomcli as nom_client
+                        from {$this->dbIps}:Informix.neg_ent
         ";
 
         $result = $this->connect->executeQuery($statement);
@@ -95,72 +101,10 @@ class DitModel extends Model
         return $this->convertirEnUtf8($data);
     }
 
-    /**
-     * Methode pour enregistrer les données du formulaire soumission OR
-     *  dans la base de donnée ors_soumis_a_validation
-     *
-     * @param OrSoumissionDto $dto
-     * @return void
-     */
-    public function enregistrementOr(OrSoumissionDto $dto, array $ors): void
-    {
-        // toArrayDit() retourne un tableau de lignes (une par ITV)
-        $lignes = DitMapper::toArrayDit($dto, $ors);
-
-        if (empty($lignes)) {
-            return;
-        }
-
-        $this->connect->connect();
-        try {
-            foreach ($lignes as $donnees) {
-                $builder = new InsertQueryBuilder("{$this->dbIrium}:Informix.ors_soumis_a_validation");
-                $builder->setData($donnees);
-                $result = $builder->build();
-                $this->connect->executeQuery($result['sql'], $result['params']);
-            }
-        } finally {
-            $this->connect->close();
-        }
-    }
 
 
-    /**
-     * MOdification du statut demande d'intervention , numero OR et statut OR  dans la 
-     * table demande_intervention
-     *
-     * @paramOrSoummissionDto $dto
-     * @return void
-     */
-    public function updateDit(OrSoumissionDto $dto)
-    {
-        $donnees = DitMapper::toArrayUpdateDit($dto);
 
-        $updateBuilder = new UpdateQueryBuilder("{$this->dbIrium}:Informix.demande_intervention");
 
-        // Définir les données à mettre à jour
-        $updateBuilder->setData($donnees);
-
-        // Ajouter les conditions WHERE
-        $updateBuilder->where('numero_demande_dit', $dto->numeroDit);
-        $updateBuilder->where('code_societe',  $dto->codeSociete);
-
-        // Changer l'opérateur des conditions (optionnel)
-        // $updateBuilder->setConditionOperator('AND');
-        // Construire et exécuter la requête
-        try {
-            $result = $updateBuilder->build();
-            $this->connect->connect();
-            try {
-                // $this->connect->executeQuery($result['sql'], $result['params']);
-            } finally {
-                $this->connect->close();
-            }
-        } catch (\Exception $e) {
-            // Vous pouvez logger l'erreur ici
-            throw $e;
-        }
-    }
 
     public function recupAgenceServiceDebiteur($numOr, string $codeSociete)
     {
@@ -191,109 +135,7 @@ class DitModel extends Model
         return $data[0] ?? [];
     }
 
-    public function recupOrSoumisValidation($numOr, $codeSociete)
-    {
-        $statement = "SELECT
-          slor_numor,
-          sitv_datdeb,
-          trim(seor_refdem) as NUMERo_DIT,
-          sitv_interv as NUMERO_ITV,
-          trim(sitv_comment) as LIBELLE_ITV,
-          count(slor_constp) as NOMBRE_LIGNE,
-          Sum(
-              CASE
-                  WHEN slor_typlig = 'P' 
-                  THEN (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec)
-                  WHEN slor_typlig IN ('F', 'M', 'U', 'C') THEN slor_qterea
-              END 
-              * 
-              CASE
-                  WHEN slor_typlig = 'P' THEN slor_pxnreel
-                  WHEN slor_typlig IN ('F', 'M', 'U', 'C') THEN slor_pxnreel
-              END
-          ) as MONTANT_ITV,
 
-          Sum(
-              CASE
-                  WHEN slor_typlig = 'P'
-                  AND slor_constp NOT like 'Z%'
-                  AND slor_constp <> 'LUB' THEN (nvl (slor_qterel, 0) + nvl (slor_qterea, 0) + nvl (slor_qteres, 0) + nvl (slor_qtewait, 0) - nvl (slor_qrec, 0))
-              END 
-              * 
-              CASE
-                  WHEN slor_typlig = 'P' THEN slor_pxnreel
-                  WHEN slor_typlig IN ('F', 'M', 'U', 'C') THEN slor_pxnreel
-              END
-          ) AS MONTANT_PIECE,
-
-          Sum(
-              CASE
-                  WHEN slor_typlig = 'M' THEN slor_qterea
-              END * CASE
-                  WHEN slor_typlig = 'P' THEN slor_pxnreel
-                  WHEN slor_typlig IN ('F', 'M', 'U', 'C') THEN slor_pxnreel
-              END
-          ) AS MONTANT_MO,
-
-          Sum(
-              CASE
-                  WHEN slor_constp = 'ZST' THEN (
-                      slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec
-                  )
-              END * CASE
-                  WHEN slor_typlig = 'P' THEN slor_pxnreel
-                  WHEN slor_typlig IN ('F', 'M', 'U', 'C') THEN slor_pxnreel
-              END
-          ) AS MONTANT_ACHATS_LOCAUX,
-
-          Sum(
-              CASE
-                  WHEN slor_constp <> 'ZST'
-                  AND slor_constp like 'Z%' THEN slor_qterea
-              END * CASE
-                  WHEN slor_typlig = 'P' THEN slor_pxnreel
-                  WHEN slor_typlig IN ('F', 'M', 'U', 'C') THEN slor_pxnreel
-              END
-          ) AS MONTANT_DIVERS,
-
-          Sum(
-              CASE
-                  WHEN 
-                    slor_typlig = 'P'
-                    AND slor_constp NOT like 'Z%'
-                    AND slor_constp = 'LUB' 
-                  THEN (nvl (slor_qterel, 0) + nvl (slor_qterea, 0) + nvl (slor_qteres, 0) + nvl (slor_qtewait, 0) - nvl (slor_qrec, 0))
-              END 
-              * 
-              CASE
-                  WHEN slor_typlig = 'P' THEN slor_pxnreel
-                  WHEN slor_typlig IN ('F', 'M', 'U', 'C') THEN slor_pxnreel
-              END
-          ) AS MONTANT_LUBRIFIANTS
-
-          from sav_eor, sav_lor, sav_itv
-          WHERE
-              seor_numor = slor_numor
-              AND seor_serv <> 'DEV'
-              AND sitv_numor = slor_numor
-              AND sitv_interv = slor_nogrp / 100
-              AND seor_soc = '$codeSociete'
-              AND slor_soc=seor_soc
-              AND sitv_soc=seor_soc
-          --AND sitv_pos NOT IN('FC', 'FE', 'CP', 'ST')
-          --AND sitv_servcrt IN ('ATE','FOR','GAR','MAN','CSP','MAS','LR6','LST')
-          AND seor_numor = '$numOr'
-          --AND SEOR_SUCC = '01'
-          group by 1, 2, 3, 4, 5
-          order by slor_numor, sitv_interv
-        ";
-
-        $result = $this->connect->executeQuery($statement);
-
-        $data = $this->connect->fetchResults($result);
-
-        return $this->convertirEnUtf8($data);
-    }
     public function recupererNumdevis($numOr, $codeSociete)
     {
         $statement = "SELECT seor_numdev 
@@ -352,5 +194,124 @@ class DitModel extends Model
         $data = $this->connect->fetchResults($result);
 
         return $data[0]['categorie_demande'] ?? null;
+    }
+
+    public function historiqueMateriel(int $idMateriel)
+    {
+        $statement = "SELECT
+              TRIM(seor_succ) AS codeAgence,
+              TRIM(seor_servcrt) AS codeService,
+              sitv_datdeb AS dateDebut,
+              sitv_numor AS numeroOr, 
+              sitv_interv AS numeroIntervention, 
+              TRIM(sitv_comment) AS commentaire,
+              sitv_pos AS pos,
+              SUM(
+                slor_pxnreel * (
+                CASE 
+                  WHEN slor_typlig = 'P' 
+                    THEN (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) 
+                  WHEN slor_typlig IN ('F','M','U','C') 
+                    THEN slor_qterea 
+                END)
+              ) AS somme
+            FROM {$this->dbIps}:Informix.sav_eor, 
+                    {$this->dbIps}:Informix.sav_lor, 
+                    {$this->dbIps}:Informix.sav_itv, 
+                    {$this->dbIps}:Informix.agr_succ, 
+                    {$this->dbIps}:Informix.agr_tab ser, 
+                    {$this->dbIps}:Informix.mat_mat, 
+                    {$this->dbIps}:Informix.agr_tab ope, 
+                    OUTER {$this->dbIps}:Informix.agr_tab sec
+            WHERE seor_numor = slor_numor
+              AND seor_serv <> 'DEV'
+              AND sitv_numor = slor_numor
+              AND sitv_interv = slor_nogrp/100
+              AND (seor_succ = asuc_num)
+              AND (seor_servcrt = ser.atab_code AND ser.atab_nom = 'SER')
+              AND (sitv_typitv = sec.atab_code AND sec.atab_nom = 'TYI')
+              AND (seor_ope = ope.atab_code AND ope.atab_nom = 'OPE')
+              AND sitv_pos IN ('FC','FE','CP','ST', 'EC')
+              AND (seor_nummat = mmat_nummat)
+              AND mmat_nummat ='$idMateriel'
+            GROUP BY 1,2,3,4,5,6,7
+            ORDER BY sitv_pos DESC, sitv_datdeb DESC, sitv_numor, sitv_interv
+    ";
+
+        $result = $this->connect->executeQuery($statement);
+
+
+        $data = $this->connect->fetchResults($result);
+
+        return $this->convertirEnUtf8($data);
+    }
+
+    /**
+     * Récupération des id materiel
+     * les Id materiel recupérer ne doit pas générer d'historique
+     *
+     * @return array
+     */
+    public function getNumeroMatriculePasMateriel(): array
+    {
+        $statement = "SELECT mmat_nummat as numero_matricule 
+              from informix.mat_mat 
+              where mmat_reffou in ('IMMODIV','PRESTDIV') OR (mmat_recalph = 'EQPABS')
+              or mmat_nummat = '7711'
+              order by mmat_nummat
+              ";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->connect->fetchResults($result);
+
+        return array_column($this->convertirEnUtf8($data), 'numero_matricule');
+    }
+
+
+    public function enregistrementDit(array $data)
+    {
+        // Construire la requête d'insertion et l'exécuter
+        $builder = new InsertQueryBuilder("{$this->dbIrium}:Informix.demande_intervention");
+        $builder->setData($data);
+        $result = $builder->build();
+
+        // Exécuter la requête d'insertion
+        // S'assurer que la connexion est ouverte
+        $this->connect->connect();
+        try {
+            $this->connect->executeQuery($result['sql'], $result['params']);
+        } finally {
+            // ne fermez ici que si vous êtes sûr que c'est la dernière opération
+            $this->connect->close();
+        }
+    }
+
+    public function updateDitDW(array $data, DitDto $dto)
+    {
+        $updateBuilder = new UpdateQueryBuilder("{$this->dbIrium}:Informix.demande_intervention");
+
+        // Définir les données à mettre à jour
+        $updateBuilder->setData($data);
+
+        // Ajouter les conditions WHERE
+        $updateBuilder->where('numero_demande_dit', $dto->numeroDemandeIntervention);
+        $updateBuilder->where('code_societe',  $dto->codeSociete);
+
+        // Changer l'opérateur des conditions (optionnel)
+        // $updateBuilder->setConditionOperator('AND');
+        // Construire et exécuter la requête
+        try {
+            $result = $updateBuilder->build();
+            $this->connect->connect();
+            try {
+                $this->connect->executeQuery($result['sql'], $result['params']);
+            } finally {
+                $this->connect->close();
+            }
+        } catch (\Exception $e) {
+            // Vous pouvez logger l'erreur ici
+            throw $e;
+        }
     }
 }

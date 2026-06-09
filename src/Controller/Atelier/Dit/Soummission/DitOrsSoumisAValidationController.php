@@ -112,16 +112,14 @@ class DitOrsSoumisAValidationController extends Controller
         }
     }
 
-
-
     private function modificationDit(OrSoumissionDto $dto)
     {
-        $this->ditModel->updateDit($dto);
+        $this->DitOrSoumisAValidationModel->updateDit($dto);
     }
 
     private function envoieDonnerDansBd(OrSoumissionDto $dto)
     {
-        $ors = $this->ditModel->recupOrSoumisValidation($dto->numeroOr, $dto->codeSociete);
-        $this->ditModel->enregistrementOr($dto, $ors);
+        $ors = $this->DitOrSoumisAValidationModel->recupOrSoumisValidation($dto->numeroOr, $dto->codeSociete);
+        $this->DitOrSoumisAValidationModel->enregistrementOr($dto, $ors);
     }
 }

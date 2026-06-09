@@ -31,4 +31,17 @@ class WorNiveauUrgenceModel extends Model
 
         return $rows[0] ?? null;
     }
+
+    public function getIdSelonDescription(string $description): int
+    {
+        $statement = " SELECT  id as id
+                    FROM {$this->dbIrium}:Informix.wor_niveau_urgence
+                    WHERE description  = '$description'
+                    ";
+
+        $result = $this->connect->executeQuery($statement);
+        $rows = array_column($this->connect->fetchResults($result), 'id');
+
+        return $rows[0] ?? 0;
+    }
 }
