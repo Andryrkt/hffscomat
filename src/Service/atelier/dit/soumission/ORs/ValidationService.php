@@ -97,9 +97,9 @@ class ValidationService
             $this->sendNotificationOR($message, $dto->numeroOr, false);
             return true;
         }
-        //  Verifie le nombre d'agent de service est plus 1
-        if ($dto->nbrNumcli[0] != 'existe_bdd') {
-            $message = "Echec de la soumission de l'OR . . . le numéro OR ne correspond pas  ";
+        //  Verifie le nombre d'agence de service est plus 1
+        if ($dto->existeNumclient) {
+            $message = "La soumission n'a pas pu être effectuée car le client rattaché à l'OR est introuvable ";
             $this->sendNotificationOR($message, $dto->numeroOr, false);
             return true;
         }
@@ -110,7 +110,7 @@ class ValidationService
             return true;
         }
 
-        //  Verifie si la statue est bloquer
+        //  Verifie si la statut est bloquer
         if ($dto->statut === 'bloquer') {
             $message = "Echec de la soumission de l'OR . . . un OR est déjà en cours de validation ";
             $this->sendNotificationOR($message, $dto->numeroOr, false);
@@ -124,7 +124,7 @@ class ValidationService
         }
         //  Validation des positions valides 
         if ($dto->isValidPosition) {
-            $message = "Echec de la soumission car l'agence / service débiteur de l'OR ne correspond pas à l'agence / service de la DIT";
+            $message = "Echec de la soumission de l'OR, la position de l'OR est parmis 'FC', 'FE', 'CP', 'ST'";
             $this->sendNotificationOR($message, $dto->numeroOr, false);
             return true;
         }
@@ -141,7 +141,7 @@ class ValidationService
             return true;
         }
         // Verifie si id_materiel_Ips correspond id_materiel_Irium 
-        if ($dto->id_materiel_ips !== (int)$dto->info_materiel['id']) {
+        if ($dto->estIdMaterielDifferent) {
             $message = "Echec de la soumission car le materiel de l'OR ne correspond pas au materiel de la DIT";
             $this->sendNotificationOR($message, $dto->numeroOr, false);
             return true;

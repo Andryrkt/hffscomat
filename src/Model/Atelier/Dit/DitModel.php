@@ -96,90 +96,54 @@ class DitModel extends Model
     }
 
     /**
-     * Methode pour enregistrer les données du formulaire Dit
-     *  dans la base de donnée
+     * Methode pour enregistrer les données du formulaire soumission OR
+     *  dans la base de donnée ors_soumis_a_validation
      *
      * @param OrSoumissionDto $dto
      * @return void
      */
-    public function enregistrerDit(OrSoumissionDto $dto, array $ors): void
+    public function enregistrementOr(OrSoumissionDto $dto, array $ors): void
     {
-        // Convertir le DTO en tableau associatif pour l'insertion
-        $donnees = DitMapper::toArrayDit($dto, $ors);
+        // toArrayDit() retourne un tableau de lignes (une par ITV)
+        $lignes = DitMapper::toArrayDit($dto, $ors);
 
-        // Construire la requête d'insertion et l'exécuter
-        $builder = new InsertQueryBuilder("{$this->dbIrium}:Informix.bc_client_soumis_neg");
-        $builder->setData($donnees);
-        $result = $builder->build();
+        if (empty($lignes)) {
+            return;
+        }
 
-        // Exécuter la requête d'insertion
-        // S'assurer que la connexion est ouverte
         $this->connect->connect();
         try {
-            $this->connect->executeQuery($result['sql'], $result['params']);
+            foreach ($lignes as $donnees) {
+                $builder = new InsertQueryBuilder("{$this->dbIrium}:Informix.ors_soumis_a_validation");
+                $builder->setData($donnees);
+                $result = $builder->build();
+                $this->connect->executeQuery($result['sql'], $result['params']);
+            }
         } finally {
-            // ne fermez ici que si vous êtes sûr que c'est la dernière opération
             $this->connect->close();
         }
     }
-    /**
-     * MOdification du numeroOr dans dans la 
-     * table demande_intervention
-     *
-     * @param OrSoummissionDto $dto
-     * @param string statut
-     * @return void
-     */
+
 
     /**
-     * MOdification du statut demande d'intervention dans la 
+     * MOdification du statut demande d'intervention , numero OR et statut OR  dans la 
      * table demande_intervention
      *
-     * @param string statut
+     * @paramOrSoummissionDto $dto
      * @return void
      */
-    public function updateStatut($numDit, $codeSociete, $statut)
+    public function updateDit(OrSoumissionDto $dto)
     {
-        $donnees = DitMapper::toArrayUpdateDit($statut);
+        $donnees = DitMapper::toArrayUpdateDit($dto);
 
         $updateBuilder = new UpdateQueryBuilder("{$this->dbIrium}:Informix.demande_intervention");
 
-        // // Définir les données à mettre à jour
+        // Définir les données à mettre à jour
         $updateBuilder->setData($donnees);
 
-        // // Ajouter les conditions WHERE
-        $updateBuilder->where('numero_demande_dit', $numDit);
-        $updateBuilder->where('code_societe',  $codeSociete);
-
-        // Changer l'opérateur des conditions (optionnel)
-        // $updateBuilder->setConditionOperator('AND');
-        // Construire et exécuter la requête
-        try {
-            $result = $updateBuilder->build();
-            $this->connect->connect();
-            try {
-                // $this->connect->executeQuery($result['sql'], $result['params']);
-            } finally {
-                $this->connect->close();
-            }
-        } catch (\Exception $e) {
-            // Vous pouvez logger l'erreur ici
-            throw $e;
-        }
-    }
-
-    public function updateNumeroOr(OrSoumissionDto $dto, string $statut)
-    {
-        $donnees = DitMapper::toArrayUpdateDit($statut);
-
-        $updateBuilder = new UpdateQueryBuilder("{$this->dbIrium}:Informix.demande_intervention");
-
-        // // Définir les données à mettre à jour
-        $updateBuilder->setData($donnees);
-
-        // // Ajouter les conditions WHERE
+        // Ajouter les conditions WHERE
         $updateBuilder->where('numero_demande_dit', $dto->numeroDit);
-        $updateBuilder->where('code_societe',   $dto->codeSociete);
+        $updateBuilder->where('code_societe',  $dto->codeSociete);
 
         // Changer l'opérateur des conditions (optionnel)
         // $updateBuilder->setConditionOperator('AND');
@@ -197,6 +161,7 @@ class DitModel extends Model
             throw $e;
         }
     }
+
     public function recupAgenceServiceDebiteur($numOr, string $codeSociete)
     {
         $statement = " SELECT 
@@ -210,22 +175,20 @@ class DitModel extends Model
 
         return array_column($this->convertirEnUtf8($data), 'agservdebiteur');
     }
-    public function recupInformationsDit($numDit, $codeSociete)
+    public function recupInformationsDit(string $numDit, string $codeSociete)
     {
 
         $statement = " SELECT FIRST 1 *
-        FROM {$this->dbIrium}:Informix.demande_intervention
-        WHERE numero_demande_dit = '$numDit'
-        AND code_societe = '$codeSociete'
+                FROM {$this->dbIrium}:Informix.demande_intervention
+                WHERE numero_demande_dit = '$numDit'
+                AND code_societe = '$codeSociete'
         ";
 
-
         $result = $this->connect->executeQuery($statement);
-        $data = $this->connect->fetchResults($result);
-        $data = $this->convertirEnUtf8($data);
-        $info_materiel = $data[0] ?? [];
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
 
-        return $info_materiel;
+
+        return $data[0] ?? [];
     }
 
     public function recupOrSoumisValidation($numOr, $codeSociete)

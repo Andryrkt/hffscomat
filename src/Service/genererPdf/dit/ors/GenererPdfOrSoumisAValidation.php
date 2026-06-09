@@ -23,7 +23,7 @@ class GenererPdfOrSoumisAValidation extends GeneratePdf
     /**
      * generer pdf pour la soumission OR
      */
-    function GenererPdf(OrSoumissionDto $dto, array $montantPdf, array $quelqueaffichage, string $email, string $suffix, array $pieceFaibleAchat = [], string $nomAvecCheminFichier)
+    function GenererPdf(OrSoumissionDto $dto, array $montantPdf, array $quelqueaffichage, string $email, array $pieceFaibleAchat = [], string $nomAvecCheminFichier)
     {
         $pdf = new HeaderPdf($email);
         $tableGenerator = new PdfTableGeneratorFlexible();

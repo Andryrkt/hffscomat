@@ -146,22 +146,21 @@ class DitOrSoumisAValidationModel extends Model
         return $data[0]['numor'] ?? null;
     }
 
-    public function recupNumeroMatricule($numDit, $numOr, string $codeSociete)
+    public function recupNumeroMatricule(string $numDit, string $numOr, string $codeSociete)
     {
         $statement = " SELECT 
             seor_nummat as numMatricule
-            from sav_eor
+            from {$this->dbIps}:Informix.sav_eor
             where seor_refdem = '$numDit'
             AND seor_numor = '$numOr'
             AND seor_serv = 'SAV'
             AND seor_soc = '$codeSociete'
         ";
-        $result = $this->connect->executeQuery($statement);
 
-        $data = $this->connect->fetchResults($result);
-        $data = $this->convertirEnUtf8($data);
-        $id_materiel_ips = (int) ($data[0]['nummatricule'] ?? 0);
-        return $id_materiel_ips;
+        $result = $this->connect->executeQuery($statement);
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
+
+        return (int) ($data[0]['nummatricule'] ?? 0);;
     }
 
     public function recupNbDatePlanningVide($numOr, string $codeSociete)
@@ -179,15 +178,19 @@ class DitOrSoumisAValidationModel extends Model
         return $this->convertirEnUtf8($data);
     }
 
-    public function recupPositonOr($numor, $codeSociete)
+    public function recupPositonOr(string $numor, string $codeSociete): string
     {
-        $statement = " SELECT seor_pos as position from sav_eor where seor_numor = '$numor' and seor_soc = '$codeSociete'";
+        $statement = " SELECT seor_pos as position 
+                    from {$this->dbIps}:Informix.sav_eor 
+                    where seor_numor = '$numor' 
+                    and seor_soc = '$codeSociete'
+        ";
 
         $result = $this->connect->executeQuery($statement);
 
-        $data = $this->connect->fetchResults($result);
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
 
-        return  $this->convertirEnUtf8($data);
+        return  $data[0]['position'] ?? null;
     }
 
     public function recupTypeOr(?string $numor): int
@@ -256,10 +259,10 @@ class DitOrSoumisAValidationModel extends Model
         return $this->convertirEnUtf8($data);
     }
 
-    public function recupRefClient($numOr, $codeSociete)
+    public function recupRefClient(string $numOr, string $codeSociete)
     {
         $statement = " SELECT seor_lib  
-                    from sav_eor 
+                    from {$this->dbIps}:Informix.sav_eor 
                     where seor_numor='$numOr' AND seor_soc='$codeSociete'
                     ";
         $result = $this->connect->executeQuery($statement);
@@ -411,22 +414,22 @@ class DitOrSoumisAValidationModel extends Model
         return (int) ($data[0]['retour'] ?? 0);
     }
 
-    public function getNumcli($numOr, $codeSociete)
+    public function getNumcli(string $numOr, string $codeSociete): ?string
     {
         $statement = " SELECT seor_numcli as numcli
-                    FROM sav_eor
+                    FROM {$this->dbIps}:Informix.sav_eor
                     WHERE seor_numor = '$numOr'
                     AND seor_soc = '$codeSociete'
         ";
 
         $result = $this->connect->executeQuery($statement);
 
-        $data = $this->connect->fetchResults($result);
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
 
-        return array_column($this->convertirEnUtf8($data), 'numcli');
+        return array_column($data, 'numcli')[0] ?? null;
     }
 
-    public function numcliExiste($numcli, string $codeSociete)
+    public function numcliExiste(string $numcli, string $codeSociete): string
     {
         $statement = " SELECT  
         case
@@ -438,9 +441,9 @@ class DitOrSoumisAValidationModel extends Model
 
         $result = $this->connect->executeQuery($statement);
 
-        $data = $this->connect->fetchResults($result);
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
 
-        return array_column($this->convertirEnUtf8($data), 'numcli');
+        return array_column($data, 'numcli')[0] ?? '';
     }
 
     public function validationArticleZstDa($numOr)
@@ -561,9 +564,9 @@ class DitOrSoumisAValidationModel extends Model
                 ffac_datef
                 , TODAY - ffac_datef as nombre_jour
                 , fllf_numfac,*
-                from informix.frn_llf 
-                inner join informix.frn_fac on ffac_soc = fllf_soc and ffac_succ = fllf_succ and ffac_numfac = fllf_numfac
-                inner join informix.frn_cde on fcde_soc = fllf_soc and fcde_succ = fllf_succ and fcde_numcde = fllf_numcde
+                from {$this->dbIps}:informix.frn_llf 
+                inner join {$this->dbIps}:informix.frn_fac on ffac_soc = fllf_soc and ffac_succ = fllf_succ and ffac_numfac = fllf_numfac
+                inner join {$this->dbIps}:informix.frn_cde on fcde_soc = fllf_soc and fcde_succ = fllf_succ and fcde_numcde = fllf_numcde
                 --inner join art_hpm on ahpm_soc = fllf_soc and ahpm_succfac = fllf_succ and ahpm_numfac = fllf_numfac and ahpm_constp = fllf_constp and ahpm_refp = fllf_refp
                 where fllf_constp = '$constructeur'
                 and fllf_refp = '$reference'
@@ -595,7 +598,7 @@ class DitOrSoumisAValidationModel extends Model
         trim(slor_desi) as designation,
         slor_succ as code_agence, 
         slor_servcrt as code_service
-        from sav_eor, sav_lor, sav_itv
+        from {$this->dbIps}:Informix.sav_eor, {$this->dbIps}:Informix.sav_lor, {$this->dbIps}:Informix.sav_itv
         WHERE seor_numor = slor_numor
             AND seor_serv <> 'DEV'
             AND sitv_numor = slor_numor
@@ -662,12 +665,13 @@ class DitOrSoumisAValidationModel extends Model
             OR o.statut LIKE '%modif_dt%'
         )
     ";
+
         $result = $this->connect->executeQuery($statement);
         $data = $this->connect->fetchResults($result);
 
         $count = (int) ($data[0]['total'] ?? 0);
 
-        return ($count > 0) ? 'ne pas bloquer' : 'bloquer';
+        return ($count > 0) ? 'bloquer' : 'ne pas bloquer';
     }
 
     public function getNbrOrSoumis(string $numOr, string $codeSociete): int

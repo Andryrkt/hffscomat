@@ -2,7 +2,7 @@
 
 namespace App\Dto\atelier\dit\soumission;
 
-use PhpOffice\PhpSpreadsheet\Calculation\Logical\Boolean;
+
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class OrSoumissionDto
@@ -64,7 +64,7 @@ class OrSoumissionDto
 
     public UploadedFile $pieceJoint04;
 
-    public  $statut;
+    public  ?string $statut = null;
 
 
     public $migration;
@@ -78,7 +78,7 @@ class OrSoumissionDto
 
     public bool $isExistDatePlaning = false;
 
-    public $id_materiel_ips;
+    public bool $estIdMaterielDifferent = false;
 
     public $info_materiel;
 
@@ -88,13 +88,15 @@ class OrSoumissionDto
     public bool $isAgenceIriumInIPS = false;
     public bool $isValidPosition = false;
 
-    public  $refClient;
+    public  bool $refClient = false;
     public  $countAgServDebit;
-    public array $nbrNumcli;
+    public bool $existeNumclient = false;
 
 
     public int $idCategorieDemande = 0;
     public int $typeOr = 0;
+
+    public $id_materiel_ips;
 
 
 

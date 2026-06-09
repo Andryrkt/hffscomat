@@ -5,6 +5,7 @@ namespace App\Factory\atelier\Dit\Soumission;
 use App\Dto\atelier\dit\soumission\OrSoumissionDto;
 use App\Model\Atelier\Dit\DitModel;
 use App\Model\Atelier\Dit\Soumission\DitOrSoumisAValidationModel;
+use App\Service\atelier\dit\soumission\ORs\TraitementFichierService;
 use DateTime;
 
 class OrSoumissionFactory
@@ -139,37 +140,43 @@ class OrSoumissionFactory
         $ditOrsoumisAValidationModel = new DitOrSoumisAValidationModel();
         $ditModel = new DitModel();
 
-        $id_materiel_ips = $ditOrsoumisAValidationModel->recupNumeroMatricule($numDit, $numOr, $dto->codeSociete);
-        $infos_materiel = $ditModel->recupInformationsDit($numDit, $dto->codeSociete);
+        $idMaterielIps = $ditOrsoumisAValidationModel->recupNumeroMatricule($numDit, $numOr, $dto->codeSociete);
+        $dit = $ditModel->recupInformationsDit($numDit, $dto->codeSociete);
         $agServInformix = $ditModel->recupAgenceServiceDebiteur($numOr, $dto->codeSociete);
-        $pos = $ditOrsoumisAValidationModel->recupPositonOr($dto->numeroOr, $dto->codeSociete);
-        $refClient = $ditOrsoumisAValidationModel->recupRefClient($dto->numeroOr, $dto->codeSociete);
-        $countAgServDeb = $ditOrsoumisAValidationModel->countAgServDebit($dto->numeroOr, $dto->codeSociete);
-        $nbrNumcli = $ditOrsoumisAValidationModel->numcliExiste($dto->numeroOr, $dto->codeSociete);
+        $pos = $ditOrsoumisAValidationModel->recupPositonOr($numOr, $dto->codeSociete);
+        $refClient = $ditOrsoumisAValidationModel->recupRefClient($numOr, $dto->codeSociete);
+        $countAgServDeb = $ditOrsoumisAValidationModel->countAgServDebit($numOr, $dto->codeSociete);
+        $numclient = $ditOrsoumisAValidationModel->getNumcli($numOr, $dto->codeSociete);
+        $existeNumclient = $ditOrsoumisAValidationModel->numcliExiste($numclient, $dto->codeSociete);
 
 
         $dto->numeroDit = $numDit;
         $dto->numeroOr = $numOr;
         $dto->numeroVersion = $this->getVersion($numDit, $numOr);
-        $dto->heureSoumission =  $this->getTime();
-        $dto->dateSoumission = new DateTime();
+        $dto->heureSoumission =  date('H:i');
+        $dto->dateSoumission = date('Y-m-d');
         $dto->originalNamePj1 = $dto->pieceJoint01->getClientOriginalName();
-        $dto->id_materiel_ips = $id_materiel_ips;
-        $dto->info_materiel = $infos_materiel;
+        $dto->estIdMaterielDifferent = (int)$dit['id_materiel'] !== $idMaterielIps;
         $dto->statut = $ditOrsoumisAValidationModel->findByStatut($numOr, $dto->codeSociete, $dto->numeroVersion);
         $dto->nmbrOr_soumis = $ditOrsoumisAValidationModel->getNbrOrSoumis($numOr, $dto->codeSociete);
 
         $dto->isVerifiedDatePlanning = $this->verificationDatePlanning($numOr, $dto->codeSociete);
-        $dto->isAgenceIriumInIPS = !in_array($infos_materiel, $agServInformix);
-        $dto->refClient = $refClient;
+        $dto->isAgenceIriumInIPS = !in_array($dit['agence_service_debiteur'], $agServInformix); // TRUE si le code agence et service debiteur (80-INF) du DIT est dans IPS
+        $dto->refClient = empty($refClient); // TRUE si une tableau vide
         $dto->countAgServDebit = $countAgServDeb;
-        $dto->nbrNumcli = $nbrNumcli;
+        $dto->existeNumclient = $existeNumclient != 'existe_bdd'; // TRUE si différent 'existe_bdd'
+        $dto->isValidPosition = in_array($pos, self::invalidPositions); // retourne TRUE si la position est parmis 'FC', 'FE', 'CP', 'ST'
 
 
-
-        // $dto->isValidPosition = in_array($pos[0]['position'], OrSoumissionFactory::invalidPositions);
+        $dto->pieceFaibleActiviteAchat = $this->pieceFaibleAchat($dto->numeroOr, $dto->codeSociete);
 
         return $dto;
+    }
+
+    private  function pieceFaibleAchat(string $numeroOr, string $codeSociete)
+    {
+        $pieceFaibleAchat = (new TraitementFichierService)->preparationDesPiecesFaibleAchat($numeroOr, $codeSociete);
+        return empty($pieceFaibleAchat) ? false : true;
     }
 
     private function getVersion(string $numeroOr, string $codeSociete): int
@@ -200,11 +207,6 @@ class OrSoumissionFactory
     }
 
 
-    private function getTime()
-    {
-        date_default_timezone_set('Indian/Antananarivo');
-        return date("H:i");
-    }
     private function autoIncrement($num)
     {
         if ($num === null) {
