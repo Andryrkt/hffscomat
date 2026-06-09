@@ -13,7 +13,7 @@ class GenererPdfOrSoumisAValidation extends GeneratePdf
     use FormatageTrait;
 
     // ORDRE DE REPARATION (OR)
-    public function copyToDw($filename, string $numDit)
+    public function copyToDw(string $filename, string $numDit)
     {
         $cheminFichierDistant = $this->baseCheminDocuware . 'OR/' . $filename;
         $cheminDestinationLocal = $this->baseCheminDuFichier . 'dit/' . $numDit . '/' . $filename;
@@ -51,7 +51,7 @@ class GenererPdfOrSoumisAValidation extends GeneratePdf
         // Date de soumission
         $pdf->Cell(45, 6, 'Date soumission : ', 0, 0, 'L', false, '', 0, false, 'T', 'M');
         $pdf->setFont('helvetica', '', 10);
-        $pdf->cell(50, 6, $dto->dateSoumission->format('d/m/Y'), 0, 1, '', false, '', 0, false, 'T', 'M');
+        $pdf->cell(50, 6, (new \DateTime($dto->dateSoumission))->format('d/m/Y'), 0, 1, '', false, '', 0, false, 'T', 'M');
 
         // numero devis
         $pdf->setAbsX(130);

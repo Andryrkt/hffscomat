@@ -689,58 +689,58 @@ class DitOrSoumisAValidationModel extends Model
         return (int) ($data[0]['total'] ?? 0);
     }
 
-    public function findOrSoumiAvant(string $numOr, string $codeSociete)
+    /**
+     * Recupération des Ors enregistrer dans la base de donnée au moment de soumission 
+     *
+     * @param string $numOr
+     * @param string $codeSociete
+     * @return array
+     */
+    public function findOrSoumiAvant(string $numOr, string $codeSociete): array
     {
-        $statement = "
-        SELECT *
+        $statement = " SELECT *
         FROM {$this->dbIrium}:Informix.ors_soumis_a_validation o
         WHERE o.numeroor = '$numOr'
         AND o.code_societe = '$codeSociete'
         AND o.numeroVersion = (
-            SELECT MAX(o2.numeroVersion)
-            FROM {$this->dbIrium}:Informix.ors_soumis_a_validation o2
-            WHERE o2.numeroor = '$numOr'
-            AND o2.code_societe = '$codeSociete'
+            SELECT MAX(o1.numeroVersion)
+            FROM {$this->dbIrium}:Informix.ors_soumis_a_validation o1
+            WHERE o1.numeroor = '$numOr'
+            AND o1.code_societe = '$codeSociete'
         )
     ";
 
         $result = $this->connect->executeQuery($statement);
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
 
-        return $this->connect->fetchResults($result);
+        return $data;
     }
 
-    public function findOrSoumiAvantMax(string $numOr, string $codeSociete)
+    /**
+     * Recupération des Ors Ancien enregistrer
+     *
+     * @param string $numOr
+     * @param string $codeSociete
+     * @return array
+     */
+    public function findOrSoumiAvantMax(string $numOr, string $codeSociete): array
     {
-        // Étape 1 : récupérer MAX(numeroVersion)
-        $statementMax = "
-        SELECT MAX(o.numeroVersion) AS max_version
+        $statement = "SELECT *
         FROM {$this->dbIrium}:Informix.ors_soumis_a_validation o
         WHERE o.numeroor = '$numOr'
         AND o.code_societe = '$codeSociete'
-    ";
-
-        $resultMax = $this->connect->executeQuery($statementMax);
-        $dataMax = $this->connect->fetchResults($resultMax);
-
-        $maxVersion = $dataMax[0]['max_version'] ?? null;
-
-        if ($maxVersion === null || $maxVersion == 1) {
-            // Même comportement que le dans repository
-            return null;
-        }
-
-        // Étape 2 : récupérer la version juste avant la version max
-        $statement = "
-        SELECT *
-        FROM {$this->dbIrium}:Informix.ors_soumis_a_validation o
-        WHERE o.numeroor = '$numOr'
-        AND o.numeroVersion = '" . ($maxVersion - 1) . "'
-        AND o.code_societe = '$codeSociete'
+        AND o.numeroVersion = (
+            select MAX(o1.numeroversion)-1 
+            from {$this->dbIrium}:Informix.ors_soumis_a_validation o1 
+            WHERE o1.numeroor = '$numOr'
+            AND o1.code_societe = '$codeSociete'
+            )
     ";
 
         $result = $this->connect->executeQuery($statement);
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
 
-        return $this->connect->fetchResults($result);
+        return $data;
     }
 
     public function recupDatePlanningOR1($numOr, $numItv, $codeSociete)

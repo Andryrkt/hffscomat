@@ -107,15 +107,7 @@ class OrSoumissionDto
         return $this->numeroOr === $other->numeroOr
             && $this->numeroItv === $other->numeroItv;
     }
-    public function getNumeroItv(): int
-    {
-        return $this->numeroItv;
-    }
 
-    public function setNumeroItv(int $numeroItv): void
-    {
-        $this->numeroItv = $numeroItv;
-    }
 
 
 

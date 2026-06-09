@@ -5,6 +5,7 @@ namespace App\Service\atelier\dit\soumission\ORs;
 use App\Controller\Traits\PdfConversionTrait;
 use App\Dto\atelier\dit\soumission\OrSoumissionDto;
 use App\Factory\atelier\Dit\Soumission\OrSoumissionFactory;
+use App\Mapper\Atelier\Dit\Soumission\OrSoumissionMapper;
 use App\Model\Atelier\Dit\DitModel;
 use App\Model\Atelier\Dit\Soumission\DitOrSoumisAValidationModel;
 use App\Service\fichier\TraitementDeFichier;
@@ -124,17 +125,14 @@ class TraitementFichierService
         $numeroOr = $dto->numeroOr;
         $codeSociete = $dto->codeSociete;
         $ditOrsoumisAValidationModel = new DitOrSoumisAValidationModel();
-        $orSoummissionFactory = new OrSoumissionFactory();
 
+        $OrSoumisAvant = OrSoumissionMapper::dataToDto($ditOrsoumisAValidationModel->findOrSoumiAvant($numeroOr, $codeSociete));
 
-        $OrSoumisAvant = $ditOrsoumisAValidationModel->findOrSoumiAvantMax($numeroOr, $codeSociete);
+        $OrSoumisAvantMax = OrSoumissionMapper::dataToDto($ditOrsoumisAValidationModel->findOrSoumiAvantMax($numeroOr, $codeSociete));
 
-
-        $OrSoumisAvantMax = $ditOrsoumisAValidationModel->findOrSoumiAvantMax($numeroOr, $codeSociete);
-
-        // dump($OrSoumisAvantMax);
-        $montantPdf = $this->montantpdf($dto, $OrSoumisAvant, $OrSoumisAvantMax, $codeSociete);
-        // dd($montantPdf);
+        
+        $montantPdf = $this->montantpdf($OrSoumisAvant, $OrSoumisAvantMax, $codeSociete);
+        
         $quelqueaffichage = $this->quelqueAffichage($numeroOr, $codeSociete);
 
         // information sur les pièces à faible achat
@@ -146,7 +144,7 @@ class TraitementFichierService
 
 
 
-    private function quelqueAffichage($numOr, $codeSociete)
+    private function quelqueAffichage(string $numOr, string $codeSociete): array
     {
         $ditModel = new DitModel();
         $ditOrsoumisAValidationModel = new DitOrSoumisAValidationModel();
@@ -206,19 +204,19 @@ class TraitementFichierService
         return true;
     }
 
-    private function montantpdf($orSoumisValidataion, array $OrSoumisAvant, array $OrSoumisAvantMax, string $codeSociete)
+    private function montantpdf(array $OrSoumisAvant, array $OrSoumisAvantMax, string $codeSociete)
     {
         $recapAvantApres = $this->recuperationAvantApres($OrSoumisAvantMax, $OrSoumisAvant, $codeSociete);
         return [
             'avantApres' => $this->affectationStatut($recapAvantApres)['recapAvantApres'],
             'totalAvantApres' => $this->calculeSommeAvantApres($recapAvantApres),
-            'recapOr' => $this->recapitulationOr($orSoumisValidataion),
-            'totalRecapOr' => $this->calculeSommeMontant($orSoumisValidataion),
+            'recapOr' => $this->recapitulationOr($OrSoumisAvant),
+            'totalRecapOr' => $this->calculeSommeMontant($OrSoumisAvant),
             'nombreStatutNouvEtSupp' => $this->affectationStatut($recapAvantApres)['nombreStatutNouvEtSupp']
         ];
     }
 
-    private function datePlanning($numOr, $numItv, $codeSociete)
+    private function datePlanning(string $numOr, int $numItv, string $codeSociete): string
     {
         $ditOrsoumisAValidationModel = new DitOrSoumisAValidationModel();
 
@@ -258,20 +256,20 @@ class TraitementFichierService
                 continue;
             }
 
-            $itv = $avant->getNumeroItv();
-            $libelleItv = $avant->getLibellelItv();
+            $itv = $avant->numeroItv;
+            $libelleItv = $avant->libellelItv;
 
-            $nbLigAp = $avant->getNombreLigneItv() ?? 0;
-            $mttTotalAp = $avant->getMontantItv() ?? 0;
+            $nbLigAp = $avant->nombreLigneItv ?? 0;
+            $mttTotalAp = $avant->montantItv ?? 0;
 
-            $nbLigAv = $avantMax->getNombreLigneItv() ?? 0;
-            $mttTotalAv = $avantMax->getMontantItv() ?? 0;
+            $nbLigAv = $avantMax->nombreLigneItv ?? 0;
+            $mttTotalAv = $avantMax->montantItv ?? 0;
 
             $recapAvantApres[] = [
                 'itv' => $itv,
                 'libelleItv' => $libelleItv,
                 'datePlanning' => $this->datePlanning(
-                    $avant->getNumeroOR(),
+                    $avant->numeroOr,
                     $itv,
                     $codeSociete
                 ),
@@ -285,7 +283,7 @@ class TraitementFichierService
         return $recapAvantApres;
     }
 
-    private function affectationStatut($recapAvantApres)
+    private function affectationStatut(array $recapAvantApres): array
     {
         $nombreStatutNouvEtSupp = [
             'nbrNouv' => 0,
@@ -319,7 +317,7 @@ class TraitementFichierService
         ];
     }
 
-    private function calculeSommeAvantApres($recapAvantApres)
+    private function calculeSommeAvantApres(array $recapAvantApres): array
     {
         $totalRecepAvantApres = [
             'premierLigne' => '',
@@ -341,24 +339,24 @@ class TraitementFichierService
         return $totalRecepAvantApres;
     }
 
-    private function recapitulationOr($orSoumisValidataion)
+    private function recapitulationOr(array $orSoumisValidataion): array
     {
         $recapOr = [];
         foreach ($orSoumisValidataion as $orSoumis) {
             $recapOr[] = [
-                'itv' => $orSoumis->getNumeroItv(),
-                'mttTotal' => $orSoumis->getMontantItv(),
-                'mttPieces' => $orSoumis->getMontantPiece(),
-                'mttMo' => $orSoumis->getMontantMo(),
-                'mttSt' => $orSoumis->getMontantAchatLocaux(),
-                'mttLub' => $orSoumis->getMontantLubrifiants(),
-                'mttAutres' => $orSoumis->getMontantFraisDivers(),
+                'itv' => $orSoumis->numeroItv,
+                'mttTotal' => $orSoumis->montantItv,
+                'mttPieces' => $orSoumis->montantPiece,
+                'mttMo' => $orSoumis->montantMo,
+                'mttSt' => $orSoumis->montantAchatLocaux,
+                'mttLub' => $orSoumis->montantLubrifiants,
+                'mttAutres' => $orSoumis->montantFraisDivers,
             ];
         }
         return $recapOr;
     }
 
-    private function calculeSommeMontant($orSoumisValidataion)
+    private function calculeSommeMontant(array $orSoumisValidataion): array
     {
         $totalRecapOr = [
             'total' => 'TOTAL',
@@ -371,12 +369,12 @@ class TraitementFichierService
         ];
         foreach ($orSoumisValidataion as $orSoumis) {
             // Faire la somme des montants et les stocker dans le tableau
-            $totalRecapOr['montant_itv'] += $orSoumis->getMontantItv();
-            $totalRecapOr['montant_piece'] += $orSoumis->getMontantPiece();
-            $totalRecapOr['montant_mo'] += $orSoumis->getMontantMo();
-            $totalRecapOr['montant_achats_locaux'] += $orSoumis->getMontantAchatLocaux();
-            $totalRecapOr['montant_lubrifiants'] += $orSoumis->getMontantLubrifiants();
-            $totalRecapOr['montant_frais_divers'] += $orSoumis->getMontantFraisDivers();
+            $totalRecapOr['montant_itv'] += $orSoumis->montantItv;
+            $totalRecapOr['montant_piece'] += $orSoumis->montantPiece;
+            $totalRecapOr['montant_mo'] += $orSoumis->montantMo;
+            $totalRecapOr['montant_achats_locaux'] += $orSoumis->montantAchatLocaux;
+            $totalRecapOr['montant_lubrifiants'] += $orSoumis->montantLubrifiants;
+            $totalRecapOr['montant_frais_divers'] += $orSoumis->montantFraisDivers;
         }
 
         return $totalRecapOr;
@@ -410,10 +408,10 @@ class TraitementFichierService
     }
 
     // Fonction pour trier les tableaux par numero d'intervention
-    private function trierTableauParNumero(&$tableau)
+    private function trierTableauParNumero(array &$tableau)
     {
         usort($tableau, function ($a, $b) {
-            return strcmp($a->getNumeroItv(), $b->getNumeroItv());
+            return strcmp($a->numeroItv, $b->numeroItv);
         });
     }
 }
