@@ -41,4 +41,27 @@ class DitMapper
             'statut_or' => $statut,
         ];
     }
+    public static function toArrayUpdateDitNumeroOr(string $statut, int $numeroOr)
+    {
+
+        return [
+            'statut_or' => $statut,
+            'numeroOr' => $numeroOr,
+        ];
+    }
+
+    public function toExcelArray(array $dtis): array
+    {
+        $data = [];
+
+        foreach ($dtis as $dti) {
+            $data[] = [
+                'numeroDit' => $dti->getNumeroDit(),
+                'statut' => $dti->getStatut(),
+                'date' => $dti->getDateCreation(),
+            ];
+        }
+
+        return $data;
+    }
 }

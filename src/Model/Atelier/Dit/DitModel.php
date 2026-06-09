@@ -158,7 +158,7 @@ class DitModel extends Model
             $result = $updateBuilder->build();
             $this->connect->connect();
             try {
-                // $this->connect->executeQuery($result['sql'], $result['params']);
+                $this->connect->executeQuery($result['sql'], $result['params']);
             } finally {
                 $this->connect->close();
             }
@@ -170,7 +170,7 @@ class DitModel extends Model
 
     public function updateNumeroOr(OrSoumissionDto $dto, string $statut)
     {
-        $donnees = DitMapper::toArrayUpdateDit($statut);
+        $donnees = DitMapper::toArrayUpdateDitNumeroOr($statut, $dto->numeroOr);
 
         $updateBuilder = new UpdateQueryBuilder("{$this->dbIrium}:Informix.demande_intervention");
 
@@ -188,7 +188,7 @@ class DitModel extends Model
             $result = $updateBuilder->build();
             $this->connect->connect();
             try {
-                // $this->connect->executeQuery($result['sql'], $result['params']);
+                $this->connect->executeQuery($result['sql'], $result['params']);
             } finally {
                 $this->connect->close();
             }

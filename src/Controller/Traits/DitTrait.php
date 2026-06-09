@@ -2,10 +2,10 @@
 
 namespace App\Controller\Traits;
 
-
-use App\Model\dit\DitModel;
+use App\Dto\Atelier\Dit\DitDto;
 use App\Dto\Dit\DemandeInterventionDto;
 use App\Factory\Dit\DemandeInterventionFactory;
+use App\Model\Atelier\Dit\DitModel;
 
 trait DitTrait
 {
@@ -16,7 +16,7 @@ trait DitTrait
      */
     private $demandeInterventionFactory;
 
-    private function createDemandeInterventionFromDto(DemandeInterventionDto $dto): array
+    private function createDemandeInterventionFromDto(DitDto $dto): array
     {
         if ($dto->estAtePolTana) {
             $ditAteTana =  $this->demandeInterventionFactory->createFromDto($dto);
