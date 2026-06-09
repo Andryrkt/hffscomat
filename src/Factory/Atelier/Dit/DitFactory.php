@@ -13,7 +13,6 @@ class DitFactory
     private SecurityService $securityService;
 
     public function __construct(
-
         SecurityService $securityService
     ) {
 

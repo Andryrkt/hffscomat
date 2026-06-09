@@ -30,7 +30,7 @@ class DitController extends Controller
         parent::__construct();
         $this->historiqueOperation = new HistoriqueOperationDITService($this->getEntityManager());
         $this->ditModel = new DitModel();
-        $this->ditFactory = new DitFactory($this->getEntityManager(), $this->ditModel, $this->historiqueOperation, $this->securityService);
+        $this->ditFactory = new DitFactory($this->getSecurityService());
     }
 
     /**
