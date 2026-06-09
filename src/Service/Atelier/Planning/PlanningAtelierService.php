@@ -5,6 +5,7 @@ namespace App\Service\Atelier\Planning;
 use App\Dto\Atelier\Planning\PlanningAtelierDto;
 use App\Dto\Atelier\Planning\PresenceDto;
 use App\Mapper\Atelier\Planning\PlanningAtelierMapper;
+use DateTimeImmutable;
 
 class PlanningAtelierService
 {
@@ -50,6 +51,52 @@ class PlanningAtelierService
             'dates' => $calendar['dates'],
             'filteredDates' => $calendar['filteredDates'],
         ];
+    }
+
+    /**
+     * @param array<PlanningAtelierDto> $data
+     * @param array<DateTimeImmutable> $dates
+     * @return array
+     */
+    public function processExcelData(array $data, array $dates): array
+    {
+        $results = [];
+
+        foreach ($data as $item) {
+            $row = [
+                $item->agenceEm,
+                $item->section,
+                $item->intitule,
+                $item->numeroOr,
+                $item->itv,
+                $item->ressource,
+                $item->nbTotalJour,
+            ];
+
+            foreach ($dates as $date)
+            {
+                $dateStr = $date->format('Y-m-d');
+                if (isset($item->presences[$dateStr]))
+                {
+                    $row[] = $item->presences[$dateStr]->matin ? 'X' : '';
+                    $row[] = $item->presences[$dateStr]->apm ? 'X' : '';
+                }
+                else
+                {
+                    $row[] = '';
+                    $row[] = '';
+                }
+            }
+
+            $results[] = $row;
+        }
+
+        [$headerRow1, $headerRow2] = $this->generateExcelRows($dates);
+
+        array_unshift($results, $headerRow1);
+        array_unshift($results, $headerRow2);
+
+        return $results;
     }
 
     private function applyPresenceCalculation(PresenceDto $presence, array $item, string $dateStr)
@@ -115,6 +162,28 @@ class PlanningAtelierService
         }
 
         return ['dates' => $dates, 'filteredDates' => $filteredDates];
+    }
+
+    /**
+     * @param array<DateTimeImmutable> $dates
+     * @return array
+     */
+    private function generateExcelRows(array $dates): array
+    {
+        $fixedHeaders = ['Agence Travaux', 'Section', 'Intitulé Travaux', 'numOR', 'Itv', 'Ressource', 'Nb jour'];
+        $hr1 = $fixedHeaders;
+        $hr2 = array_fill(0, count($fixedHeaders), '');
+
+        foreach ($dates as $date)
+        {
+            $label = $date->format('l d/m');
+            $hr1[] = $label;
+            $hr1[] = '';
+            $hr2[] = 'mtn';
+            $hr2[] = 'apm';
+        }
+
+        return [ $hr1, $hr2 ];
     }
 
 }
