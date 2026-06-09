@@ -105,7 +105,7 @@ class DitController extends Controller
             // }
 
             // // 10. enregistrement dans l'historisation de la sucès de la demande
-            // $this->historiqueOperation->sendNotificationCreation('Votre demande a été enregistrée', $demandeInterventions[0]->getNumeroDemandeIntervention(), 'dit_index', true);
+            // $this->historiqueOperation->sendNotificationCreation('Votre demande a été enregistrée', $demandeInterventions[0]->getNumeroDemandeIntervention(), 'dit_liste', true);
         }
     }
 }

@@ -26,6 +26,8 @@ class TypeDocument
     const TYPE_DOCUMENT_CDE_NAME = 'CDE';
     const TYPE_DOCUMENT_DEV_NAME = 'DEV';
     
+    const TYPE_DOCUMENT_DIT_ID = 1;
+    const TYPE_DOCUMENT_OR_ID = 2;
     const TYPE_DOCUMENT_DEV_ID = 11;
  
 

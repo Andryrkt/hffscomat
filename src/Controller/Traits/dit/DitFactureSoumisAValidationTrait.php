@@ -53,7 +53,7 @@ trait DitFactureSoumisAValidationtrait
             if (is_array($montantValide)) {
                 if (isset($montantValide['statut']) && $montantValide['statut'] == 'echec') {
                     $message = $montantValide['message'];
-                    $this->historiqueOperation->sendNotificationSoumission($message, $dataForm->getNumeroOR(), 'dit_index');
+                    $this->historiqueOperation->sendNotificationSoumission($message, $dataForm->getNumeroOR(), 'dit_liste');
                 }
             }
 
@@ -87,7 +87,7 @@ trait DitFactureSoumisAValidationtrait
         $quantiter = $ditFactureSoumiAValidationModel->recuperationStatutItv($numeroOr, $numeroItv, $codeSociete);
         if (empty($quantiter)) {
             $message = "un des constructeurs rattacher à l'OR n'est pas encore renseigner dans le json";
-            $this->historiqueOperation->sendNotificationSoumission($message, $numeroItv, 'dit_index');
+            $this->historiqueOperation->sendNotificationSoumission($message, $numeroItv, 'dit_liste');
         }
 
         if ((int)$quantiter[0]['quantitelivree'] == 0) {

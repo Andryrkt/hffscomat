@@ -9,11 +9,13 @@ use App\Constants\atelier\dit\soumission\ORs\ConstantStatutOr;
 use App\Controller\Controller;
 use App\Controller\Traits\dit\DitOrSoumisAValidationTrait;
 use App\Controller\Traits\FormatageTrait;
-use App\Dto\atelier\dit\soumission\OrSoumissionDto;
-use App\Factory\atelier\Dit\Soumission\OrSoumissionFactory;
-use App\Form\atelier\dit\soumission\DitOrsSoumisAValidationType;
+use App\Dto\Atelier\Dit\soumission\OrSoumissionDto;
+use App\Factory\Atelier\Dit\Soumission\OrSoumissionFactory;
+use App\Form\Atelier\Dit\soumission\DitOrsSoumisAValidationType;
 use App\Model\Atelier\Dit\DitModel;
 use App\Model\Atelier\Dit\Soumission\DitOrSoumisAValidationModel;
+use App\Service\atelier\dit\soumission\ORs\OrGeneratorNameService;
+use App\Service\atelier\dit\soumission\ORs\ValidationService;
 use App\Service\fichier\TraitementDeFichier;
 use App\Service\fichier\UploderFileService;
 use App\Service\genererPdf\dit\ors\GenererPdfOrSoumisAValidation;
@@ -31,7 +33,6 @@ class DitOrsSoumisAValidationController extends Controller
 {
     use FormatageTrait;
     use DitOrSoumisAValidationTrait;
-    // use DaTrait;
 
 
     private HistoriqueOperationService $historiqueOperation;
@@ -57,30 +58,18 @@ class DitOrsSoumisAValidationController extends Controller
     {
         // Code Société de l'utilisateur
         $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
-
+        // recupérer le numéro OR dans la base de donnée IPS
         $numOr = $this->ditOrsoumisAValidationModel->recupNumeroOr($numDit, $codeSociete);
-
-        if (empty($numOr)) {
-            $message = "Le DIT n'a pas encore de numéro OR";
-            $this->historiqueOperation->sendNotificationSoumission($message, '-', 'dit_index');
-        }
-
-        // vérifier si le catégorie de la DIT est DAILY CHECK et le type de l'OR est 930 sinon bloqué
-        $idCategorieDemande = $this->ditModel->findIdCategorieByNumeroDit($numDit, $codeSociete);
-        $typeOr = $this->ditOrsoumisAValidationModel->recupTypeOr($numOr);
-
-        // Informix
-        $condition1 = $idCategorieDemande === 10;
-        $condition2 = $typeOr !== 930;
-        if ($condition1 && $condition2) {
-            $message = "Merci de vérifier l'OR car le type de l'OR ne correspond pas à la DIT rattaché qui est un DAILY CHECK";
-            $this->historiqueOperation->sendNotificationSoumission($message, '-', 'dit_index');
-        }
 
         // factory
         $orSoummissionFactory = new OrSoumissionFactory();
-
         $dto = $orSoummissionFactory->initialisation($numDit, $numOr, $codeSociete);
+
+        // bloquer l'affichage du formulaire si les condition n'est pa remplis
+        $validationService = new ValidationService();
+        if (!$validationService->validateAvantAffichageForm($dto)) {
+            return;
+        }
 
         $form = $this->getFormFactory()->createBuilder(DitOrsSoumisAValidationType::class, $dto)->getForm();
 
@@ -90,12 +79,11 @@ class DitOrsSoumisAValidationController extends Controller
             'numDit' => $numDit,
         ]); // historisation du page visité par l'utilisateur
 
-        return $this->render('dit/DitInsertionOr.html.twig', [
-            'form' => $form->createView(),
-            // 'cdtArticleDa' => $cdtArticleDa,
-            // 'lierAUnDa' => $lierAUnDa,
+        return $this->render('atelier/dit/soumission/ors/soumissionOr.html.twig', [
+            'form' => $form->createView()
         ]);
     }
+
     private function traitementFormulaire(FormInterface $form, Request $request, string $numDit, string $numOr)
     {
 
@@ -109,7 +97,8 @@ class DitOrsSoumisAValidationController extends Controller
  
             // DONE
             /** DEBUT CONDITION DE BLOCAGE */
-            $conditionBloquage =   $this->validationService->validateSubmittedFile($form, null, $dto);
+            $validationService = new ValidationService();
+            $conditionBloquage =   $validationService->validateSubmittedFile($form, null, $dto);
             /** FIN CONDITION DE BLOCAGE */
             if (!$conditionBloquage) {
 
@@ -128,10 +117,10 @@ class DitOrsSoumisAValidationController extends Controller
                 $this->modificationStatutOr($dto);
 
 
-                $this->historiqueOperation->sendNotificationSoumission('Le document de controle a été généré et soumis pour validation', $numOr, 'dit_index', true);
+                $this->historiqueOperation->sendNotificationSoumission('Le document de controle a été généré et soumis pour validation', $numOr, 'dit_liste', true);
             } else {
                 $message = "Echec lors de la soumission, . . .";
-                $this->historiqueOperation->sendNotificationSoumission($message, $numOr, 'dit_index');
+                $this->historiqueOperation->sendNotificationSoumission($message, $numOr, 'dit_liste');
                 exit;
             }
         }
@@ -204,7 +193,7 @@ class DitOrsSoumisAValidationController extends Controller
     private function enregistrementFichier(FormInterface $form, $dto, string $suffix): array
     {
 
-        $nameGenerator = new OrsOrGeneratorNameService();
+        $nameGenerator = new OrGeneratorNameService();
         $numDit = $dto->getNumeroDit();
         $cheminBaseUpload = $_ENV['BASE_PATH_FICHIER'] . '/dit/';
         $uploader = new UploderFileService($cheminBaseUpload, $nameGenerator);

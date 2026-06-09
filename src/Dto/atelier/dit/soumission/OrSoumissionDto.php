@@ -73,7 +73,7 @@ class OrSoumissionDto
     public $pieceFaibleActiviteAchat;
 
 
-    public $codeSociete;
+    public string $codeSociete;
 
 
     public bool $isExistDatePlaning = false;
@@ -91,6 +91,10 @@ class OrSoumissionDto
     public  $refClient;
     public  $countAgServDebit;
     public array $nbrNumcli;
+
+
+    public int $idCategorieDemande = 0;
+    public int $typeOr = 0;
 
 
 

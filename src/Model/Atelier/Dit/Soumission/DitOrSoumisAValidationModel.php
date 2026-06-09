@@ -130,19 +130,20 @@ class DitOrSoumisAValidationModel extends Model
         return $this->convertirEnUtf8($data);
     }
 
-    public function recupNumeroOr($numDit, string $codeSociete): ?string
+    public function recupNumeroOr(string $numDit, string $codeSociete): ?string
     {
         $statement = " SELECT FIRST 1 
         seor_numor as numOr
-        from sav_eor
+        from {$this->dbIps}:Informix.sav_eor
         where seor_refdem = '$numDit'
         AND seor_serv = 'SAV'
         AND seor_soc = '$codeSociete'
     ";
+
         $result = $this->connect->executeQuery($statement);
         $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
 
-        return $data[0]['numOr'] ?? null;
+        return $data[0]['numor'] ?? null;
     }
 
     public function recupNumeroMatricule($numDit, $numOr, string $codeSociete)
@@ -189,8 +190,10 @@ class DitOrSoumisAValidationModel extends Model
         return  $this->convertirEnUtf8($data);
     }
 
-    public function recupTypeOr(string $numor): int
+    public function recupTypeOr(?string $numor): int
     {
+        if ($numor === null) return 0;
+
         $statement = " SELECT seor_typeor as type_or from informix.sav_eor where seor_numor = '$numor'";
 
         $result = $this->connect->executeQuery($statement);
@@ -734,5 +737,42 @@ class DitOrSoumisAValidationModel extends Model
         $result = $this->connect->executeQuery($statement);
 
         return $this->connect->fetchResults($result);
+    }
+
+    public function recupDatePlanningOR1($numOr, $numItv, $codeSociete)
+    {
+        $statement = " SELECT  
+                            min(ska_d_start) as datePlanning1
+                        from skw 
+                        inner join ska on ska.skw_id = skw.skw_id 
+                        where ofh_id ='$numOr'
+                        and ofs_id = '$numItv'
+                        and skw_soc ='$codeSociete'
+                        group by ofh_id 
+                    ";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->connect->fetchResults($result);
+
+        return $this->convertirEnUtf8($data);
+    }
+
+    public function recupDatePlanningOR2($numOr, $numItv, $codeSociete)
+    {
+        $statement = " SELECT
+                            min(sitv_datepla) as datePlanning2 
+                        from sav_itv 
+                        where sitv_numor = '$numOr'
+                        and sitv_interv = '$numItv'
+                        and sitv_soc = '$codeSociete'
+                        group by sitv_numor
+                    ";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->connect->fetchResults($result);
+
+        return $this->convertirEnUtf8($data);
     }
 }

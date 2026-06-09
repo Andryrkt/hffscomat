@@ -495,7 +495,7 @@ trait DitListTrait
     private function notification($message)
     {
         $this->getSessionService()->set('notification', ['type' => 'success', 'message' => $message]);
-        $this->redirectToRoute("dit_index");
+        $this->redirectToRoute("dit_liste");
     }
 
     private function data($request, $ditListeModel, $ditSearch, $agenceIdUser, $serviceIdUser, $agenceServiceAutorises, $peutVoirListeAvecDebiteur, $codeAgenceUser, $codeSociete, $em, $multisuccursale)

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service\dit\fichier;
+namespace App\Service\atelier\dit\fichier;
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use App\Service\fichier\AbstractFileNameGeneratorService;

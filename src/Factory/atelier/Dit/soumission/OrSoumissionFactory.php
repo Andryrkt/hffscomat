@@ -12,16 +12,22 @@ class OrSoumissionFactory
     public const invalidPositions = ['FC', 'FE', 'CP', 'ST'];
 
 
-    public function initialisation(string $numDit, string $numOr, string $codeSociete): OrSoumissionDto
+    public function initialisation(string $numDit, ?string $numOr, string $codeSociete): OrSoumissionDto
     {
+        $ditOrsoumisAValidationModel = new DitOrSoumisAValidationModel();
+        $ditModel = new DitModel();
+
         $dto = new OrSoumissionDto();
         $dto->numeroDit = $numDit;
         $dto->numeroOr = $numOr;
         $dto->codeSociete = $codeSociete;
-        $dto->idCategorieDemande = '';
-        $dto->typeOr = '';
+        $dto->idCategorieDemande = $ditModel->findIdCategorieByNumeroDit($numDit, $codeSociete);
+        $dto->typeOr = $ditOrsoumisAValidationModel->recupTypeOr($numOr);
+
         return $dto;
     }
+
+
     public function fromArrayToDto(array $data): OrSoumissionDto
     {
         $dto = new OrSoumissionDto();
