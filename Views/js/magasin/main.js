@@ -42,18 +42,20 @@ if (!currentConfig) {
     currentConfig.serviceContainer
   );
 
-  agenceInput.addEventListener("change", () => {
-    // const agence = agenceInput.value.split("-")[0];
-    const agence = agenceInput.value;
-    console.log(agence);
+  if (agenceInput) {
+    agenceInput.addEventListener("change", () => {
+      // const agence = agenceInput.value.split("-")[0];
+      const agence = agenceInput.value;
+      console.log(agence);
 
-    fetchServicesForAgence(
-      agence,
-      serviceInput,
-      spinnerService,
-      serviceContainer
-    );
-  });
+      fetchServicesForAgence(
+        agence,
+        serviceInput,
+        spinnerService,
+        serviceContainer
+      );
+    });
+  }
 
   //pour liste commande fournisseur non généré
   if (pageType === "liste_cde_fnr_non_genere") {
@@ -70,15 +72,17 @@ if (!currentConfig) {
       currentConfig.serviceContainerEmetteur
     );
 
-    agenceEmetteurInput.addEventListener("change", () => {
-      const agence = agenceEmetteurInput.value.split("-")[0];
-      fetchServicesForAgence(
-        agence,
-        serviceEmetteurInput,
-        spinnerServiceEmetteur,
-        serviceContainerEmetteur
-      );
-    });
+    if (agenceEmetteurInput) {
+      agenceEmetteurInput.addEventListener("change", () => {
+        const agence = agenceEmetteurInput.value.split("-")[0];
+        fetchServicesForAgence(
+          agence,
+          serviceEmetteurInput,
+          spinnerServiceEmetteur,
+          serviceContainerEmetteur
+        );
+      });
+    }
   }
 
   /**============================
@@ -87,8 +91,10 @@ if (!currentConfig) {
   // Gestion des champs en majuscule
   const numDitInput = document.querySelector(currentConfig.numDitInput);
   const refPieceInput = document.querySelector(currentConfig.refPieceInput);
-  numDitInput.addEventListener("input", () => toUppercase(numDitInput));
-  refPieceInput.addEventListener("input", () => toUppercase(refPieceInput));
+  if (numDitInput)
+    numDitInput.addEventListener("input", () => toUppercase(numDitInput));
+  if (refPieceInput)
+    refPieceInput.addEventListener("input", () => toUppercase(refPieceInput));
 
   /**==================================================
  * valider seulement les chiffres
@@ -97,9 +103,11 @@ if (!currentConfig) {
 
   if (pageType === "liste_cde_fnr_non_genere") {
     const numDocInput = document.querySelector(currentConfig.numDocInput);
-    numDocInput.addEventListener("input", () => allowOnlyNumbers(numDocInput));
+    if (numDocInput)
+      numDocInput.addEventListener("input", () => allowOnlyNumbers(numDocInput));
   } else {
     const numOrInput = document.querySelector(currentConfig.numOrInput);
-    numOrInput.addEventListener("input", () => allowOnlyNumbers(numOrInput));
+    if (numOrInput)
+      numOrInput.addEventListener("input", () => allowOnlyNumbers(numOrInput));
   }
 }
