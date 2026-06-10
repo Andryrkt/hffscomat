@@ -46,6 +46,11 @@ class MenuGroupe
                     ['label' => 'Consultation',                'icon' => 'search',      'route' => 'dit_liste'],
                 ],
             ],
+            [
+                'label'   => "Planning Interne Atelier",
+                'icon'    => 'calendar',
+                'route'   => 'planningAtelier_vue',
+            ]
         ];
     }
 

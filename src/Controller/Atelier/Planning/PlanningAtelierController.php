@@ -31,7 +31,7 @@ class PlanningAtelierController extends Controller
     }
 
     /**
-     * @Route("/planning-atelier", name="planning_atelier_index")
+     * @Route("/planning-atelier", name="planningAtelier_vue")
      */
     public function index(Request $request): \Symfony\Component\HttpFoundation\Response
     {

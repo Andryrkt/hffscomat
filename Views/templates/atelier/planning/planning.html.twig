@@ -1,0 +1,35 @@
+{% extends "baseTemplate.html.twig" %}
+
+{% block title %}
+    Planning des OR
+{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ App.base_path }}/Views/css/list.css?v=2025.10.22.08.00">
+    <link rel="stylesheet" href="{{ App.base_path }}/Views/css/planning/planning.css?v=2025.10.22.08.00">
+{% endblock %}
+
+{% block overlay %}
+    {% include "/shared/_overlay.html.twig"  %}
+{% endblock %}
+
+
+{% block content %}
+    <div class="sticky-header-titre">
+        <div class="container">
+            {% include "atelier/planning/_formulaire.html.twig" %}
+            {#
+            <div class="d-flex justify-content-between">
+                {% include "/partials/_statutSituationPiece.html.twig" with { 'avecBackOrder' : true } %}
+            </div>
+            #}
+        </div>
+    </div>
+    {# body modal #}
+{% endblock %}
+{% block javascript %}
+<script src="{{ App.base_path }}/Views/js/utils/positionSticky.js?v=2025.10.22.08.00"></script>
+	<script src="{{ App.base_path }}/Views/js/planning/planning.js?v=2025.10.22.08.00" type="module"></script>
+	<script src="{{ App.base_path }}/Views/js/planning/listPlanning.js?v=2025.10.22.08.00" type="module"></script>
+	<script src="{{ App.base_path }}/Views/js/planning/agServPlanning.js?v=2025.10.22.08.00" type="module"></script>
+{% endblock %}
