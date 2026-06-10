@@ -21,7 +21,7 @@ class DitListeMapper
             $dto->categorieDemande = $item['categorie'];
             $dto->numSerie = $item['numero_serie'];
             $dto->numParc = $item['numero_parc'];
-            $dto->dateDemande = new DateTime($item['date_demande']);
+            $dto->dateDemande = $item['date_demande'];
             $dto->internetExterne = $item['int_ext'];
             $dto->agenceServiceEmetteur = $item['emetteur'];
             $dto->agenceServiceDebiteur = $item['debiteur'];

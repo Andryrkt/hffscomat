@@ -19,4 +19,31 @@ class StatutDemandeModel extends Model
 
         return array_column($data, 'description');
     }
+
+    public function getIdSelonDescription(string $description): int
+    {
+        $statement = " SELECT id_statut_demande as id
+                from {$this->dbIrium}:informix.statut_demande 
+                where code_application ='DIT' 
+                AND description = '$description'
+        ";
+
+        $result = $this->connect->executeQuery($statement);
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
+
+        return array_column($data, 'id')[0] ?? 0;
+    }
+    public function getDescriptionById($id): string
+    {
+        $statement = " SELECT description as description
+                from {$this->dbIrium}:informix.statut_demande 
+                where id_statut_demande ='$id' 
+               
+        ";
+
+        $result = $this->connect->executeQuery($statement);
+        $rows = array_column($this->connect->fetchResults($result), 'description');;
+
+        return $rows[0] ?? "";
+    }
 }

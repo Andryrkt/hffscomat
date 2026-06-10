@@ -4,7 +4,6 @@ namespace App\Constants\atelier\dit;
 
 class StatutDitConstant
 {
-    public const CODE_APP = 'DIT';
     public const STATUT_A_AFFECTER = 'A AFFECTER';
     public const STATUT_AFFECTEE_SECTION = 'AFFECTEE SECTION';
     public const STATUT_CLOTUREE_ANNULEE = 'CLOTUREE ANNULEE';

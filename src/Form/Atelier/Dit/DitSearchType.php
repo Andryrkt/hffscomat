@@ -126,7 +126,7 @@ class DitSearchType extends AbstractType
                 [
                     'label' => 'Niveau d\'urgence',
                     'label_html' => true,
-                    'placeholder' => false,
+                    'placeholder' => "-- Choisir un Niv d'urgence --",
                     'choices' => $this->getDescriptionWorNiveauUrgence(),
                     'required' => false,
                 ]
