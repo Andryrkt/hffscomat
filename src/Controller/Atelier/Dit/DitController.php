@@ -5,10 +5,15 @@ namespace App\Controller\Atelier\Dit;
 use App\Controller\Controller;
 use App\Controller\Traits\FormatageTrait;
 use App\Controller\Traits\PdfConversionTrait;
+use App\Dto\Atelier\Dit\DitDto;
 use App\Factory\Atelier\Dit\DitFactory;
 use App\Form\Atelier\Dit\DitType;
+use App\Mapper\Atelier\Dit\DitMapper;
 use App\Model\Atelier\Dit\DitModel;
+use App\Service\atelier\dit\TraitementFichierService;
+use App\Service\genererPdf\dit\GenererPdfDit;
 use App\Service\historiqueOperation\Atelier\Dit\HistoriqueOperationDITService;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -30,7 +35,7 @@ class DitController extends Controller
         parent::__construct();
         $this->historiqueOperation = new HistoriqueOperationDITService($this->getEntityManager());
         $this->ditModel = new DitModel();
-        $this->ditFactory = new DitFactory($this->getEntityManager(), $this->ditModel, $this->historiqueOperation, $this->securityService);
+        $this->ditFactory = new DitFactory($this->getSecurityService(), $this->getEntityManager());
     }
 
     /**
@@ -52,7 +57,7 @@ class DitController extends Controller
 
         //AFFICHAGE ET TRAITEMENT DU FORMULAIRE
         $form = $this->getFormFactory()->createBuilder(DitType::class, $dto)->getForm();
-        // $this->traitementFormulaire($form, $request);
+        $this->traitementFormulaire($form, $request);
 
         $this->logUserVisit('dit_new'); // historisation du page visité par l'utilisateur
 
@@ -61,7 +66,7 @@ class DitController extends Controller
         ]);
     }
 
-    private function traitementFormulaire($form, Request $request)
+    private function traitementFormulaire(FormInterface $form, Request $request)
     {
         $form->handleRequest($request);
 
@@ -69,43 +74,26 @@ class DitController extends Controller
             /** @var DitDto $dto */
             $dto = $form->getData();
 
+            //  1. Enrichir le DTO avec les informations système (initialisation ou ajout des info par defaut)
+            $dto = $this->ditFactory->apresSoumission($dto);
 
-            // // 2. Enrichir le DTO avec les informations système (initialisation ou ajout des info par defaut)
-            // $em = $this->getEntityManager();
+            // 2. Traitement de Fichier 
+            [$nomFichierEnregistrer, $nomFichier] = (new TraitementFichierService)->traitementDeFichier($form, $dto);
 
+            // 3. Enregistremenr dans la base de donnée
+            $data = DitMapper::DtoToArray($dto, $this->getEntityManager(), $nomFichierEnregistrer);
+            $this->ditModel->enregistrementDit($data);
 
+            // 4. copie dans DOCUWARE
+            $genererPdfDit = new GenererPdfDit();
+            $reponse = $genererPdfDit->copyToDOCUWARE($nomFichier, $dto->numeroDemandeIntervention);
 
-            // /**   @var DemandeIntervention[] $demandeInterventions 3. Utiliser la factory pour créer l'entité complète*/
-            // $demandeInterventions = $this->createDemandeInterventionFromDto($dto);
+            // 5. modification de la colonne pdf_deposer_dw et date_depot_pdf_dw
+            $donnees = DitMapper::updateDit($reponse);
+            $this->ditModel->updateDitDW($donnees, $dto);
 
-            // foreach ($demandeInterventions as $demandeIntervention) {
-            //     // Type de DIT
-            //     $ditPneumatique = $demandeIntervention->getReparationRealise() === "ATE POL TANA";
-
-            //     // 4. recuperation du dernière numero demande d'intervention et generation du numero de demande 
-            //     $application = $em->getRepository(Application::class)->findOneBy(['codeApp' => DemandeIntervention::CODE_APP]);
-            //     $numeroDemandeIntervention = $this->genererNumeroDemandeIntervention($application);
-
-            //     // 5.enregistrement du numero demande d'intervention et Modifie la colonne dernière_id dans la table applications
-            //     $demandeIntervention->setNumeroDemandeIntervention($numeroDemandeIntervention);
-            //     AutoIncDecService::mettreAJourDerniereIdApplication($application, $em, $numeroDemandeIntervention);
-
-            //     /** 6. Traitement des fichiers (PDF, pièces jointes) @var array $nomFichierEnregistrer @var string $nomFichier  */
-            //     $genererPdfDit = new GenererPdfDit();
-            //     [$nomFichierEnregistrer, $nomFichier]  = $this->traitementDeFichier($form, $demandeIntervention, $genererPdfDit, $ditPneumatique);
-
-            //     // 7. Enregistrement dans la base de donnée
-            //     $this->enregistrementBd($demandeIntervention, $nomFichierEnregistrer);
-
-            //     // 8.Copier le PDF DANS DOXCUWARE
-            //     $reponse = $genererPdfDit->copyToDOCUWARE($nomFichier, $demandeIntervention->getNumeroDemandeIntervention(), $ditPneumatique);
-
-            //     // 9. modification de la colonne pdf_deposer_dw et date_depot_pdf_dw
-            //     $this->modificationBdPourHitorisationDw($em, $demandeIntervention, $reponse);
-            // }
-
-            // // 10. enregistrement dans l'historisation de la sucès de la demande
-            // $this->historiqueOperation->sendNotificationCreation('Votre demande a été enregistrée', $demandeInterventions[0]->getNumeroDemandeIntervention(), 'dit_index', true);
+            // 6. enregistrement dans l'historisation de la sucès de la demande
+            $this->historiqueOperation->sendNotificationCreation('Votre demande a été enregistrée', $dto->numeroDemandeIntervention, 'dit_liste', true);
         }
     }
 }

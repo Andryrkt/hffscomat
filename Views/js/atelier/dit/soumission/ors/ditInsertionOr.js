@@ -1,6 +1,6 @@
 function initializeFileHandlers(idSuffix) {
   const fileInput = document.querySelector(
-    `#dit_ors_soumis_a_validation_pieceJoint0${idSuffix}`
+    `#dit_ors_soumis_a_validation_pieceJoint0${idSuffix}`,
   );
   const fileName = document.querySelector(`.file-name-${idSuffix}`);
   const uploadBtn = document.getElementById(`upload-btn-${idSuffix}`);
@@ -44,7 +44,7 @@ function handleFiles(
   fileNameElement,
   fileSizeElement,
   pdfPreviewElement,
-  pdfEmbedElement
+  pdfEmbedElement,
 ) {
   const file = files[0];
   if (file && file.type === "application/pdf") {
@@ -57,7 +57,7 @@ function handleFiles(
 
     fileNameElement.innerHTML = `<strong>Fichier sélectionné :</strong> ${file.name}`;
     fileSizeElement.innerHTML = `<strong>Taille :</strong> ${formatFileSize(
-      file.size
+      file.size,
     )}`;
   } else {
     alert("Veuillez déposer un fichier PDF.");
@@ -88,7 +88,7 @@ function formatFileSize(size) {
  * LIMITATION CARACTER ET OBLIGATION DE CARACTER EN CHIFFRE SUR LE CHAMP NUMERO OR
  */
 const numOrInput = document.querySelector(
-  "#dit_ors_soumis_a_validation_numeroOR"
+  "#dit_ors_soumis_a_validation_numeroOr",
 );
 
 numOrInput.addEventListener("input", function () {

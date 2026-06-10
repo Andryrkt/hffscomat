@@ -48,17 +48,12 @@ class DocSoumisDwApi extends Controller
             $statutDit = $constraitDevis[0]['statut'];
         }
 
-        if (empty($numOrBaseDonner)) {
-            $numeroOR = '';
-        } else {
-            $numeroOR = $numOrBaseDonner[0]['numor'];
-        }
 
         return  [
             "client" => $client,
             "statutDit" => $statutDit,
             "statutDevis" => $statutDevis,
-            "numeroOR" => $numeroOR
+            "numeroOR" => $numOrBaseDonner
         ];
     }
 }

@@ -29,7 +29,7 @@ class DitListeController extends Controller
         $this->ditListeModel = $ditListeModel;
     }
     /**
-     * @Route("/dit-liste", name="dit_index")
+     * @Route("/dit-liste", name="dit_liste")
      */
     public function index(Request $request)
     {
@@ -117,7 +117,7 @@ class DitListeController extends Controller
 
         if ($form->isSubmitted() && $form->isValid()) {
             //recupères les données du criteria dans une session nommé dit_serch_criteria
-            $this->getSessionService()->set('dit_search_criteria', $dto);
+            $this->getSessionService()->set('criteria_for_excel_dit_liste', $dto);
         }
 
         return $dto;

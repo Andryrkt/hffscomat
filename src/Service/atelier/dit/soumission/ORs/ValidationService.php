@@ -2,7 +2,6 @@
 
 namespace App\Service\atelier\dit\soumission\ORs;
 
-use App\Controller\Traits\dit\DitOrSoumisAValidationTrait;
 use App\Dto\atelier\dit\soumission\OrSoumissionDto;
 use App\Model\Atelier\Dit\Soumission\DitOrSoumisAValidationModel;
 use App\Service\historiqueOperation\HistoriqueOperationORService;
@@ -12,14 +11,8 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class ValidationService
 {
-    use DitOrSoumisAValidationTrait;
 
-    private DitOrSoumisAValidationModel $ditOrSoumisAValidationModel;
 
-    public function __construct(DitOrSoumisAValidationModel $model)
-    {
-        $this->ditOrSoumisAValidationModel = $model;
-    }
     private const FILE_FIELD_NAME = 'pieceJoint01';
     private const FILENAME_PATTERN = '/^(Ordre de réparation)_(\d+)_(\d+)_(\d+)\\.pdf$/';
 
@@ -52,21 +45,35 @@ class ValidationService
         bool $success
     ): void {
 
-        $criteria = (array)$this->getSessionService()->get('criteria_for_excel_liste_dit');
+        $criteria = (array)$this->getSessionService()->get('criteria_for_excel_dit_liste');
         $nomInputSearch = 'dit_search'; // initialistion de nom de chaque champ ou input
         $this->getHistoriqueService()->sendNotificationSoumission(
             $message,
             $numeroOr,
-            'liste_dit',
+            'dit_liste',
             $success,
             $criteria,
             $nomInputSearch
         );
     }
-    
-    public function validateAvantAffichageForm()
+
+    public function validateAvantAffichageForm(OrSoumissionDto $dto): bool
     {
-        
+        // vérifier si le numéro or existe pour le DIT
+        if (empty($dto->numeroOr)) {
+            $message = "Le DIT n'a pas encore de numéro OR";
+            $this->sendNotificationOR($message, $dto->numeroDit, false);
+            return true;
+        }
+
+        // vérifier si le catégorie de la DIT est DAILY CHECK et le type de l'OR est 930 sinon bloqué
+        if ($dto->idCategorieDemande === 10 && $dto->typeOr !== 930) {
+            $message = "Merci de vérifier l'OR car le type de l'OR ne correspond pas à la DIT rattaché qui est un DAILY CHECK";
+            $this->sendNotificationOR($message, $dto->numeroOr, false);
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -87,63 +94,63 @@ class ValidationService
         //  Verifie si la date du premier soummision est inferieur au date u jour
         if ($this->premierSoumissionDatePlanningInferieurDateDuJour($dto->numeroOr, $dto->codeSociete, $dto->nmbrOr_soumis)) {
             $message = "Impossible de soumettre l’OR, la date de planning est déjà dépassée ";
-            $this->sendNotificationOR($message, '', false);
+            $this->sendNotificationOR($message, $dto->numeroOr, false);
             return true;
         }
-        //  Verifie le nombre d'agent de service est plus 1
-        if ($dto->nbrNumcli[0] != 'existe_bdd') {
-            $message = "Echec de la soumission de l'OR . . . le numéro OR ne correspond pas  ";
-            $this->sendNotificationOR($message, '', false);
+        //  Verifie le nombre d'agence de service est plus 1
+        if ($dto->existeNumclient) {
+            $message = "La soumission n'a pas pu être effectuée car le client rattaché à l'OR est introuvable ";
+            $this->sendNotificationOR($message, $dto->numeroOr, false);
             return true;
         }
         //  Verifie le nombre d'agent de service est plus 1
         if ($dto->countAgServDebit > 1) {
             $message = "Echec de la soumission de l'OR . . . un OR a plusieurs service débiteur ";
-            $this->sendNotificationOR($message, '', false);
+            $this->sendNotificationOR($message, $dto->numeroOr, false);
             return true;
         }
 
-        //  Verifie si la statue est bloquer
+        //  Verifie si la statut est bloquer
         if ($dto->statut === 'bloquer') {
             $message = "Echec de la soumission de l'OR . . . un OR est déjà en cours de validation ";
-            $this->sendNotificationOR($message, '', false);
+            $this->sendNotificationOR($message, $dto->numeroOr, false);
             return true;
         }
         //  Verifie si la refClient est vide
         if ($dto->refClient) {
             $message = "Echec de la soumission car la référence client est vide.";
-            $this->sendNotificationOR($message, '', false);
+            $this->sendNotificationOR($message, $dto->numeroOr, false);
             return true;
         }
         //  Validation des positions valides 
         if ($dto->isValidPosition) {
-            $message = "Echec de la soumission car l'agence / service débiteur de l'OR ne correspond pas à l'agence / service de la DIT";
-            $this->sendNotificationOR($message, '', false);
+            $message = "Echec de la soumission de l'OR, la position de l'OR est parmis 'FC', 'FE', 'CP', 'ST'";
+            $this->sendNotificationOR($message, $dto->numeroOr, false);
             return true;
         }
         //  Verification si agence debiteur est dans Irium et IPS sont egale 
         if ($dto->isAgenceIriumInIPS) {
             $message = "Echec de la soumission car l'agence / service débiteur de l'OR ne correspond pas à l'agence / service de la DIT";
-            $this->sendNotificationOR($message, '', false);
+            $this->sendNotificationOR($message, $dto->numeroOr, false);
             return true;
         }
         // Verifie si tous les intervention sont plannifiées
         if ($dto->isVerifiedDatePlanning) {
             $message = "Echec de la soumission car il existe une ou plusieurs interventions non planifiées dans l'OR";
-            $this->sendNotificationOR($message, '', false);
+            $this->sendNotificationOR($message, $dto->numeroOr, false);
             return true;
         }
         // Verifie si id_materiel_Ips correspond id_materiel_Irium 
-        if ($dto->id_materiel_ips !== (int)$dto->info_materiel['id']) {
+        if ($dto->estIdMaterielDifferent) {
             $message = "Echec de la soumission car le materiel de l'OR ne correspond pas au materiel de la DIT";
-            $this->sendNotificationOR($message, '', false);
+            $this->sendNotificationOR($message, $dto->numeroOr, false);
             return true;
         }
 
         // Vérifie si un fichier a été soumis
         if (!$remoteUrl && !$this->isFileSubmitted($form, self::FILE_FIELD_NAME)) {
             $message = "Aucun fichier n'a été soumis.";
-            $this->sendNotificationOR($message, '', false);
+            $this->sendNotificationOR($message, $dto->numeroOr, false);
             return true;
         }
 
@@ -159,14 +166,14 @@ class ValidationService
         // Vérifie si le nom du fichier correspond au pattern attendu (S'assurer que c'est bien un OR qui soit soumis)
         if (!$this->matchPattern($fileName, self::FILENAME_PATTERN)) {
             $message = "Le nom du fichier soumis n'est pas conforme au format attendu. Reçu: " . $fileName;
-            $this->sendNotificationOR($message, '', false);
+            $this->sendNotificationOR($message, $dto->numeroOr, false);
             return true;
         }
 
         // Vérifie si le numéro de OR dans le nom du fichier correspond au numéro de dit attendu (S'assurer que le OR envoyé corresponde à la ligne de OR utilisé pour la soumission dans l'intranet)
         if (!$this->matchNumberAfterUnderscore($fileName, $dto->numeroOr)) {
             $message = "Le numéro de l'OR dans le nom du fichier ($fileName) ne correspond pas au OR du formulaire ( $dto->numeroOr )";
-            $this->sendNotificationOR($message, '', false);
+            $this->sendNotificationOR($message, $dto->numeroOr, false);
             return true;
         }
 
@@ -223,5 +230,28 @@ class ValidationService
         }
 
         return false; // Aucun numéro trouvé après un underscore
+    }
+
+    private function premierSoumissionDatePlanningInferieurDateDuJour(string $numOr, string $codeSociete, int $nmbrOr_soumis): bool
+    {
+        $ditOrsoumisAValidationModel = new DitOrSoumisAValidationModel();
+
+        $nbrPieceMagasin = $ditOrsoumisAValidationModel->recupNbPieceMagasin($numOr, $codeSociete); //nombre de piece magasin
+
+        if ((int)$nmbrOr_soumis <= 0 && (int)$nbrPieceMagasin <= 0) { // si pas encore soumis et pas de piece magasin
+            $numItvs = $ditOrsoumisAValidationModel->getNumItv($numOr, $codeSociete);
+            $dateDuJour = new \DateTime('now');
+            foreach ($numItvs as $numItv) {
+                $datePlannig1 = $ditOrsoumisAValidationModel->recupDatePlanningOR1($numOr, $numItv, $codeSociete);
+                $datePlannig2 = $ditOrsoumisAValidationModel->recupDatePlanningOR2($numOr, $numItv, $codeSociete);
+                $datePlanning = empty($datePlannig1) ? new \DateTime($datePlannig2[0]['dateplanning2']) : new \DateTime($datePlannig1[0]['dateplanning1']);
+                if ($datePlanning->format('Y-m-d') < $dateDuJour->format('Y-m-d')) { // date planning est inférieure à la date du jour
+                    return true;
+                }
+            }
+            return false;
+        } else {
+            return false;
+        }
     }
 }

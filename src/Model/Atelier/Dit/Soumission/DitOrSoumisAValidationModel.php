@@ -3,6 +3,11 @@
 namespace App\Model\Atelier\Dit\Soumission;
 
 
+use App\Dto\atelier\dit\soumission\OrSoumissionDto;
+use App\Mapper\Atelier\Dit\DitMapper;
+use App\Mapper\Atelier\Dit\Soumission\OrSoumissionMapper;
+use App\Model\Informix\InsertQueryBuilder;
+use App\Model\Informix\UpdateQueryBuilder;
 use App\Model\Model;
 use App\Model\Traits\ConversionModel;
 use App\Service\GlobalVariablesService;
@@ -12,102 +17,103 @@ use Symfony\Component\Validator\Constraints\IsNull;
 class DitOrSoumisAValidationModel extends Model
 {
     use ConversionModel;
-    public function recupOrSoumisValidation($numOr)
+
+    public function recupOrSoumisValidation($numOr, $codeSociete)
     {
         $statement = "SELECT
-        slor_numor,
-        sitv_datdeb,
-        trim(seor_refdem) as NUMERo_DIT,
-        sitv_interv as NUMERO_ITV,
-        trim(sitv_comment) as LIBELLE_ITV,
-        count(slor_constp) as NOMBRE_LIGNE,
-        Sum(
-            CASE
-                WHEN slor_typlig = 'P' THEN (
-                    slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec
-                )
-                WHEN slor_typlig IN ('F', 'M', 'U', 'C') THEN slor_qterea
-            END * CASE
-                WHEN slor_typlig = 'P' THEN slor_pxnreel
-                WHEN slor_typlig IN ('F', 'M', 'U', 'C') THEN slor_pxnreel
-            END
-        ) as MONTANT_ITV,
+          slor_numor,
+          sitv_datdeb,
+          trim(seor_refdem) as NUMERo_DIT,
+          sitv_interv as NUMERO_ITV,
+          trim(sitv_comment) as LIBELLE_ITV,
+          count(slor_constp) as NOMBRE_LIGNE,
+          Sum(
+              CASE
+                  WHEN slor_typlig = 'P' 
+                  THEN (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec)
+                  WHEN slor_typlig IN ('F', 'M', 'U', 'C') THEN slor_qterea
+              END 
+              * 
+              CASE
+                  WHEN slor_typlig = 'P' THEN slor_pxnreel
+                  WHEN slor_typlig IN ('F', 'M', 'U', 'C') THEN slor_pxnreel
+              END
+          ) as MONTANT_ITV,
 
-        Sum(
-            CASE
-                WHEN slor_typlig = 'P'
-                AND slor_constp NOT like 'Z%'
-                AND slor_constp <> 'LUB' THEN (
-                    nvl (slor_qterel, 0) + nvl (slor_qterea, 0) + nvl (slor_qteres, 0) + nvl (slor_qtewait, 0) - nvl (slor_qrec, 0)
-                )
-            END * CASE
-                WHEN slor_typlig = 'P' THEN slor_pxnreel
-                WHEN slor_typlig IN ('F', 'M', 'U', 'C') THEN slor_pxnreel
-            END
-        ) AS MONTANT_PIECE,
+          Sum(
+              CASE
+                  WHEN slor_typlig = 'P'
+                  AND slor_constp NOT like 'Z%'
+                  AND slor_constp <> 'LUB' THEN (nvl (slor_qterel, 0) + nvl (slor_qterea, 0) + nvl (slor_qteres, 0) + nvl (slor_qtewait, 0) - nvl (slor_qrec, 0))
+              END 
+              * 
+              CASE
+                  WHEN slor_typlig = 'P' THEN slor_pxnreel
+                  WHEN slor_typlig IN ('F', 'M', 'U', 'C') THEN slor_pxnreel
+              END
+          ) AS MONTANT_PIECE,
 
-        Sum(
-            CASE
-                WHEN slor_typlig = 'M' THEN slor_qterea
-            END * CASE
-                WHEN slor_typlig = 'P' THEN slor_pxnreel
-                WHEN slor_typlig IN ('F', 'M', 'U', 'C') THEN slor_pxnreel
-            END
-        ) AS MONTANT_MO,
+          Sum(
+              CASE
+                  WHEN slor_typlig = 'M' THEN slor_qterea
+              END * CASE
+                  WHEN slor_typlig = 'P' THEN slor_pxnreel
+                  WHEN slor_typlig IN ('F', 'M', 'U', 'C') THEN slor_pxnreel
+              END
+          ) AS MONTANT_MO,
 
-        Sum(
-            CASE
-                WHEN slor_constp = 'ZST' THEN (
-                    slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec
-                )
-            END * CASE
-                WHEN slor_typlig = 'P' THEN slor_pxnreel
-                WHEN slor_typlig IN ('F', 'M', 'U', 'C') THEN slor_pxnreel
-            END
-        ) AS MONTANT_ACHATS_LOCAUX,
+          Sum(
+              CASE
+                  WHEN slor_constp = 'ZST' THEN (
+                      slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec
+                  )
+              END * CASE
+                  WHEN slor_typlig = 'P' THEN slor_pxnreel
+                  WHEN slor_typlig IN ('F', 'M', 'U', 'C') THEN slor_pxnreel
+              END
+          ) AS MONTANT_ACHATS_LOCAUX,
 
-        Sum(
-            CASE
-                WHEN slor_constp <> 'ZST'
-                AND slor_constp like 'Z%' THEN slor_qterea
-            END * CASE
-                WHEN slor_typlig = 'P' THEN slor_pxnreel
-                WHEN slor_typlig IN ('F', 'M', 'U', 'C') THEN slor_pxnreel
-            END
-        ) AS MONTANT_DIVERS,
+          Sum(
+              CASE
+                  WHEN slor_constp <> 'ZST'
+                  AND slor_constp like 'Z%' THEN slor_qterea
+              END * CASE
+                  WHEN slor_typlig = 'P' THEN slor_pxnreel
+                  WHEN slor_typlig IN ('F', 'M', 'U', 'C') THEN slor_pxnreel
+              END
+          ) AS MONTANT_DIVERS,
 
-        Sum(
-            CASE
-                WHEN slor_typlig = 'P'
-                AND slor_constp NOT like 'Z%'
-                AND slor_constp = 'LUB' THEN (
-                    nvl (slor_qterel, 0) + nvl (slor_qterea, 0) + nvl (slor_qteres, 0) + nvl (slor_qtewait, 0) - nvl (slor_qrec, 0)
-                )
-            END * CASE
-                WHEN slor_typlig = 'P' THEN slor_pxnreel
-                WHEN slor_typlig IN ('F', 'M', 'U', 'C') THEN slor_pxnreel
-            END
-        ) AS MONTANT_LUBRIFIANTS
+          Sum(
+              CASE
+                  WHEN 
+                    slor_typlig = 'P'
+                    AND slor_constp NOT like 'Z%'
+                    AND slor_constp = 'LUB' 
+                  THEN (nvl (slor_qterel, 0) + nvl (slor_qterea, 0) + nvl (slor_qteres, 0) + nvl (slor_qtewait, 0) - nvl (slor_qrec, 0))
+              END 
+              * 
+              CASE
+                  WHEN slor_typlig = 'P' THEN slor_pxnreel
+                  WHEN slor_typlig IN ('F', 'M', 'U', 'C') THEN slor_pxnreel
+              END
+          ) AS MONTANT_LUBRIFIANTS
 
-        from sav_eor, sav_lor, sav_itv
-        WHERE
-            seor_numor = slor_numor
-            AND seor_serv <> 'DEV'
-            AND sitv_numor = slor_numor
-            AND sitv_interv = slor_nogrp / 100
-
-        --AND sitv_pos NOT IN('FC', 'FE', 'CP', 'ST')
-        --AND sitv_servcrt IN ('ATE','FOR','GAR','MAN','CSP','MAS')
-        AND seor_numor = '" . $numOr . "'
-        --AND SEOR_SUCC = '01'
-        group by
-            1,
-            2,
-            3,
-            4,
-            5
-        order by slor_numor, sitv_interv
-    ";
+          from sav_eor, sav_lor, sav_itv
+          WHERE
+              seor_numor = slor_numor
+              AND seor_serv <> 'DEV'
+              AND sitv_numor = slor_numor
+              AND sitv_interv = slor_nogrp / 100
+              AND seor_soc = '$codeSociete'
+              AND slor_soc=seor_soc
+              AND sitv_soc=seor_soc
+          --AND sitv_pos NOT IN('FC', 'FE', 'CP', 'ST')
+          --AND sitv_servcrt IN ('ATE','FOR','GAR','MAN','CSP','MAS','LR6','LST')
+          AND seor_numor = '$numOr'
+          --AND SEOR_SUCC = '01'
+          group by 1, 2, 3, 4, 5
+          order by slor_numor, sitv_interv
+        ";
 
         $result = $this->connect->executeQuery($statement);
 
@@ -130,37 +136,37 @@ class DitOrSoumisAValidationModel extends Model
         return $this->convertirEnUtf8($data);
     }
 
-    public function recupNumeroOr($numDit, string $codeSociete): ?string
+    public function recupNumeroOr(string $numDit, string $codeSociete): ?string
     {
         $statement = " SELECT FIRST 1 
         seor_numor as numOr
-        from sav_eor
+        from {$this->dbIps}:Informix.sav_eor
         where seor_refdem = '$numDit'
         AND seor_serv = 'SAV'
         AND seor_soc = '$codeSociete'
     ";
+
         $result = $this->connect->executeQuery($statement);
         $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
 
-        return $data[0]['numOr'] ?? null;
+        return $data[0]['numor'] ?? null;
     }
 
-    public function recupNumeroMatricule($numDit, $numOr, string $codeSociete)
+    public function recupNumeroMatricule(string $numDit, string $numOr, string $codeSociete)
     {
         $statement = " SELECT 
             seor_nummat as numMatricule
-            from sav_eor
+            from {$this->dbIps}:Informix.sav_eor
             where seor_refdem = '$numDit'
             AND seor_numor = '$numOr'
             AND seor_serv = 'SAV'
             AND seor_soc = '$codeSociete'
         ";
-        $result = $this->connect->executeQuery($statement);
 
-        $data = $this->connect->fetchResults($result);
-        $data = $this->convertirEnUtf8($data);
-        $id_materiel_ips = (int) ($data[0]['nummatricule'] ?? 0);
-        return $id_materiel_ips;
+        $result = $this->connect->executeQuery($statement);
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
+
+        return (int) ($data[0]['nummatricule'] ?? 0);;
     }
 
     public function recupNbDatePlanningVide($numOr, string $codeSociete)
@@ -178,19 +184,25 @@ class DitOrSoumisAValidationModel extends Model
         return $this->convertirEnUtf8($data);
     }
 
-    public function recupPositonOr($numor, $codeSociete)
+    public function recupPositonOr(string $numor, string $codeSociete): string
     {
-        $statement = " SELECT seor_pos as position from sav_eor where seor_numor = '$numor' and seor_soc = '$codeSociete'";
+        $statement = " SELECT seor_pos as position 
+                    from {$this->dbIps}:Informix.sav_eor 
+                    where seor_numor = '$numor' 
+                    and seor_soc = '$codeSociete'
+        ";
 
         $result = $this->connect->executeQuery($statement);
 
-        $data = $this->connect->fetchResults($result);
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
 
-        return  $this->convertirEnUtf8($data);
+        return  $data[0]['position'] ?? null;
     }
 
-    public function recupTypeOr(string $numor): int
+    public function recupTypeOr(?string $numor): int
     {
+        if ($numor === null) return 0;
+
         $statement = " SELECT seor_typeor as type_or from informix.sav_eor where seor_numor = '$numor'";
 
         $result = $this->connect->executeQuery($statement);
@@ -253,10 +265,10 @@ class DitOrSoumisAValidationModel extends Model
         return $this->convertirEnUtf8($data);
     }
 
-    public function recupRefClient($numOr, $codeSociete)
+    public function recupRefClient(string $numOr, string $codeSociete)
     {
         $statement = " SELECT seor_lib  
-                    from sav_eor 
+                    from {$this->dbIps}:Informix.sav_eor 
                     where seor_numor='$numOr' AND seor_soc='$codeSociete'
                     ";
         $result = $this->connect->executeQuery($statement);
@@ -282,86 +294,6 @@ class DitOrSoumisAValidationModel extends Model
 
         return $this->convertirEnUtf8($data);
     }
-    // public function recupBlockageStatut($numOr)
-    // {
-    //     $sqlNumVersMax = " SELECT MAX(numeroVersion) as numversionMax
-    //             FROM ors_soumis_a_validation
-    //             WHERE numeroOR = '{$numOr}'";
-
-    //     $numVersionMax = $this->retournerResult28($sqlNumVersMax);
-
-    //     if ($numVersionMax[0]['numversionMax'] == 0 || is_null($numVersionMax[0]['numversionMax'])) {
-    //         dump("pas de numéro or");
-    //         return "ne pas bloquer";
-    //     } else {
-    //         dump("misy version");
-    //         $sql1 = "SELECT
-    //             CASE
-    //                 WHEN COUNT(*) > 0 THEN 'ne pas bloquer'
-    //                 ELSE 'bloquer'
-    //             END AS retour
-    //         FROM ors_soumis_a_validation
-    //         WHERE numeroOR = '41326877'
-    //         AND numeroVersion = {$numVersionMax[0]['numversionMax']}
-    //         AND (
-    //             statut = 'Validé' 
-
-    //         )
-    //         ";
-
-    //         $sql2 = "SELECT
-    //                 statut
-    //             FROM
-    //                 ors_soumis_a_validation
-    //             WHERE
-    //                 numeroOR = '51303448'
-    //                 AND numeroVersion = :numVersionMax
-    //                 AND REPLACE(REPLACE(statut, 'b\"', ''), '\"', '') LIKE 'Validé%'
-    //             ";
-
-    //         $sql3 = "SELECT statut_or from demande_intervention where numero_or = '51303448'";
-    //     }
-
-
-
-
-    //     $statement = $this->connexion->query($sql2);
-    //     $data = [];
-    //     while ($tabType = odbc_fetch_array($statement)) {
-    //         $data[] = $tabType;
-    //     }
-    //     dd($data);
-
-    //     dd("fin");
-
-    //     $sql2 = " SELECT COUNT(*) as nb FROM ors_soumis_a_validation WHERE numeroOR= '{$numOr}' ";
-
-    //     // // if ($this->retournerResult28($sql2) == 0) {
-    //     //     // return 'ne pas bloquer';
-    //     // // } else {
-    //     //     $sql = " SELECT
-    //     //         CASE
-    //     //             WHEN COUNT(*) > 0 THEN 'ne pas bloquer'
-    //     //             ELSE 'bloquer'
-    //     //         END AS retour
-    //     //     FROM ors_soumis_a_validation
-    //     //     WHERE numeroOR = '{$numOr}'
-    //     //     AND numeroVersion = (
-    //     //         SELECT MAX(numeroVersion)
-    //     //         FROM ors_soumis_a_validation
-    //     //         WHERE numeroOR = '{$numOr}'
-    //     //     )
-    //     //     AND (
-    //     //         statut LIKE '%Validé%' OR
-    //     //         statut LIKE '%Refusé%' OR
-    //     //         statut LIKE '%Livré partiellement%' OR
-    //     //         statut LIKE '%Modification demandée par client%'
-    //     //     )
-    //     // ";
-
-    //     //return $this->retournerResult28($sql);
-    //     // }
-    // }
 
     public function constructeurPieceMagasin(string $numOr)
     {
@@ -408,22 +340,22 @@ class DitOrSoumisAValidationModel extends Model
         return (int) ($data[0]['retour'] ?? 0);
     }
 
-    public function getNumcli($numOr, $codeSociete)
+    public function getNumcli(string $numOr, string $codeSociete): ?string
     {
         $statement = " SELECT seor_numcli as numcli
-                    FROM sav_eor
+                    FROM {$this->dbIps}:Informix.sav_eor
                     WHERE seor_numor = '$numOr'
                     AND seor_soc = '$codeSociete'
         ";
 
         $result = $this->connect->executeQuery($statement);
 
-        $data = $this->connect->fetchResults($result);
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
 
-        return array_column($this->convertirEnUtf8($data), 'numcli');
+        return array_column($data, 'numcli')[0] ?? null;
     }
 
-    public function numcliExiste($numcli, string $codeSociete)
+    public function numcliExiste(string $numcli, string $codeSociete): string
     {
         $statement = " SELECT  
         case
@@ -435,9 +367,9 @@ class DitOrSoumisAValidationModel extends Model
 
         $result = $this->connect->executeQuery($statement);
 
-        $data = $this->connect->fetchResults($result);
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
 
-        return array_column($this->convertirEnUtf8($data), 'numcli');
+        return array_column($data, 'numcli')[0] ?? '';
     }
 
     public function validationArticleZstDa($numOr)
@@ -558,9 +490,9 @@ class DitOrSoumisAValidationModel extends Model
                 ffac_datef
                 , TODAY - ffac_datef as nombre_jour
                 , fllf_numfac,*
-                from informix.frn_llf 
-                inner join informix.frn_fac on ffac_soc = fllf_soc and ffac_succ = fllf_succ and ffac_numfac = fllf_numfac
-                inner join informix.frn_cde on fcde_soc = fllf_soc and fcde_succ = fllf_succ and fcde_numcde = fllf_numcde
+                from {$this->dbIps}:informix.frn_llf 
+                inner join {$this->dbIps}:informix.frn_fac on ffac_soc = fllf_soc and ffac_succ = fllf_succ and ffac_numfac = fllf_numfac
+                inner join {$this->dbIps}:informix.frn_cde on fcde_soc = fllf_soc and fcde_succ = fllf_succ and fcde_numcde = fllf_numcde
                 --inner join art_hpm on ahpm_soc = fllf_soc and ahpm_succfac = fllf_succ and ahpm_numfac = fllf_numfac and ahpm_constp = fllf_constp and ahpm_refp = fllf_refp
                 where fllf_constp = '$constructeur'
                 and fllf_refp = '$reference'
@@ -592,7 +524,7 @@ class DitOrSoumisAValidationModel extends Model
         trim(slor_desi) as designation,
         slor_succ as code_agence, 
         slor_servcrt as code_service
-        from sav_eor, sav_lor, sav_itv
+        from {$this->dbIps}:Informix.sav_eor, {$this->dbIps}:Informix.sav_lor, {$this->dbIps}:Informix.sav_itv
         WHERE seor_numor = slor_numor
             AND seor_serv <> 'DEV'
             AND sitv_numor = slor_numor
@@ -659,12 +591,13 @@ class DitOrSoumisAValidationModel extends Model
             OR o.statut LIKE '%modif_dt%'
         )
     ";
+
         $result = $this->connect->executeQuery($statement);
         $data = $this->connect->fetchResults($result);
 
         $count = (int) ($data[0]['total'] ?? 0);
 
-        return ($count > 0) ? 'ne pas bloquer' : 'bloquer';
+        return ($count > 0) ? 'bloquer' : 'ne pas bloquer';
     }
 
     public function getNbrOrSoumis(string $numOr, string $codeSociete): int
@@ -682,57 +615,160 @@ class DitOrSoumisAValidationModel extends Model
         return (int) ($data[0]['total'] ?? 0);
     }
 
-    public function findOrSoumiAvant(string $numOr, string $codeSociete)
+    /**
+     * Recupération des Ors enregistrer dans la base de donnée au moment de soumission 
+     *
+     * @param string $numOr
+     * @param string $codeSociete
+     * @return array
+     */
+    public function findOrSoumiAvant(string $numOr, string $codeSociete): array
     {
-        $statement = "
-        SELECT *
+        $statement = " SELECT *
         FROM {$this->dbIrium}:Informix.ors_soumis_a_validation o
         WHERE o.numeroor = '$numOr'
         AND o.code_societe = '$codeSociete'
         AND o.numeroVersion = (
-            SELECT MAX(o2.numeroVersion)
-            FROM {$this->dbIrium}:Informix.ors_soumis_a_validation o2
-            WHERE o2.numeroor = '$numOr'
-            AND o2.code_societe = '$codeSociete'
+            SELECT MAX(o1.numeroVersion)
+            FROM {$this->dbIrium}:Informix.ors_soumis_a_validation o1
+            WHERE o1.numeroor = '$numOr'
+            AND o1.code_societe = '$codeSociete'
         )
     ";
 
         $result = $this->connect->executeQuery($statement);
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
 
-        return $this->connect->fetchResults($result);
+        return $data;
     }
 
-    public function findOrSoumiAvantMax(string $numOr, string $codeSociete)
+    /**
+     * Recupération des Ors Ancien enregistrer
+     *
+     * @param string $numOr
+     * @param string $codeSociete
+     * @return array
+     */
+    public function findOrSoumiAvantMax(string $numOr, string $codeSociete): array
     {
-        // Étape 1 : récupérer MAX(numeroVersion)
-        $statementMax = "
-        SELECT MAX(o.numeroVersion) AS max_version
+        $statement = "SELECT *
         FROM {$this->dbIrium}:Informix.ors_soumis_a_validation o
         WHERE o.numeroor = '$numOr'
         AND o.code_societe = '$codeSociete'
-    ";
-
-        $resultMax = $this->connect->executeQuery($statementMax);
-        $dataMax = $this->connect->fetchResults($resultMax);
-
-        $maxVersion = $dataMax[0]['max_version'] ?? null;
-
-        if ($maxVersion === null || $maxVersion == 1) {
-            // Même comportement que le dans repository
-            return null;
-        }
-
-        // Étape 2 : récupérer la version juste avant la version max
-        $statement = "
-        SELECT *
-        FROM {$this->dbIrium}:Informix.ors_soumis_a_validation o
-        WHERE o.numeroor = '$numOr'
-        AND o.numeroVersion = '" . ($maxVersion - 1) . "'
-        AND o.code_societe = '$codeSociete'
+        AND o.numeroVersion = (
+            select MAX(o1.numeroversion)-1 
+            from {$this->dbIrium}:Informix.ors_soumis_a_validation o1 
+            WHERE o1.numeroor = '$numOr'
+            AND o1.code_societe = '$codeSociete'
+            )
     ";
 
         $result = $this->connect->executeQuery($statement);
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
 
-        return $this->connect->fetchResults($result);
+        return $data;
+    }
+
+    public function recupDatePlanningOR1($numOr, $numItv, $codeSociete)
+    {
+        $statement = " SELECT  
+                            min(ska_d_start) as datePlanning1
+                        from skw 
+                        inner join ska on ska.skw_id = skw.skw_id 
+                        where ofh_id ='$numOr'
+                        and ofs_id = '$numItv'
+                        and skw_soc ='$codeSociete'
+                        group by ofh_id 
+                    ";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->connect->fetchResults($result);
+
+        return $this->convertirEnUtf8($data);
+    }
+
+    public function recupDatePlanningOR2($numOr, $numItv, $codeSociete)
+    {
+        $statement = " SELECT
+                            min(sitv_datepla) as datePlanning2 
+                        from sav_itv 
+                        where sitv_numor = '$numOr'
+                        and sitv_interv = '$numItv'
+                        and sitv_soc = '$codeSociete'
+                        group by sitv_numor
+                    ";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->connect->fetchResults($result);
+
+        return $this->convertirEnUtf8($data);
+    }
+
+    /**
+     * MOdification du statut demande d'intervention , numero OR et statut OR  dans la 
+     * table demande_intervention
+     *
+     * @paramOrSoummissionDto $dto
+     * @return void
+     */
+    public function updateDit(OrSoumissionDto $dto)
+    {
+        $donnees = OrSoumissionMapper::toArrayUpdateDit($dto);
+
+        $updateBuilder = new UpdateQueryBuilder("{$this->dbIrium}:Informix.demande_intervention");
+
+        // Définir les données à mettre à jour
+        $updateBuilder->setData($donnees);
+
+        // Ajouter les conditions WHERE
+        $updateBuilder->where('numero_demande_dit', $dto->numeroDit);
+        $updateBuilder->where('code_societe',  $dto->codeSociete);
+
+        // Changer l'opérateur des conditions (optionnel)
+        // $updateBuilder->setConditionOperator('AND');
+        // Construire et exécuter la requête
+        try {
+            $result = $updateBuilder->build();
+            $this->connect->connect();
+            try {
+                $this->connect->executeQuery($result['sql'], $result['params']);
+            } finally {
+                $this->connect->close();
+            }
+        } catch (\Exception $e) {
+            // Vous pouvez logger l'erreur ici
+            throw $e;
+        }
+    }
+
+    /**
+     * Methode pour enregistrer les données du formulaire soumission OR
+     *  dans la base de donnée ors_soumis_a_validation
+     *
+     * @param OrSoumissionDto $dto
+     * @return void
+     */
+    public function enregistrementOr(OrSoumissionDto $dto, array $ors): void
+    {
+        // toArrayDit() retourne un tableau de lignes (une par ITV)
+        $lignes = OrSoumissionMapper::DtotoArrayOr($dto, $ors);
+
+        if (empty($lignes)) {
+            return;
+        }
+
+        $this->connect->connect();
+        try {
+            foreach ($lignes as $donnees) {
+                $builder = new InsertQueryBuilder("{$this->dbIrium}:Informix.ors_soumis_a_validation");
+                $builder->setData($donnees);
+                $result = $builder->build();
+                $this->connect->executeQuery($result['sql'], $result['params']);
+            }
+        } finally {
+            $this->connect->close();
+        }
     }
 }

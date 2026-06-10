@@ -17,7 +17,7 @@ class DitDto
     public ?string $typeDocument = null;
     public ?string $categorieDemande = null;
     public string $livraisonPartiel = 'NON';
-    public string $demandeDevis = 'NON';
+    public ?string $demandeDevis = 'NON';
     public string $avisRecouvrement = 'NON';
 
     public ?string $worNiveauUrgence = null;
@@ -30,11 +30,8 @@ class DitDto
     public ?string $nomClient = null;
     public ?string $numeroTel = null;
     public ?string $mailClient = null;
-    public ?string $clientSousContrat = null;
-    // INFO MATERIEL
-    public ?string $idMateriel = null;
-    public ?string $numParc = null;
-    public ?string $numSerie = null;
+    public ?string $clientSousContrat = 'NON';
+
     // PIECE JOINTE
     public $pieceJoint01 = null;
     public $pieceJoint02 = null;
@@ -43,7 +40,7 @@ class DitDto
     public ?string $statutDemande = null;
     public ?string $numeroDemandeIntervention = null;
     public ?string $mailDemandeur = null;
-    public ?DateTime $dateDemande = null;
+    public ?string $dateDemande = null;
     public ?string $heureDemande = null;
     public ?string $utilisateurDemandeur = null;
     public ?string $codeSociete = null;
@@ -78,4 +75,23 @@ class DitDto
 
     // RI
     public ?string $ri = null;
+
+    // INFO MATERIEL
+    public ?string $idMateriel = null;
+    public ?string $numParc = null;
+    public ?string $numSerie = null;
+    public ?string $designation = null;
+    public ?string $modele = null;
+    public ?string $constructeur = null;
+    public ?string $casier = null;
+    public ?string $heure = null;
+    public ?string $km = null;
+    // Bilan Financiere
+    public float $coutAcquisition = 0.0;
+    public float $amortissement = 0.0;
+    public float $valeurNetComptable = 0.0;
+    public float $chargeEntretient = 0.0;
+    public float $chargeLocative = 0.0;
+    public float $chiffreAffaire = 0.0;
+    public float $resultatExploitation = 0.0;
 }

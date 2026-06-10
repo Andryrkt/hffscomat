@@ -467,7 +467,7 @@
         "peut_exporter": false
       },
       {
-        "nom_route": "dit_index",
+        "nom_route": "dit_liste",
         "peut_voir": true,
         "peut_voir_liste_avec_debiteur": false,
         "peut_multi_succursale": false,
@@ -475,7 +475,7 @@
         "peut_exporter": false
       },
       {
-        "nom_route": "dit_index_search",
+        "nom_route": "dit_liste_search",
         "peut_voir": true,
         "peut_voir_liste_avec_debiteur": false,
         "peut_multi_succursale": false,

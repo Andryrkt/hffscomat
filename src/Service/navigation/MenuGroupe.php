@@ -43,7 +43,7 @@ class MenuGroupe
                 'icon'     => 'toolbox',
                 'subitems' => [
                     ['label' => 'Nouvelle demande',            'icon' => 'plus-circle', 'route' => 'dit_new'],
-                    ['label' => 'Consultation',                'icon' => 'search',      'route' => 'dit_index'],
+                    ['label' => 'Consultation',                'icon' => 'search',      'route' => 'dit_liste'],
                 ],
             ],
         ];
