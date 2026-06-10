@@ -81,3 +81,9 @@ services:
     arguments:
       - '@App\Model\Atelier\Dit\DitListeModel'
     public: true
+
+  App\Controller\Atelier\Planning\PlanningAtelierController:
+    arguments:
+      - '@App\Service\Atelier\Planning\PlanningAtelierService'
+      - '@App\Model\Atelier\Planning\PlanningAtelierModel'
+    public: true
