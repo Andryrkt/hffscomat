@@ -44,6 +44,7 @@ class MenuGroupe
                 'subitems' => [
                     ['label' => 'Nouvelle demande',            'icon' => 'plus-circle', 'route' => 'dit_new'],
                     ['label' => 'Consultation',                'icon' => 'search',      'route' => 'dit_liste'],
+                    ['label' => 'Dossier DIT',                 'icon' => 'folder',      'route' => 'dit_dossier_intervention_atelier'],
                 ],
             ],
         ];

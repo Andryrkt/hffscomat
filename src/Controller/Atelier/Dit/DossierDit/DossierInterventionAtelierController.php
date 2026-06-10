@@ -21,22 +21,11 @@ class DossierInterventionAtelierController extends Controller
      */
     public function dossierInterventionAtelier(Request $request)
     {
-        $form = $this->getFormFactory()->createBuilder(DossierInterventionAtelierSearchType::class, null, ['method' => 'GET'])->getForm();
+        $criteria = null;
+        $form = $this->getFormFactory()->createBuilder(DossierInterventionAtelierSearchType::class, $criteria, ['method' => 'GET'])->getForm();
 
         $dwModel = new dossierInterventionAtelierModel();
-
         $dwDits = []; // Initialisation du tableau pour les demandes d'intervention
-        $criteria = [
-            "idMateriel"       => null,
-            "typeIntervention" => "INTERNE",
-            "dateDebut"        => null,
-            "dateFin"          => null,
-            "numParc"          => null,
-            "numSerie"         => null,
-            "numDit"           => null,
-            "numOr"            => null,
-            "designation"      => null,
-        ];
 
         $form->handleRequest($request);
 

@@ -14,56 +14,50 @@ use Symfony\Component\Form\Extension\Core\Type\NumberType;
 
 class DossierInterventionAtelierSearchType extends AbstractType
 {
-    const INTERNE_EXTERNE = [
-        'INTERNE' => 'INTERNE',
-        'EXTERNE' => 'EXTERNE'
-    ];
-
-
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-
         $builder
-
             ->add('idMateriel', NumberType::class, [
-                'label' => 'Id Materiel',
+                'label'    => 'Id Materiel',
                 'required' => false,
             ])
             ->add(
                 'typeIntervention',
                 ChoiceType::class,
                 [
-                    'label' => "Type intervention",
-                    'choices' => self::INTERNE_EXTERNE,
+                    'label'       => "Type intervention",
+                    'choices'     => [
+                        'INTERNE' => 'INTERNE',
+                        'EXTERNE' => 'EXTERNE'
+                    ],
                     'placeholder' => '-- Choisir --',
-                    'required' => false,
-                    'data' => 'INTERNE'
+                    'required'    => false,
+                    'data'        => 'INTERNE'
                 ]
             )
             ->add('dateDebut', DateType::class, [
-                'widget' => 'single_text',
-                'label' => 'Date Demande Début',
+                'widget'   => 'single_text',
+                'label'    => 'Date Demande Début',
                 'required' => false,
             ])
             ->add('dateFin', DateType::class, [
-                'widget' => 'single_text',
-                'label' => 'Date Demande Fin',
+                'widget'   => 'single_text',
+                'label'    => 'Date Demande Fin',
                 'required' => false,
             ])
             ->add('numParc', TextType::class, [
-                'label' => "N° Parc",
+                'label'    => "N° Parc",
                 'required' => false
             ])
             ->add('numSerie', TextType::class, [
-                'label' => "N° Serie",
+                'label'    => "N° Serie",
                 'required' => false
             ])
-
             ->add(
                 'numDit',
                 TextType::class,
                 [
-                    'label' => 'N° DIT',
+                    'label'    => 'N° DIT',
                     'required' => false
                 ]
             )
@@ -71,16 +65,16 @@ class DossierInterventionAtelierSearchType extends AbstractType
                 'numOr',
                 NumberType::class,
                 [
-                    'label' => 'N° Or',
+                    'label'    => 'N° Or',
                     'required' => false
                 ]
             )
             ->add('designation', TextType::class, [
-                'label' => 'Désignation',
+                'label'    => 'Désignation',
                 'required' => false
             ])
             ->add('numDev', TextType::class, [
-                'label' => 'N° Devis Rattaché',
+                'label'    => 'N° Devis Rattaché',
                 'required' => false
             ])
         ;
