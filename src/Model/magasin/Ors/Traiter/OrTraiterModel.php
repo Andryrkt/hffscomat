@@ -2,6 +2,8 @@
 
 namespace App\Model\magasin\Ors\Traiter;
 
+use App\Dto\Magasin\Ors\Traiter\OrATraiterSearchDto;
+use App\Model\Informix\SelectWhereCondition;
 use App\Model\Model;
 use App\Model\Traits\ConditionModelTrait;
 
@@ -9,21 +11,24 @@ class OrTraiterModel extends Model
 {
     use ConditionModelTrait;
 
-    public function recupereListeMaterielValider($criteria = [], $lesOrSelonCondition = [])
+    public function recupereListeMaterielValider(OrATraiterSearchDto $dtoSearch, $lesOrSelonCondition = [])
     {
-        // TODO :  changer le societe
+        $selectWhereCondition = new SelectWhereCondition();
 
-        $designation = $this->conditionLike('slor_desi', 'designation', $criteria);
-        $referencePiece = $this->conditionLike('slor_refp', 'referencePiece', $criteria);
-        $constructeur = $this->conditionLike('slor_constp', 'constructeur', $criteria);
-        $dateDebut = $this->conditionDateSigne('slor_datec', 'dateDebut', $criteria, '>=');
-        $dateFin = $this->conditionDateSigne('slor_datec', 'dateFin', $criteria, '<=');
-        $numDit = $this->conditionLike('seor_refdem', 'numDit', $criteria);
-        $numOr = $this->conditionSigne('slor_numor', 'numOr', '=', $criteria);
-        $piece = $this->conditionPiece('pieces', $criteria, 'slor_constp');
-        $agence = $this->conditionAgenceService("slor_succdeb", 'agence', $criteria);
-        $service = $this->conditionAgenceService("slor_servdeb", 'service', $criteria);
-        $agenceUser = $this->conditionAgenceUser('agenceUser', $criteria);
+        $conditions = "
+            {$selectWhereCondition->like('slor_desi',$dtoSearch->designation)}
+            {$selectWhereCondition->like('seor_refdem',$dtoSearch->numDit)}
+            {$selectWhereCondition->eq('slor_numor',$dtoSearch->numOr)}
+            {$selectWhereCondition->like('slor_refp',$dtoSearch->referencePiece)}
+            {$selectWhereCondition->between('slor_datec',$dtoSearch->dateDebut,$dtoSearch->dateFin)}
+            {$selectWhereCondition->eq('w.description',$dtoSearch->niveauUrgence)}
+            {$selectWhereCondition->eq('slor_succdeb', trim(explode('-',$dtoSearch->agence)[0]))}
+            {$selectWhereCondition->eq('slor_servdeb', trim(explode('-',$dtoSearch->service)[0]))}
+            {$selectWhereCondition->eq('slor_succdeb', trim(explode('-',$dtoSearch->agenceUser)[0]))}
+        "; // 10-ANTALAHA => 10
+
+
+        // $agenceUser = $this->conditionAgenceUser('agenceUser', $criteria);
 
         $statement = "SELECT 
             trim(seor_refdem) as numero_dit
@@ -58,24 +63,14 @@ class OrTraiterModel extends Model
                 and sitv_succ = slor_succ 
                 and sitv_numor = slor_numor 
                 and sitv_interv = slor_nogrp / 100 
-                and sitv_soc = 'HF'
+                and sitv_soc = '{$dtoSearch->codeSociete}'
                 and seor_succ = slor_succ 
                 and seor_numor = slor_numor
             left join {$this->dbIrium}:Informix.demande_intervention di on di.numero_or = seor_numor
             LEFT JOIN {$this->dbIrium}:informix.wor_niveau_urgence w ON di.id_niveau_urgence = w.id
-            where slor_soc = 'HF'
+            where slor_soc = '{$dtoSearch->codeSociete}'
             and seor_typeor not in('950', '501')
-            -- $agenceUser
-            -- $designation
-            -- $referencePiece 
-            -- $constructeur 
-            -- $dateDebut
-            -- $dateFin
-            -- $numOr
-            -- $numDit
-            -- $piece
-            -- $agence
-            -- $service
+            $conditions
             and slor_typlig = 'P'
             and slor_pos = 'EC'
             and seor_serv ='SAV'

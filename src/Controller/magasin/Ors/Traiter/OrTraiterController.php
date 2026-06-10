@@ -31,15 +31,14 @@ class OrTraiterController extends Controller
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $criteria = $form->getData();
+            $dtoSearch = $form->getData();
 
             //enregistrer les critère de recherche dans la session
-            $this->getSessionService()->set('magasin_liste_or_traiter_search_criteria', $criteria);
-            dd($criteria);
+            $this->getSessionService()->set('magasin_liste_or_traiter_search_criteria', $dtoSearch);
         }
 
         $orTraiterModel = new OrTraiterModel();
-        $data = $orTraiterModel->recupereListeMaterielValider($criteria);
+        $data = $orTraiterModel->recupereListeMaterielValider($dtoSearch);
 
         return $this->render('magasin/ors/traiter/orATraiter.html.twig', [
             'data' => $data,

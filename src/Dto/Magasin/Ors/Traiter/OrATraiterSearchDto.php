@@ -9,8 +9,8 @@ class OrATraiterSearchDto
     public ?string $numOr = null;
     public ?string $referencePiece = null;
     public ?string $designation = null;
-    public  $dateDebut = null;
-    public $dateFin = null;
+    public ?\DateTime $dateDebut = null;
+    public ?\DateTime  $dateFin = null;
     public ?string $pieces = null;
     public ?string $agence = null;
     public ?string $service = null;

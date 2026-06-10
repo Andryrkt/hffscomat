@@ -19,14 +19,6 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class OrATraiterSearchType extends AbstractType
 {
-    const PIECE_MAGASIN_ACHATS_LOCAUX = [
-        'TOUTES LIGNES' => 'TOUTS PIECES',
-        'PIÈCES MAGASIN' => 'PIECES MAGASIN',
-        'LUB' => 'LUB',
-        'ACHATS LOCAUX' => 'ACHATS LOCAUX',
-        'PNEUMATIQUES' => 'PNEUMATIQUES'
-    ];
-
     private OrTraiterModel $OrTraiterModel;
 
     public function __construct()
@@ -93,17 +85,6 @@ class OrATraiterSearchType extends AbstractType
                 'label' => 'Date de création OR (fin)',
                 'required' => false,
             ])
-            ->add(
-                'pieces',
-                ChoiceType::class,
-                [
-                    'label' => 'Pièces',
-                    'required' => false,
-                    'choices' => self::PIECE_MAGASIN_ACHATS_LOCAUX,
-                    'placeholder' => false,
-                    'data' => 'PIECES MAGASIN'
-                ]
-            )
             ->add(
                 'agence',
                 ChoiceType::class,
