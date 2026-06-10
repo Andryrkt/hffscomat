@@ -3,7 +3,10 @@
 namespace App\Controller\magasin\Ors\Traiter;
 
 use App\Controller\Controller;
+use App\Factory\magasin\Ors\Traiter\OrATraiterSearchFactory;
+use App\Form\magasin\Ors\Traiter\OrATraiterSearchType;
 use App\Model\magasin\Ors\Traiter\OrTraiterModel;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -16,13 +19,31 @@ class OrTraiterController extends Controller
      *
      * @return void
      */
-    public function index()
+    public function index(Request $request)
     {
+
+        $dtoSearch = (new OrATraiterSearchFactory($this->getSecurityService()))->initialisationSearch();
+
+        $form = $this->getFormFactory()->createBuilder(OrATraiterSearchType::class, $dtoSearch, [
+            'method' => 'GET'
+        ])->getForm();
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $criteria = $form->getData();
+
+            //enregistrer les critère de recherche dans la session
+            $this->getSessionService()->set('magasin_liste_or_traiter_search_criteria', $criteria);
+            dd($criteria);
+        }
+
         $orTraiterModel = new OrTraiterModel();
-        $data = $orTraiterModel->recupereListeMaterielValider();
+        $data = $orTraiterModel->recupereListeMaterielValider($criteria);
 
         return $this->render('magasin/ors/traiter/orATraiter.html.twig', [
-            'data' => $data
+            'data' => $data,
+            'form' => $form->createView()
         ]);
     }
 }
