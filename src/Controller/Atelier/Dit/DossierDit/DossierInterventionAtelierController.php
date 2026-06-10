@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller\dw;
+namespace App\Controller\Atelier\Dit\DossierDit;
 
 use App\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
@@ -47,7 +47,7 @@ class DossierInterventionAtelierController extends Controller
 
         $this->logUserVisit('dit_dossier_intervention_atelier'); // historisation du page visité par l'utilisateur
 
-        return $this->render('dw/dossierInterventionAtelier.html.twig', [
+        return $this->render('atelier/dit/dossierDit/dossierInterventionAtelier.html.twig', [
             'form'   => $form->createView(),
             'dwDits' => $dwDits
         ]);
@@ -86,7 +86,7 @@ class DossierInterventionAtelierController extends Controller
             'numDit' => $numDit,
         ]); // historisation du page visité par l'utilisateur
 
-        return $this->render('dw/dwIntervAteAvecDit.html.twig', [
+        return $this->render('atelier/dit/dossierDit/dwIntervAteAvecDit.html.twig', [
             'numDit' => $numDit,
             'data'   => $data,
         ]);
