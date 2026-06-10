@@ -9,6 +9,9 @@ use DateTime;
 
 class DitDto
 {
+
+
+    public ?string $numero_demande_dit = null;
     public ?string $objetDemande = null;
     public ?string $detailDemande = null;
     public ?string $typeDocument = null;
@@ -27,7 +30,7 @@ class DitDto
     public ?string $nomClient = null;
     public ?string $numeroTel = null;
     public ?string $mailClient = null;
-    public string $clientSousContrat = 'NON';
+    public ?string $clientSousContrat = null;
     // INFO MATERIEL
     public ?string $idMateriel = null;
     public ?string $numParc = null;

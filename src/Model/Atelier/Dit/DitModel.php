@@ -219,7 +219,6 @@ class DitModel extends Model
         AND code_societe = '$codeSociete'
         ";
 
-
         $result = $this->connect->executeQuery($statement);
         $data = $this->connect->fetchResults($result);
         $data = $this->convertirEnUtf8($data);
@@ -389,5 +388,46 @@ class DitModel extends Model
         $data = $this->connect->fetchResults($result);
 
         return $data[0]['categorie_demande'] ?? null;
+    }
+
+    public function recuperationSectionValidation()
+    {
+
+        $statement = "SELECT trim(Atab_Code) AS ATAB_CODE,
+                  trim(Atab_lib)  AS ATAB_LIB
+                  FROM AGR_TAB
+                  WHERE Atab_nom = 'TYI'
+      ";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->connect->fetchResults($result);
+
+        return $this->convertirEnUtf8($data);
+    }
+    public function recupereCommandeOr($numero_or)
+    {
+        $statement = "SELECT
+        slor_numcf,
+        fcde_date,
+        slor_typcf,
+        fcde_posc,
+        fcde_posl
+
+      from sav_lor
+      inner join frn_cde on frn_cde.fcde_numcde = slor_numcf
+      where
+      slor_soc = 'HF'
+      --and slor_succ = '01'
+      and slor_constp not like '%Z'
+      and slor_numor in (select seor_numor from sav_eor where seor_serv = 'SAV')
+      and slor_numor = '" . $numero_or . "'
+      group by 1,2,3,4,5";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->connect->fetchResults($result);
+
+        return $this->convertirEnUtf8($data);
     }
 }
