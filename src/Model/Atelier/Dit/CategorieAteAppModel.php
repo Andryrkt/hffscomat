@@ -31,4 +31,16 @@ class CategorieAteAppModel extends Model
 
         return $rows[0] ?? 0;
     }
+
+    public function getDescriptionById($id): string
+    {
+        $statement = " SELECT libelle_categorie_ate_app as libelle
+                from {$this->dbIrium}:Informix.categorie_ate_app
+                WHERE id ='$id'        
+        ";
+        $result = $this->connect->executeQuery($statement);
+        $rows = array_column($this->connect->fetchResults($result), 'libelle');;
+
+        return $rows[0] ?? "";
+    }
 }

@@ -31,4 +31,15 @@ class WorTypeDocumentModel extends Model
 
         return $rows[0] ?? 0;
     }
+    public function getDescriptionById($id): string
+    {
+        $statement = " SELECT  description as description 
+                    FROM {$this->dbIrium}:Informix.wor_type_document  
+                    WHERE id ='$id'
+                    ";
+        $result = $this->connect->executeQuery($statement);
+        $rows = array_column($this->connect->fetchResults($result), 'description');
+
+        return $rows[0] ?? "";
+    }
 }

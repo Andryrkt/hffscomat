@@ -9,6 +9,9 @@ use DateTime;
 
 class DitDto
 {
+
+
+    public ?string $numero_demande_dit = null;
     public ?string $objetDemande = null;
     public ?string $detailDemande = null;
     public ?string $typeDocument = null;

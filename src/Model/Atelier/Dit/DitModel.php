@@ -101,11 +101,108 @@ class DitModel extends Model
         return $this->convertirEnUtf8($data);
     }
 
+    /**
+     * Methode pour enregistrer les données du formulaire Dit
+     *  dans la base de donnée
+     *
+     * @param OrSoumissionDto $dto
+     * @return void
+     */
+    public function enregistrerDit(OrSoumissionDto $dto, array $ors): void
+    {
+        // Convertir le DTO en tableau associatif pour l'insertion
+        $donnees = DitMapper::toArrayDit($dto, $ors);
 
+        // Construire la requête d'insertion et l'exécuter
+        $builder = new InsertQueryBuilder("{$this->dbIrium}:Informix.bc_client_soumis_neg");
+        $builder->setData($donnees);
+        $result = $builder->build();
 
+        // Exécuter la requête d'insertion
+        // S'assurer que la connexion est ouverte
+        $this->connect->connect();
+        try {
+            $this->connect->executeQuery($result['sql'], $result['params']);
+        } finally {
+            // ne fermez ici que si vous êtes sûr que c'est la dernière opération
+            $this->connect->close();
+        }
+    }
+    /**
+     * MOdification du numeroOr dans dans la 
+     * table demande_intervention
+     *
+     * @param OrSoummissionDto $dto
+     * @param string statut
+     * @return void
+     */
 
+    /**
+     * MOdification du statut demande d'intervention dans la 
+     * table demande_intervention
+     *
+     * @param string statut
+     * @return void
+     */
+    public function updateStatut($numDit, $codeSociete, $statut)
+    {
+        $donnees = DitMapper::toArrayUpdateDit($statut);
 
+        $updateBuilder = new UpdateQueryBuilder("{$this->dbIrium}:Informix.demande_intervention");
 
+        // // Définir les données à mettre à jour
+        $updateBuilder->setData($donnees);
+
+        // // Ajouter les conditions WHERE
+        $updateBuilder->where('numero_demande_dit', $numDit);
+        $updateBuilder->where('code_societe',  $codeSociete);
+
+        // Changer l'opérateur des conditions (optionnel)
+        // $updateBuilder->setConditionOperator('AND');
+        // Construire et exécuter la requête
+        try {
+            $result = $updateBuilder->build();
+            $this->connect->connect();
+            try {
+                $this->connect->executeQuery($result['sql'], $result['params']);
+            } finally {
+                $this->connect->close();
+            }
+        } catch (\Exception $e) {
+            // Vous pouvez logger l'erreur ici
+            throw $e;
+        }
+    }
+
+    public function updateNumeroOr(OrSoumissionDto $dto, string $statut)
+    {
+        $donnees = DitMapper::toArrayUpdateDitNumeroOr($statut, $dto->numeroOr);
+
+        $updateBuilder = new UpdateQueryBuilder("{$this->dbIrium}:Informix.demande_intervention");
+
+        // // Définir les données à mettre à jour
+        $updateBuilder->setData($donnees);
+
+        // // Ajouter les conditions WHERE
+        $updateBuilder->where('numero_demande_dit', $dto->numeroDit);
+        $updateBuilder->where('code_societe',   $dto->codeSociete);
+
+        // Changer l'opérateur des conditions (optionnel)
+        // $updateBuilder->setConditionOperator('AND');
+        // Construire et exécuter la requête
+        try {
+            $result = $updateBuilder->build();
+            $this->connect->connect();
+            try {
+                $this->connect->executeQuery($result['sql'], $result['params']);
+            } finally {
+                $this->connect->close();
+            }
+        } catch (\Exception $e) {
+            // Vous pouvez logger l'erreur ici
+            throw $e;
+        }
+    }
     public function recupAgenceServiceDebiteur($numOr, string $codeSociete)
     {
         $statement = " SELECT 
@@ -313,5 +410,46 @@ class DitModel extends Model
             // Vous pouvez logger l'erreur ici
             throw $e;
         }
+    }
+
+    public function recuperationSectionValidation()
+    {
+
+        $statement = "SELECT trim(Atab_Code) AS ATAB_CODE,
+                  trim(Atab_lib)  AS ATAB_LIB
+                  FROM AGR_TAB
+                  WHERE Atab_nom = 'TYI'
+      ";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->connect->fetchResults($result);
+
+        return $this->convertirEnUtf8($data);
+    }
+    public function recupereCommandeOr($numero_or)
+    {
+        $statement = "SELECT
+        slor_numcf,
+        fcde_date,
+        slor_typcf,
+        fcde_posc,
+        fcde_posl
+
+      from sav_lor
+      inner join frn_cde on frn_cde.fcde_numcde = slor_numcf
+      where
+      slor_soc = 'HF'
+      --and slor_succ = '01'
+      and slor_constp not like '%Z'
+      and slor_numor in (select seor_numor from sav_eor where seor_serv = 'SAV')
+      and slor_numor = '" . $numero_or . "'
+      group by 1,2,3,4,5";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->connect->fetchResults($result);
+
+        return $this->convertirEnUtf8($data);
     }
 }

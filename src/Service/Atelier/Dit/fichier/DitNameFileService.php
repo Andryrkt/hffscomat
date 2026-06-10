@@ -31,7 +31,6 @@ class DitNameFileService extends AbstractFileNameGeneratorService
      *
      * @param string $numDit
      * @param string $agServEmetteur
-     * @param integer $index
      * @return string
      */
     public function generateDitNamePrincipal(

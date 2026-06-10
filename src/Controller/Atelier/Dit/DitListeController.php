@@ -8,7 +8,9 @@ use App\Dto\Atelier\Dit\DitSearchDto;
 use App\Form\Atelier\Dit\DitSearchType;
 use App\Form\Atelier\Dit\DocDansDwType;
 use App\Mapper\Atelier\Dit\DitListeMapper;
+use App\Mapper\Atelier\Dit\DitSearchMapper;
 use App\Model\Atelier\Dit\DitListeModel;
+use App\Service\security\SecurityService;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -31,6 +33,13 @@ class DitListeController extends Controller
      */
     public function index(Request $request)
     {
+
+        $page = (int) $request->query->get('page', 1);
+        if ($page < 1) {
+            $page = 1;
+        }
+        $perPage = 20;
+
         $criteria = [];
 
         $allAgenceServices = $this->getSecurityService()->getAllAgenceServices();
@@ -66,8 +75,7 @@ class DitListeController extends Controller
             }
         }
 
-        $dataDit = $this->getDataDitEnDto($dtoSearch);
-
+        $dataDit = $this->getDataDitEnDto($dtoSearch, $page, $perPage);
         return $this->render('atelier/dit/list.html.twig', [
             'data'          => $dataDit['data'],
             'currentPage'   => $dataDit['currentPage'],
@@ -85,15 +93,12 @@ class DitListeController extends Controller
      *
      * @return array
      */
-    private function getDataDitEnDto(DitSearchDto $dtoSearch): array
+    private function getDataDitEnDto(DitSearchDto $dtoSearch, $page, $perPage): array
     {
         // Code Société de l'utilisateur
         $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
-        // Agences Services autorisés sur le DIT
-        $agenceServiceAutorises = $this->getSecurityService()->getAgenceServices(ApplicationConstant::CODE_DIT);
-        $allAgenceServices = $this->getSecurityService()->getAllAgenceServices();
 
-        $dits = $this->ditListeModel->findPaginatedAndFiltered($codeSociete, $dtoSearch);
+        $dits = $this->ditListeModel->findPaginatedAndFiltered($codeSociete, $dtoSearch, $page, $perPage);
         $ditDto = (new DitListeMapper())->map($dits['data']);
 
         return [
