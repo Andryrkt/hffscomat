@@ -7,17 +7,16 @@ use App\Dto\Atelier\Dit\DitDto;
 use App\Entity\admin\Agence;
 use App\Entity\admin\Service;
 use App\Model\admin\StatutDemande\StatutDemandeModel;
-use App\Dto\Atelier\Dit\DitDto;
 use App\Model\Atelier\Dit\CategorieAteAppModel;
 use App\Model\Atelier\Dit\WorNiveauUrgenceModel;
+use App\Model\Atelier\Dit\WorTypeDocumentModel;
 use Doctrine\ORM\EntityManagerInterface;
-use DateTime;
 
 class DitMapper
 {
     public static function DtoToArray(DitDto $dto, EntityManagerInterface $em, array $nomFichierEnregistrer): array
     {
-        $worTypeDocumentModel = new WorNiveauUrgenceModel();
+        $worTypeDocumentModel = new WorTypeDocumentModel();
         $worTypeNiveaUrgenceModel = new WorNiveauUrgenceModel();
         $categorieAteAppModel = new CategorieAteAppModel();
         $statutDemandeModel = new StatutDemandeModel();
@@ -56,12 +55,19 @@ class DitMapper
             'heure_machine' => $dto->heure,
             'agence_emetteur_id' => $em->getRepository(Agence::class)->findOneBy(['codeAgence' => trim(explode(' ', $dto->agenceEmetteur)[0])])->getId(),
             'service_emetteur_id' => $em->getRepository(Service::class)->findOneBy(['codeService' => trim(explode(' ', $dto->serviceEmetteur)[0])])->getId(),
-            'agence_debiteur_id' => $dto->agence->getId(),
-            'service_debiteur_id' => $dto->service->getId(),
+            'agence_debiteur_id' => $dto->agence !== null ? $dto->agence->getId() : null,
+            'service_debiteur_id' => $dto->service !== null ? $dto->service->getId() : null,
             'mail_client' => $dto->mailClient,
         ];
     }
 
+    public static function updateDit(bool $reponse)
+    {
+        return [
+            'pdf_deposer_dw' => $reponse,
+            'date_depot_pdf_dw' => date('Y-m-d H:i:s')
+        ];
+    }
 
     public static function transformToDto(array $ditInformations): ?DitDto
     {
@@ -102,7 +108,7 @@ class DitMapper
         $dto->livraisonPartiel = $ditInformations['livraison_partiel'] ?? null;
         $dto->idMateriel = $ditInformations['id_materiel'] ?? null;
         $dto->mailDemandeur = $ditInformations['mail_demandeur'] ?? null;
-        $dto->dateDemande = !empty($ditInformations['date_demande']) ? new \DateTime($ditInformations['date_demande']) : null;
+        $dto->dateDemande = !empty($ditInformations['date_demande']) ? (new \DateTime($ditInformations['date_demande']))->format('d/m/Y') : null;
         $dto->heureDemande =  $ditInformations['heure_demande'] ?? null;
         // $dto->dateCloture = !empty($ditInformations['date_cloture']) ? new \DateTime($ditInformations['date_cloture']) : null;
         // $dto->heureCloture =  $ditInformations['heure_cloture'] ?? null;
@@ -233,10 +239,6 @@ class DitMapper
             'heure'                => $mat['heure'] ?? null,
         ];
     }
-
-
-
-
 
     public function toExcelArray(array $dtis): array
     {

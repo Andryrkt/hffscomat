@@ -7,6 +7,11 @@ use App\Model\Model;
 
 class WorNiveauUrgenceModel extends Model
 {
+    /**
+     * Recupère tous les description du niveau d'urgence
+     *
+     * @return array
+     */
     public function getDescription(): array
     {
         $statement = " SELECT  description as description 
@@ -19,7 +24,13 @@ class WorNiveauUrgenceModel extends Model
 
         return $rows;
     }
-    public function getDescriptionById($id): string
+    /**
+     * Recupère le description delon l'ID
+     *
+     * @param integer $id
+     * @return string
+     */
+    public function getDescriptionById(int $id): string
     {
         $statement = " SELECT  description as description
                     FROM {$this->dbIrium}:Informix.wor_niveau_urgence
@@ -32,6 +43,11 @@ class WorNiveauUrgenceModel extends Model
         return $rows[0] ?? "";
     }
 
+    /**
+     * Recupère le niveau d'urgence 'P2'
+     *
+     * @return string|null
+     */
     public function getP2Description(): ?string
     {
         $statement = " SELECT  description as description
@@ -45,6 +61,12 @@ class WorNiveauUrgenceModel extends Model
         return $rows[0] ?? null;
     }
 
+    /**
+     * Recupère l'ID selon la description
+     *
+     * @param string $description
+     * @return integer
+     */
     public function getIdSelonDescription(string $description): int
     {
         $statement = " SELECT  id as id

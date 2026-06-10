@@ -39,7 +39,7 @@ class DitExportExcelController extends Controller
         $multisuccursale = $this->getSecurityService()->verifierPermission(SecurityService::PERMISSION_MULTI_SUCCURSALE);
 
         // Vérifier le permission de voir liste avec débiteur sur la page courante
-        $peutVoirListeAvecDebiteur = $this->getSecurityService()->verifierPermission(SecurityService::PERMISSION_AUTH_2, "dit_index");
+        $peutVoirListeAvecDebiteur = $this->getSecurityService()->verifierPermission(SecurityService::PERMISSION_AUTH_2, "dit_liste");
         //crée une objet à partir du tableau critère reçu par la session
 
 
