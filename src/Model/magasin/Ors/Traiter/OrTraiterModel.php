@@ -68,6 +68,14 @@ class OrTraiterModel extends Model
                 and seor_numor = slor_numor
             left join {$this->dbIrium}:Informix.demande_intervention di on di.numero_or = seor_numor
             LEFT JOIN {$this->dbIrium}:informix.wor_niveau_urgence w ON di.id_niveau_urgence = w.id
+            inner JOIN ir_prod108_test:informix.ors_soumis_a_validation osv_or 
+                ON osv_or.numeroor = seor_numor
+                AND osv_or.numeroversion = (
+                    SELECT MAX(osv2.numeroversion)
+                    FROM ir_prod108_test:informix.ors_soumis_a_validation osv2
+                    WHERE osv2.id = osv_or.id
+                )
+                AND osv_or.statut LIKE 'Valid%'
             where slor_soc = '{$dtoSearch->codeSociete}'
             and seor_typeor not in('950', '501')
             $conditions
