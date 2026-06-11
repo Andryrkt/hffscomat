@@ -2,6 +2,7 @@
 
 namespace App\Model\Atelier\Dit\Soumission;
 
+use App\Model\Informix\InsertQueryBuilder;
 use App\Model\Informix\SelectWhereCondition;
 use App\Model\Model;
 
@@ -89,6 +90,79 @@ class DitRiSoumisAValidationModel extends Model
         $result = $this->connect->executeQuery($statement);
 
         $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
+
+        return $data;
+    }
+
+
+    /**
+     * Récupération du numero soumission et incrementation de cette numéro obtenu
+     * ---------------------------------------------------------------------------
+     * selon le numero OR et code société donnée on recupère le numéro de soumission 
+     * dans la table ri_soumis_a_validation puis on l'increment
+     *
+     * @param string $numOr
+     * @param string $codeSociete
+     * @return integer
+     */
+    public function recupNumeroSoumission(string $numOr, string $codeSociete): int
+    {
+        $statement = "SELECT COALESCE(MAX(numero_soumission)+1, 1) AS numSoumissionEncours
+                FROM {$this->dbIrium}:Informix.ri_soumis_a_validation
+                WHERE numero_or = '$numOr' and code_societe = '$codeSociete'";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = array_column($this->convertirEnUtf8($this->connect->fetchResults($result)), 'numSoumissionEncours');
+
+        return $data[0] ?? 1;
+    }
+
+    /**
+     * Methode pour enregistrer les données du formulaire soumission RI
+     *  dans la base de donnée ri_soumis_a_validation
+     *
+     * @return void
+     */
+    public function enregistrementRi(array $datas): void
+    {
+        $this->connect->connect();
+        try {
+            foreach ($datas as $donnees) {
+                $builder = new InsertQueryBuilder("{$this->dbIrium}:Informix.ri_soumis_a_validation");
+                $builder->setData($donnees);
+                $result = $builder->build();
+                $this->connect->executeQuery($result['sql'], $result['params']);
+            }
+        } finally {
+            $this->connect->close();
+        }
+    }
+
+    /**
+     * Recupère tous les numéro d'intervention pour l'OR
+     * ---------------------------------------------------
+     * 
+     *
+     * @param string $numOr
+     * @param string $codeSociete
+     * @return array
+     */
+    public function recupToutNumeroItv(string $numOr, string $codeSociete): array
+    {
+        $statement = "SELECT numeroItv 
+        from {$this->dbIrium}:Informix.ors_soumis_a_validation
+        where numeroOR = '$numOr'
+        and code_societe = '$codeSociete'
+        and numeroVersion in (
+                select max(numeroVersion) 
+                from {$this->dbIrium}:Informix.ors_soumis_a_validation 
+                where numeroOR = '$numOr' and code_societe = '$codeSociete'
+                )
+        ";
+        $result = $this->connect->executeQuery($statement);
+
+        $data = array_column($this->convertirEnUtf8($this->connect->fetchResults($result)), 'numeroItv');
 
         return $data;
     }

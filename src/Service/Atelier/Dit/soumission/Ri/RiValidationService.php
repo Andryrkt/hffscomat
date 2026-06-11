@@ -59,4 +59,23 @@ class RiValidationService
 
         return false;
     }
+
+    public function validateApresSoumissionForm(DitRiSoumisAValidationDto $dto): bool
+    {
+        // verifier si certaines interventions ont déjà été soumises
+        if ($dto->estSoumis) {
+            $message = "Erreur lors de la soumission RI, car certaines interventions ont déjà fait l'objet d'une soumission dans DocuWare.";
+            $this->sendNotificationOR($message, $dto->numeroDit, false);
+            return true;
+        }
+
+        // verifier si le numero ITV n'existe pas pour le numero OR
+        if ($dto->existe) {
+            $message = "Erreur lors de la soumission RI, car certaines interventions n'ont pas encore été validées dans DocuWare.";
+            $this->sendNotificationOR($message, $dto->numeroDit, false);
+            return true;
+        }
+
+        return false;
+    }
 }

@@ -31,4 +31,12 @@ class DitRiSoumisAValidationDto
     public array $itvDejaSoumis = [];
 
     public array $itvAfficher = [];
+
+    public array $itvCoches = [];
+
+    public array $tousNumeroItv  = [];
+
+    public bool $existe = false;
+
+    public bool $estSoumis = false;
 }
