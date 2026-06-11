@@ -53,7 +53,7 @@ class DitFactory
 
         // Agence et Service
         $dto->agenceServiceEmetteur = trim(explode(' ', $dto->agenceEmetteur)[0]) . '-' . trim(explode(' ', $dto->serviceEmetteur)[0]);
-        $dto->agenceServiceDebiteur = $dto->agence->getCodeAgence() . '-' . $dto->service->getCodeService();
+        $dto->agenceServiceDebiteur = $dto->agence !== null && $dto->service !== null ? $dto->agence->getCodeAgence() . '-' . $dto->service->getCodeService() : null;
 
         // info materiel
         $ditModel = new DitModel();

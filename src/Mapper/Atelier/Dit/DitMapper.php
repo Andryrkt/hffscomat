@@ -9,14 +9,14 @@ use App\Entity\admin\Service;
 use App\Model\admin\StatutDemande\StatutDemandeModel;
 use App\Model\Atelier\Dit\CategorieAteAppModel;
 use App\Model\Atelier\Dit\WorNiveauUrgenceModel;
+use App\Model\Atelier\Dit\WorTypeDocumentModel;
 use Doctrine\ORM\EntityManagerInterface;
-use DateTime;
 
 class DitMapper
 {
     public static function DtoToArray(DitDto $dto, EntityManagerInterface $em, array $nomFichierEnregistrer): array
     {
-        $worTypeDocumentModel = new WorNiveauUrgenceModel();
+        $worTypeDocumentModel = new WorTypeDocumentModel();
         $worTypeNiveaUrgenceModel = new WorNiveauUrgenceModel();
         $categorieAteAppModel = new CategorieAteAppModel();
         $statutDemandeModel = new StatutDemandeModel();
@@ -55,19 +55,26 @@ class DitMapper
             'heure_machine' => $dto->heure,
             'agence_emetteur_id' => $em->getRepository(Agence::class)->findOneBy(['codeAgence' => trim(explode(' ', $dto->agenceEmetteur)[0])])->getId(),
             'service_emetteur_id' => $em->getRepository(Service::class)->findOneBy(['codeService' => trim(explode(' ', $dto->serviceEmetteur)[0])])->getId(),
-            'agence_debiteur_id' => $dto->agence->getId(),
-            'service_debiteur_id' => $dto->service->getId(),
+            'agence_debiteur_id' => $dto->agence !== null ? $dto->agence->getId() : null,
+            'service_debiteur_id' => $dto->service !== null ? $dto->service->getId() : null,
             'mail_client' => $dto->mailClient,
         ];
     }
 
+    public static function updateDit(bool $reponse)
+    {
+        return [
+            'pdf_deposer_dw' => $reponse,
+            'date_depot_pdf_dw' => date('Y-m-d H:i:s')
+        ];
+    }
 
     public static function transformToDto(array $ditInformations): ?DitDto
     {
 
 
         $dto = new DitDto();
-        $dto->numero_demande_dit = $ditInformations['numero_demande_dit'];
+        $dto->numeroDemandeIntervention = $ditInformations['numero_demande_dit'];
         $dto->typeDocument              = $ditInformations['type_document'] ?? null;
         $dto->statutDemande             = $ditInformations['statut'] ?? null;
         $dto->codeSociete    = $ditInformations["code_societe"] ?? null;
@@ -172,7 +179,7 @@ class DitMapper
         $chargeLocative  = (float) ($mat['chargelocative'] ?? 0);
 
         return [
-            'numeroDemandeDit'     => $ditDto->numero_demande_dit,
+            'numeroDemandeDit'     => $ditDto->numeroDemandeIntervention,
             'typeDocument'         => $ditDto->typeDocument,
             'statutDemande'        => $ditDto->statutDemande,
             'codeSociete'          => $ditDto->codeSociete,
