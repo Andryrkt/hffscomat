@@ -32,7 +32,7 @@ export function afficherFichier(cheminFichier) {
 }
 
 export function couleurDefondClick(row) {
-  document.querySelectorAll("tr").forEach(function (r) {
+  row.parentElement.querySelectorAll("tr").forEach(function (r) {
     r.classList.remove("selected");
   });
   row.classList.add("selected");
