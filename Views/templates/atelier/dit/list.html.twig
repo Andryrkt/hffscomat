@@ -1,12 +1,12 @@
 {% extends "baseTemplate.html.twig" %}
 
 {% block title %}
-    Liste demande d'intervention
+	Liste demande d'intervention
 {% endblock %}
 
 {% block stylesheets %}
-    <link rel="stylesheet" href="{{ App.base_path }}/Views/css/list.css?v=2025.09.15.08.00">
-    <link rel="stylesheet" href="{{ App.base_path }}/Views/css/atelier/dit/liste.css?v=2025.09.15.08.00">
+	<link rel="stylesheet" href="{{ App.base_path }}/Views/css/list.css?v=2025.09.15.08.00">
+	<link rel="stylesheet" href="{{ App.base_path }}/Views/css/atelier/dit/liste.css?v=2025.09.15.08.00">
 {% endblock %}
 
 {% import "macroForm.html.twig" as macroForm %}
@@ -178,7 +178,7 @@
     {% include "/atelier/dit/shared/_modalSectionAffectee.html.twig"  %}
     {% include "/atelier/dit/shared/_modalFacturation.html.twig"  %}
     {% include "/atelier/dit/shared/_modalRi.html.twig"  %}
-    {% include "/atelier/dit/shared/_modalNiveauUrgence.html.twig"  %}
+    {% include "/partials/_modalNiveauUrgence.html.twig"  %}
 
 {% endblock %}
 

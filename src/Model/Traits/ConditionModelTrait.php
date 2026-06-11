@@ -8,68 +8,101 @@ trait ConditionModelTrait
 {
     private function conditionLike(string $colonneBase, string $indexCriteria, $criteria)
     {
-        if (!empty($criteria[$indexCriteria])) {
-            // Échappe les quotes simples pour Informix en les doublant
-            $valeur = str_replace("'", "''", (string)$criteria[$indexCriteria]);
+        // Récupération unifiée via conversion en tableau
+        $valeur = null;
 
-            $condition = " AND {$colonneBase} LIKE '%{$valeur}%'";
-        } else {
-            $condition = "";
+        if (is_array($criteria)) {
+            $valeur = $criteria[$indexCriteria] ?? null;
+        } elseif (is_object($criteria) && property_exists($criteria, $indexCriteria)) {
+            $valeur = $criteria->$indexCriteria;
         }
 
-        return $condition;
+        if (!empty($valeur)) {
+            $valeur = str_replace("'", "''", (string)$valeur);
+            return " AND {$colonneBase} LIKE '%{$valeur}%'";
+        }
+
+        return "";
     }
 
     private function conditionEgal(string $colonneBase, string $indexCriteria, $criteria)
     {
-        if (!empty($criteria[$indexCriteria])) {
-            $condition = " AND {$colonneBase} = '" . (string)$criteria[$indexCriteria] . "'";
-        } else {
-            $condition = "";
+        // Récupération unifiée via conversion en tableau
+        $valeur = null;
+
+        if (is_array($criteria)) {
+            $valeur = $criteria[$indexCriteria] ?? null;
+        } elseif (is_object($criteria) && property_exists($criteria, $indexCriteria)) {
+            $valeur = $criteria->$indexCriteria;
         }
 
-        return $condition;
+        if (!empty($valeur)) {
+            return " AND {$colonneBase} = '" . str_replace("'", "''", (string)$valeur) . "'";
+        }
+
+        return "";
     }
 
-    private function conditionDateSigne(string $colonneBase, string $indexCriteria, array $criteria, string $signe)
+    private function conditionDateSigne(string $colonneBase, string $indexCriteria, $criteria, string $signe)
     {
-        if (!empty($criteria[$indexCriteria])) {
-            // Vérifie si $criteria['dateDebut'] est un objet DateTime
-            if ($criteria[$indexCriteria] instanceof \DateTime) {
-                // Formate la date au format SQL (par exemple, 'Y-m-d')
-                $formattedDate = $criteria[$indexCriteria]->format('Y-m-d');
+        // Récupération unifiée via conversion en tableau
+        $valeur = null;
+
+        if (is_array($criteria)) {
+            $valeur = $criteria[$indexCriteria] ?? null;
+        } elseif (is_object($criteria) && property_exists($criteria, $indexCriteria)) {
+            $valeur = $criteria->$indexCriteria;
+        }
+
+        if (!empty($valeur)) {
+            // Vérifie si c'est un objet DateTime
+            if ($valeur instanceof \DateTime) {
+                $formattedDate = $valeur->format('Y-m-d');
             } else {
-                // Si ce n'est pas un objet DateTime, le considérer comme une chaîne
-                $formattedDate = $criteria[$indexCriteria];
+                $formattedDate = (string)$valeur;
             }
 
-            $condition = " AND {$colonneBase} {$signe} TO_DATE('" . $formattedDate . "', '%Y-%m-%d') ";
-        } else {
-            $condition = "";
+            return " AND {$colonneBase} {$signe} TO_DATE('" . $formattedDate . "', '%Y-%m-%d') ";
         }
-        return $condition;
+
+        return "";
     }
 
-    private function conditionSigne(string $colonneBase, string $indexCriteria, string $signe, array $criteria)
+    private function conditionSigne(string $colonneBase, string $indexCriteria, string $signe, $criteria)
     {
-        if (!empty($criteria[$indexCriteria])) {
-            $condition = " AND {$colonneBase} {$signe} '" . $criteria[$indexCriteria] . "'";
-        } else {
-            $condition = "";
+        // Récupération unifiée via conversion en tableau
+        $valeur = null;
+
+        if (is_array($criteria)) {
+            $valeur = $criteria[$indexCriteria] ?? null;
+        } elseif (is_object($criteria) && property_exists($criteria, $indexCriteria)) {
+            $valeur = $criteria->$indexCriteria;
         }
 
-        return $condition;
+        if (!empty($valeur)) {
+            return " AND {$colonneBase} {$signe} '" . str_replace("'", "''", (string)$valeur) . "'";
+        }
+
+        return "";
     }
 
     private function conditionIn(string $colonneBase, string $indexCriteria, $criteria)
     {
-        if (!empty($criteria[$indexCriteria])) {
-            $condition = " AND {$colonneBase} IN (" . $criteria[$indexCriteria] . ")";
-        } else {
-            $condition = "";
+        // Récupération unifiée via conversion en tableau
+        $valeur = null;
+
+        if (is_array($criteria)) {
+            $valeur = $criteria[$indexCriteria] ?? null;
+        } elseif (is_object($criteria) && property_exists($criteria, $indexCriteria)) {
+            $valeur = $criteria->$indexCriteria;
         }
 
-        return $condition;
+        if (!empty($valeur)) {
+            // Pour IN, on suppose que la valeur est déjà formatée (ex: "1,2,3" ou "'a','b','c'")
+            return " AND {$colonneBase} IN (" . (string)$valeur . ")";
+        }
+
+        return "";
     }
 
     private function conditionPiece(string $indexCriteria, array $criteria, string $props): ?string

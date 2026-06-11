@@ -30,6 +30,11 @@ services:
       - "@doctrine.orm.default_entity_manager"
     public: true
 
+  App\Service\historiqueOperation\atelier\dit\Ri\HistoriqueOperationRIService:
+    arguments:
+      - "@doctrine.orm.default_entity_manager"
+    public: true
+
   App\Service\historiqueOperation\magasin\bc\HistoriqueOperationBcMagasinService:
     arguments:
       - "@doctrine.orm.default_entity_manager"
@@ -84,6 +89,6 @@ services:
 
   App\Controller\Atelier\Planning\PlanningAtelierController:
     arguments:
-      - '@App\Service\Atelier\Planning\PlanningAtelierService'
+      - '@App\Service\atelier\Planning\PlanningAtelierService'
       - '@App\Model\Atelier\Planning\PlanningAtelierModel'
     public: true

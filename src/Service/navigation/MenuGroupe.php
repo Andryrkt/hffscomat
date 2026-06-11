@@ -57,7 +57,13 @@ class MenuGroupe
     public static function magasinGroupes(): array
     {
         return [
-
+            [
+                'label'    => 'OR',
+                'icon'     => 'warehouse',
+                'subitems' => [
+                    ['label' => 'Liste à traiter', 'icon' => 'tasks',        'route' => 'magasinListe_index'],
+                ],
+            ],
             [
                 'label'    => 'DEMATERIALISATION',
                 'icon'     => 'cloud-arrow-up',

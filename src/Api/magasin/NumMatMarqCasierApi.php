@@ -2,9 +2,8 @@
 
 namespace App\Api\magasin;
 
-use App\Model\dit\DitModel;
 use App\Controller\Controller;
-use App\Entity\dit\DemandeIntervention;
+use App\Model\magasin\Ors\Traiter\OrTraiterModel;
 use Symfony\Component\Routing\Annotation\Route;
 
 class NumMatMarqCasierApi extends Controller
@@ -12,15 +11,15 @@ class NumMatMarqCasierApi extends Controller
     /**
      * @Route("/api/numMat-marq-casier/{numOr}", name="api_numMat_marq_casier")
      */
-    public function NumMatMarqCasier($numOr)
+    public function NumMatMarqCasier(string $numOr)
     {
-        $ditRepository = $this->getEntityManager()->getRepository(DemandeIntervention::class)->findOneBy(['numeroOR' => $numOr]);
-        $response = [];
 
-        if ($ditRepository !== null) {
-            $idMateriel = $ditRepository->getIdMateriel();
-            $ditModel = new DitModel();
-            $marqueCasier = $ditModel->recupMarqueCasierMateriel($idMateriel);
+        $response = [];
+        $orTraiterModel = new OrTraiterModel();
+        $idMateriel = $orTraiterModel->getIdMaterielDitSelonNumOr($numOr);
+
+        if ($idMateriel !== null) {
+            $marqueCasier = $orTraiterModel->recupMarqueCasierMateriel($idMateriel);
 
             if (!empty($marqueCasier) && is_array($marqueCasier)) {
                 // Prenez uniquement le premier élément car la logique précédente écrasait les autres
@@ -37,6 +36,7 @@ class NumMatMarqCasierApi extends Controller
                 ];
             }
         }
+
 
         header("Content-type:application/json");
         echo json_encode($response);
