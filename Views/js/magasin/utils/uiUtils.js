@@ -31,33 +31,42 @@ export function applyRowspanAndClass(
 }
 
 /**
- * affiche le rectangle contenant l'id materiel , marque et casier
+ * affiche le rectangle contenant l'id materiel , marque et casier au survol
  * @param {*} cell
  * @param {*} row
  * @param {*} cellIndices
  * @param {*} fetchFunction
  */
 export function miseEnPlaceRectangle(cell, row, cellIndices, fetchFunction) {
-  // Créer un élément rectangle
+  // Créer un élément rectangle (initialement vide ou avec un loader)
   const rectangle = document.createElement("div");
-  rectangle.textContent = "Loading ...";
   rectangle.classList.add("rectangle");
+  rectangle.setAttribute("data-loaded", "false");
 
   // Ajouter le rectangle dans la cellule
-  cell.insertBefore(rectangle, cell.firstChild);
+  cell.appendChild(rectangle);
 
-  // Récupérer la valeur de `orNumber`
-  const numOr = row
-    .getElementsByTagName("td")
-    [cellIndices["orNumber"]]?.textContent.trim();
+  // Ajouter l'écouteur de survol sur la cellule
+  cell.addEventListener("mouseenter", function () {
+    // Si les données n'ont pas encore été chargées
+    if (rectangle.getAttribute("data-loaded") === "false") {
+      rectangle.textContent = "Loading...";
 
-  if (numOr) {
-    // Appeler la fonction fetch avec `numOr` et le rectangle
-    fetchFunction(numOr, rectangle);
-  } else {
-    console.error("La valeur de `orNumber` est introuvable ou vide.");
-    rectangle.textContent = "Erreur de chargement";
-  }
+      // Récupérer la valeur de `orNumber`
+      const numOr = row
+        .getElementsByTagName("td")
+        [cellIndices["orNumber"]]?.textContent.trim();
+
+      if (numOr) {
+        // Appeler la fonction fetch avec `numOr` et le rectangle
+        fetchFunction(numOr, rectangle);
+        rectangle.setAttribute("data-loaded", "true");
+      } else {
+        console.error("La valeur de `orNumber` est introuvable ou vide.");
+        rectangle.textContent = "Erreur";
+      }
+    }
+  });
 }
 
 export function addSeparatorRow(tableBody, currentRow) {

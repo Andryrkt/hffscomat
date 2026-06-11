@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service\Atelier\Planning;
+namespace App\Service\atelier\Planning;
 
 use App\Dto\Atelier\Planning\PlanningAtelierDto;
 use App\Dto\Atelier\Planning\PresenceDto;
@@ -73,16 +73,12 @@ class PlanningAtelierService
                 $item->nbTotalJour,
             ];
 
-            foreach ($dates as $date)
-            {
+            foreach ($dates as $date) {
                 $dateStr = $date->format('Y-m-d');
-                if (isset($item->presences[$dateStr]))
-                {
+                if (isset($item->presences[$dateStr])) {
                     $row[] = $item->presences[$dateStr]->matin ? 'X' : '';
                     $row[] = $item->presences[$dateStr]->apm ? 'X' : '';
-                }
-                else
-                {
+                } else {
                     $row[] = '';
                     $row[] = '';
                 }
@@ -174,8 +170,7 @@ class PlanningAtelierService
         $hr1 = $fixedHeaders;
         $hr2 = array_fill(0, count($fixedHeaders), '');
 
-        foreach ($dates as $date)
-        {
+        foreach ($dates as $date) {
             $label = $date->format('l d/m');
             $hr1[] = $label;
             $hr1[] = '';
@@ -183,7 +178,6 @@ class PlanningAtelierService
             $hr2[] = 'apm';
         }
 
-        return [ $hr1, $hr2 ];
+        return [$hr1, $hr2];
     }
-
 }
