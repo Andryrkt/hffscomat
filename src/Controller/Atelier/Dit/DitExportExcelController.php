@@ -2,6 +2,8 @@
 
 namespace App\Controller\Atelier\Dit;
 
+ini_set('memory_limit', '512M');
+
 use App\Constants\admin\ApplicationConstant;
 use App\Controller\Controller;
 use App\Dto\Atelier\Dit\DitSearchDto;
@@ -27,7 +29,7 @@ class DitExportExcelController extends Controller
         $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
 
         //recupères les critère dans la session 
-        $criteria = $this->getSessionService()->get('dit_search_criteria', []);
+        $criteria = $this->getSessionService()->get('criteria_for_excel_dit_liste', []);
         // Agences Services autorisés sur le DIT
         $agenceServiceAutorises = $this->getSecurityService()->getAgenceServices(ApplicationConstant::CODE_DIT);
         // Code agence utilisateur
@@ -47,47 +49,49 @@ class DitExportExcelController extends Controller
 
         $dtoSearch = $ditMapper->fromArray($criteria);
 
-
         $ditListeModel = new DitListeModel($this->getSecurityService());
 
-        $entities = $ditListeModel->DonnerAAjouterExcel($dtoSearch, $codeSociete);
+        $ditDatas = $ditListeModel->DonnerAAjouterExcel($dtoSearch, $codeSociete);
+
         // Convertir les entités en tableau de données
-        $data = $this->transformationEnTableauAvecEntet($entities);
+        $data = $this->transformationEnTableauAvecEntet($ditDatas);
 
         //creation du fichier excel
         (new ExcelService())->createSpreadsheet($data);
     }
-    private function transformationEnTableauAvecEntet($entities): array
+    private function transformationEnTableauAvecEntet($ditDatas): array
     {
         $data = [];
-        $data[] = ['Statut', 'N° DIT', 'Réalisé par', 'Type Document', 'Niveau', 'Catégorie de Demande', 'N°Serie', 'N°Parc', 'date demande', 'Int/Ext', 'Emetteur', 'Débiteur',  'Objet', 'sectionAffectee', 'N° devis', 'Statut Devis', 'N°Or', 'Statut Or', 'Statut facture', 'RI', 'utilisateur']; // En-têtes des colonnes
-
-        foreach ($entities as $entity) {
+        $data[] = ['Statut', 'N° DIT', 'Réalisé par', 'Type Document', 'Niveau', 'Catégorie de Demande', 'N°Serie', 'N°Parc', 'Date demande', 'Int/Ext', 'Emetteur', 'Débiteur',  'Objet', 'sectionAffectee', 'N° devis', 'Statut Devis', 'N°Or', 'Statut Or', 'Statut facture', 'RI', 'Nbre Pj', 'Utilisateur', 'Marque', 'Casier']; // En-têtes des colonnes
+        foreach ($ditDatas as $dit) {
             $data[] = [
-                $entity["statut"] ?? '',
-                $entity["numero_dit"] ?? '',
-                $entity["realise_par"] ?? '',
-                $entity["type_document"] ?? '',
-                $entity["niveau_urgence"] ?? '',
-                $entity["categorie"] ?? '',
+                $dit["statut"] ?? '',
+                $dit["numero_dit"] ?? '',
+                $dit["realise_par"] ?? '',
+                $dit["type_document"] ?? '',
+                $dit["niveau_urgence"] ?? '',
+                $dit["categorie"] ?? '',
 
                 // trim() enlève les espaces vides inutiles à la fin comme "NH301944            "
-                isset($entity["numero_serie"]) ? trim($entity["numero_serie"]) : '',
-                isset($entity["numero_parc"]) ? trim($entity["numero_parc"]) : '',
+                isset($dit["numero_serie"]) ? trim($dit["numero_serie"]) : '',
+                isset($dit["numero_parc"]) ? trim($dit["numero_parc"]) : '',
 
-                $entity["date_demande"] ?? '',
-                $entity["int_ext"] ?? '',
-                $entity["emetteur"] ?? '',
-                $entity["debiteur"] ?? '',
-                $entity["objet"] ?? '',
-                $entity["section_affectee"] ?? '',
-                $entity["numero_devis"] ?? '',
-                $entity["statut_devis"] ?? '',
-                $entity["numero_or"] ?? '',
-                $entity["statut_or"] ?? '',
-                $entity["statut_facture"] ?? '',
-                $entity["ri"] ?? '',
-                $entity["utilisateur"] ?? ''
+                $dit["date_demande"] ?? '',
+                $dit["int_ext"] ?? '',
+                $dit["emetteur"] ?? '',
+                $dit["debiteur"] ?? '',
+                $dit["objet"] ?? '',
+                $dit["section_affectee"] ?? '',
+                $dit["numero_devis"] ?? '',
+                $dit["statut_devis"] ?? '',
+                $dit["numero_or"] ?? '',
+                $dit["statut_or"] ?? '',
+                $dit["statut_facture"] ?? '',
+                $dit["ri"] ?? '',
+                $dit["nbrpj"] ?? '',
+                $dit["utilisateur"] ?? '',
+                $dit["marque"] ?? '',
+                $dit["casier"] ?? '',
             ];
         }
 

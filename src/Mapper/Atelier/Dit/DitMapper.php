@@ -7,7 +7,6 @@ use App\Dto\Atelier\Dit\DitDto;
 use App\Entity\admin\Agence;
 use App\Entity\admin\Service;
 use App\Model\admin\StatutDemande\StatutDemandeModel;
-use App\Dto\Atelier\Dit\DitDto;
 use App\Model\Atelier\Dit\CategorieAteAppModel;
 use App\Model\Atelier\Dit\WorNiveauUrgenceModel;
 use Doctrine\ORM\EntityManagerInterface;
@@ -102,7 +101,7 @@ class DitMapper
         $dto->livraisonPartiel = $ditInformations['livraison_partiel'] ?? null;
         $dto->idMateriel = $ditInformations['id_materiel'] ?? null;
         $dto->mailDemandeur = $ditInformations['mail_demandeur'] ?? null;
-        $dto->dateDemande = !empty($ditInformations['date_demande']) ? new \DateTime($ditInformations['date_demande']) : null;
+        $dto->dateDemande = $ditInformations['date_demande'];
         $dto->heureDemande =  $ditInformations['heure_demande'] ?? null;
         // $dto->dateCloture = !empty($ditInformations['date_cloture']) ? new \DateTime($ditInformations['date_cloture']) : null;
         // $dto->heureCloture =  $ditInformations['heure_cloture'] ?? null;
@@ -234,10 +233,6 @@ class DitMapper
         ];
     }
 
-
-
-
-
     public function toExcelArray(array $dtis): array
     {
         $data = [];
@@ -251,5 +246,14 @@ class DitMapper
         }
 
         return $data;
+    }
+
+    public static function toArrayUpdateDitForAnnuler()
+    {
+        return [
+            'id_statut_demande' => 52,
+            'a_annuler' => true,
+            'date_annulation' => (new \DateTime())
+        ];
     }
 }

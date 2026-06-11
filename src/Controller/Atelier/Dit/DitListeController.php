@@ -3,13 +3,17 @@
 namespace App\Controller\Atelier\Dit;
 
 use App\Constants\admin\ApplicationConstant;
+use App\Constants\atelier\dit\StatutDitConstant;
 use App\Controller\Controller;
+use App\Controller\Traits\DitListeTrait;
+use App\Dto\Atelier\Dit\DitDto;
 use App\Dto\Atelier\Dit\DitSearchDto;
 use App\Form\Atelier\Dit\DitSearchType;
 use App\Form\Atelier\Dit\DocDansDwType;
 use App\Mapper\Atelier\Dit\DitListeMapper;
 use App\Mapper\Atelier\Dit\DitSearchMapper;
 use App\Model\Atelier\Dit\DitListeModel;
+use App\Model\Atelier\Dit\Soumission\DitOrSoumisAValidationModel;
 use App\Service\security\SecurityService;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,6 +24,7 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class DitListeController extends Controller
 {
+
     private DitListeModel $ditListeModel;
 
 
@@ -39,7 +44,6 @@ class DitListeController extends Controller
             $page = 1;
         }
         $perPage = 20;
-
         $criteria = [];
 
         $allAgenceServices = $this->getSecurityService()->getAllAgenceServices();
@@ -76,6 +80,7 @@ class DitListeController extends Controller
         }
 
         $dataDit = $this->getDataDitEnDto($dtoSearch, $page, $perPage);
+
         return $this->render('atelier/dit/list.html.twig', [
             'data'          => $dataDit['data'],
             'currentPage'   => $dataDit['currentPage'],
@@ -99,7 +104,10 @@ class DitListeController extends Controller
         $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
 
         $dits = $this->ditListeModel->findPaginatedAndFiltered($codeSociete, $dtoSearch, $page, $perPage);
-        $ditDto = (new DitListeMapper())->map($dits['data']);
+
+        $ditDto = (new DitListeMapper())->map($dits['data'], $this->getSecurityService());
+        $this->ajoutConditionAnnulationDit($ditDto);
+        $this->ajoutEstOrASoumis($ditDto);
 
         return [
             'data' => $ditDto,
@@ -121,5 +129,72 @@ class DitListeController extends Controller
         }
 
         return $dto;
+    }
+
+
+    private function ajoutConditionAnnulationDit(array $datas): void
+    {
+        foreach ($datas as $dto) {
+            $dto->estAnnulable = $this->conditionAnnulationDit($dto);
+        }
+    }
+
+    private function conditionAnnulationDit(DitDto $dto): bool
+    {
+        $estAnnulable = false; //cacher le boutton Annuler
+
+        $utilisateurConnecte = $this->getUserName();
+        $profilChefAtelier = $utilisateurConnecte === 'rajohnson';
+
+        //si le statut dit est A_AFFECTER
+        $condition1 = $dto->statutDemande === StatutDitConstant::STATUT_A_AFFECTER;
+        //si le statut dit est AFFECTER_SECTION et l'utilisateur demandeur est l'utilisateur connecté ou profil de l'utilisateur connecté est CHEF_ATELIER
+        $condition2 = $dto->statutDemande === StatutDitConstant::STATUT_AFFECTEE_SECTION && (strtolower($dto->utilisateurDemandeur) === strtolower($utilisateurConnecte) || $profilChefAtelier);
+        //si le statut dit est CLOTUREE_VALIDER et il n'y a pas de numero OR soumi
+        $condition3 = $dto->statutDemande  === StatutDitConstant::STATUT_CLOTUREE_VALIDER && $dto->numeroOr == 0;
+
+        if ($condition1 || $condition2 || $condition3) {
+            $estAnnulable =  true; //affichage du boutton Annuler
+        }
+
+        return $estAnnulable;
+    }
+
+
+    private function ajoutEstOrASoumis(array $datas)
+    {
+        foreach ($datas as $dto) {
+            $dto->estOrASoumi = $this->conditionEstOrASoumis($dto);
+        }
+    }
+
+    private function conditionEstOrASoumis(DitDto $dto): bool
+    {
+        $statutAffecterSection = $dto->statutDemande === StatutDitConstant::STATUT_AFFECTEE_SECTION; //AFFECTER_SECTION
+        $statutCloturerValider =  $dto->statutDemande  === StatutDitConstant::STATUT_CLOTUREE_VALIDER; //CLOTUREE_VALIDER
+        $statutTerminer =  $dto->statutDemande  === StatutDitConstant::STATUT_TERMINER; //TERMINER
+
+        $estOrASoumi = (new DitOrSoumisAValidationModel())
+            ->existsNumOrEtDit($dto->numeroOr, $dto->numeroDemandeIntervention);
+
+
+        if ($statutAffecterSection && !$estOrASoumi) { //si la statut DIT est AFFACTER SECTION et il n'y a pas encore d'OR déjà soumi (c'est la première soumission)
+            return true;
+        } elseif ($dto->internetExterne == 'EXTERNE' && $dto->id_statut_demande === 53) { // 
+            return true;
+        } elseif ($statutCloturerValider && !$estOrASoumi) {
+            return false;
+        } elseif ($statutCloturerValider && $estOrASoumi) {
+            return true;
+        }
+        // elseif ($value->getIdStatutDemande()->getId() === 57 && explode("-", $value->getAgenceServiceDebiteur())[1] === 'LST') {
+        //     $value->setEstOrASoumi(true);
+        // } 
+
+        elseif ($statutTerminer) { // affichage du bouton Soumission document à valider si le statut dit "TERMINER"
+            return true;
+        } else {
+            return false;
+        }
     }
 }

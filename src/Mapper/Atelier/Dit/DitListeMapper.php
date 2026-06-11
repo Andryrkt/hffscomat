@@ -3,7 +3,6 @@
 namespace App\Mapper\Atelier\Dit;
 
 use App\Dto\Atelier\Dit\DitDto;
-use DateTime;
 
 
 class DitListeMapper
@@ -11,8 +10,8 @@ class DitListeMapper
     public function map(array $data): array
     {
         return array_map(function ($item) {
-
             $dto = new DitDto();
+            $dto->id_statut_demande = $item['id_statut_demande'];
             $dto->statutDemande = $item['statut'];
             $dto->numeroDemandeIntervention = $item['numero_dit'];
             $dto->reparationRealise = $item['realise_par'];
@@ -36,6 +35,15 @@ class DitListeMapper
             $dto->etatFacturation = $item['statut_facture'];
             $dto->ri = $item['ri'];
             $dto->utilisateurDemandeur = $item['utilisateur'];
+            $dto->nbrPj = $item['nbrpj'];
+
+            $dto->quantiteDemanderOr = $item['quantitedemanderor'];
+            $dto->quantiteReserverOr = $item['quantitereserveror'];
+            $dto->quantiteLivreeOr = $item['quantitelivreeor'];
+            $dto->quantiteReliquatOr = $item['quantitereliquator'];
+            $dto->qteLivOr = $item['qtelivor'];
+
+            $dto->etatLivraison = $dto->getEtatLivraison();
 
             return $dto;
         }, $data);

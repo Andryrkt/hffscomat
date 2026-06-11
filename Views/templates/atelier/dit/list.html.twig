@@ -76,18 +76,19 @@
                 {# DEBUT LOGIQUE #}
                 {% for item in data %}
                     {% set classeStatutDit = item.statutDemande|lower|replace({' ': '_'}) %}
+
                     {% set classeQuatreStatutOr = '' %}
 
-                    {% if item.quatrestatutor == 'Tout livré' %}
+                    {% if item.etatLivraison == 'Tout livré' %}
                         {% set classeQuatreStatutOr = 'bg-success text-white' %}
-                    {% elseif item.quatrestatutor == 'Partiellement livré' %}
+                    {% elseif item.etatLivraison == 'Partiellement livré' %}
                         {% set classeQuatreStatutOr = 'bg-warning text-white' %}
-                    {% elseif item.quatrestatutor == 'Partiellement dispo' %}
+                    {% elseif item.etatLivraison == 'Partiellement dispo' %}
                         {% set classeQuatreStatutOr = 'bg-info text-white' %}
-                    {%  elseif item.quatrestatutor == 'Complet non livré' %}
+                    {%  elseif item.etatLivraison == 'Complet non livré' %}
                         {% set classeQuatreStatutOr = 'bg-primary text-white' %}
                     {% else %}
-                        {% set classeQuatreStatutOr = '' %}
+                        {% set classeQuatreStatutOr = 'bg-danger text-white' %}
                     {% endif %}
                     {# FIN LOGIQUE #}
                     <tr>
@@ -101,17 +102,17 @@
                                     <li>
                                         <a class="dropdown-item fw-bold" href="{{ path("dit_duplication", {numDit: item.numeroDemandeIntervention})}}">Dupliquer</a>
                                     </li>
-                                    {# {% if item.estOrASoumi %} #}
-                                    <li>
-                                        <a class="dropdown-item fw-bold" href="#" data-bs-toggle="modal" data-bs-target="#docDansDw" data-id="{{item.numeroDemandeIntervention}}" id="">Soumission document à valider</a>
-                                    </li>
-                                    {# {% endif %} #}
+                                    {% if item.estOrASoumi %}
+                                        <li>
+                                            <a class="dropdown-item fw-bold" href="#" data-bs-toggle="modal" data-bs-target="#docDansDw" data-id="{{item.numeroDemandeIntervention}}" id="">Soumission document à valider</a>
+                                        </li>
+                                    {% endif %}
                                     <li>
                                         {# <a class="dropdown-item fw-bold" target="_blank" href="{{ path("dw_interv_ate_avec_dit", {numDit: item.numeroDemandeIntervention})}}">Dossier DIT</a> #}
                                     </li>
                                     {% if item.estAnnulable %}
                                         <li>
-                                            <a class="dropdown-item fw-bold clotureDit" href="{{ path("api_cloturer_annuler_dit_liste", {numDit: item.numeroDemandeIntervention})}}" data-id="{{ item.id }}">Clôturer la DIT</a>
+                                            <a class="dropdown-item fw-bold clotureDit" href="{{ path("api_cloturer_annuler_dit_liste", {numDit: item.numeroDemandeIntervention})}}" data-id="{{ item.numeroDemandeIntervention }}">Clôturer la DIT</a>
                                         </li>
                                     {% endif %}
                                 </ul>
@@ -147,12 +148,12 @@
                         <td>{{ item.statutDevis}}</td>
                         <td>
                             {% if item.numeroOr != '' %}
-                                <a href="#" data-bs-toggle="modal" data-bs-target="#listeCommande" data-id="{{item.numeroOr}}" id="numOr" class="{{ classeQuatreStatutOr }} text-black" data-bs-toggle="tooltip" title="lister les commandes">{{ item.numeroOr }}</a>
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#listeCommande" data-id="{{ dto.numeroOr}}" id="numOr" class="{{ classeQuatreStatutOr }} text-black" data-bs-toggle="tooltip" title="lister les commandes">{{ item.numeroOr }} </a>
                             {% endif %}
                         </td>
-                        <td class="fw-bold ">{{ item.statutor }}</td>
-                        <td style="text-align: right;">{{ item.montantTotalOR is not null ? item.montantTotalOR|number_format(2, ',', '.') : '' }}</td>
-                        <td>{{ item.dateSoumissionOR is not null ? item.dateSoumissionOR|date('d/m/Y') : '' }}</td>
+                        <td class="fw-bold ">{{ item.statutOr }}</td>
+                        <td style="text-align: right;">{{ item.montantOr is not null ? item.montantOr|number_format(2, ',', '.') : '' }}</td>
+                        <td>{{ item.dateSoumissionOr is not null ? item.dateSoumissionOr|date('d/m/Y') : '' }}</td>
                         <td>
                             <a href="#" data-bs-toggle="modal" data-bs-target="#facturation" data-id="{{item.numeroOr}}" id="numOr">
                                 {{ item.etatFacturation }}
