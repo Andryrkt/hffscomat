@@ -46,7 +46,8 @@
                 <th rowspan="2">OR</th>
                 <th rowspan="2">Itv</th>
                 <th rowspan="2">Ressource</th>
-                <th rowspan="2">Nb jour</th>
+                <th rowspan="2">Nb Jours (base 8 h)</th>
+                <th rowspan="2">Total Heures</th>
                 {% for date in dates %}
                     <th colspan="2">{{ date|date('l d/m') }}</th>
                 {% endfor %}
@@ -69,6 +70,7 @@
                         <td>{{ row.itv }}</td>
                         <td>{{ row.ressource }}</td>
                         <td>{{ row.nbTotalJour }}</td>
+                        <td>{{ row.totalHeures }}</td>
                         {% for date in dates %}
                             {% set dateStr = date|date('Y-m-d') %}
                             {% set presence = row.presences[dateStr]|default({}) %}
@@ -117,4 +119,6 @@
 {% endblock %}
 {% block javascript %}
     <script src="{{ App.base_path }}/Views/js/utils/positionSticky.js?v=2025.10.22.08.00"></script>
+    <script src="{{ App.base_path }}/Views/js/atelier/planning/semaine.js?v=2025.10.22.08.00" type="module"></script>
+    <script src="{{ App.base_path }}/Views/js/atelier/planning/agServPlanning.js?v=2025.10.22.08.00" type="module">
 {% endblock %}

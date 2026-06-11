@@ -34,6 +34,9 @@ class PlanningAtelierService
 
             $planning[$key]->nbTotalJour += $currDto->nbJour;
 
+            if (isset($item['hpointee']))
+                $planning[$key]->totalHeures += (float) $item['hpointee'];
+
             $debut = new \DateTime($item['date_debut']);
             $dateStr = $debut->format('Y-m-d');
 
@@ -71,6 +74,7 @@ class PlanningAtelierService
                 $item->itv,
                 $item->ressource,
                 $item->nbTotalJour,
+                $item->totalHeures,
             ];
 
             foreach ($dates as $date) {
@@ -126,13 +130,18 @@ class PlanningAtelierService
         }
         $presence->heure += $hpointee;
 
-        $isFullDay = ($hdebut <= $matin_debut && $hfin >= $aprem_fin);
+        $overlapMatin = max(0, min($hfin->getTimestamp(), $matin_fin->getTimestamp()) - max($hdebut->getTimestamp(), $matin_debut->getTimestamp()));
+        $overlapAprem = max(0, min($hfin->getTimestamp(), $aprem_fin->getTimestamp()) - max($hdebut->getTimestamp(), $aprem_debut->getTimestamp()));
+        $totalOverlap = $overlapMatin + $overlapAprem;
 
-        if (!$isFullDay) {
-            if ($hdebut <= $matin_fin && $hfin >= $matin_debut) {
+        if ($totalOverlap > 0) {
+            $presence->hmtn = ($presence->hmtn ?? 0.0) + ($hpointee * ($overlapMatin / $totalOverlap));
+            $presence->hapm = ($presence->hapm ?? 0.0) + ($hpointee * ($overlapAprem / $totalOverlap));
+        } else {
+            $midBreak = new \DateTime("$dateStr 12:00:01");
+            if ($hdebut < $midBreak) {
                 $presence->hmtn = ($presence->hmtn ?? 0.0) + $hpointee;
-            }
-            if ($hdebut <= $aprem_fin && $hfin >= $aprem_debut) {
+            } else {
                 $presence->hapm = ($presence->hapm ?? 0.0) + $hpointee;
             }
         }
@@ -166,7 +175,7 @@ class PlanningAtelierService
      */
     private function generateExcelRows(array $dates): array
     {
-        $fixedHeaders = ['Agence Travaux', 'Section', 'Intitulé Travaux', 'numOR', 'Itv', 'Ressource', 'Nb jour'];
+        $fixedHeaders = ['Agence Travaux', 'Section', 'Intitulé Travaux', 'numOR', 'Itv', 'Ressource', 'Nb jour', 'Total heures'];
         $hr1 = $fixedHeaders;
         $hr2 = array_fill(0, count($fixedHeaders), '');
 

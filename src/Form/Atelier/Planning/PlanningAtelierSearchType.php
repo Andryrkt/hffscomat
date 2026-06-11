@@ -104,8 +104,8 @@ class PlanningAtelierSearchType extends AbstractType
 
             if (isset($data['agenceDeb'])) {
                 $serviceDebite = $this->model->getServiceDebiteByAgence($data['agenceDeb']);
+                $serviceDebite = $this->transformEnSeulTableauAvecKeyService($serviceDebite);
             }
-
             $form->add('serviceDeb', ChoiceType::class, [
                 'label' => 'Service Débiteur : ',
                 'multiple' => true,
