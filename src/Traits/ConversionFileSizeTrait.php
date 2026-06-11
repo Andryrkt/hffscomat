@@ -4,7 +4,7 @@ namespace App\Traits;
 
 trait ConversionFileSizeTrait
 {
-    public function formatFileSize(int $bytes): string
+    public function convertFileSize(int $bytes): string
     {
         $units = ['Octets', 'Ko', 'Mo', 'Go'];
 
