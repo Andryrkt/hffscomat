@@ -7,13 +7,22 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Model\dw\dossierInterventionAtelierModel;
 use App\Form\dw\DossierInterventionAtelierSearchType;
-use App\Service\security\SecurityService;
+use App\Service\Atelier\DossierDit\DossierDitService;
+use App\Dto\Atelier\Dit\DossierDit\DossierInterventionAtelierSearchDto;
 
 /**
  * @Route("/atelier/demande-intervention")
  */
 class DossierInterventionAtelierController extends Controller
 {
+    private DossierDitService $service;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->service = new DossierDitService();
+    }
+
     /**
      * @Route("/dit-dossier-intervention-atelier", name="dit_dossier_intervention_atelier")
      *
@@ -21,20 +30,16 @@ class DossierInterventionAtelierController extends Controller
      */
     public function dossierInterventionAtelier(Request $request)
     {
-        $criteria = null;
-        $form = $this->getFormFactory()->createBuilder(DossierInterventionAtelierSearchType::class, $criteria, ['method' => 'GET'])->getForm();
-
-        $dwModel = new dossierInterventionAtelierModel();
-        $dwDits = []; // Initialisation du tableau pour les demandes d'intervention
+        $dwDits = [];
+        $form = $this->getFormFactory()->createBuilder(DossierInterventionAtelierSearchType::class, null, ['method' => 'GET'])->getForm();
 
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $criteria = $form->getData();
-            $dwDits = $this->ajoutNbDoc($dwModel, $criteria);
+            /** @var DossierInterventionAtelierSearchDto $dossierInterventionAtelierSearchDto */
+            $dossierInterventionAtelierSearchDto = $form->getData();
+            $dwDits = $this->service->getFilteredDwDit($dossierInterventionAtelierSearchDto);
         }
-
-        $this->logUserVisit('dit_dossier_intervention_atelier'); // historisation du page visité par l'utilisateur
 
         return $this->render('atelier/dit/dossierDit/dossierInterventionAtelier.html.twig', [
             'form'   => $form->createView(),
@@ -71,49 +76,10 @@ class DossierInterventionAtelierController extends Controller
         // Fusionner toutes les données
         $data = array_merge($dwDit, $dwOr, $dwFac, $dwRi, $dwCde, $dwBc, $dwDev);
 
-        $this->logUserVisit('dw_interv_ate_avec_dit', [
-            'numDit' => $numDit,
-        ]); // historisation du page visité par l'utilisateur
-
         return $this->render('atelier/dit/dossierDit/dwIntervAteAvecDit.html.twig', [
             'numDit' => $numDit,
             'data'   => $data,
         ]);
-    }
-
-    public function ajoutNbDoc(dossierInterventionAtelierModel $dwModel, $criteria)
-    {
-        // Vérifier la permission de voir tous les données
-        $multisuccursale = $this->getSecurityService()->verifierPermission(SecurityService::PERMISSION_MULTI_SUCCURSALE);
-
-        $dwDits = $dwModel->findAllDwDit($criteria, $this->getSecurityService()->getCodeAgenceUser(), $multisuccursale);
-
-        $dwfac = $dwRi = $dwCde = $dwBc = $dwDev = [];
-
-        for ($i = 0; $i < count($dwDits); $i++) {
-            $numDit = $dwDits[$i]['numero_dit_intervention'];
-            // Récupérer les données de la demande d'intervention et de l'ordre de réparation
-            $dwDit = $dwModel->findDwDit($numDit) ?? [];
-            $dwOr  = $dwModel->findDwOr($numDit) ?? [];
-
-            // Si un ordre de réparation est trouvé, récupérer les autres données liées
-            if (!empty($dwOr)) {
-                $numeroDocOr = $dwOr[0]['numero_doc'];
-                $dwfac   = $dwModel->findDwFac($numeroDocOr) ?? [];
-                $dwRi    = $dwModel->findDwRi($numeroDocOr) ?? [];
-                $dwCde   = $dwModel->findDwCde($numeroDocOr) ?? [];
-            }
-            $dwBc  = $dwModel->findDwBc($dwDit[0]['numero_doc']) ?? [];
-            $dwDev = $dwModel->findDwDev($dwDit[0]['numero_doc']) ?? [];
-
-            // Fusionner toutes les données dans un tableau associatif
-            $data = array_merge($dwDit, $dwOr, $dwfac, $dwRi, $dwCde, $dwBc, $dwDev);
-
-            // Ajouter le nombre de documents à l'élément actuel de $dwDits
-            $dwDits[$i]['nbDoc'] = count($data);
-        }
-
-        return $dwDits;
     }
 
     /**

@@ -22,25 +22,25 @@
 								<th>N° DIT</th>
 								<th>ID mat</th>
 								<th>N° Parc</th>
-								<th>N/S</th>
+								<th>N° Série</th>
 								<th>Désignation</th>
 								<th>OR</th>
 								<th>Nb de docs</th>
-								<th>type interv (interne/externe)</th>
+								<th>Type intervention</th>
 							</tr>
 						</thead>
 						<tbody>
 							{% for dwDit in dwDits %}
-								<tr class="clickable-row clickable" data-dit="{{ dwDit.numero_dit_intervention }}">
-									<td>{{dwDit.date_creation_intervention | date('d/m/Y')}}</td>
-									<td>{{dwDit.numero_dit_intervention}}</td>
-									<td>{{dwDit.id_materiel_intervention}}</td>
-									<td>{{dwDit.numero_parc_intervention}}</td>
-									<td>{{dwDit.numero_serie_intervention}}</td>
-									<td>{{dwDit.designation_materiel_intervention}}</td>
-									<td>{{dwDit.numero_or_reparation ?: "-"}}</td>
+								<tr class="clickable-row clickable" data-dit="{{ dwDit.numeroDit }}">
+									<td>{{dwDit.dateCreation}}</td>
+									<td>{{dwDit.numeroDit}}</td>
+									<td>{{dwDit.idMateriel}}</td>
+									<td>{{dwDit.numeroParc}}</td>
+									<td>{{dwDit.numeroSerie}}</td>
+									<td>{{dwDit.designationMateriel}}</td>
+									<td>{{dwDit.numeroOR}}</td>
 									<td class="text-center">{{dwDit.nbDoc}}</td>
-									<td>{{dwDit.type_reparation_intervention}}</td>
+									<td>{{dwDit.typeIntervention}}</td>
 								</tr>
 							{% endfor %}
 						</tbody>
