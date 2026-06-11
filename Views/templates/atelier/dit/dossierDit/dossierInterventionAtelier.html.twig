@@ -31,16 +31,20 @@
 						</thead>
 						<tbody>
 							{% for dwDit in dwDits %}
-								<tr class="clickable-row clickable" data-dit="{{ dwDit.numeroDit }}">
-									<td>{{dwDit.dateCreation}}</td>
-									<td>{{dwDit.numeroDit}}</td>
-									<td>{{dwDit.idMateriel}}</td>
-									<td>{{dwDit.numeroParc}}</td>
-									<td>{{dwDit.numeroSerie}}</td>
-									<td>{{dwDit.designationMateriel}}</td>
-									<td>{{dwDit.numeroOR}}</td>
-									<td class="text-center">{{dwDit.nbDoc}}</td>
-									<td>{{dwDit.typeIntervention}}</td>
+								<tr class="clickable-row" data-dit="{{ dwDit.numeroDit }}">
+									<td>{{ dwDit.dateCreation }}</td>
+									<td>{{ dwDit.numeroDit }}</td>
+									<td>{{ dwDit.idMateriel }}</td>
+									<td>{{ dwDit.numeroParc }}</td>
+									<td>{{ dwDit.numeroSerie }}</td>
+									<td>{{ dwDit.designationMateriel }}</td>
+									<td>{{ dwDit.numeroOR }}</td>
+									<td class="text-center">{{ dwDit.nbDoc }}</td>
+									<td>{{ dwDit.typeIntervention }}</td>
+								</tr>
+							{% else %}
+								<tr>
+									<td colspan="9" class="text-center">Aucun dossier DIT trouvé</td>
 								</tr>
 							{% endfor %}
 						</tbody>
@@ -64,9 +68,7 @@
 								<th>Taille</th>
 							</tr>
 						</thead>
-						<tbody
-							id="documents-tbody">
-							<!-- Le contenu sera inséré ici via JS -->
+						<tbody id="documents-tbody">
 							<div id="spinner" style="display: none;">
 								<i class="fas fa-spinner fa-spin"></i>
 								Chargement...
@@ -86,6 +88,7 @@
 		</div>
 	</div>
 {% endblock %}
+
 {% block javascript %}
 	<script src="{{ App.base_path }}/Views/js/dw/dossierInterventionAtelier.js?v=2025.10.22.08.00" type="module"></script>
 {% endblock %}
