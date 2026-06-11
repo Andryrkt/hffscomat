@@ -10,6 +10,7 @@ use DateTime;
 class DitDto
 {
 
+    public ?int $id  = null;
     public ?string $numeroDemandeIntervention = null;
     public ?string $objetDemande = null;
     public ?string $detailDemande = null;

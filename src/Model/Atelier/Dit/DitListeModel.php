@@ -25,6 +25,7 @@ class DitListeModel extends Model
         $skip = ($page - 1) * $perPage;
 
         $statement = " SELECT SKIP $skip FIRST $perPage
+                    d0_.id AS id,
                     s3_.description AS statut,
                     d0_.id_statut_demande AS id_statut_demande,
                     d0_.numero_demande_dit AS numero_dit,
@@ -46,7 +47,7 @@ class DitListeModel extends Model
                     d0_.statut_or AS statut_or,
                     COALESCE(osv_or.montantitv, osv_dit.montantitv) AS montantitv,
                     COALESCE(osv_or.datesoumission, osv_dit.datesoumission) AS datesoumission,
-                    d0_.etat_facturation AS statut_facture,
+                d0_.etat_facturation AS statut_facture,
                     d0_.ri AS ri,
                     d0_.utilisateur_demandeur AS utilisateur ,
 
@@ -82,7 +83,7 @@ class DitListeModel extends Model
                 LEFT JOIN {$this->dbIps}:informix.mat_mat m
                     ON d0_.id_materiel = m.mmat_nummat
 
--- Cause lenteur du requete 
+-- Peut etre la cause lenteur du requete 
             LEFT JOIN (
                 SELECT 
                     seor.seor_numor AS numeroOr,
@@ -138,15 +139,12 @@ class DitListeModel extends Model
                 AND (d0_.statut_or NOT LIKE 'Refus%' OR d0_.statut_or IS NULL)                
         ";
         $conditions = $this->filtre($ditSearchdto);
-
         if (!empty($conditions)) {
             $statement .= " AND " . implode("AND", $conditions);
         }
-
         $statement .= " ORDER BY d0_.date_demande DESC, d0_.numero_demande_dit ASC ";
         $result = $this->connect->executeQuery($statement);
-        $data = $this->connect->fetchResults($result);
-
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
         // Compter le total d'items
         $totalItems = $this->compteNombreItem($codeSociete, $conditions);
         // Calculer le nombre de pages
@@ -154,6 +152,7 @@ class DitListeModel extends Model
 
         // Compter les statuts
         $statusCounts = $this->compteNombreStatut($codeSociete, $conditions);
+
         return [
             'data' => $this->convertirEnUtf8($data),
             'totalItems' => $totalItems,
@@ -255,7 +254,6 @@ class DitListeModel extends Model
 
 
         $statement .= " ORDER BY d0_.date_demande DESC, d0_.numero_demande_dit ASC ";
-
 
         $result = $this->connect->executeQuery($statement);
         $data = $this->connect->fetchResults($result);
@@ -537,7 +535,8 @@ class DitListeModel extends Model
 
         // filrer par statut (etat) facture
         if ($ditSearchdto->etatFacture) {
-            $conditions[] = "  d0_.etat_facturation = '$ditSearchdto->etatFacture' ";
+            $slideDitSearchDtoFacture = substr($ditSearchdto->etatFacture, 0, 4);
+            $conditions[] = "  d0_.etat_facturation like '%$slideDitSearchDtoFacture%' ";
         }
         // firtrer par numéro devis
         if ($ditSearchdto->numDevis) {
@@ -623,6 +622,24 @@ class DitListeModel extends Model
         return array_column($data, 'sectionAffectee');
     }
 
+
+    public function findSectionSupport($id)
+    {
+        $statement = "
+        SELECT 
+            section_affectee AS sectionAffectee,
+            section_support_1 AS sectionSupport1,
+            section_support_2 AS sectionSupport2,
+            section_support_3 AS sectionSupport3
+        FROM {$this->dbIrium}:Informix.demande_intervention
+        WHERE id = $id
+    ";
+
+        $result = $this->connect->executeQuery($statement);
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
+        return $data ?? [];
+    }
+
     public function findSectionSupport1()
     {
         $statement = " SELECT distinct section_support_1  as sectionSupport1
@@ -689,5 +706,26 @@ class DitListeModel extends Model
 
 
         return $nombrePiecesJointes;
+    }
+    public function recupItvNumFac($numOr)
+    {
+        $statement = " SELECT DISTINCT
+                        sitv_interv as itv,
+                        slor_numfac AS numeroFac
+                    FROM
+                        sav_itv
+                    JOIN
+                        sav_lor ON sitv_numor = slor_numor
+                        AND sitv_interv = slor_nogrp / 100
+                    WHERE
+                        sitv_numor = '" . $numOr . "'
+        ";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->connect->fetchResults($result);
+        $dataUtf8 = $this->convertirEnUtf8($data);
+
+        return $dataUtf8;
     }
 }

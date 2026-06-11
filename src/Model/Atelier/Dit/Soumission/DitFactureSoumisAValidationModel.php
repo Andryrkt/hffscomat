@@ -8,25 +8,25 @@ use App\Service\GlobalVariablesService;
 
 class DitFactureSoumisAValidationModel extends Model
 {
-	use ConversionModel;
+    use ConversionModel;
 
-	public function recupTypeFacture(string $numFac, string $codeSociete)
-	{
-		$statement = "SELECT
+    public function recupTypeFacture(string $numFac, string $codeSociete)
+    {
+        $statement = "SELECT
 		slor_typeor
 		FROM sav_lor
 		WHERE slor_numfac = '$numFac'
 		AND slor_soc = '$codeSociete'
 		";
 
-		$result = $this->connect->executeQuery($statement);
+        $result = $this->connect->executeQuery($statement);
 
-		$data = $this->connect->fetchResults($result);
+        $data = $this->connect->fetchResults($result);
 
-		return $this->convertirEnUtf8($data);
-	}
+        return $this->convertirEnUtf8($data);
+    }
 
-	public function recupQterea(string $numFac, string $codeSociete)
+    public function recupQterea(string $numFac, string $codeSociete)
     {
         $statement = "SELECT  slor_qterea 
                     FROM sav_lor 
@@ -41,7 +41,7 @@ class DitFactureSoumisAValidationModel extends Model
         return array_column($this->convertirEnUtf8($data), 'slor_qterea');
     }
 
-	public function recupNumeroSoumission(string $numOr, string $codeSociete)
+    public function recupNumeroSoumission(string $numOr, string $codeSociete)
     {
         $sql = "SELECT COALESCE(MAX(numero_soumission)+1, 1) AS numSoumissionEncours
                 FROM facture_soumis_a_validation
@@ -54,7 +54,7 @@ class DitFactureSoumisAValidationModel extends Model
         return $result['numSoumissionEncours'];
     }
 
-	public function recupInfoFact(string $numOR, string $numFact, string $codeSociete)
+    public function recupInfoFact(string $numOR, string $numFact, string $codeSociete)
     {
         $statement = " SELECT
                     slor_numfac AS numeroFac, 
@@ -94,7 +94,7 @@ class DitFactureSoumisAValidationModel extends Model
 
         return $this->convertirEnUtf8($data);
     }
-	public function recupEtatOr(string $numOr, string $codeSociete)
+    public function recupEtatOr(string $numOr, string $codeSociete)
     {
         $statement = " SELECT 
                 CASE 
@@ -270,9 +270,9 @@ class DitFactureSoumisAValidationModel extends Model
         return $this->convertirEnUtf8($data);
     }
 
-	public function recuperationStatutItv(string $numOr, string $numItv, string $codeSociete)
+    public function recuperationStatutItv(string $numOr, string $numItv, string $codeSociete)
     {
-		$statement = " SELECT 
+        $statement = " SELECT 
                     TRIM(seor_refdem) AS referenceDIT,
                     seor_numor AS numeroOr,
                     TRUNC(SUM(
@@ -318,7 +318,7 @@ class DitFactureSoumisAValidationModel extends Model
         return $this->convertirEnUtf8($data);
     }
 
-	public function orStatutEstValide(string $numOr, string $numItv)
+    public function orStatutEstValide(string $numOr, string $numItv)
     {
         $sql = " SELECT 
                 case when statut = 'Validé' then 'Validé'else 'Non validé' end as Statut
@@ -336,35 +336,35 @@ class DitFactureSoumisAValidationModel extends Model
         return array_column($tab, 'Statut');
     }
 
-	public function findNbrFact(string $numFac)
+    public function findNbrFact(string $numFac)
     {
-		$statement = "SELECT
+        $statement = "SELECT
 			cout(numeroFact)
 			from 
 			where numeroFact = '$numFac'
 		";
 
-		$result = $this->connect->executeQuery($statement);
+        $result = $this->connect->executeQuery($statement);
 
-		$nbrFact = $this->connect->fetchScalarResults($result);
+        $nbrFact = $this->connect->fetchScalarResults($result);
 
-		return $nbrFact ? $nbrFact : 0;
+        return $nbrFact ? $nbrFact : 0;
     }
 
     public function findNumItvFacStatut(string $numOr)
     {
-		$statement = "SELECT
-			numeroItv,
-			numeroFact,
+        $statement = "SELECT
+			numero_itv,
+			numero_fact,
 			statut
-			from 
-			where numeroOR = '$numOr'
+			from {$this->dbIrium}:informix.facture_soumis_a_validation
+			where numero_or = '$numOr'
 		";
 
-		$result = $this->connect->executeQuery($statement);
+        $result = $this->connect->executeQuery($statement);
 
-		$data = $this->connect->fetchScalarResults($result);
+        $data = $this->connect->fetchScalarResults($result);
 
-		return $this->convertirEnUtf8($data);
+        return $this->convertirEnUtf8($data);
     }
 }

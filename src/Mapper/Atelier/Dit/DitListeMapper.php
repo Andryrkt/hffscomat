@@ -11,6 +11,7 @@ class DitListeMapper
     {
         return array_map(function ($item) {
             $dto = new DitDto();
+            $dto->id = $item['id'];
             $dto->id_statut_demande = $item['id_statut_demande'];
             $dto->statutDemande = $item['statut'];
             $dto->numeroDemandeIntervention = $item['numero_dit'];

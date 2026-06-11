@@ -104,11 +104,9 @@ class DitListeController extends Controller
         $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
 
         $dits = $this->ditListeModel->findPaginatedAndFiltered($codeSociete, $dtoSearch, $page, $perPage);
-
         $ditDto = (new DitListeMapper())->map($dits['data'], $this->getSecurityService());
         $this->ajoutConditionAnnulationDit($ditDto);
         $this->ajoutEstOrASoumis($ditDto);
-
         return [
             'data' => $ditDto,
             'totalItems' => $dits['totalItems'],

@@ -148,7 +148,7 @@
                         <td>{{ item.statutDevis}}</td>
                         <td>
                             {% if item.numeroOr != '' %}
-                                <a href="#" data-bs-toggle="modal" data-bs-target="#listeCommande" data-id="{{ dto.numeroOr}}" id="numOr" class="{{ classeQuatreStatutOr }} text-black" data-bs-toggle="tooltip" title="lister les commandes">{{ item.numeroOr }} </a>
+                                <a href="#" data-bs-toggle="modal" data-bs-target="#listeCommande" data-id="{{ item.numeroOr}}" id="numOr" class="{{ classeQuatreStatutOr }} text-black" data-bs-toggle="tooltip" title="lister les commandes">{{ item.numeroOr }} </a>
                             {% endif %}
                         </td>
                         <td class="fw-bold ">{{ item.statutOr }}</td>
