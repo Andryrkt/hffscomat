@@ -29,6 +29,11 @@ class dossierInterventionAtelierModel extends Model
         return "SELECT numero_or, COUNT(*) as n from {$this->dbIrium}:Informix.$table GROUP BY numero_or";
     }
 
+    /** 
+     * Fonction pour récupérer tous les DwDemandeIntervention avec le nombre de document associé
+     * @param DossierInterventionAtelierSearchDto $dto
+     * @return array
+     */
     public function findAllDwDit(DossierInterventionAtelierSearchDto $dto): array
     {
         $conditions = "
@@ -85,266 +90,110 @@ class dossierInterventionAtelierModel extends Model
         return $this->connect->fetchResults($result);
     }
 
-    public function findDwDit($numDit)
+    private function getTypeDoc(string $table): string
     {
-        $sql = " SELECT 
-        -- DEMANDE D'INTERVENTION
-        dit.numero_dit AS numero_doc,
-        dit.date_creation AS date_creation,
-        dit.date_derniere_modification AS date_modification,
-        dit.extension_fichier As extension_fichier,
-        dit.total_page AS total_page,
-        dit.taille_fichier AS taille_fichier,
-        dit.path AS chemin
+        $typeDocMap = [
+            "dw_demande_intervention" => "Demande d''intervention",
+            "dw_ordre_de_reparation"  => "Ordre de réparation",
+            "dw_bc_client"            => "Bon de Commande Client",
+            "dw_devis_ate"            => "Devis",
+            "dw_commande"             => "Commande",
+            "dw_rapport_intervention" => "Rapport d''intervention",
+            "dw_facture"              => "Facture",
+        ];
 
-        FROM DW_Demande_Intervention dit
-        WHERE dit.numero_dit = '" . $numDit . "'
-        ";
-
-        $exec = $this->connexion->query($sql);
-        $tab = [];
-        while ($result = odbc_fetch_array($exec)) {
-            $tab[] = $result;
-        }
-
-        return $this->ConvertirEnUtf_8($tab);
+        return $typeDocMap[$table] ?? '';
     }
 
-    public function findDwOr($numDit)
+    private function getColumn(string $table): string
     {
-        $sql = " SELECT 
-        --ORDRE DE REPARATION
-        ord.numero_or AS numero_doc,
-        ord.date_creation AS date_creation,
-        ord.date_derniere_modification AS date_modification,
-        ord.extension_fichier As extension_fichier,
-        ord.total_page AS total_page,
-        ord.taille_fichier AS taille_fichier,
-        ord.path AS chemin,
-        ord.numero_version AS numero_version,
-        ord.statut_or AS statut_or
+        $columnMap = [
+            "dw_demande_intervention" => "numero_dit",
+            "dw_ordre_de_reparation"  => "numero_or",
+            "dw_bc_client"            => "numero_bc",
+            "dw_devis_ate"            => "numero_devis",
+            "dw_commande"             => "numero_cde",
+            "dw_rapport_intervention" => "numero_ri",
+            "dw_facture"              => "numero_fac",
+        ];
 
-        FROM DW_Ordre_De_Reparation ord
-        WHERE ord.numero_dit = '" . $numDit . "'
-        ORDER BY ord.numero_version ASC
-        ";
-
-        $exec = $this->connexion->query($sql);
-        $tab = [];
-        while ($result = odbc_fetch_array($exec)) {
-            $tab[] = $result;
-        }
-        return $this->ConvertirEnUtf_8($tab);
+        return $columnMap[$table] ?? '';
     }
 
-    public function findDwFac($numOr)
+    private function getQueryRef(string $numDit): string
     {
-        $sql = " SELECT 
-        --FACTURE
-        fac.numero_fac AS numero_doc,
-        fac.date_creation AS date_creation,
-        fac.date_derniere_modification AS date_modification,
-        fac.extension_fichier As extension_fichier,
-        fac.total_page AS total_page,
-        fac.taille_fichier AS taille_fichier,
-        fac.path AS chemin
-
-        FROM DW_Facture fac
-        WHERE fac.numero_or = '" . $numOr . "'
-        ";
-
-        $exec = $this->connexion->query($sql);
-        $tab = [];
-        while ($result = odbc_fetch_array($exec)) {
-            $tab[] = $result;
-        }
-        return $this->ConvertirEnUtf_8($tab);
+        return "SELECT dit.numero_dit, ord.numero_or
+            FROM {$this->dbIrium}:Informix.dw_demande_intervention dit
+            LEFT JOIN {$this->dbIrium}:Informix.dw_ordre_de_reparation ord
+                ON ord.numero_dit = dit.numero_dit
+            WHERE dit.numero_dit = '$numDit'";
     }
 
-    public function findDwRi($numOr)
+    private function getQueryDoc(string $table, string $alias, bool $withVersion = true): string
     {
-        $sql = " SELECT 
-            --RAPORT D'INTERVENTION
-            ri.numero_ri AS numero_doc,
-            ri.date_creation AS date_creation,
-            ri.date_derniere_modification AS date_modification,
-            ri.extension_fichier As extension_fichier,
-            ri.total_page AS total_page,
-            ri.taille_fichier AS taille_fichier,
-            ri.path AS chemin
+        $typeDoc = $this->getTypeDoc($table);
+        $column = $this->getColumn($table);
+        $version = $withVersion ? "$alias.numero_version" : 0;
 
-            FROM DW_Rapport_Intervention ri
-            WHERE ri.numero_or = '" . $numOr . "'
+        return "SELECT
+            TRIM('$typeDoc') AS nom_doc,
+            {$alias}.{$column} AS numero_doc,
+            {$alias}.date_creation,
+            {$alias}.date_derniere_modification,
+            {$version} AS numero_version,
+            {$alias}.total_page,
+            {$alias}.taille_fichier,
+            {$alias}.extension_fichier,
+            {$alias}.path AS chemin
+        FROM {$this->dbIrium}:Informix.$table {$alias}
         ";
-
-        $exec = $this->connexion->query($sql);
-        $tab = [];
-        while ($result = odbc_fetch_array($exec)) {
-            $tab[] = $result;
-        }
-        return $this->ConvertirEnUtf_8($tab);
     }
 
-    public function findDwCde($numOr)
+    /** 
+     * Fonction pour récupérer tous les documents liés à un DwDemandeIntervention 
+     * @param string $numDit
+     * @return array
+     */
+    public function findAllDwDocs(string $numDit): array
     {
-        $sql = " SELECT 
-            --COMMANDE
-            cde.numero_cde AS numero_doc,
-            cde.date_creation AS date_creation,
-            cde.date_derniere_modification AS date_modification,
-            cde.extension_fichier As extension_fichier,
-            cde.total_page AS total_page,
-            cde.taille_fichier AS taille_fichier,
-            cde.path AS chemin
-
-            FROM DW_Commande cde
-            WHERE cde.numero_or = '" . $numOr . "'
+        $statement =
+            "WITH
+            ref AS ({$this->getQueryRef($numDit)}),
+            docs AS
+            (
+                {$this->getQueryDoc('dw_demande_intervention', 'dit', false)}
+                WHERE dit.numero_dit = 'DIT26069358'
+            UNION ALL
+                {$this->getQueryDoc('dw_ordre_de_reparation', 'ord')}
+                INNER JOIN ref r
+                    ON ord.numero_dit = r.numero_dit
+            UNION ALL
+                {$this->getQueryDoc('dw_bc_client', 'bcc')}
+                INNER JOIN ref r
+                    ON bcc.numero_dit = r.numero_dit
+            UNION ALL
+                {$this->getQueryDoc('dw_devis_ate', 'dev')}
+                INNER JOIN ref r
+                    ON dev.numero_dit = r.numero_dit
+            UNION ALL
+                {$this->getQueryDoc('dw_commande', 'cde', false)}
+                INNER JOIN ref r
+                    ON cde.numero_or = r.numero_or
+            UNION ALL
+                {$this->getQueryDoc('dw_rapport_intervention', 'ri', false)}
+                INNER JOIN ref r
+                    ON ri.numero_or = r.numero_or
+            UNION ALL
+                {$this->getQueryDoc('dw_facture', 'fac', false)}
+                INNER JOIN ref r
+                    ON fac.numero_or = r.numero_or
+            )
+            SELECT *
+            FROM docs;
         ";
 
-        $exec = $this->connexion->query($sql);
-        $tab = [];
-        while ($result = odbc_fetch_array($exec)) {
-            $tab[] = $result;
-        }
-        return $this->ConvertirEnUtf_8($tab);
-    }
+        $result = $this->connect->executeQuery($statement);
 
-    public function findDwBc($numDit)
-    {
-        $sql = " SELECT 
-            --BON DE COMMANDE CLIENT 
-            bcc.numero_bc AS numero_doc,
-            bcc.date_creation AS date_creation,
-            bcc.date_derniere_modification AS date_modification,
-            bcc.extension_fichier As extension_fichier,
-            bcc.total_page AS total_page,
-            bcc.taille_fichier AS taille_fichier,
-            bcc.path AS chemin
-
-            FROM DW_BC_Client bcc
-            WHERE bcc.numero_dit = '" . $numDit . "'
-        ";
-
-        $exec = $this->connexion->query($sql);
-        $tab = [];
-        while ($result = odbc_fetch_array($exec)) {
-            $tab[] = $result;
-        }
-        return $this->ConvertirEnUtf_8($tab);
-    }
-
-    public function findDwDev($numDit)
-    {
-        $sql = " SELECT 
-            --DEVIS 
-            dev.numero_devis AS numero_doc,
-            dev.date_creation AS date_creation,
-            dev.date_derniere_modification AS date_modification,
-            dev.extension_fichier As extension_fichier,
-            dev.total_page AS total_page,
-            dev.taille_fichier AS taille_fichier,
-            dev.path AS chemin
-
-            FROM DW_Devis dev
-            WHERE dev.numero_dit = '" . $numDit . "'
-        ";
-
-        $exec = $this->connexion->query($sql);
-        $tab = [];
-        while ($result = odbc_fetch_array($exec)) {
-            $tab[] = $result;
-        }
-        return $this->ConvertirEnUtf_8($tab);
-    }
-
-
-    public function findCheminDit($numDoc)
-    {
-        $sql = " SELECT DISTINCT 
-        dit.path AS chemin
-
-        FROM DW_Demande_Intervention dit
-        WHERE dit.numero_dit = '" . $numDoc . "'
-        ";
-
-        $exec = $this->connexion->query($sql);
-        $tab = [];
-        while ($result = odbc_fetch_array($exec)) {
-            $tab[] = $result;
-        }
-
-        return $this->ConvertirEnUtf_8($tab);
-    }
-
-    public function findCheminOr($numDoc, $numVersion)
-    {
-        $sql = " SELECT DISTINCT 
-        ord.path AS chemin
-
-        FROM DW_Ordre_De_Reparation ord
-        WHERE ord.numero_or = '" . $numDoc . "'
-        AND ord.numero_version = '" . $numVersion . "'
-        ";
-
-        $exec = $this->connexion->query($sql);
-        $tab = [];
-        while ($result = odbc_fetch_array($exec)) {
-            $tab[] = $result;
-        }
-        return $this->ConvertirEnUtf_8($tab);
-    }
-
-    public function findCheminFac($numDoc)
-    {
-        $sql = " SELECT DISTINCT 
-        --FACTURE
-        fac.path AS chemin
-
-        FROM DW_Facture fac
-        WHERE fac.numero_fac = '" . $numDoc . "'
-        ";
-
-        $exec = $this->connexion->query($sql);
-        $tab = [];
-        while ($result = odbc_fetch_array($exec)) {
-            $tab[] = $result;
-        }
-        return $this->ConvertirEnUtf_8($tab);
-    }
-
-    public function findCheminRi($numDoc)
-    {
-        $sql = " SELECT DISTINCT 
-            --RAPORT D'INTERVENTION
-            ri.path AS chemin
-
-            FROM DW_Rapport_Intervention ri
-            WHERE ri.numero_ri = '" . $numDoc . "'
-        ";
-
-        $exec = $this->connexion->query($sql);
-        $tab = [];
-        while ($result = odbc_fetch_array($exec)) {
-            $tab[] = $result;
-        }
-        return $this->ConvertirEnUtf_8($tab);
-    }
-
-    public function findCheminCde($numDoc)
-    {
-        $sql = " SELECT DISTINCT 
-            --COMMANDE
-            cde.path AS chemin
-
-            FROM DW_Commande cde
-            WHERE cde.numero_cde = '" . $numDoc . "'
-        ";
-
-        $exec = $this->connexion->query($sql);
-        $tab = [];
-        while ($result = odbc_fetch_array($exec)) {
-            $tab[] = $result;
-        }
-        return $this->ConvertirEnUtf_8($tab);
+        return $this->connect->fetchResults($result);
     }
 }
