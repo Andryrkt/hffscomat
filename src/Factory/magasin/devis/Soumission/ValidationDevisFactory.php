@@ -48,7 +48,7 @@ class ValidationDevisFactory
             if ($fichier->isFile()) {
                 $nom = $fichier->getFilename();
 
-                if (preg_match('/DEVIS MAGASIN_' . $numeroDevis . '_(\d{14})_\d+\.pdf$/', $nom, $matches)) {
+                if (preg_match('/^(DEVIS MAGASIN|QUOTATION)_' . $numeroDevis . '_(\d{14})_\d+\.pdf$/', $nom, $matches)) {
                     $timestamp = $matches[1];
 
                     if ($timestamp > $derniereDate) {

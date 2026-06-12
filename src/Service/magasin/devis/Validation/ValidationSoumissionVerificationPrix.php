@@ -12,7 +12,7 @@ class ValidationSoumissionVerificationPrix
     use ValidatorNotificationTrait;
 
     private const FILE_FIELD_NAME = 'pieceJoint01';
-    private const FILENAME_PATTERN = '/^(QUOTATION)_(\d+)_(\d+)_(\d+)\\.pdf$/';
+    private const FILENAME_PATTERN = '/^(DEVIS MAGASIN|QUOTATION)_(\d+)_(\d+)_(\d+)\\.pdf$/';
 
     public function validateSoumissionVerificationPrixAvantAffichageFormulaire($numeroDevis, $codeSociete): bool
     {
@@ -105,7 +105,7 @@ class ValidationSoumissionVerificationPrix
         // Vérifie si un fichier a été soumis
         if (!$remoteUrl && !$this->isFileSubmitted($form, self::FILE_FIELD_NAME)) {
             $message = "Aucun fichier n'a été soumis.";
-            $this->sendNotificationDevisMagasin($message, '', 'liste_devis_neg', false);
+            $this->sendNotificationDevisMagasin($message, '', false);
             return true;
         }
 
@@ -121,14 +121,14 @@ class ValidationSoumissionVerificationPrix
         // Vérifie si le nom du fichier correspond au pattern attendu (S'assurer que c'est bien un devis qui soit soumis)
         if (!$this->matchPattern($fileName, self::FILENAME_PATTERN)) {
             $message = "Le nom du fichier soumis n'est pas conforme au format attendu. Reçu: " . $fileName;
-            $this->sendNotificationDevisMagasin($message, '', 'liste_devis_neg', false);
+            $this->sendNotificationDevisMagasin($message, '', false);
             return true;
         }
 
         // Vérifie si le numéro de devis dans le nom du fichier correspond au numéro de devis attendu (S'assurer que le devis envoyé corresponde à la ligne de devis utilisé pour la soumission dans l'intranet)
         if (!$this->matchNumberAfterUnderscore($fileName, $expectedNumeroDevis)) {
             $message = "Le numéro de devis dans le nom du fichier ($fileName) ne correspond pas au devis du formulaire ( $expectedNumeroDevis )";
-            $this->sendNotificationDevisMagasin($message, '', 'liste_devis_neg', false);
+            $this->sendNotificationDevisMagasin($message, '', false);
             return true;
         }
 
