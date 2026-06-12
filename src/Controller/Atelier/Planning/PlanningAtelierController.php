@@ -6,7 +6,7 @@ use App\Controller\Controller;
 use App\Dto\Atelier\Planning\PlanningAtelierSearchDto;
 use App\Form\Atelier\Planning\PlanningAtelierSearchType;
 use App\Model\Atelier\Planning\PlanningAtelierModel;
-use App\Service\Atelier\Planning\PlanningAtelierService;
+use App\Service\atelier\Planning\PlanningAtelierService;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
