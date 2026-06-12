@@ -16,7 +16,7 @@ use App\Model\Atelier\Dit\DitModel;
 use App\Model\Atelier\Dit\Soumission\DitOrSoumisAValidationModel;
 use App\Service\atelier\dit\soumission\ORs\TraitementFichierService;
 use App\Service\atelier\dit\soumission\ORs\ValidationService;
-use App\Service\historiqueOperation\Atelier\Dit\HistoriqueOperationDITService;
+use App\Service\historiqueOperation\Atelier\Dit\ORs\HistoriqueOperationORService;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -27,7 +27,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class DitOrsSoumisAValidationController extends Controller
 {
 
-    private HistoriqueOperationDITService $historiqueOperation;
+    private HistoriqueOperationORService $historiqueOperation;
 
     private DitOrSoumisAValidationModel $ditOrsoumisAValidationModel;
 
@@ -38,7 +38,7 @@ class DitOrsSoumisAValidationController extends Controller
     public function __construct()
     {
         parent::__construct();
-        $this->historiqueOperation = new HistoriqueOperationDITService($this->getEntityManager());
+        $this->historiqueOperation = new HistoriqueOperationORService($this->getEntityManager());
         $this->ditModel = new DitModel();
         $this->ditOrsoumisAValidationModel = new DitOrSoumisAValidationModel();
         $this->ditFactory = new DitFactory($this->getSecurityService(), $this->getEntityManager());

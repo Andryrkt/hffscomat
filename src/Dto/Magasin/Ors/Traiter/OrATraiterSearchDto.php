@@ -17,4 +17,5 @@ class OrATraiterSearchDto
     public ?string $agenceUser = null;
     public ?string $agenceUserHidden = null;
     public ?string $codeSociete = null;
+    public ?string $numMat = null;
 }
