@@ -30,7 +30,7 @@ class DitDetailController extends Controller
 
         $ditModel = new DitModel();
         $ditInformations = $ditModel->recupInformationsDit($numDit, $codeSociete);
-        $ditDto = DitMapper::transformToDto($ditInformations);
+        $ditDto = DitMapper::transformToDto($ditInformations, $this->getEntityManager());
 
         $worNiveauUrgenceModel = new WorNiveauUrgenceModel();
         $descriptionNiveauUrgence = $worNiveauUrgenceModel->getDescriptionById($ditInformations["id_niveau_urgence"]);

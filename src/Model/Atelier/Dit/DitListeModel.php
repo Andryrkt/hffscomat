@@ -189,6 +189,7 @@ class DitListeModel extends Model
                     d0_.etat_facturation AS statut_facture,
                     d0_.ri AS ri,
                     d0_.utilisateur_demandeur AS utilisateur,
+                    
                     m.mmat_nummat AS num_matricule,
                 TRIM(m.mmat_numserie) AS numero_serie,
                 TRIM(m.mmat_recalph) AS numero_parc,

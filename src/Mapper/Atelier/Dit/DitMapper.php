@@ -69,14 +69,15 @@ class DitMapper
         ];
     }
 
-    public static function transformToDto(array $ditInformations): ?DitDto
+    public static function transformToDto(array $ditInformations, EntityManagerInterface $em): ?DitDto
     {
 
+        $worTypeNiveaUrgenceModel = new WorNiveauUrgenceModel();
 
         $dto = new DitDto();
         $dto->numeroDemandeIntervention = $ditInformations['numero_demande_dit'];
         $dto->typeDocument              = $ditInformations['type_document'] ?? null;
-        $dto->statutDemande             = $ditInformations['statut'] ?? null;
+        $dto->statutDemande             = $ditInformations['id_statut_demande'] ?? null;
         $dto->codeSociete    = $ditInformations["code_societe"] ?? null;
         $dto->typeReparation    = $ditInformations["type_reparation"] ?? null;
         $dto->reparationRealise         = $ditInformations['reparation_realise'] ?? null;
@@ -93,6 +94,7 @@ class DitMapper
 
         $dto->agenceServiceEmetteur     = $ditInformations['agence_service_emmeteur'] ?? null;
         $dto->agenceServiceDebiteur     = $ditInformations['agence_service_debiteur'] ?? null;
+
         $dto->nomClient     = $ditInformations['nomClient'] ?? null;
         $dto->numeroTel     = $ditInformations['numero_telephone'] ?? null;
         $dto->dateSoumissionOr     = $ditInformations['date_or'] ?? null;
@@ -102,7 +104,6 @@ class DitMapper
         $dto->worNiveauUrgence = $ditInformations['niveau_urgence'] ?? null;
         $dto->avisRecouvrement = $ditInformations['avis_recouvrement'] ?? null;
         $dto->clientSousContrat = $ditInformations['client_sous_contrat'] ?? null;
-        $dto->objetDemande = $ditInformations['objet_demande'] ?? null;
         $dto->objetDemande = $ditInformations['objet_demande'] ?? null;
         $dto->detailDemande = $ditInformations['detail_demande'] ?? null;
         $dto->livraisonPartiel = $ditInformations['livraison_partiel'] ?? null;
@@ -144,8 +145,11 @@ class DitMapper
         $dto->statutOr =  $ditInformations['statut_or'] ?? null;
         // $dto->statutCommande =  $ditInformations['statut_commande'] ?? null;
         // $dto->dateValidationOr =  $ditInformations['date_validation_or'] ?? null;
-        $dto->agenceEmetteur =  $ditInformations['agence_emetteur_id'] ?? null;
-        $dto->serviceEmetteur =  $ditInformations['service_emetteur_id'] ?? null;
+
+
+        $dto->agenceEmetteur =  $em->getRepository(Agence::class)->find($ditInformations["agence_emetteur_id"])->getCodeAgence() . ' ' .  $em->getRepository(Agence::class)->find($ditInformations["agence_emetteur_id"])->getLibelleAgence() ?? null;
+        $dto->serviceEmetteur =  $em->getRepository(Service::class)->find($ditInformations["service_emetteur_id"])->getCodeService() . ' ' .  $em->getRepository(Service::class)->find($ditInformations["service_emetteur_id"])->getLibelleService() ?? null;
+
         // $dto->agence_debiteur_id =  $ditInformations['agence_debiteur_id'] ?? null;
         // $dto->service_debiteur_id =  $ditInformations['service_debiteur_id'] ?? null;
         // $dto->section_support_1 =  $ditInformations['section_support_1'] ?? null;
@@ -156,7 +160,7 @@ class DitMapper
         $dto->ri =  $ditInformations['ri'] ?? null;
         $dto->mailClient =  $ditInformations['mail_client'] ?? null;
         // $dto->numMigr =  $ditInformations['num_migr'] ?? null;
-        // $dto->a_annuler =  $ditInformations['a_annuler'] ?? null;
+        $dto->estAnnulable =  $ditInformations['a_annuler'] ?? null;
         // $dto->dateAnnulation =  $ditInformations['date_annulation'] ?? null;
         // $dto->numero_demande_dit_avoir =  $ditInformations['numero_demande_dit_avoir'] ?? null;
         // $dto->numero_demande_dit_refacturation =  $ditInformations['numero_demande_dit_refacturation'] ?? null;
@@ -165,6 +169,16 @@ class DitMapper
         $dto->estAtePolTana =  $ditInformations['ate_pol_tana'] ?? null;
         // $dto->pdf_deposer_dw =  $ditInformations['pdf_deposer_dw'] ?? null;
         // $dto->date_depot_pdf_dw =  $ditInformations['date_depot_pdf_dw'] ?? null;
+
+        //Agence et service debiteurs
+        $dto->agence = $em->getRepository(Agence::class)->find($ditInformations["agence_debiteur_id"]);
+        $dto->service = $em->getRepository(Service::class)->find($ditInformations["service_debiteur_id"]);
+
+        $dto->numParc = $ditInformations['numero_parc'] ?? null;
+        $dto->numSerie = $ditInformations['numero_serie'] ?? null;
+
+        $dto->worNiveauUrgence =  $worTypeNiveaUrgenceModel->getDescriptionById($ditInformations['id_niveau_urgence']);
+
         return $dto;
     }
 

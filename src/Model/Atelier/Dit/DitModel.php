@@ -114,6 +114,9 @@ class DitModel extends Model
     public function enregistrerDit(OrSoumissionDto $dto, array $ors): void
 
     {
+
+
+        dd("Dto", $dto);
         // Convertir le DTO en tableau associatif pour l'insertion
         $donnees = DitMapper::toArrayDit($dto, $ors);
 
@@ -258,10 +261,16 @@ class DitModel extends Model
     public function recupInformationsDit(string $numDit, string $codeSociete)
     {
 
-        $statement = " SELECT FIRST 1 *
-                FROM {$this->dbIrium}:Informix.demande_intervention
-                WHERE numero_demande_dit = '$numDit'
-                AND code_societe = '$codeSociete'
+        $statement = "  SELECT FIRST 1
+        d0_.*,
+          TRIM(m.mmat_recalph) AS numero_parc,
+        TRIM(m.mmat_numserie) AS numero_serie,
+        TRIM(m.mmat_numparc) AS casier
+    FROM {$this->dbIrium}:Informix.demande_intervention d0_
+    LEFT JOIN {$this->dbIps}:informix.mat_mat m
+        ON d0_.id_materiel = m.mmat_nummat
+    WHERE d0_.numero_demande_dit = '$numDit'
+      AND d0_.code_societe = '$codeSociete'
         ";
 
         $result = $this->connect->executeQuery($statement);
