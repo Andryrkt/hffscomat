@@ -44,11 +44,11 @@ document.addEventListener("DOMContentLoaded", function () {
                       <td>${doc.iconRaw}</td>
                       <td>${doc.nomDoc}</td>
                       <td>${doc.numeroDoc}</td>
-                      <td>${doc.dateCreation}</td>
-                      <td>${doc.dateModification}</td>
+                      <td class="text-center">${doc.dateCreation}</td>
+                      <td class="text-center">${doc.dateModification}</td>
                       <td class="text-center">${doc.numeroVersion}</td>
                       <td class="text-center">${doc.totalPage}</td>
-                      <td>${doc.tailleFichier}</td>
+                      <td class="text-end">${doc.tailleFichier}</td>
                   `;
             row.classList.add("clickable-row");
 

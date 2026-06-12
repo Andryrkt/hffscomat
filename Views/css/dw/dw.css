@@ -39,9 +39,8 @@
   font-size: 24px; /* Taille du texte plus grande pour ressembler à un titre */
   font-weight: bold; /* Met en gras pour donner un effet de titre */
   color: #333; /* Couleur du texte */
-  margin: 20px 0; /* Espace au-dessus et en dessous du titre */
+  margin: 5px 0; /* Espace au-dessus et en dessous du titre */
   border-bottom: 2px solid #fbbb01; /* Ligne en bas pour donner un effet de section */
-  padding-bottom: 5px; /* Espacement pour la ligne de bordure */
   text-transform: uppercase; /* Transforme le texte en majuscules */
 }
 

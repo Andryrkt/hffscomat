@@ -10,7 +10,7 @@
 {% endblock %}
 
 {% block content %}
-	<div class="row">
+	<div class="row position-fixed w-100">
 		<div class="col-12 col-md-6">
 			<div class="container mt-6">
 				<div class="table-moitier">
@@ -19,28 +19,28 @@
 						<thead class="table-dark">
 							<tr>
 								<th>Date DIT</th>
-								<th>N° DIT</th>
-								<th>ID mat</th>
+								<th class="text-center">N° DIT</th>
+								<th class="text-center">ID mat</th>
 								<th>N° Parc</th>
 								<th>N° Série</th>
 								<th>Désignation</th>
-								<th>OR</th>
-								<th>Nb de docs</th>
-								<th>Type intervention</th>
+								<th class="text-center">OR</th>
+								<th class="text-center">Nb de docs</th>
+								<th class="text-center">Type intervention</th>
 							</tr>
 						</thead>
 						<tbody>
 							{% for dwDit in dwDits %}
 								<tr class="clickable-row" data-dit="{{ dwDit.numeroDit }}">
 									<td>{{ dwDit.dateCreation }}</td>
-									<td>{{ dwDit.numeroDit }}</td>
-									<td>{{ dwDit.idMateriel }}</td>
+									<td class="text-center">{{ dwDit.numeroDit }}</td>
+									<td class="text-center">{{ dwDit.idMateriel }}</td>
 									<td>{{ dwDit.numeroParc }}</td>
 									<td>{{ dwDit.numeroSerie }}</td>
 									<td>{{ dwDit.designationMateriel }}</td>
-									<td>{{ dwDit.numeroOR }}</td>
+									<td class="text-center">{{ dwDit.numeroOR }}</td>
 									<td class="text-center">{{ dwDit.nbDoc }}</td>
-									<td>{{ dwDit.typeIntervention }}</td>
+									<td class="text-center">{{ dwDit.typeIntervention }}</td>
 								</tr>
 							{% else %}
 								<tr>
@@ -61,11 +61,11 @@
 								<th>
 									Nom document</th>
 								<th>N° de document</th>
-								<th>Date de création</th>
-								<th>Date de MAJ</th>
-								<th>N° Version</th>
-								<th>Nb de pages</th>
-								<th>Taille</th>
+								<th class="text-center">Date de création</th>
+								<th class="text-center">Date de MAJ</th>
+								<th class="text-center">N° Version</th>
+								<th class="text-center">Nb de pages</th>
+								<th class="text-end">Taille</th>
 							</tr>
 						</thead>
 						<tbody id="documents-tbody">
@@ -87,7 +87,7 @@
 			</div>
 		</div>
 		<div class="col-12 col-md-6">
-			<div class="container mt-6">
+			<div class="mt-6">
 				<div id="file-viewer" style="border: 1px solid #ccc; padding: 10px;">
 					<div id="spinners" style="display: none;">Loading...</div>
 					<!-- Le fichier sélectionné sera affiché ici -->
