@@ -36,6 +36,9 @@ class DitFactureSoumisAValidationController extends Controller
         // creation du formulaire
         $form = $this->getFormFactory()->createBuilder(DitFactureSoumisAValidationType::class, $dto)->getForm();
 
+        //tratiement du formulaire
+        $this->traitementFormulaire($form, $request, $numDit);
+
         return $this->render('atelier/dit/soumission/facture/soumissionFacture.html.twig', [
             'form' => $form->createView(),
         ]);
@@ -60,11 +63,13 @@ class DitFactureSoumisAValidationController extends Controller
             $traitementDeFichierService = new TraitementDeFichierService($this->getSecurityService());
             $traitementDeFichierService->traitmenetDeFichier($dto, $form);
 
-            // TODO: enregistrement dans la base de donnée
+            // enregistrement dans la base de donnée
+            $dtiFactureSoumisAValidationModel = new DitFactureSoumisAValidationModel();
+            $donnees = DItFactureSoumisAValidationMapper::map($dto);
+            $dtiFactureSoumisAValidationModel->enregistrerFacture($donnees);
 
             // modification etat facture dans le table demande_intervention
             $data = DItFactureSoumisAValidationMapper::updateDit($dto->etatOr);
-            $dtiFactureSoumisAValidationModel = new DitFactureSoumisAValidationModel();
             $dtiFactureSoumisAValidationModel->updateEtatFacture($dto->numeroDit, $dto->codeSociete, $data);
 
 
