@@ -60,9 +60,10 @@
 										</div>
 										<ul class="dropdown-menu dropdown-menu-end" id="dropdown-menu" aria-labelledby="dropdownMenuButton" style="">
 											<li>
-												{% if item.numero_dit is not empty %}{# <a class="dropdown-item fw-bold" target="_blank" href="{{ path('dw_interv_ate_avec_dit', {'numDit': item.numero_dit}) }}"> #}
-													{# Dossier DIT #}
-													{# </a> #}
+												{% if item.numero_dit is not empty %}
+													<a class="dropdown-item fw-bold" target="_blank" href="{{ path('dw_interv_ate_avec_dit', {'numDit': item.numero_dit}) }}">
+														Dossier DIT
+													</a>
 												{% endif %}
 											</li>
 										</ul>

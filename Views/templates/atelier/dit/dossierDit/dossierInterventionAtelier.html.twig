@@ -1,0 +1,102 @@
+{% extends "baseTemplate.html.twig" %}
+
+{% block title %}
+	Dossier d'intervention Atelier
+{% endblock %}
+
+{% block stylesheets %}
+	<link rel="stylesheet" href="{{ App.base_path }}/Views/css/list.css?v=2025.10.22.08.00">
+	<link rel="stylesheet" href="{{ App.base_path }}/Views/css/dw/dw.css?v=2025.10.22.08.00">
+{% endblock %}
+
+{% block content %}
+	<div class="row">
+		<div class="col-12 col-md-6">
+			<div class="container mt-6">
+				<div class="table-moitier">
+					{% include "/atelier/dit/dossierDit/shared/_formulaireRecherche.html.twig" %}
+					<table class="table rounded table-plein-ecran">
+						<thead class="table-dark">
+							<tr>
+								<th>Date DIT</th>
+								<th class="text-center">N° DIT</th>
+								<th class="text-center">ID mat</th>
+								<th>N° Parc</th>
+								<th>N° Série</th>
+								<th>Désignation</th>
+								<th class="text-center">OR</th>
+								<th class="text-center">Nb de docs</th>
+								<th class="text-center">Type intervention</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for dwDit in dwDits %}
+								<tr class="clickable-row" data-dit="{{ dwDit.numeroDit }}">
+									<td>{{ dwDit.dateCreation }}</td>
+									<td class="text-center">{{ dwDit.numeroDit }}</td>
+									<td class="text-center">{{ dwDit.idMateriel }}</td>
+									<td>{{ dwDit.numeroParc }}</td>
+									<td>{{ dwDit.numeroSerie }}</td>
+									<td>{{ dwDit.designationMateriel }}</td>
+									<td class="text-center">{{ dwDit.numeroOR }}</td>
+									<td class="text-center">{{ dwDit.nbDoc }}</td>
+									<td class="text-center">{{ dwDit.typeIntervention }}</td>
+								</tr>
+							{% else %}
+								<tr>
+									<td colspan="9" class="text-center">Aucun dossier DIT trouvé</td>
+								</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+				<div class="dossier">DOSSIER:
+					<span id="numero-dit">DITXXXXX</span>
+				</div>
+				<div class="table-moitier">
+					<table class="table rounded table-plein-ecran">
+						<thead class="table-dark">
+							<tr>
+								<th>Type</th>
+								<th>
+									Nom document</th>
+								<th>N° de document</th>
+								<th class="text-center">Date de création</th>
+								<th class="text-center">Date de MAJ</th>
+								<th class="text-center">N° Version</th>
+								<th class="text-center">Nb de pages</th>
+								<th class="text-end">Taille</th>
+							</tr>
+						</thead>
+						<tbody id="documents-tbody">
+							<div id="spinner" style="display: none;">
+								<i class="fas fa-spinner fa-spin"></i>
+								Chargement...
+							</div>
+						</tbody>
+					</table>
+				</div>
+				<div class="notice">
+					<span class="notice-icon">
+						<i class="fas fa-info-circle"></i>
+					</span>
+					<div class="notice-content">
+						Les navigateurs peuvent afficher directement des fichiers comme des PDF, des images (JPEG, PNG, GIF, etc.), et parfois même des fichiers texte. Pour d'autres formats, le fichier sera téléchargé.
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="col-12 col-md-6">
+			<div class="mt-6">
+				<div id="file-viewer" style="border: 1px solid #ccc; padding: 10px;">
+					<div id="spinners" style="display: none;">Loading...</div>
+					<!-- Le fichier sélectionné sera affiché ici -->
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}
+
+{% block javascript %}
+	<script src="{{ App.base_path }}/Views/js/dw/dossierInterventionAtelier.js?v=2025.10.22.08.00" type="module"></script>
+{% endblock %}
