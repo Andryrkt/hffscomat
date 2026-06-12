@@ -162,7 +162,7 @@ class dossierInterventionAtelierModel extends Model
             docs AS
             (
                 {$this->getQueryDoc('dw_demande_intervention', 'dit', false)}
-                WHERE dit.numero_dit = 'DIT26069358'
+                WHERE dit.numero_dit = '$numDit'
             UNION ALL
                 {$this->getQueryDoc('dw_ordre_de_reparation', 'ord')}
                 INNER JOIN ref r
