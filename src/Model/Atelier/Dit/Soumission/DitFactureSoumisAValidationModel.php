@@ -6,11 +6,9 @@ use App\Model\Informix\InsertQueryBuilder;
 use App\Model\Informix\UpdateQueryBuilder;
 use App\Model\Model;
 use App\Model\Traits\ConversionModel;
-use App\Service\GlobalVariablesService;
 
 class DitFactureSoumisAValidationModel extends Model
 {
-    use ConversionModel;
     use ConversionModel;
 
     /**
@@ -601,4 +599,3 @@ class DitFactureSoumisAValidationModel extends Model
     //     return $this->convertirEnUtf8($data);
     // }
 }
-
