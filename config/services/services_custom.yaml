@@ -15,11 +15,6 @@ services:
       - "@doctrine.orm.default_entity_manager"
     public: true
 
-  App\Service\historiqueOperation\HistoriqueOperationORService:
-    arguments:
-      - "@doctrine.orm.default_entity_manager"
-    public: true
-
   App\Service\historiqueOperation\atelier\dit\ORs\HistoriqueOperationORService:
     arguments:
       - "@doctrine.orm.default_entity_manager"
@@ -55,8 +50,6 @@ services:
       - "@doctrine.orm.default_entity_manager"
       - '@App\Model\LdapModel'
     public: true
-
-
 
   App\Service\Admin\PermissionsService:
     arguments:

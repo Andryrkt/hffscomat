@@ -7,7 +7,6 @@ use App\Controller\Traits\DitListeTrait;
 use App\Dto\Atelier\Dit\DitDto;
 use App\Model\Atelier\Dit\DitModel;
 use App\Service\docuware\CopyDocuwareService;
-use App\Service\historiqueOperation\HistoriqueOperationORService;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**

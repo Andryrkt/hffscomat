@@ -4,7 +4,7 @@ namespace App\Service\atelier\dit\soumission\ORs;
 
 use App\Dto\atelier\dit\soumission\OrSoumissionDto;
 use App\Model\Atelier\Dit\Soumission\DitOrSoumisAValidationModel;
-use App\Service\historiqueOperation\HistoriqueOperationORService;
+use App\Service\historiqueOperation\Atelier\Dit\ORs\HistoriqueOperationORService;
 use App\Service\SessionManagerService;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
