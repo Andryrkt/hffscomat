@@ -36,7 +36,7 @@ class PlanningAtelierController extends Controller
     public function index(Request $request): \Symfony\Component\HttpFoundation\Response
     {
         $form = $this->getFormFactory()->createBuilder(
-            planningAtelierSearchType::class,
+            PlanningAtelierSearchType::class,
             null,
             ['method' => 'GET']
         )->getForm();
@@ -123,5 +123,4 @@ class PlanningAtelierController extends Controller
 
         return $dto;
     }
-
 }

@@ -94,6 +94,6 @@ services:
 
   App\Controller\Atelier\Planning\PlanningAtelierController:
     arguments:
-      - '@App\Service\atelier\Planning\PlanningAtelierService'
+      - '@App\Service\Atelier\Planning\PlanningAtelierService'
       - '@App\Model\Atelier\Planning\PlanningAtelierModel'
     public: true

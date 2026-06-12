@@ -22,7 +22,7 @@ class OrSoumissionFactory
         $dto->numeroDit = $numDit;
         $dto->numeroOr = $numOr;
         $dto->codeSociete = $codeSociete;
-        $dto->idCategorieDemande = $ditModel->findIdCategorieByNumeroDit($numDit, $codeSociete);
+        $dto->idCategorieDemande = (int) $ditModel->findIdCategorieByNumeroDit($numDit, $codeSociete);
         $dto->typeOr = $ditOrsoumisAValidationModel->recupTypeOr($numOr);
 
         return $dto;

@@ -17,7 +17,7 @@ sectionAffecteeModal.addEventListener("show.bs.modal", function (event) {
 
   // Fetch request to get the data
   fetchManager
-    .get(`section-affectee-modal-fetch/${id}`)
+    .get(`api/section-affectee-modal-fetch/${id}`)
     .then((data) => {
       const tableBody = document.getElementById("AffecteeTableBody");
       tableBody.innerHTML = ""; // Clear previous data
@@ -27,20 +27,20 @@ sectionAffecteeModal.addEventListener("show.bs.modal", function (event) {
         // Générer les lignes du tableau en fonction des données
         data.forEach((item) => {
           let row = `<tr>
-                        <td class="fw-bold">${item.sectionAffectee}</td>
+                        <td class="fw-bold">${item.sectionaffectee}</td>
                         <td>${
-                          item.sectionSupport1 !== null
-                            ? item.sectionSupport1
+                          item.sectionsupport1 !== null
+                            ? item.sectionsupport1
                             : "--"
                         }</td>
                         <td>${
-                          item.sectionSupport2 !== null
-                            ? item.sectionSupport2
+                          item.sectionsupport2 !== null
+                            ? item.sectionsupport2
                             : "--"
                         }</td>
                         <td>${
-                          item.sectionSupport3 !== null
-                            ? item.sectionSupport3
+                          item.sectionsupport3 !== null
+                            ? item.sectionsupport3
                             : "--"
                         }</td>
                      </tr>`;
@@ -91,7 +91,7 @@ facturationModalInput.addEventListener("show.bs.modal", function (event) {
 
   // Fetch request to get the data
   fetchManager
-    .get(`facturation-fetch/${id}`)
+    .get(`api/facturation-fetch/${id}`)
     .then((data) => {
       const tableBody = document.getElementById("facturationBody");
       tableBody.innerHTML = ""; // Clear previous data
@@ -141,7 +141,7 @@ facturationModalInput.addEventListener("hidden.bs.modal", function () {
 });
 
 /** ============================================== 
- *  ri MODAL
+ *  RI modal
  * 
 =================================================*/
 const riModalInput = document.getElementById("ri");
@@ -158,7 +158,7 @@ riModalInput.addEventListener("show.bs.modal", function (event) {
 
   // Fetch request to get the data
   fetchManager
-    .get(`ri-fetch/${id}`)
+    .get(`api/ri-fetch/${id}`)
     .then((data) => {
       const tableBody = document.getElementById("riBody");
       tableBody.innerHTML = ""; // Clear previous data
@@ -177,8 +177,8 @@ riModalInput.addEventListener("show.bs.modal", function (event) {
                       <td>${risoumis}</td>
                       <td class="${rowClass}">${item.numeroitv}</td>
                       <td class="${rowClass}">${
-            item.commentair ? item.commentair : "-"
-          }</td>
+                        item.commentair ? item.commentair : "-"
+                      }</td>
                     </tr>`;
 
           tableBody.innerHTML += row;

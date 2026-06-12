@@ -11,6 +11,7 @@ use App\Service\GlobalVariablesService;
 class DitFactureSoumisAValidationModel extends Model
 {
     use ConversionModel;
+    use ConversionModel;
 
     /**
      * Récupération du numero OR 
@@ -600,3 +601,4 @@ class DitFactureSoumisAValidationModel extends Model
     //     return $this->convertirEnUtf8($data);
     // }
 }
+

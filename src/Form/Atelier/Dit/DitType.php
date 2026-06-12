@@ -263,7 +263,7 @@ class DitType extends AbstractType
                     'attr' => [
                         'readonly' => true
                     ],
-                    'data' => $options["data"]->agenceEmetteur ?? null
+                    'data' =>  $options["data"]->agenceEmetteur ?? null
                 ]
             )
             ->add(

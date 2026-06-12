@@ -5,9 +5,12 @@ namespace App\Model\Atelier\Dit;
 
 
 use App\Dto\Atelier\Dit\DitDto;
+use App\Dto\atelier\dit\soumission\OrSoumissionDto;
+use App\Mapper\Atelier\Dit\DitMapper;
 use App\Model\Informix\InsertQueryBuilder;
 use App\Model\Informix\UpdateQueryBuilder;
 use App\Model\Model;
+use DateTime;
 
 class DitModel extends Model
 {
@@ -109,7 +112,11 @@ class DitModel extends Model
      * @return void
      */
     public function enregistrerDit(OrSoumissionDto $dto, array $ors): void
+
     {
+
+
+        dd("Dto", $dto);
         // Convertir le DTO en tableau associatif pour l'insertion
         $donnees = DitMapper::toArrayDit($dto, $ors);
 
@@ -173,6 +180,41 @@ class DitModel extends Model
             throw $e;
         }
     }
+    /**
+     * Modification pour l'annulation du demande d'intervention dans la 
+     * table demande_intervention
+     *
+     * @return void
+     */
+    public function updateStatutDateAnnuler($numDit, $codeSociete)
+    {
+        $donnees = DitMapper::toArrayUpdateDitForAnnuler();
+
+        $updateBuilder = new UpdateQueryBuilder("{$this->dbIrium}:Informix.demande_intervention");
+
+        // // Définir les données à mettre à jour
+        $updateBuilder->setData($donnees);
+
+        // // Ajouter les conditions WHERE
+        $updateBuilder->where('numero_demande_dit', $numDit);
+        $updateBuilder->where('code_societe',   $codeSociete);
+
+        // Changer l'opérateur des conditions (optionnel)
+        // $updateBuilder->setConditionOperator('AND');
+        // Construire et exécuter la requête
+        try {
+            $result = $updateBuilder->build();
+            $this->connect->connect();
+            try {
+                $this->connect->executeQuery($result['sql'], $result['params']);
+            } finally {
+                $this->connect->close();
+            }
+        } catch (\Exception $e) {
+            // Vous pouvez logger l'erreur ici
+            throw $e;
+        }
+    }
 
     public function updateNumeroOr(OrSoumissionDto $dto, string $statut)
     {
@@ -219,10 +261,16 @@ class DitModel extends Model
     public function recupInformationsDit(string $numDit, string $codeSociete)
     {
 
-        $statement = " SELECT FIRST 1 *
-                FROM {$this->dbIrium}:Informix.demande_intervention
-                WHERE numero_demande_dit = '$numDit'
-                AND code_societe = '$codeSociete'
+        $statement = "  SELECT FIRST 1
+        d0_.*,
+          TRIM(m.mmat_recalph) AS numero_parc,
+        TRIM(m.mmat_numserie) AS numero_serie,
+        TRIM(m.mmat_numparc) AS casier
+    FROM {$this->dbIrium}:Informix.demande_intervention d0_
+    LEFT JOIN {$this->dbIps}:informix.mat_mat m
+        ON d0_.id_materiel = m.mmat_nummat
+    WHERE d0_.numero_demande_dit = '$numDit'
+      AND d0_.code_societe = '$codeSociete'
         ";
 
         $result = $this->connect->executeQuery($statement);
@@ -445,11 +493,33 @@ class DitModel extends Model
       and slor_numor in (select seor_numor from sav_eor where seor_serv = 'SAV')
       and slor_numor = '" . $numero_or . "'
       group by 1,2,3,4,5";
-
         $result = $this->connect->executeQuery($statement);
 
         $data = $this->connect->fetchResults($result);
 
         return $this->convertirEnUtf8($data);
+    }
+
+    /**
+     * Récupération numero des DITs a annuler
+     * 
+     *
+     * @return array
+     */
+    public function recupDitAAnnuler()
+    {
+        $now = (new DateTime())->format('Y-m-d H:i:s');
+        $yesterday = (new DateTime('-1 day'))->format('Y-m-d H:i:s');
+
+        $statement = " SELECT numero_demande_dit,a_annuler
+                FROM {$this->dbIrium}:Informix.demande_intervention
+                WHERE a_annuler = '1' 
+                   AND date_annulation BETWEEN '$yesterday' AND '$now'
+        ";
+
+        $result = $this->connect->executeQuery($statement);
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
+
+        return  $data;
     }
 }

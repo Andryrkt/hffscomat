@@ -10,8 +10,8 @@ use DateTime;
 class DitDto
 {
 
-
-    public ?string $numero_demande_dit = null;
+    public ?int $id  = null;
+    public ?string $numeroDemandeIntervention = null;
     public ?string $objetDemande = null;
     public ?string $detailDemande = null;
     public ?string $typeDocument = null;
@@ -36,9 +36,10 @@ class DitDto
     public $pieceJoint01 = null;
     public $pieceJoint02 = null;
     public $pieceJoint03 = null;
+    public $nbrPj = null;
 
+    public ?int $id_statut_demande = null;
     public ?string $statutDemande = null;
-    public ?string $numeroDemandeIntervention = null;
     public ?string $mailDemandeur = null;
     public ?string $dateDemande = null;
     public ?string $heureDemande = null;
@@ -47,6 +48,8 @@ class DitDto
     public bool $estDitAvoir = false;
     public bool $estDitRefacturation = false;
     public bool $estAtePolTana = false;
+    public bool $estAnnulable = false;
+    public bool $estOrASoumi = false;
 
 
     //agence et service
@@ -69,6 +72,37 @@ class DitDto
     public ?string $statutOr = null;
     public ?string $montantOr = null;
     public ?string $dateSoumissionOr = null;
+
+    public ?int $quantiteDemanderOr = 0;
+    public ?int $quantiteLivreeOr = 0;
+    public ?int $quantiteReserverOr = 0;
+    public ?int $qteLivOr = 0;
+    public ?int $quantiteReliquatOr = 0;
+    public ?string $etatLivraison = null;
+
+    public function getEtatLivraison(): string
+    {
+
+        $qteDem = $this->quantiteDemanderOr ?? 0;
+        $qteLiv = $this->quantiteLivreeOr ?? 0;
+        $qteRes = $this->quantiteReserverOr ?? 0;
+
+        if ($qteDem === $qteLiv && $qteDem !== 0) {
+            return 'Tout livré';
+        }
+        if ($qteLiv > 0 && $qteLiv !== $qteDem && $qteDem !== 0) {
+            return 'Partiellement livré';
+        }
+        if ($qteRes !== $qteDem && $qteLiv === 0 && $qteRes > 0) {
+            return 'Partiellement disponible';
+        }
+        if ($qteDem === $qteRes && $qteLiv < $qteDem && $qteDem !== 0) {
+            return 'Complet non livré';
+        }
+
+        return 'Non Livré';
+    }
+
 
     // facturation
     public ?string $etatFacturation = null;
