@@ -73,8 +73,8 @@ class DitFactureSoumisAValidationModel extends Model
         $statement = " SELECT agence_service_debiteur as agServDeb,
                             internet_externe as int_ext,
                             migration as migration
-                    from {$this->dbIrium}:Informix.Informix.demande_intervention 
-                    and numero_demande_dit = '$numDit'
+                    from {$this->dbIrium}:Informix.demande_intervention 
+                    Where numero_demande_dit = '$numDit'
                     and code_societe = '$codeSociete'
         ";
 
@@ -219,7 +219,7 @@ class DitFactureSoumisAValidationModel extends Model
 
         $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
 
-        return array_column($data, 'numeroitv')[0] ?? [];
+        return array_column($data, 'numeroitv') ?? [];
     }
 
     public function recupOrSoumisValidation(string $numOr, string $numFact, string $codeSociete): array
@@ -438,19 +438,20 @@ class DitFactureSoumisAValidationModel extends Model
         }
     }
 
-     public function enregistrerFacture(array $data): void
+    public function enregistrerFacture(array $data): void
     {
-
-        // Construire la requête d'insertion et l'exécuter
-        $builder = new InsertQueryBuilder("{$this->dbIrium}:Informix.facture_soumis_a_validation");
-        $builder->setData($data);
-        $result = $builder->build();
-
         // Exécuter la requête d'insertion
         // S'assurer que la connexion est ouverte
         $this->connect->connect();
         try {
-            $this->connect->executeQuery($result['sql'], $result['params']);
+            foreach ($data as $donnees) {
+                // Construire la requête d'insertion et l'exécuter
+                $builder = new InsertQueryBuilder("{$this->dbIrium}:Informix.facture_soumis_a_validation");
+                $builder->setData($donnees);
+                $result = $builder->build();
+
+                $this->connect->executeQuery($result['sql'], $result['params']);
+            }
         } finally {
             // ne fermez ici que si vous êtes sûr que c'est la dernière opération
             $this->connect->close();
@@ -459,143 +460,143 @@ class DitFactureSoumisAValidationModel extends Model
 
     // ===========================================================
 
-    public function recupNombreFacture(string $numOr, string $numFact, string $codeSociete)
-    {
-        $statement = "SELECT count(slor_numfac) as nbFact 
-                    FROM sav_lor where slor_numor = '$numOr'
-                    AND slor_numfac = '$numFact'
-                    AND slor_soc = '$codeSociete'
-                    ";
+    // public function recupNombreFacture(string $numOr, string $numFact, string $codeSociete)
+    // {
+    //     $statement = "SELECT count(slor_numfac) as nbFact 
+    //                 FROM sav_lor where slor_numor = '$numOr'
+    //                 AND slor_numfac = '$numFact'
+    //                 AND slor_soc = '$codeSociete'
+    //                 ";
 
-        $result = $this->connect->executeQuery($statement);
+    //     $result = $this->connect->executeQuery($statement);
 
-        $data = $this->connect->fetchResults($result);
+    //     $data = $this->connect->fetchResults($result);
 
-        return $this->convertirEnUtf8($data);
-    }
+    //     return $this->convertirEnUtf8($data);
+    // }
 
-    public function recupNumeroItv(string $numOr, string $numFact)
-    {
-        $statement = "SELECT
-                    slor_nogrp / 100 AS numeroItv
-                FROM
-                    sav_lor
-                JOIN
-                    sav_itv ON sitv_numor = slor_numor
-                            AND sitv_interv = slor_nogrp / 100
-                WHERE
-                    --sitv_servcrt IN ('ATE', 'FOR', 'GAR', 'MAN', 'CSP', 'MAS', 'LR6', 'LST')
-                     slor_numor = '" . $numOr . "'
-                    AND slor_numfac = '" . $numFact . "'
-                GROUP BY
-                numeroOr, numeroItv
-                ORDER BY
-                    numeroItv
-        ";
-        $result = $this->connect->executeQuery($statement);
+    // public function recupNumeroItv(string $numOr, string $numFact)
+    // {
+    //     $statement = "SELECT
+    //                 slor_nogrp / 100 AS numeroItv
+    //             FROM
+    //                 sav_lor
+    //             JOIN
+    //                 sav_itv ON sitv_numor = slor_numor
+    //                         AND sitv_interv = slor_nogrp / 100
+    //             WHERE
+    //                 --sitv_servcrt IN ('ATE', 'FOR', 'GAR', 'MAN', 'CSP', 'MAS', 'LR6', 'LST')
+    //                  slor_numor = '" . $numOr . "'
+    //                 AND slor_numfac = '" . $numFact . "'
+    //             GROUP BY
+    //             numeroOr, numeroItv
+    //             ORDER BY
+    //                 numeroItv
+    //     ";
+    //     $result = $this->connect->executeQuery($statement);
 
-        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
+    //     $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
 
-        return array_column($data, 'numeroItv');
-    }
+    //     return array_column($data, 'numeroItv');
+    // }
 
 
 
-    public function recuperationStatutItv(string $numOr, string $numItv, string $codeSociete)
-    {
-        $statement = " SELECT 
-                    TRIM(seor_refdem) AS referenceDIT,
-                    seor_numor AS numeroOr,
-                    TRUNC(SUM(
-                        CASE 
-                            WHEN slor_typlig = 'P' 
-                            THEN (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) 
-                            WHEN slor_typlig IN ('F', 'M', 'U', 'C') 
-                            THEN slor_qterea 
-                        END
-                    )) AS quantiteDemander,
-                    TRUNC(SUM(slor_qteres)) AS quantiteReserver,
-                    TRUNC(SUM(
-                        CASE 
-                            WHEN slor_typlig IN ('F', 'M', 'U', 'C') 
-                            THEN slor_qterea 
-                            ELSE sliv_qteliv 
-                        END
-                    )) AS quantiteLivree,
-                    TRUNC(SUM(slor_qterel)) AS quantiteReliquat
-                FROM sav_lor 
-                INNER JOIN sav_eor 
-                    ON seor_soc = slor_soc 
-                    AND seor_succ = slor_succ 
-                    AND seor_numor = slor_numor
-                LEFT JOIN sav_liv 
-                    ON sliv_soc = slor_soc 
-                    AND sliv_succ = slor_succ 
-                    AND sliv_numor = seor_numor 
-                    AND slor_nolign = sliv_nolign
-                WHERE slor_soc = '$codeSociete'
-                    AND seor_serv = 'SAV'
-                    --AND slor_constp IN (" . GlobalVariablesService::get('tous') . ")
-                    AND slor_numor = '" . $numOr . "'
-                    AND TRUNC(slor_nogrp / 100) IN (" . $numItv . ")
-                GROUP BY 
-                    1,2
-        ";
+    // public function recuperationStatutItv(string $numOr, string $numItv, string $codeSociete)
+    // {
+    //     $statement = " SELECT 
+    //                 TRIM(seor_refdem) AS referenceDIT,
+    //                 seor_numor AS numeroOr,
+    //                 TRUNC(SUM(
+    //                     CASE 
+    //                         WHEN slor_typlig = 'P' 
+    //                         THEN (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) 
+    //                         WHEN slor_typlig IN ('F', 'M', 'U', 'C') 
+    //                         THEN slor_qterea 
+    //                     END
+    //                 )) AS quantiteDemander,
+    //                 TRUNC(SUM(slor_qteres)) AS quantiteReserver,
+    //                 TRUNC(SUM(
+    //                     CASE 
+    //                         WHEN slor_typlig IN ('F', 'M', 'U', 'C') 
+    //                         THEN slor_qterea 
+    //                         ELSE sliv_qteliv 
+    //                     END
+    //                 )) AS quantiteLivree,
+    //                 TRUNC(SUM(slor_qterel)) AS quantiteReliquat
+    //             FROM sav_lor 
+    //             INNER JOIN sav_eor 
+    //                 ON seor_soc = slor_soc 
+    //                 AND seor_succ = slor_succ 
+    //                 AND seor_numor = slor_numor
+    //             LEFT JOIN sav_liv 
+    //                 ON sliv_soc = slor_soc 
+    //                 AND sliv_succ = slor_succ 
+    //                 AND sliv_numor = seor_numor 
+    //                 AND slor_nolign = sliv_nolign
+    //             WHERE slor_soc = '$codeSociete'
+    //                 AND seor_serv = 'SAV'
+    //                 --AND slor_constp IN (" . GlobalVariablesService::get('tous') . ")
+    //                 AND slor_numor = '" . $numOr . "'
+    //                 AND TRUNC(slor_nogrp / 100) IN (" . $numItv . ")
+    //             GROUP BY 
+    //                 1,2
+    //     ";
 
-        $result = $this->connect->executeQuery($statement);
+    //     $result = $this->connect->executeQuery($statement);
 
-        $data = $this->connect->fetchResults($result);
+    //     $data = $this->connect->fetchResults($result);
 
-        return $this->convertirEnUtf8($data);
-    }
+    //     return $this->convertirEnUtf8($data);
+    // }
 
-    public function orStatutEstValide(string $numOr, string $numItv)
-    {
-        $sql = " SELECT 
-                case when statut = 'Validé' then 'Validé'else 'Non validé' end as Statut
-                from ors_soumis_a_validation
-                where numeroOR = '$numOr' 
-                and numeroItv = '$numItv' 
-                and numeroVersion = (select max(numeroversion) from ors_soumis_a_validation where numeroOR = '$numOr' and numeroItv = '$numItv')
-        ";
+    // public function orStatutEstValide(string $numOr, string $numItv)
+    // {
+    //     $sql = " SELECT 
+    //             case when statut = 'Validé' then 'Validé'else 'Non validé' end as Statut
+    //             from ors_soumis_a_validation
+    //             where numeroOR = '$numOr' 
+    //             and numeroItv = '$numItv' 
+    //             and numeroVersion = (select max(numeroversion) from ors_soumis_a_validation where numeroOR = '$numOr' and numeroItv = '$numItv')
+    //     ";
 
-        $exec = $this->connexion->query($sql);
-        $tab = [];
-        while ($result = odbc_fetch_array($exec)) {
-            $tab[] = $result;
-        }
-        return array_column($tab, 'Statut');
-    }
+    //     $exec = $this->connexion->query($sql);
+    //     $tab = [];
+    //     while ($result = odbc_fetch_array($exec)) {
+    //         $tab[] = $result;
+    //     }
+    //     return array_column($tab, 'Statut');
+    // }
 
-    public function findNbrFact(string $numFac)
-    {
-        $statement = "SELECT
-			cout(numeroFact)
-			from 
-			where numeroFact = '$numFac'
-		";
+    // public function findNbrFact(string $numFac)
+    // {
+    //     $statement = "SELECT
+    // 		cout(numeroFact)
+    // 		from 
+    // 		where numeroFact = '$numFac'
+    // 	";
 
-        $result = $this->connect->executeQuery($statement);
+    //     $result = $this->connect->executeQuery($statement);
 
-        $nbrFact = $this->connect->fetchScalarResults($result);
+    //     $nbrFact = $this->connect->fetchScalarResults($result);
 
-        return $nbrFact ? $nbrFact : 0;
-    }
+    //     return $nbrFact ? $nbrFact : 0;
+    // }
 
-    public function findNumItvFacStatut(string $numOr)
-    {
-        $statement = "SELECT
-			numeroItv,
-			numeroFact,
-			statut
-			from 
-			where numeroOR = '$numOr'
-		";
+    // public function findNumItvFacStatut(string $numOr)
+    // {
+    //     $statement = "SELECT
+    // 		numeroItv,
+    // 		numeroFact,
+    // 		statut
+    // 		from 
+    // 		where numeroOR = '$numOr'
+    // 	";
 
-        $result = $this->connect->executeQuery($statement);
+    //     $result = $this->connect->executeQuery($statement);
 
-        $data = $this->connect->fetchScalarResults($result);
+    //     $data = $this->connect->fetchScalarResults($result);
 
-        return $this->convertirEnUtf8($data);
-    }
+    //     return $this->convertirEnUtf8($data);
+    // }
 }

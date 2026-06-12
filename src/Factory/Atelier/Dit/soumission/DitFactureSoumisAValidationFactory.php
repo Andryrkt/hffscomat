@@ -21,17 +21,20 @@ class DitFactureSoumisAValidationFactory
     }
 
 
-    public function apresSoumission(DitFactureSoumisAValidationDto $dto, FormInterface $form): DitFactureSoumisAValidationDto
+    public function apresSoumission(DitFactureSoumisAValidationDto $dto, FormInterface $form, string $numDit): DitFactureSoumisAValidationDto
     {
         $numFac = explode('_', $form->get("pieceJoint01")->getData()->getClientOriginalName());
 
         $ditFactureSoumisAValidationModel = new DitFactureSoumisAValidationModel();
+
+        $dto->numeroDit = $numDit;
         $dto->numeroSoumission = $ditFactureSoumisAValidationModel->recupNumeroSoumission($dto->numeroOr, $dto->codeSociete);
         $dto->numeroFact = $numFac[1] ?? null;
         $dto->dateSoumission = date('Y-m-d');
         $dto->heureSoumission = date('H:i');
         $agSevDebAndIntExt = $ditFactureSoumisAValidationModel->recupAgServDebAndIntExtDit($dto->numeroDit, $dto->codeSociete);
-        $dto->agServDebDit = $agSevDebAndIntExt['agServDeb'];
+
+        $dto->agServDebDit = $agSevDebAndIntExt['agservdeb'];
         $dto->interneExterne = $agSevDebAndIntExt['int_ext'];
         $dto->migration = $agSevDebAndIntExt['migration'];
         $dto->infoFac = $dto->numeroFact ? $ditFactureSoumisAValidationModel->recupInfoFact($dto->numeroOr, $dto->numeroFact, $dto->codeSociete) : [];

@@ -85,7 +85,7 @@ class FactureValidationService
         }
 
         // Vérifie si le numéro de Facture dans le nom du fichier correspond au numéro de dit attendu (S'assurer que le Facture envoyé corresponde à la ligne de facture utilisé pour la soumission dans l'intranet)
-        if (!$this->matchNumberAfterUnderscore($fileName, $dto->numeroOr)) {
+        if (!$this->matchNumberAfterUnderscore($fileName, $dto->numeroFact)) {
             $message = "Le numéro de facture dans le nom du fichier ($fileName) ne correspond pas à l'OR du formulaire ( $dto->numeroOr)";
             $this->sendNotificationOR($message, $dto->numeroOr, false);
             return true;

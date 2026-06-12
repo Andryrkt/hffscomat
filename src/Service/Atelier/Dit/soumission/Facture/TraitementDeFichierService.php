@@ -77,7 +77,7 @@ class TraitementDeFichierService
             $statutOrsSoumisValidation = $ditFactureSoumiAValidationModel->recupStatutOr($value['numeroor'], (int)$value['numeroitv'], $dto->codeSociete);
 
             $conditionDifferenceServDeb =  $dto->agServDebDit !== $agServFac;
-            $conditionDifferenceMontant = abs($dto->infoFac['montant'] - $dto->infoFac['montantfactureitv']) > 0.01; // Comparaison avec tolérance
+            $conditionDifferenceMontant = abs($value['montant'] - $value['montantfactureitv']) > 0.01; // Comparaison avec tolérance
             $conditionPasSoumissionOr = $nombreItv === 0;
             $conditionExiteMotRefuse = strpos($statutOrsSoumisValidation, 'refusée') !== false;
             $conditionStatutDiffValide = $statutOrsSoumisValidation !== 'Validé' && $statutOrsSoumisValidation !== 'Livré';

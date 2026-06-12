@@ -6,7 +6,6 @@ use App\Controller\Controller;
 use App\Factory\Atelier\Dit\soumission\DitFactureSoumisAValidationFactory;
 use App\Form\Atelier\Dit\soumission\DitFactureSoumisAValidationType;
 use App\Mapper\Atelier\Dit\Soumission\DItFactureSoumisAValidationMapper;
-use App\Model\Atelier\Dit\Soumission\DitDevisSoumisAValidationModel;
 use App\Model\Atelier\Dit\Soumission\DitFactureSoumisAValidationModel;
 use App\Service\atelier\dit\soumission\Facture\FactureValidationService;
 use App\Service\atelier\dit\soumission\Facture\TraitementDeFichierService;
@@ -53,7 +52,7 @@ class DitFactureSoumisAValidationController extends Controller
 
             // recharge du DTO
             $ditFactorySoumisAValidationFactory = new DitFactureSoumisAValidationFactory();
-            $dto = $ditFactorySoumisAValidationFactory->apresSoumission($dto, $form);
+            $dto = $ditFactorySoumisAValidationFactory->apresSoumission($dto, $form, $numDit);
 
             // bloquer si des conditions n'est pas valide
             $factureValidationService = new FactureValidationService();
