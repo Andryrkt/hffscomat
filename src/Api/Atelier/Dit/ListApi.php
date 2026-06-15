@@ -85,6 +85,7 @@ class ListApi extends Controller
 
         $facture = (new DitFactureSoumisAValidationModel())->findNumItvFacStatut($numOr);
 
+
         $itvNumFac = $ditListeModel->recupItvNumFac($numOr);
 
         $result = [];

@@ -144,7 +144,7 @@ class DitListeModel extends Model
         }
         $statement .= " ORDER BY d0_.date_demande DESC, d0_.numero_demande_dit ASC ";
         $result = $this->connect->executeQuery($statement);
-        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
+        $data = $this->connect->fetchResults($result);
         // Compter le total d'items
         $totalItems = $this->compteNombreItem($codeSociete, $conditions);
         // Calculer le nombre de pages
@@ -154,7 +154,7 @@ class DitListeModel extends Model
         $statusCounts = $this->compteNombreStatut($codeSociete, $conditions);
 
         return [
-            'data' => $this->convertirEnUtf8($data),
+            'data' => $data,
             'totalItems' => $totalItems,
             'currentPage' => $page,
             'lastPage' => $lastPage,

@@ -582,20 +582,20 @@ class DitFactureSoumisAValidationModel extends Model
     //     return $nbrFact ? $nbrFact : 0;
     // }
 
-    // public function findNumItvFacStatut(string $numOr)
-    // {
-    //     $statement = "SELECT
-    // 		numeroItv,
-    // 		numeroFact,
-    // 		statut
-    // 		from 
-    // 		where numeroOR = '$numOr'
-    // 	";
+    public function findNumItvFacStatut(string $numOr)
+    {
+        $statement = "SELECT
+    		numeroItv,
+    		numeroFact,
+    		statut
+    		from 
+    		where numeroOR = '$numOr'
+    	";
 
-    //     $result = $this->connect->executeQuery($statement);
+        $result = $this->connect->executeQuery($statement);
 
-    //     $data = $this->connect->fetchScalarResults($result);
+        $data = $this->connect->fetchScalarResults($result);
 
-    //     return $this->convertirEnUtf8($data);
-    // }
+        return $this->convertirEnUtf8($data);
+    }
 }

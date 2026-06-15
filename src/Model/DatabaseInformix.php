@@ -160,7 +160,7 @@ class DatabaseInformix implements DatabaseConnectionInterface
             }
         } elseif (is_string($data)) {
             // Détection et conversion intelligente vers UTF-8
-            return mb_convert_encoding($data, 'UTF-8', 'Windows-1252, UTF-8, ASCII');
+            return mb_convert_encoding($data, 'UTF-8', 'ISO-8859-1, UTF-8, ASCII');
         }
 
         return $data;
