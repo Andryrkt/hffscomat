@@ -30,7 +30,7 @@ services:
       - "@doctrine.orm.default_entity_manager"
     public: true
 
-  App\Service\historiqueOperation\atelier\dit\Facture\HistoriqueOperationFACService:
+  App\Service\historiqueOperation\Atelier\dit\Facture\HistoriqueOperationFACService:
     arguments:
       - "@doctrine.orm.default_entity_manager"
     public: true
@@ -87,6 +87,6 @@ services:
 
   App\Controller\Atelier\Planning\PlanningAtelierController:
     arguments:
-      - '@App\Service\atelier\Planning\PlanningAtelierService'
+      - '@App\Service\Atelier\Planning\PlanningAtelierService'
       - '@App\Model\Atelier\Planning\PlanningAtelierModel'
     public: true

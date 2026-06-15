@@ -166,4 +166,49 @@ class DitRiSoumisAValidationModel extends Model
 
         return $data;
     }
+
+    /**
+     * Recupère la derniere numero de soumission RI par numOr et code societe
+     * ---------------------------------------------------
+     * 
+     *
+     * @param string $numOr
+     * @param string $codeSociete
+     */
+    public function findNumeroVersionMax(string $numOr, string $codeSociete): int
+    {
+        $statement = "
+        SELECT numero_soumission AS numero_version_max
+        FROM {$this->dbIrium}:Informix.ri_soumis_a_validation
+        WHERE numero_or = '$numOr'
+          AND code_societe = '$codeSociete'
+    ";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->connect->fetchResults($result);
+
+        return (int)($data[0]['numero_version_max'] ?? 0);
+    }
+
+
+    public function findNumItv($numOr, $codeSociete)
+    {
+
+        $numeroVersionMax = $this->findNumeroVersionMax($numOr, $codeSociete);
+
+        // Étape 2 : Utiliser le numeroVersionMax pour récupérer le numero d'intervention
+        $statement = "
+        SELECT numeroItv AS numeroItv
+        FROM {$this->dbIrium}:Informix.ri_soumis_a_validation
+        WHERE numero_or = '$numOr' 
+        AND numero_soumission = '$numeroVersionMax' 
+          AND code_societe = '$codeSociete'
+    ";
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->connect->fetchResults($result);
+
+        return (array)($data[0]['numeroItv'] ?? 0);
+    }
 }

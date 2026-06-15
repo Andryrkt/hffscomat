@@ -139,9 +139,24 @@ class DitListeModel extends Model
                 AND (d0_.statut_or NOT LIKE 'Refus%' OR d0_.statut_or IS NULL)                
         ";
         $conditions = $this->filtre($ditSearchdto);
+        $defaultStatuts = [
+            StatutDitConstant::STATUT_A_AFFECTER,
+            StatutDitConstant::STATUT_AFFECTEE_SECTION,
+            StatutDitConstant::STATUT_CLOTUREE_VALIDER
+        ];
+
         if (!empty($conditions)) {
             $statement .= " AND " . implode("AND", $conditions);
+        } else {
+            $quotedStatuses = array_map(
+                fn($status) => "'" . str_replace("'", "''", $status) . "'",
+                $defaultStatuts
+            );
+
+            $statement .= " AND s3_.description IN (" . implode(',', $quotedStatuses) . ")";
         }
+
+
         $statement .= " ORDER BY d0_.date_demande DESC, d0_.numero_demande_dit ASC ";
 
         $result = $this->connect->executeQuery($statement);
@@ -440,6 +455,7 @@ class DitListeModel extends Model
 
     private function filtre(DitSearchDto $ditSearchdto)
     {
+
         $conditions = [];
         // filtrer par niveau d'urgence
         if (!empty($ditSearchdto->niveauUrgence)) {
@@ -448,6 +464,7 @@ class DitListeModel extends Model
         // filtrer par statut demande
         if (!empty($ditSearchdto->statut)) {
             $conditions[] = "  s3_.description = '$ditSearchdto->statut' ";
+        } elseif (empty($ditSearchdto->statut)) {
         }
 
         // filtrer par id matériel
@@ -729,5 +746,23 @@ class DitListeModel extends Model
         $dataUtf8 = $this->convertirEnUtf8($data);
 
         return $dataUtf8;
+    }
+
+    public function recupItvComment($numOr)
+    {
+        $statement = " SELECT 
+                        sitv_interv as numeroItv,
+                        TRIM(sitv_comment) as commentair
+                    from sav_itv
+                    where sitv_numor = '" . $numOr . "'
+        ";
+
+        $result = $this->connect->executeQuery($statement);
+
+
+        $data = $this->connect->fetchResults($result);
+        $dataUtf8 =   $this->convertirEnUtf8($data);
+
+        return   $dataUtf8;
     }
 }

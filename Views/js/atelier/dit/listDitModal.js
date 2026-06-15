@@ -162,7 +162,6 @@ riModalInput.addEventListener("show.bs.modal", function (event) {
     .then((data) => {
       const tableBody = document.getElementById("riBody");
       tableBody.innerHTML = ""; // Clear previous data
-
       if (data.length > 0) {
         // Générer les lignes du tableau en fonction des données
         data.forEach((item) => {
