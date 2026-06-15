@@ -106,7 +106,7 @@ class DitModel extends Model
 
     /**
      * Methode pour enregistrer les données du formulaire Dit
-     *  dans la base de donnée
+     *  dans la table demande_intervention
      *
      * @param OrSoumissionDto $dto
      * @return void
@@ -121,7 +121,7 @@ class DitModel extends Model
         $donnees = DitMapper::toArrayDit($dto, $ors);
 
         // Construire la requête d'insertion et l'exécuter
-        $builder = new InsertQueryBuilder("{$this->dbIrium}:Informix.bc_client_soumis_neg");
+        $builder = new InsertQueryBuilder("{$this->dbIrium}:Informix.demande_intervention");
         $builder->setData($donnees);
         $result = $builder->build();
 
@@ -157,10 +157,10 @@ class DitModel extends Model
 
         $updateBuilder = new UpdateQueryBuilder("{$this->dbIrium}:Informix.demande_intervention");
 
-        // // Définir les données à mettre à jour
+        // Définir les données à mettre à jour
         $updateBuilder->setData($donnees);
 
-        // // Ajouter les conditions WHERE
+        // Ajouter les conditions WHERE
         $updateBuilder->where('numero_demande_dit', $numDit);
         $updateBuilder->where('code_societe',  $codeSociete);
 

@@ -1,9 +1,4 @@
-import {
-  conversionEnKo,
-  iconSelonTypeFile,
-  afficherFichier,
-  couleurDefondClick,
-} from "./utils.js";
+import { afficherFichier, couleurDefondClick } from "./utils.js";
 import { FetchManager } from "../api/FetchManager.js";
 
 // Instanciation de FetchManager avec la base URL
@@ -28,12 +23,10 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("numero-dit").textContent = numeroDit;
       console.log(numeroDit);
 
-      // Appelle l'API via AJAX pour récupérer les détails
-      const url = `api/dw-fetch/${numeroDit}`;
       fetchManager
-        .get(url)
-        .then((data) => {
-          console.log(data);
+        .get(`api/dw-fetch/${numeroDit}`)
+        .then((response) => {
+          console.log(response);
           // Masque le spinner une fois les données chargées
           spinner.style.display = "none";
 
@@ -44,46 +37,20 @@ document.addEventListener("DOMContentLoaded", function () {
           oldTbody.parentNode.replaceChild(newTbody, oldTbody);
 
           // Parcourt les données reçues et insère chaque document dans le tableau
-          data.forEach((doc) => {
-            // Conversion de la taille du fichier en kilo-octets (ko)
-            const tailleFichierKo = doc.taille_fichier
-              ? conversionEnKo(doc.taille_fichier) + " Ko"
-              : "-";
-
-            // Sélectionne l'icône en fonction de l'extension du fichier avec Font Awesome
-            let icon = iconSelonTypeFile(doc.extension_fichier);
-
-            //affichage statut et version or
-            let statut = "-";
-            let numVersion = "-";
-            if (doc.nomDoc === "Ordre de réparation") {
-              statut = doc.statut_or ? doc.statut_or : "-";
-              numVersion = doc.numero_version ? doc.numero_version : "-";
-            }
-
+          response.data.forEach((doc) => {
             const row = document.createElement("tr");
 
             row.innerHTML = `
-                      <td>${icon}</td>
+                      <td>${doc.iconRaw}</td>
                       <td>${doc.nomDoc}</td>
-                      <td>${doc.numero_doc}</td>
-                      <td>${
-                        doc.date_creation
-                          ? new Date(doc.date_creation).toLocaleDateString()
-                          : "-"
-                      }</td>
-                      <td>${
-                        doc.date_modification
-                          ? new Date(doc.date_modification).toLocaleDateString()
-                          : "-"
-                      }</td>
-                      <td class="text-center">${numVersion}</td>
-                      <td class="text-center">${doc.total_page ?? "-"}</td>
-                      <td>${tailleFichierKo}</td>
+                      <td>${doc.numeroDoc}</td>
+                      <td class="text-center">${doc.dateCreation}</td>
+                      <td class="text-center">${doc.dateModification}</td>
+                      <td class="text-center">${doc.numeroVersion}</td>
+                      <td class="text-center">${doc.totalPage}</td>
+                      <td class="text-end">${doc.tailleFichier}</td>
                   `;
-
-            // Ajoute la classe "clickable" à la ligne
-            row.classList.add("clickable");
+            row.classList.add("clickable-row");
 
             // Ajoute un événement de clic pour afficher le fichier dans la page
             row.addEventListener("click", function () {
