@@ -74,6 +74,8 @@ class ListApi extends Controller
      * */
     public function facturation($numOr)
     {
+        // Code Société de l'utilisateur
+        $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
 
         if (empty($numOr)) {
             header("Content-type:application/json");
@@ -83,8 +85,7 @@ class ListApi extends Controller
 
         $ditListeModel = new DitListeModel($this->getSecurityService());
 
-        $facture = (new DitFactureSoumisAValidationModel())->findNumItvFacStatut($numOr);
-
+        $facture = (new DitFactureSoumisAValidationModel())->findNumItvFacStatut($numOr, $codeSociete);
 
         $itvNumFac = $ditListeModel->recupItvNumFac($numOr);
 
@@ -92,9 +93,9 @@ class ListApi extends Controller
         foreach ($itvNumFac as $value) {
             $found = false;
             foreach ($facture as $item) {
-                if ($item['numeroItv'] == $value['itv']) {
-                    $result[] = $item;
+                if ($item['numeroitv'] == $value['itv']) {
                     $found = true;
+                    $result[] = $item;
                     break;
                 }
             }
@@ -102,8 +103,8 @@ class ListApi extends Controller
 
             if (!$found) {
                 $result[] = [
-                    "numeroItv" => $value['itv'],
-                    "numeroFact" => $value['numerofac'] ? $value['numerofac'] : "-",
+                    "numeroitv" => $value['itv'],
+                    "numerofact" => $value['numerofac'] ? $value['numerofac'] : "-",
                     "statut" => "-"
                 ];
             }

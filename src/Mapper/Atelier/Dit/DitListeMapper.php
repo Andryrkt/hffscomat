@@ -27,7 +27,7 @@ class DitListeMapper
             $dto->agenceServiceDebiteur = $item['debiteur'];
             $dto->objetDemande = $item['objet'];
             $dto->sectionAffectee = $item['section_affectee'];
-            $dto->numeroDevisRattacher = $item['numero_devis'];
+            $dto->numeroDevisRattache = $item['numero_devis'];
             $dto->statutDevis = $item['statut_devis'];
             $dto->numeroOr = $item['numero_or'];
             $dto->statutOr = $item['statut_or'];

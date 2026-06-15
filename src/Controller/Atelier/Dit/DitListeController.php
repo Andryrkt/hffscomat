@@ -109,7 +109,6 @@ class DitListeController extends Controller
         $this->ajoutConditionAnnulationDit($ditDto);
         $this->ajoutEstOrASoumis($ditDto);
         $this->ajoutEtatLivraison($ditDto);
-
         return [
             'data' => $ditDto,
             'totalItems' => $dits['totalItems'],

@@ -64,7 +64,7 @@ class DitDto
     public ?string $sectionAffectee = null;
 
     // devis
-    public ?string $numeroDevisRattacher = null;
+    public ?string $numeroDevisRattache = null;
     public ?string $statutDevis = null;
 
     // OR

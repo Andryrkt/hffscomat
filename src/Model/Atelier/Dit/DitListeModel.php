@@ -143,6 +143,7 @@ class DitListeModel extends Model
             $statement .= " AND " . implode("AND", $conditions);
         }
         $statement .= " ORDER BY d0_.date_demande DESC, d0_.numero_demande_dit ASC ";
+
         $result = $this->connect->executeQuery($statement);
         $data = $this->connect->fetchResults($result);
         // Compter le total d'items

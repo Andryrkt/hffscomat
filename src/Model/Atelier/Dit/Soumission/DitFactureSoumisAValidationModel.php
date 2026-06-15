@@ -381,7 +381,6 @@ class DitFactureSoumisAValidationModel extends Model
                 where numeroor = '$numOr' 
                     and code_societe='$codeSociete' 
                 ";
-
         $result = $this->connect->executeQuery($statement);
 
         $data = $this->connect->fetchResults($result);
@@ -582,19 +581,18 @@ class DitFactureSoumisAValidationModel extends Model
     //     return $nbrFact ? $nbrFact : 0;
     // }
 
-    public function findNumItvFacStatut(string $numOr)
+    public function findNumItvFacStatut(string $numOr, string $codeSociete)
     {
         $statement = "SELECT
-    		numeroItv,
-    		numeroFact,
-    		statut
-    		from 
-    		where numeroOR = '$numOr'
+    		numero_itv as numeroItv,
+    		numero_fact as numeroFact,
+    		statut as statut
+    		from {$this->dbIrium}:Informix.facture_soumis_a_validation
+    		where numero_or = '$numOr'
     	";
-
         $result = $this->connect->executeQuery($statement);
 
-        $data = $this->connect->fetchScalarResults($result);
+        $data = $this->connect->fetchResults($result);
 
         return $this->convertirEnUtf8($data);
     }
