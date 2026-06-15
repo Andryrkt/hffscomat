@@ -27,7 +27,7 @@ class DitListeMapper
             $dto->agenceServiceDebiteur = $item['debiteur'];
             $dto->objetDemande = $item['objet'];
             $dto->sectionAffectee = $item['section_affectee'];
-            $dto->numeroDevisRattacher = $item['numero_devis'];
+            $dto->numeroDevisRattache = $item['numero_devis'];
             $dto->statutDevis = $item['statut_devis'];
             $dto->numeroOr = $item['numero_or'];
             $dto->statutOr = $item['statut_or'];
@@ -38,11 +38,11 @@ class DitListeMapper
             $dto->utilisateurDemandeur = $item['utilisateur'];
             $dto->nbrPj = $item['nbrpj'];
 
-            $dto->quantiteDemanderOr = $item['quantitedemanderor'];
-            $dto->quantiteReserverOr = $item['quantitereserveror'];
-            $dto->quantiteLivreeOr = $item['quantitelivreeor'];
-            $dto->quantiteReliquatOr = $item['quantitereliquator'];
-            $dto->qteLivOr = $item['qtelivor'];
+            $dto->quantiteDemanderOr = $item['quantitedemanderor'] ?? 0;
+            $dto->quantiteReserverOr = $item['quantitereserveror'] ?? 0;
+            $dto->quantiteLivreeOr = $item['quantitelivreeor'] ?? 0;
+            $dto->quantiteReliquatOr = $item['quantitereliquator'] ?? 0;
+            $dto->qteLivOr = $item['qtelivor'] ?? 0;
 
             $dto->etatLivraison = $dto->getEtatLivraison();
 

@@ -52,11 +52,11 @@ class DitListeModel extends Model
                     d0_.utilisateur_demandeur AS utilisateur ,
 
 -- Recuperation quantite demande,reserve,livre,reliquat
-                COALESCE(pieces_or.quantiteDemander, 0) AS quantiteDemanderOr,
-                COALESCE(pieces_or.quantiteReserver, 0) AS quantiteReserverOr,
-                COALESCE(pieces_or.quantiteLivree, 0)   AS quantiteLivreeOr,
-                COALESCE(pieces_or.quantiteReliquat, 0) AS quantiteReliquatOr,
-                COALESCE(pieces_or.qteLiv, 0)           AS qteLivOr,
+                -- COALESCE(pieces_or.quantiteDemander, 0) AS quantiteDemanderOr,
+                -- COALESCE(pieces_or.quantiteReserver, 0) AS quantiteReserverOr,
+                -- COALESCE(pieces_or.quantiteLivree, 0)   AS quantiteLivreeOr,
+                -- COALESCE(pieces_or.quantiteReliquat, 0) AS quantiteReliquatOr,
+                -- COALESCE(pieces_or.qteLiv, 0)           AS qteLivOr,
 -- 
                      (
                 (CASE WHEN d0_.piece_joint1 IS NOT NULL AND d0_.piece_joint1 <> '' AND d0_.piece_joint1 <> ' ' THEN 1 ELSE 0 END) + 
@@ -84,34 +84,34 @@ class DitListeModel extends Model
                     ON d0_.id_materiel = m.mmat_nummat
 
 -- Peut etre la cause lenteur du requete 
-            LEFT JOIN (
-                SELECT 
-                    seor.seor_numor AS numeroOr,
-                    SUM(CASE 
-                        WHEN slor.slor_typlig = 'P' THEN (slor.slor_qterel + slor.slor_qterea + slor.slor_qteres + slor.slor_qtewait - slor.slor_qrec) 
-                        WHEN slor.slor_typlig IN ('F','M','U','C') THEN slor.slor_qterea 
-                    END) AS quantiteDemander,
-                    SUM(slor.slor_qteres) AS quantiteReserver,
-                    SUM(sliv.sliv_qteliv) AS quantiteLivree,
-                    SUM(slor.slor_qterel) AS quantiteReliquat,
-                    SUM(slor.slor_qterea) AS qteLiv
-                FROM ips_test:informix.sav_lor slor
-                INNER JOIN ips_test:informix.sav_eor seor 
-                    ON seor.seor_soc = slor.slor_soc 
-                    AND seor.seor_succ = slor.slor_succ 
-                    AND seor.seor_numor = slor.slor_numor
-                LEFT JOIN ips_test:informix.sav_liv sliv 
-                    ON sliv.sliv_soc = slor.slor_soc 
-                    AND sliv.sliv_succ = slor.slor_succ 
-                    AND sliv.sliv_numor = seor.seor_numor 
-                    AND slor.slor_nolign = sliv.sliv_nolign
-                WHERE slor.slor_soc = 'HF'
-                  AND slor.slor_typlig = 'P'
-                  AND seor.seor_serv = 'SAV'
-                  AND slor.slor_constp NOT LIKE 'Z%'
-                  AND slor.slor_constp NOT LIKE 'LUB'
-                GROUP BY seor.seor_numor
-            ) pieces_or ON d0_.numero_or = pieces_or.numeroOr
+            -- LEFT JOIN (
+            --     SELECT 
+            --         seor.seor_numor AS numeroOr,
+            --         SUM(CASE 
+            --             WHEN slor.slor_typlig = 'P' THEN (slor.slor_qterel + slor.slor_qterea + slor.slor_qteres + slor.slor_qtewait - slor.slor_qrec) 
+            --             WHEN slor.slor_typlig IN ('F','M','U','C') THEN slor.slor_qterea 
+            --         END) AS quantiteDemander,
+            --         SUM(slor.slor_qteres) AS quantiteReserver,
+            --         SUM(sliv.sliv_qteliv) AS quantiteLivree,
+            --         SUM(slor.slor_qterel) AS quantiteReliquat,
+            --         SUM(slor.slor_qterea) AS qteLiv
+            --     FROM ips_test:informix.sav_lor slor
+            --     INNER JOIN ips_test:informix.sav_eor seor 
+            --         ON seor.seor_soc = slor.slor_soc 
+            --         AND seor.seor_succ = slor.slor_succ 
+            --         AND seor.seor_numor = slor.slor_numor
+            --     LEFT JOIN ips_test:informix.sav_liv sliv 
+            --         ON sliv.sliv_soc = slor.slor_soc 
+            --         AND sliv.sliv_succ = slor.slor_succ 
+            --         AND sliv.sliv_numor = seor.seor_numor 
+            --         AND slor.slor_nolign = sliv.sliv_nolign
+            --     WHERE slor.slor_soc = 'HF'
+            --       AND slor.slor_typlig = 'P'
+            --       AND seor.seor_serv = 'SAV'
+            --       AND slor.slor_constp NOT LIKE 'Z%'
+            --       AND slor.slor_constp NOT LIKE 'LUB'
+            --     GROUP BY seor.seor_numor
+            -- ) pieces_or ON d0_.numero_or = pieces_or.numeroOr
 --
                 LEFT JOIN (
                     SELECT osv.numeroor, osv.numerodit, osv.montantitv, osv.datesoumission
@@ -139,14 +139,31 @@ class DitListeModel extends Model
                 AND (d0_.statut_or NOT LIKE 'Refus%' OR d0_.statut_or IS NULL)                
         ";
         $conditions = $this->filtre($ditSearchdto);
+        $defaultStatuts = [
+            StatutDitConstant::STATUT_A_AFFECTER,
+            StatutDitConstant::STATUT_AFFECTEE_SECTION,
+            StatutDitConstant::STATUT_CLOTUREE_VALIDER
+        ];
+
         if (!empty($conditions)) {
             $statement .= " AND " . implode("AND", $conditions);
+        } else {
+            $quotedStatuses = array_map(
+                fn($status) => "'" . str_replace("'", "''", $status) . "'",
+                $defaultStatuts
+            );
+            $statement .= " AND s3_.description IN (" . implode(',', $quotedStatuses) . ")";
         }
+
+
         $statement .= " ORDER BY d0_.date_demande DESC, d0_.numero_demande_dit ASC ";
+
         $result = $this->connect->executeQuery($statement);
-        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
+        $data = $this->connect->fetchResults($result);
+
         // Compter le total d'items
         $totalItems = $this->compteNombreItem($codeSociete, $conditions);
+
         // Calculer le nombre de pages
         $lastPage = ceil($totalItems / $perPage);
 
@@ -154,7 +171,7 @@ class DitListeModel extends Model
         $statusCounts = $this->compteNombreStatut($codeSociete, $conditions);
 
         return [
-            'data' => $this->convertirEnUtf8($data),
+            'data' => $data,
             'totalItems' => $totalItems,
             'currentPage' => $page,
             'lastPage' => $lastPage,
@@ -363,9 +380,21 @@ class DitListeModel extends Model
                 AND (d0_.statut_or NOT LIKE 'Refus%' OR d0_.statut_or IS NULL)
         ";
 
+        $defaultStatuts = [
+            StatutDitConstant::STATUT_A_AFFECTER,
+            StatutDitConstant::STATUT_AFFECTEE_SECTION,
+            StatutDitConstant::STATUT_CLOTUREE_VALIDER
+        ];
         if (!empty($conditions)) {
             $countStatement .= " AND " . implode(" AND ", $conditions);
+        } else {
+            $quotedStatuses = array_map(
+                fn($status) => "'" . str_replace("'", "''", $status) . "'",
+                $defaultStatuts
+            );
+            $countStatement .= " AND s3_.description IN (" . implode(',', $quotedStatuses) . ")";
         }
+
 
         $countResult = $this->connect->executeQuery($countStatement);
         $countData = $this->connect->fetchResults($countResult);
@@ -379,6 +408,7 @@ class DitListeModel extends Model
      */
     private function compteNombreStatut(string $codeSociete, array $conditions): array
     {
+
         $statusStatement = "SELECT s3_.description, COUNT(*) as count
                 FROM {$this->dbIrium}:informix.demande_intervention d0_
                 LEFT JOIN {$this->dbIrium}:informix.wor_type_document w1_
@@ -425,6 +455,8 @@ class DitListeModel extends Model
         if (!empty($conditions)) {
             $statusStatement .= " AND " . implode(" AND ", $conditions);
         }
+
+
         $statusStatement .= " GROUP BY s3_.description ";
 
         $statusResult = $this->connect->executeQuery($statusStatement);
@@ -439,6 +471,7 @@ class DitListeModel extends Model
 
     private function filtre(DitSearchDto $ditSearchdto)
     {
+
         $conditions = [];
         // filtrer par niveau d'urgence
         if (!empty($ditSearchdto->niveauUrgence)) {
@@ -447,6 +480,7 @@ class DitListeModel extends Model
         // filtrer par statut demande
         if (!empty($ditSearchdto->statut)) {
             $conditions[] = "  s3_.description = '$ditSearchdto->statut' ";
+        } elseif (empty($ditSearchdto->statut)) {
         }
 
         // filtrer par id matériel
@@ -728,5 +762,23 @@ class DitListeModel extends Model
         $dataUtf8 = $this->convertirEnUtf8($data);
 
         return $dataUtf8;
+    }
+
+    public function recupItvComment($numOr)
+    {
+        $statement = " SELECT 
+                        sitv_interv as numeroItv,
+                        TRIM(sitv_comment) as commentair
+                    from sav_itv
+                    where sitv_numor = '" . $numOr . "'
+        ";
+
+        $result = $this->connect->executeQuery($statement);
+
+
+        $data = $this->connect->fetchResults($result);
+        $dataUtf8 =   $this->convertirEnUtf8($data);
+
+        return   $dataUtf8;
     }
 }
