@@ -2,8 +2,6 @@
 
 namespace App\Dto\atelier\dit\soumission;
 
-use Symfony\Component\HttpFoundation\File\UploadedFile;
-
 class DitFactureSoumisAValidationDto
 {
 	public ?string $numeroFact = null;
@@ -12,9 +10,9 @@ class DitFactureSoumisAValidationDto
 
 	public ?string $numeroOr = null;
 
-    public ?\DateTime $dateSoumission = null;
+	public ?string $dateSoumission = null;
 
-    public ?\DateTime $heureSoumission = null;
+	public ?string $heureSoumission = null;
 
 	public int $numeroSoumission = 0;
 
@@ -26,7 +24,7 @@ class DitFactureSoumisAValidationDto
 
 	public ?string $serviceDebiteur = null;
 
-	public ?string $statut = '';
+	public ?string $statut = null;
 
 	public ?string $codeSociete = null;
 
@@ -34,9 +32,24 @@ class DitFactureSoumisAValidationDto
 
 	public float $mttItv = 0.00;
 
-	public ?string $libelleItv = '';
+	public ?string $libelleItv = null;
 
-	public ?string $agServDebDit = '';
+	public ?string $agServDebDit = null;
 
-	public UploadedFile $pieceJoint = [];
+	public ?string $interneExterne = null;
+
+	public $migration;
+
+	public $pieceJoint01;
+	public $pieceJoint02;
+	public $pieceJoint03;
+	public $pieceJoint04;
+
+	public array $infoFac = [];
+
+	public bool $estRi = false;
+
+	public ?string $etatOr = null;
+
+	public ?string $numDevis = null;
 }

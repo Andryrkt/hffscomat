@@ -9,14 +9,14 @@ ini_set('post_max_size', '5M');
 use App\Controller\Controller;
 use App\Controller\Traits\FormatageTrait;
 use App\Dto\Atelier\Dit\soumission\OrSoumissionDto;
+use App\Factory\Atelier\Dit\DitFactory;
 use App\Factory\Atelier\Dit\Soumission\OrSoumissionFactory;
 use App\Form\Atelier\Dit\soumission\DitOrsSoumisAValidationType;
 use App\Model\Atelier\Dit\DitModel;
 use App\Model\Atelier\Dit\Soumission\DitOrSoumisAValidationModel;
 use App\Service\atelier\dit\soumission\ORs\TraitementFichierService;
 use App\Service\atelier\dit\soumission\ORs\ValidationService;
-use App\Service\historiqueOperation\HistoriqueOperationORService;
-use App\Service\historiqueOperation\HistoriqueOperationService;
+use App\Service\historiqueOperation\Atelier\Dit\ORs\HistoriqueOperationORService;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -27,19 +27,23 @@ use Symfony\Component\Routing\Annotation\Route;
 class DitOrsSoumisAValidationController extends Controller
 {
 
-    private HistoriqueOperationService $historiqueOperation;
+    private HistoriqueOperationORService $historiqueOperation;
 
     private DitOrSoumisAValidationModel $ditOrsoumisAValidationModel;
 
     private DitModel $ditModel;
+    private DitFactory $ditFactory;
+
 
     public function __construct()
     {
         parent::__construct();
-        $this->historiqueOperation      = new HistoriqueOperationORService($this->getEntityManager());
-        $this->ditOrsoumisAValidationModel = new DitOrSoumisAValidationModel();
+        $this->historiqueOperation = new HistoriqueOperationORService($this->getEntityManager());
         $this->ditModel = new DitModel();
+        $this->ditOrsoumisAValidationModel = new DitOrSoumisAValidationModel();
+        $this->ditFactory = new DitFactory($this->getSecurityService(), $this->getEntityManager());
     }
+
 
     /**
      * @Route("/soumission-or/{numDit}", name="dit_insertion_or")

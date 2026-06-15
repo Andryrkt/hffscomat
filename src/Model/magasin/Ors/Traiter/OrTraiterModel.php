@@ -33,6 +33,15 @@ class OrTraiterModel extends Model
         $statement = "SELECT 
             trim(seor_refdem) as numero_dit
             ,seor_numor as numero_or
+            ,seor_nummat as numero_mat
+            ,trim(mmat_numserie) as numSerie
+            ,trim(mmat_recalph) as numParc
+            ,trim(mmat_marqmat) as marque
+            ,trim(mmat_desi) as designationMaterie
+            ,trim(mmat_typmat) as modele
+            ,trim(mmat_numparc) as casier
+
+            
             ,CASE 
                     WHEN 
                         (SELECT DATE(Min(ska_d_start)) FROM informix.ska, informix.skw WHERE ofh_id = sitv_numor AND ofs_id=sitv_interv AND skw.skw_id = ska.skw_id )  is Null THEN DATE(sitv_datepla)  
