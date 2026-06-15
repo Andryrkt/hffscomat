@@ -152,7 +152,6 @@ class DitListeModel extends Model
                 fn($status) => "'" . str_replace("'", "''", $status) . "'",
                 $defaultStatuts
             );
-
             $statement .= " AND s3_.description IN (" . implode(',', $quotedStatuses) . ")";
         }
 
@@ -161,8 +160,10 @@ class DitListeModel extends Model
 
         $result = $this->connect->executeQuery($statement);
         $data = $this->connect->fetchResults($result);
+
         // Compter le total d'items
         $totalItems = $this->compteNombreItem($codeSociete, $conditions);
+
         // Calculer le nombre de pages
         $lastPage = ceil($totalItems / $perPage);
 
@@ -379,9 +380,21 @@ class DitListeModel extends Model
                 AND (d0_.statut_or NOT LIKE 'Refus%' OR d0_.statut_or IS NULL)
         ";
 
+        $defaultStatuts = [
+            StatutDitConstant::STATUT_A_AFFECTER,
+            StatutDitConstant::STATUT_AFFECTEE_SECTION,
+            StatutDitConstant::STATUT_CLOTUREE_VALIDER
+        ];
         if (!empty($conditions)) {
             $countStatement .= " AND " . implode(" AND ", $conditions);
+        } else {
+            $quotedStatuses = array_map(
+                fn($status) => "'" . str_replace("'", "''", $status) . "'",
+                $defaultStatuts
+            );
+            $countStatement .= " AND s3_.description IN (" . implode(',', $quotedStatuses) . ")";
         }
+
 
         $countResult = $this->connect->executeQuery($countStatement);
         $countData = $this->connect->fetchResults($countResult);
@@ -395,6 +408,7 @@ class DitListeModel extends Model
      */
     private function compteNombreStatut(string $codeSociete, array $conditions): array
     {
+
         $statusStatement = "SELECT s3_.description, COUNT(*) as count
                 FROM {$this->dbIrium}:informix.demande_intervention d0_
                 LEFT JOIN {$this->dbIrium}:informix.wor_type_document w1_
@@ -441,6 +455,8 @@ class DitListeModel extends Model
         if (!empty($conditions)) {
             $statusStatement .= " AND " . implode(" AND ", $conditions);
         }
+
+
         $statusStatement .= " GROUP BY s3_.description ";
 
         $statusResult = $this->connect->executeQuery($statusStatement);
