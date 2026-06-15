@@ -73,9 +73,9 @@ class DitFactureSoumisAValidationController extends Controller
 
 
             // historisation de soumission
-            $historiqueOperationRIService = new HistoriqueOperationFACService($this->getEntityManager());
+            $historiqueOperationFACService = new HistoriqueOperationFACService($this->getEntityManager());
             $message = "Le document de controle a été généré et soumis pour validation {$dto->numeroFact}";
-            $historiqueOperationRIService->sendNotificationSoumission($message, $dto->numeroDit, 'dit_liste', true);
+            $historiqueOperationFACService->sendNotificationSoumission($message, $dto->numeroDit, 'dit_liste', true);
         }
     }
 }

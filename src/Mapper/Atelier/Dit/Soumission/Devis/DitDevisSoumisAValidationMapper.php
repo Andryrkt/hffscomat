@@ -22,7 +22,7 @@ class DitDevisSoumisAValidationMapper
             $devisDto->montantMo = $item['montant_mo'];
             $devisDto->montantAchatLocaux = $item['montant_achats_locaux'];
             $devisDto->montantFraisDivers = $item['montant_divers'];
-            $devisDto->montantLubrifiants = $item['montant_lubrifiants'];
+            $devisDto->montantLubrifiants = $item['montant_lubrifiant'];
             $devisDto->libellelItv = $item['libelle_itv'];
             $devisDto->natureOperation = $item['nature_operation'];
             $devisDto->montantForfait = $item['montant_forfait'];
@@ -55,9 +55,9 @@ class DitDevisSoumisAValidationMapper
                 'montantmo' => $item['montant_mo'],
                 'montantachatlocaux' => $item['montant_achats_locaux'],
                 'montantfraisdivers' => $item['montant_divers'],
-                'montantlubrifiants' => $item['montant_lubrifiants'],
+                'montantlubrifiants' => $item['montant_lubrifiant'],
                 'libellelitv' => $item['libelle_itv'],
-                'statut' => $dto->type = 'VP' ? ConstantStatutDevis::PRIX_A_CONFIRMER : ConstantStatutDevis::A_VALIDER_ATELIER,
+                'statut' => $dto->type === 'VP' ? ConstantStatutDevis::PRIX_A_CONFIRMER : ConstantStatutDevis::A_VALIDER_ATELIER,
                 'dateheuresoumission' => $dto->dateHeureSoumission,
                 'montantforfait' => $item['montant_forfait'],
                 'natureoperation' => $item['nature_operation'],
@@ -80,7 +80,7 @@ class DitDevisSoumisAValidationMapper
     {
         return [
             'numero_devis_rattache' => $dto->numeroDevis,
-            'statut_devis' => $dto->type = 'VP' ? ConstantStatutDevis::PRIX_A_CONFIRMER : ConstantStatutDevis::A_VALIDER_ATELIER,
+            'statut_devis' => $dto->type === 'VP' ? ConstantStatutDevis::PRIX_A_CONFIRMER : ConstantStatutDevis::A_VALIDER_ATELIER,
         ];
     }
 }

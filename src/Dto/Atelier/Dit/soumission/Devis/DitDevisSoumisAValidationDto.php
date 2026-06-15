@@ -4,9 +4,9 @@ namespace App\Dto\Atelier\Dit\soumission\Devis;
 
 class DitDevisSoumisAValidationDto
 {
-    public ?string $numeroDit = "";
+    public ?string $numeroDit = null;
 
-    public ?string $numeroDevis = "";
+    public ?string $numeroDevis = null;
 
     public int $numeroItv = 0;
 
@@ -34,9 +34,9 @@ class DitDevisSoumisAValidationDto
 
     public ?string $libellelItv = '';
 
-    public $statut;
+    public ?string $statut = null;
 
-    public $natureOperation;
+    public ?string $natureOperation = null;
 
     public ?string  $type = null;
 
@@ -48,11 +48,11 @@ class DitDevisSoumisAValidationDto
 
     public $pieceJoint04;
 
-    public $nomClient;
+    public ?string $nomClient = null;
 
-    public $numeroClient;
+    public ?string $numeroClient = null;
 
-    public $objetDit;
+    public ?string $objetDit = null;
 
     public string $devisVenteOuForfait;
 
@@ -62,7 +62,7 @@ class DitDevisSoumisAValidationDto
 
     public int $nombreLignePiece = 0;
 
-    public $tacheValidateur;
+    public ?string $tacheValidateur = null;
 
     public ?string $codeSociete = null;
 

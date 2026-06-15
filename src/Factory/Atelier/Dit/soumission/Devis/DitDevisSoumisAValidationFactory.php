@@ -27,10 +27,12 @@ class DitDevisSoumisAValidationFactory
         return $dto;
     }
 
-    public function apresSoumission(DitDevisSoumisAValidationDto $dto): DitDevisSoumisAValidationDto
+    public function apresSoumission(DitDevisSoumisAValidationDto $dto, string $numDit): DitDevisSoumisAValidationDto
     {
-        $dto->dateHeureSoumission = date('Y-m-d H:i:s');
         $ditDevisSoumisAValidationModel = new DitDevisSoumisAValidationModel();
+        $dto->numeroDit = $numDit;
+        $dto->numeroDevis = $ditDevisSoumisAValidationModel->recupNumeroDevis($dto->numeroDit, $dto->codeSociete);
+        $dto->dateHeureSoumission = date('Y-m-d H:i:s');
         $dto->estCeVente = $this->estCeVente($dto->numeroDevis, $dto->codeSociete);
         $dto->numeroVersion = $ditDevisSoumisAValidationModel->recupNumeroVersion($dto->numeroDevis, $dto->codeSociete);
         $dto->nbPieceSortieMagasin = $ditDevisSoumisAValidationModel->recupNbPieceMagasin($dto->numeroDevis, $dto->codeSociete);

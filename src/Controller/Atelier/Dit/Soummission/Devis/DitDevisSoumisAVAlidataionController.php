@@ -9,6 +9,7 @@ use App\Mapper\Atelier\Dit\Soumission\Devis\DitDevisSoumisAValidationMapper;
 use App\Model\Atelier\Dit\Soumission\Devis\DitDevisSoumisAValidationModel;
 use App\Service\atelier\dit\soumission\Devis\DevisValidationService;
 use App\Service\atelier\dit\soumission\Devis\TraitementDeFicherService;
+use App\Service\historiqueOperation\atelier\dit\Devis\HistoriqueOperationDEVService;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -40,7 +41,7 @@ class DitDevisSoumisAVAlidataionController extends Controller
         $form = $this->getFormFactory()->createBuilder(DitDevisSoumisAValidationType::class, $dto)->getForm();
 
         // traitement du formulaire
-        $this->traitementFormulaire($form, $request);
+        $this->traitementFormulaire($form, $request, $numDit);
 
         return $this->render('atelier/dit/soumission/devis/soumissionDevis.html.twig', [
             'form' => $form->createView(),
@@ -51,12 +52,15 @@ class DitDevisSoumisAVAlidataionController extends Controller
     }
 
 
-    private function traitementFormulaire(FormInterface $form, Request $request)
+    private function traitementFormulaire(FormInterface $form, Request $request, string $numDit)
     {
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $dto = $form->getData();
+
+            $ditDevisSoumisAValidationFactory = new DitDevisSoumisAValidationFactory($this->getSecurityService());
+            $dto = $ditDevisSoumisAValidationFactory->apresSoumission($dto, $numDit);
 
             $ditDevisSoumisAValidationModel = new DitDevisSoumisAValidationModel();
 
@@ -72,8 +76,9 @@ class DitDevisSoumisAVAlidataionController extends Controller
             $traitementDuFichier->traitementDeFicher($form, $dto);
 
             // historisation
+            $historiqueOperationDEVService = new HistoriqueOperationDEVService($this->getEntityManager());
             $message = 'Le devis a été soumis avec succès';
-            $this->historiqueOperation->sendNotificationCreation($message, $dto->numDevis, 'dit_liste', true);
+            $historiqueOperationDEVService->sendNotificationCreation($message, $dto->numeroDevis, 'dit_liste', true);
         }
     }
 }

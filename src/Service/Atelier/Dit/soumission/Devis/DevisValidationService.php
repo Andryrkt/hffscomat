@@ -3,7 +3,6 @@
 namespace App\Service\atelier\dit\soumission\Devis;
 
 use App\Constants\atelier\dit\soumission\Devis\ConstantStatutDevis;
-use App\Constants\atelier\dit\StatutDitConstant;
 use App\Dto\Atelier\Dit\soumission\Devis\DitDevisSoumisAValidationDto;
 use App\Model\Atelier\Dit\Soumission\Devis\DitDevisSoumisAValidationModel;
 use App\Service\historiqueOperation\atelier\dit\Devis\HistoriqueOperationDEVService;
@@ -86,12 +85,12 @@ class DevisValidationService
         }
 
         // verifie si le service debiteur n'est pas vide
-        if ($servDebiteurIps !== '' || $servDebiteurIps !== null) {
+        if ($servDebiteurIps !== '' && $servDebiteurIps !== null) {
             $message = "Erreur lors de la soumission, Impossible de soumettre le devis . . . le service débiteur n'est pas vide";
             $this->sendNotificationOR($message, $dto->numeroDevis, false);
             return true;
         }
-        
+
 
         if ($dto->type === 'VP') {
 

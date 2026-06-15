@@ -105,12 +105,11 @@ class DitDevisSoumisAValidationModel extends Model
     {
         if ($numDevis === null) return 0;
 
-        $statement = " SELECT first 1 COUNT(numerodevis) as nbr_devis_valide  
+        $statement = " SELECT COUNT(numerodevis) as nbr_devis_valide  
             from {$this->dbIrium}:Informix.devis_soumis_a_validation 
             where numerodevis ='$numDevis' 
             and code_societe ='$codeSociete'
             and statut like 'Valid%' 
-            order by numeroversion desc
         ";
 
         $result = $this->connect->executeQuery($statement);
@@ -155,7 +154,7 @@ class DitDevisSoumisAValidationModel extends Model
 
     public function recupMontantItvIrium(string $numDevis, string $codeSociete): float
     {
-        $statement = " SELECT first 1 SUM(montantitv) as montant_irium 
+        $statement = " SELECT first 1 montantitv as montant_irium 
                         from {$this->dbIrium}:Informix.devis_soumis_a_validation 
                         where numerodevis ='$numDevis' 
                         and code_societe ='$codeSociete'
