@@ -6,7 +6,7 @@ use App\Controller\Controller;
 use App\Dto\Atelier\Planning\PlanningAtelierSearchDto;
 use App\Form\Atelier\Planning\PlanningAtelierSearchType;
 use App\Model\Atelier\Planning\PlanningAtelierModel;
-use App\Service\Atelier\Planning\PlanningAtelierService;
+use App\Service\atelier\Planning\PlanningAtelierService;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -36,7 +36,7 @@ class PlanningAtelierController extends Controller
     public function index(Request $request): \Symfony\Component\HttpFoundation\Response
     {
         $form = $this->getFormFactory()->createBuilder(
-            planningAtelierSearchType::class,
+            PlanningAtelierSearchType::class,
             null,
             ['method' => 'GET']
         )->getForm();
@@ -123,5 +123,4 @@ class PlanningAtelierController extends Controller
 
         return $dto;
     }
-
 }

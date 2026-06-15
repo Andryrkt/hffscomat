@@ -263,7 +263,7 @@ class DitType extends AbstractType
                     'attr' => [
                         'readonly' => true
                     ],
-                    'data' => $options["data"]->agenceEmetteur ?? null
+                    'data' =>  $options["data"]->agenceEmetteur ?? null
                 ]
             )
             ->add(
@@ -483,6 +483,7 @@ class DitType extends AbstractType
                 [
                     'label' => 'Pièce Jointe 03 (PDF)',
                     'required' => false,
+                    'mapped' => false,
                     'constraints' => [
                         new File([
                             'maxSize' => '5M',
@@ -503,6 +504,7 @@ class DitType extends AbstractType
                 [
                     'label' => 'Pièce Jointe 02 (PDF)',
                     'required' => false,
+                    'mapped' => false,
                     'constraints' => [
                         new File([
                             'maxSize' => '5M',
@@ -523,6 +525,7 @@ class DitType extends AbstractType
                 [
                     'label' => 'Pièce Jointe 01 (PDF)',
                     'required' => false,
+                    'mapped' => false,
                     'constraints' => [
                         new File([
                             'maxSize' => '5M',

@@ -148,7 +148,6 @@ class DitOrSoumisAValidationModel extends Model
 
         $result = $this->connect->executeQuery($statement);
         $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
-
         return $data[0]['numor'] ?? null;
     }
 
@@ -770,5 +769,27 @@ class DitOrSoumisAValidationModel extends Model
         } finally {
             $this->connect->close();
         }
+    }
+
+    /**
+     * Methode pour voir si on il y a OR 
+     *  dans la base de donnée ors_soumis_a_validation
+     *
+     * @return bool
+     */
+
+    public function existsNumOrEtDit(?string $numOr, ?string $numDit): bool
+    {
+        $statement = "
+        SELECT COUNT(*) AS total
+        FROM {$this->dbIrium}:Informix.ors_soumis_a_validation
+        WHERE numeroor = '$numOr'
+        AND numerodit = '$numDit'
+    ";
+
+        $result = $this->connect->executeQuery($statement);
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
+
+        return ((int)($data[0]['total'] ?? 0)) > 0;
     }
 }

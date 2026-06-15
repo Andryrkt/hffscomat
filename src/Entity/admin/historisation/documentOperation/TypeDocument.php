@@ -28,6 +28,7 @@ class TypeDocument
 
     const TYPE_DOCUMENT_DIT_ID = 1;
     const TYPE_DOCUMENT_OR_ID = 2;
+    const TYPE_DOCUMENT_FAC_ID = 3;
     const TYPE_DOCUMENT_RI_ID = 4;
     const TYPE_DOCUMENT_DEV_ID = 11;
 

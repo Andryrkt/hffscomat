@@ -4,6 +4,7 @@ namespace App\Factory\magasin\Ors\Traiter;
 
 use App\Constants\admin\ApplicationConstant;
 use App\Dto\Magasin\Ors\Traiter\OrATraiterSearchDto;
+use App\Model\magasin\Ors\Traiter\OrTraiterModel;
 use App\Service\security\SecurityService;
 use App\Service\TableauEnStringService;
 

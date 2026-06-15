@@ -82,6 +82,7 @@ class DitController extends Controller
 
             // 3. Enregistremenr dans la base de donnée
             $data = DitMapper::DtoToArray($dto, $this->getEntityManager(), $nomFichierEnregistrer);
+            
             $this->ditModel->enregistrementDit($data);
 
             // 4. copie dans DOCUWARE
