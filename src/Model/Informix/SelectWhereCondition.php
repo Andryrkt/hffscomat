@@ -21,14 +21,14 @@ class SelectWhereCondition
     public function in(string $column, ?array $values): string
     {
         $values = $values ? implode(',', $values) : null;
-        if (!$values) return '';
+        if (empty($values)) return '';
         return "AND $column in ('$values')";
     }
 
     public function ni(string $column, array $values): string
     {
         $values = $values ? implode(',', $values) : null;
-        if (!$values) return '';
+        if (empty($values)) return '';
         return "AND $column NOT IN ('$values')";
     }
 

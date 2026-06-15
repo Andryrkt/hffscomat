@@ -12,6 +12,8 @@ class PlanningMaterielModel extends Model
     private SelectWhereCondition $selectCond;
     private PlanningModel $planningModel;
 
+    use PlanningModelTrait;
+
     public function __construct()
     {
         parent::__construct();
@@ -19,9 +21,99 @@ class PlanningMaterielModel extends Model
         $this->planningModel = new PlanningModel();
     }
 
-    public function getMaterielPlanifier(PlanningAtelierSearchDto $searchDto, string $orValides, string $back, array $orItvSoumis)
+    public function getMaterielPlanifier(array $numOrs, array $orSoumis, array $orItvBack, PlanningSearchDto $searchDto, string $codeSoc = 'HF')
     {
+        if ($searchDto->orBackOrder) {
+            $vOrvalDw = $this->selectCond->in('cast(seor_numor ||'-'|| sitv_interv as varchar(10))', $orItvBack);
+        } else {
+            if (!empty($lesOrValides)) {
+                if ($searchDto->orNonValiderDw) {
+                    $vOrvalDw = $this->selectCond->ni('cast(seor_numor as varchar(10))', $orSoumis);
+                } else {
+                    $vOrvalDw = $this->selectCond->in('cast(seor_numor as varchar(10))', $numOrs);
+                }
+            } else {
+                $vOrvalDw = " --AND seor_numor ||'-'||sitv_interv in ('')";
+            }
+        }
 
+        $vligneType = $this->typeLigne($searchDto);
+        $vYearsStatutPlan =  $this->planAnnee($searchDto);
+        $vConditionNoPlanning = $this->nonplannfierSansDatePla($searchDto);
+        $vMonthStatutPlan = $this->planMonth($searchDto);
+        $vDateDMonthPlan = $this->dateDebutMonthPlan($searchDto);
+        $vDateFMonthPlan = $this->dateFinMonthPlan($searchDto);
+        $vStatutFacture = $this->facture($searchDto);
+        $annee =  $this->criterAnnee($searchDto);
+        $agence = $this->agence($searchDto);
+        $vStatutInterneExterne = $this->interneExterne($searchDto);
+        $agenceDebite = $this->agenceDebite($searchDto);
+        $serviceDebite = $this->serviceDebite($searchDto);
+        $vconditionNumParc = $this->numParc($searchDto);
+        $vconditionIdMat = $this->idMat($searchDto);
+        $vconditionNumOr = $this->numOr($searchDto);
+        $vconditionNumSerie = $this->numSerie($searchDto);
+        $vconditionCasier = $this->casier($searchDto);
+        $vsection = $this->section($searchDto);
+        $vplan = $searchDto->plan;
+
+        $statement = "SELECT
+                      trim(seor_succ) as codeSuc, 
+                      trim(asuc_lib) as libSuc, 
+                      trim(seor_servcrt) as codeServ, 
+                      trim(ser.atab_lib) as libServ, 
+                      trim(sitv_comment) as commentaire,
+                      mmat_nummat as idMat,
+                      trim(mmat_marqmat) as markMat,
+                      trim(mmat_typmat) as typeMat ,
+                      trim(mmat_numserie) as numSerie,
+                      trim(mmat_recalph) as numParc,
+                      trim(mmat_numparc) as casier,
+                      $vYearsStatutPlan as annee,
+                      $vMonthStatutPlan as mois,
+                      seor_numor ||'-'||sitv_interv as orIntv,
+
+                      (  SELECT SUM( CASE WHEN slor_typlig = 'P' $vligneType  THEN
+                                                slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec
+                                          ELSE slor_qterea END )
+                        FROM sav_lor as A  , sav_itv  AS B WHERE  A.slor_numor = B.sitv_numor AND  B.sitv_interv = A.slor_nogrp/100 AND A.slor_numor = C.slor_numor and B.sitv_interv  = D.sitv_interv  $vligneType ) as QteCdm,
+                    	(  SELECT SUM(slor_qterea ) FROM sav_lor as A  , sav_itv  AS B WHERE  A.slor_numor = B.sitv_numor AND  B.sitv_interv = A.slor_nogrp/100 AND A.slor_numor = C.slor_numor and B.sitv_interv  = D.sitv_interv  $vligneType ) as QtLiv,
+                      (  SELECT SUM(slor_qteres )FROM sav_lor as A  , sav_itv  AS B WHERE  A.slor_numor = B.sitv_numor AND  B.sitv_interv = A.slor_nogrp/100 AND A.slor_numor = C.slor_numor and B.sitv_interv  = D.sitv_interv   $vligneType ) as QteALL
+                      
+
+                    FROM  sav_eor,sav_lor as C , sav_itv as D, agr_succ, agr_tab ser, mat_mat, agr_tab ope, outer agr_tab sec
+                    WHERE seor_numor = slor_numor
+                    AND seor_serv <> 'DEV'
+                    AND seor_soc = '$codeSoc'
+                    AND sitv_numor = slor_numor 
+                    AND sitv_interv = slor_nogrp/100
+                    AND (seor_succ = asuc_num) -- OR mmat_succ = asuc_parc)
+                    AND (seor_servcrt = ser.atab_code AND ser.atab_nom = 'SER')
+                    AND (sitv_typitv = sec.atab_code AND sec.atab_nom = 'TYI')
+                    AND (seor_ope = ope.atab_code AND ope.atab_nom = 'OPE')
+                    $vStatutFacture
+                    AND (seor_nummat = mmat_nummat)
+                    $vOrvalDw
+                    $vligneType
+                    $vConditionNoPlanning 
+                    $agence
+                    $vStatutInterneExterne
+                    $agenceDebite
+                    $serviceDebite
+                    $vDateDMonthPlan
+                    $vDateFMonthPlan
+                    $vconditionNumParc
+                    $vconditionIdMat
+                    $vconditionNumOr
+                    $vconditionNumSerie
+                    $vconditionCasier
+                    $vsection 
+                    group by 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17
+                    order by 10
+        ";
+
+        $results = $this->connect->executeQuery($statement);
+        return $this->connect->fetchResults($results);
     }
 
     public function getDetailPieceInformix(string $numOrItv, PlanningSearchDto $searchDto)

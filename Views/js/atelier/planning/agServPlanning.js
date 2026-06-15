@@ -3,7 +3,7 @@
  */
 // Configuration centralisée
 
-import { FetchManager } from "../api/FetchManager";
+import { FetchManager } from "../../api/FetchManager";
 // Instanciation de FetchManager avec la base URL
 const fetchManager = new FetchManager();
 

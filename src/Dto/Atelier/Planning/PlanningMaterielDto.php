@@ -14,11 +14,13 @@ class PlanningMaterielDto
 
     public ?string $idMat = null;
 
-    public ?string $marqueMat = null;
+    public ?string $markMat = null;
 
     public ?string $typeMat = null;
 
     public ?string $numSerie = null;
+
+    public ?string $numDit = null;
 
     public ?string $numParc = null;
 
@@ -39,6 +41,10 @@ class PlanningMaterielDto
     public ?float $qteLiv = 0.0;
 
     public ?float $qteAll = 0.0;
+
+    public ?int $annee = null;
+
+    public ?int $mois = null;
 
     public array $moisDetails = [];
 

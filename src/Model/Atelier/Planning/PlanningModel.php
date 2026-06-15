@@ -92,7 +92,7 @@ class PlanningModel extends Model
     {
         $statement = " SELECT distinct 
                 trim(atab_code) as atab_code ,
-                trim(atab_lib) as atab_lib  
+                trim(atab_lib)  as atab_lib  
             from agr_succ , agr_tab a 
             where a.atab_nom = 'SER' 
             and a.atab_code not in (
@@ -133,20 +133,17 @@ class PlanningModel extends Model
         );
     }
 
-    public function getBackOrderPlanning(array $orsValides, array $orsSoumis, PlanningSearchDto $searchDto)
+    public function getBackOrderPlanning(array $orsValides, array $orsSoumis, PlanningSearchDto $searchDto): array
     {
-        if (!empty($orsValides))
-        {
-            if ($searchDto->orNonValiderDw)
-                $vOrValideDw = $this->selectCond->ni('slor_numor', $orsSoumis);
-            else
-                $vOrValideDw = $this->selectCond->in('slor_numor', $orsValides);
-        } else {
-            $vOrValideDw = "and slor_numor in ('')";
-        }
+        if ($searchDto->orNonValiderDw)
+            $vOrValideDw = $this->selectCond->ni('cast(slor_numor as varchar(10))', $orsSoumis);
+        else
+            $vOrValideDw = $this->selectCond->in('cast(slor_numor as varchar(10))', $orsValides);
 
-        $statement = "SELECT distinct 
-                cast(sav.slor_numor || '-' || trunc(sav.slor_nogrp/100) as varchar(50))AS intervention
+        $statement = "SELECT distinct
+                cast(sav.slor_numor as varchar(50))                                         as num_or,
+                trunc(sav.slor_nogrp/100)                                                   as num_itv,
+                cast(sav.slor_numor || '-' || trunc(sav.slor_nogrp/100) as varchar(50))     as num_or_itvs
             from sav_lor as sav
             inner join gcot_acknow_cat as cat
             on cast(sav.slor_numcf  as varchar(50))= cast(cat.numero_po as varchar(50))
@@ -169,7 +166,12 @@ class PlanningModel extends Model
         $results = $this->connect->executeQuery($statement);
         $data = $this->connect->fetchResults($results);
         $data = $this->convertirEnUtf8($data);
-        return array_map(function ($item) { return $item['intervention']; }, $data);
+
+        $numOrs = array_column($data, 'num_or');
+        $numItvs = array_column($data, 'num_itv');
+        $numOrItvs = array_column($data, 'num_or_itvs');
+
+        return ["num_ors" => $numOrs, "num_itvs" => $numItvs, "num_or_itvs" => $numOrItvs];
     }
 
     public function getBackOrderPlanningNoItv(array $orsValides, array $orsSoumis, PlanningSearchDto $searchDto)
@@ -208,13 +210,18 @@ class PlanningModel extends Model
         return array_map(function ($item) { return $item['intervention']; }, $data);
     }
 
-    public function getNumeroOrValider(PlanningSearchDto $searchDto)
+    public function getNumeroOrValider(PlanningSearchDto $searchDto): array
     {
         $statement = "SELECT distinct
-                numeroOR || '-' || numeroItv        as numero_complet, numeroOR as numero_or
-            from ors_soumis_a_validation    osv
-            inner join demande_intervention di on di.numero_or = osv.numero_or
-            where numeroversion = (select max(numeroversion) from ors_soumis_a_validation oo where oo.numeroor = osv.numeroor)
+                osv.numeroOR                                as num_or,
+                osv.numeroItv                               as num_itv,
+                osv.numeroOR || '-' || osv.numeroItv        as num_or_itv
+            from {$this->dbIrium}:Informix.ors_soumis_a_validation    osv
+            inner join {$this->dbIrium}:Informix.demande_intervention di on di.numero_or = osv.numeroor
+            where numeroversion = (select
+                max(numeroversion) 
+                from {$this->dbIrium}:Informix.ors_soumis_a_validation oo
+                where oo.numeroor = osv.numeroor)
             and osv.statut like 'Valid%'
             {$this->selectCond->eq('type_document', $searchDto->typeDocument)}
             {$this->selectCond->eq('reparation_realise', $searchDto->reparationRealise)}
@@ -223,19 +230,12 @@ class PlanningModel extends Model
             order by numeroOR asc
         ";
 
-        $execQuery = $this->connexion->query($statement);
-
-        if (!$execQuery)
-            throw new Exception("Erreur ODBC: " . odbc_errormsg($this->connexion));
-
-        $numOrItv = [];
-        $numOR = [];
-        while ($row = odbc_fetch_array($execQuery)) {
-            $numOrItv[] = $row['numero_complet'];
-            $numOR[] = $row['numero_or'];
-        }
-
-        return [$numOrItv, $numOR];
+        $results = $this->connect->executeQuery($statement);
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($results));
+        $numOrs = array_column($data, 'num_or');
+        $numItvs = array_column($data, 'num_itv');
+        $numOrItvs = array_column($data, 'num_or_itv');
+        return ["num_ors" => $numOrs, "num_itvs" => $numItvs, "num_or_itvs" => $numOrItvs];
     }
 
     public function getEtaMagasin(string $numeroCmd, string $refP, string $cst)
@@ -275,6 +275,36 @@ class PlanningModel extends Model
         $result = $this->connect->executeQuery($statement);
         $data = $this->connect->fetchResults($result);
         return $this->convertirEnUtf8($data);
+    }
+
+    public function getOrsSoumis()
+    {
+        $statement = "SELECT distinct
+            numeroor                        as num_or,
+            numeroitv                       as num_itv,
+            numeroor || '-' || numeroitv    as num_or_itv
+            from {$this->dbIrium}:Informix.ors_soumis_a_validation
+        ";
+
+        $result = $this->connect->executeQuery($statement);
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
+
+        $numOrs = array_column($data, 'num_or');
+        $numItvs = array_column($data, 'num_itv');
+        $numOrItvs = array_column($data, 'num_or_itv');
+
+        return ["num_ors" => $numOrs, "num_itvs" => $numItvs, "num_or_itvs" => $numOrItvs];
+    }
+
+    public function getOrsSoumisValider()
+    {
+        $statement = "SELECT distinct
+            osv.numeroor || '-' || osv.numeroitv    as numero_or_numero_itv
+            from {$this->dbIrium}:Informix.ors_soumis_a_validation    osv
+        ";
+
+        $result = $this->connect->executeQuery($statement);
+        return $this->convertirEnUtf8($this->connect->fetchResults($result));
     }
 
 }
