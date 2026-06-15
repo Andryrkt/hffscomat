@@ -73,6 +73,8 @@ class DitDto
     public ?string $montantOr = null;
     public ?string $dateSoumissionOr = null;
 
+
+    // Quantite
     public ?int $quantiteDemanderOr = 0;
     public ?int $quantiteLivreeOr = 0;
     public ?int $quantiteReserverOr = 0;

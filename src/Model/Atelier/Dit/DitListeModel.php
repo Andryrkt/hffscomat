@@ -52,11 +52,11 @@ class DitListeModel extends Model
                     d0_.utilisateur_demandeur AS utilisateur ,
 
 -- Recuperation quantite demande,reserve,livre,reliquat
-                COALESCE(pieces_or.quantiteDemander, 0) AS quantiteDemanderOr,
-                COALESCE(pieces_or.quantiteReserver, 0) AS quantiteReserverOr,
-                COALESCE(pieces_or.quantiteLivree, 0)   AS quantiteLivreeOr,
-                COALESCE(pieces_or.quantiteReliquat, 0) AS quantiteReliquatOr,
-                COALESCE(pieces_or.qteLiv, 0)           AS qteLivOr,
+                -- COALESCE(pieces_or.quantiteDemander, 0) AS quantiteDemanderOr,
+                -- COALESCE(pieces_or.quantiteReserver, 0) AS quantiteReserverOr,
+                -- COALESCE(pieces_or.quantiteLivree, 0)   AS quantiteLivreeOr,
+                -- COALESCE(pieces_or.quantiteReliquat, 0) AS quantiteReliquatOr,
+                -- COALESCE(pieces_or.qteLiv, 0)           AS qteLivOr,
 -- 
                      (
                 (CASE WHEN d0_.piece_joint1 IS NOT NULL AND d0_.piece_joint1 <> '' AND d0_.piece_joint1 <> ' ' THEN 1 ELSE 0 END) + 
@@ -84,34 +84,34 @@ class DitListeModel extends Model
                     ON d0_.id_materiel = m.mmat_nummat
 
 -- Peut etre la cause lenteur du requete 
-            LEFT JOIN (
-                SELECT 
-                    seor.seor_numor AS numeroOr,
-                    SUM(CASE 
-                        WHEN slor.slor_typlig = 'P' THEN (slor.slor_qterel + slor.slor_qterea + slor.slor_qteres + slor.slor_qtewait - slor.slor_qrec) 
-                        WHEN slor.slor_typlig IN ('F','M','U','C') THEN slor.slor_qterea 
-                    END) AS quantiteDemander,
-                    SUM(slor.slor_qteres) AS quantiteReserver,
-                    SUM(sliv.sliv_qteliv) AS quantiteLivree,
-                    SUM(slor.slor_qterel) AS quantiteReliquat,
-                    SUM(slor.slor_qterea) AS qteLiv
-                FROM ips_test:informix.sav_lor slor
-                INNER JOIN ips_test:informix.sav_eor seor 
-                    ON seor.seor_soc = slor.slor_soc 
-                    AND seor.seor_succ = slor.slor_succ 
-                    AND seor.seor_numor = slor.slor_numor
-                LEFT JOIN ips_test:informix.sav_liv sliv 
-                    ON sliv.sliv_soc = slor.slor_soc 
-                    AND sliv.sliv_succ = slor.slor_succ 
-                    AND sliv.sliv_numor = seor.seor_numor 
-                    AND slor.slor_nolign = sliv.sliv_nolign
-                WHERE slor.slor_soc = 'HF'
-                  AND slor.slor_typlig = 'P'
-                  AND seor.seor_serv = 'SAV'
-                  AND slor.slor_constp NOT LIKE 'Z%'
-                  AND slor.slor_constp NOT LIKE 'LUB'
-                GROUP BY seor.seor_numor
-            ) pieces_or ON d0_.numero_or = pieces_or.numeroOr
+            -- LEFT JOIN (
+            --     SELECT 
+            --         seor.seor_numor AS numeroOr,
+            --         SUM(CASE 
+            --             WHEN slor.slor_typlig = 'P' THEN (slor.slor_qterel + slor.slor_qterea + slor.slor_qteres + slor.slor_qtewait - slor.slor_qrec) 
+            --             WHEN slor.slor_typlig IN ('F','M','U','C') THEN slor.slor_qterea 
+            --         END) AS quantiteDemander,
+            --         SUM(slor.slor_qteres) AS quantiteReserver,
+            --         SUM(sliv.sliv_qteliv) AS quantiteLivree,
+            --         SUM(slor.slor_qterel) AS quantiteReliquat,
+            --         SUM(slor.slor_qterea) AS qteLiv
+            --     FROM ips_test:informix.sav_lor slor
+            --     INNER JOIN ips_test:informix.sav_eor seor 
+            --         ON seor.seor_soc = slor.slor_soc 
+            --         AND seor.seor_succ = slor.slor_succ 
+            --         AND seor.seor_numor = slor.slor_numor
+            --     LEFT JOIN ips_test:informix.sav_liv sliv 
+            --         ON sliv.sliv_soc = slor.slor_soc 
+            --         AND sliv.sliv_succ = slor.slor_succ 
+            --         AND sliv.sliv_numor = seor.seor_numor 
+            --         AND slor.slor_nolign = sliv.sliv_nolign
+            --     WHERE slor.slor_soc = 'HF'
+            --       AND slor.slor_typlig = 'P'
+            --       AND seor.seor_serv = 'SAV'
+            --       AND slor.slor_constp NOT LIKE 'Z%'
+            --       AND slor.slor_constp NOT LIKE 'LUB'
+            --     GROUP BY seor.seor_numor
+            -- ) pieces_or ON d0_.numero_or = pieces_or.numeroOr
 --
                 LEFT JOIN (
                     SELECT osv.numeroor, osv.numerodit, osv.montantitv, osv.datesoumission

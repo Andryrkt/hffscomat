@@ -15,7 +15,7 @@ services:
       - "@doctrine.orm.default_entity_manager"
     public: true
 
-  App\Service\historiqueOperation\atelier\dit\ORs\HistoriqueOperationORService:
+  App\Service\historiqueOperation\Atelier\Dit\ORs\HistoriqueOperationORService:
     arguments:
       - "@doctrine.orm.default_entity_manager"
     public: true
@@ -25,7 +25,7 @@ services:
       - "@doctrine.orm.default_entity_manager"
     public: true
 
-  App\Service\historiqueOperation\atelier\dit\Ri\HistoriqueOperationRIService:
+  App\Service\historiqueOperation\Atelier\Dit\Ri\HistoriqueOperationRIService:
     arguments:
       - "@doctrine.orm.default_entity_manager"
     public: true
