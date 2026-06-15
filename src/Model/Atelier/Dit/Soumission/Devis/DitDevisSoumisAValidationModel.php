@@ -2,6 +2,8 @@
 
 namespace App\Model\Atelier\Dit\Soumission\Devis;
 
+use App\Model\Informix\InsertQueryBuilder;
+use App\Model\Informix\UpdateQueryBuilder;
 use App\Model\Model;
 
 class DitDevisSoumisAValidationModel extends Model
@@ -85,7 +87,7 @@ class DitDevisSoumisAValidationModel extends Model
 
     public function recupNbPieceMagasinDejaSoumi(string $numDevis, string $codeSociete): int
     {
-        $statement = " SELECT first 1 distinct nombrelignepiece as nbr_ligne_piece 
+        $statement = " SELECT first 1 nombrelignepiece as nbr_ligne_piece 
                         from {$this->dbIrium}:Informix.devis_soumis_a_validation 
                         where numerodevis ='$numDevis' 
                         and code_societe ='$codeSociete'
@@ -107,8 +109,7 @@ class DitDevisSoumisAValidationModel extends Model
             from {$this->dbIrium}:Informix.devis_soumis_a_validation 
             where numerodevis ='$numDevis' 
             and code_societe ='$codeSociete'
-            and statut like 'Valid%'
-            group by numeroversion  
+            and statut like 'Valid%' 
             order by numeroversion desc
         ";
 
@@ -158,7 +159,6 @@ class DitDevisSoumisAValidationModel extends Model
                         from {$this->dbIrium}:Informix.devis_soumis_a_validation 
                         where numerodevis ='$numDevis' 
                         and code_societe ='$codeSociete'
-                        group by numeroversion 
                         order by numeroversion desc
             ";
 
@@ -182,6 +182,71 @@ class DitDevisSoumisAValidationModel extends Model
         $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
 
         return $data[0]['numero_version'] === 0 ? true :  false;
+    }
+
+
+    public function recupInfoDit(string $numDit, string $numDevis, string $codeSociete): ?array
+    {
+        $statement = " SELECT  *
+                        from {$this->dbIrium}:Informix.demande_intervention 
+                        where numero_demande_dit ='$numDit'
+                        and numero_devis_rattache = '$numDevis'
+                        and code_societe ='$codeSociete'
+                    ";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
+
+        return $data[0] ?? null;
+    }
+
+    public function recupNumeroClientIps(string $numDevis, string $codeSociete): ?string
+    {
+        $statement = " SELECT seor_numcli as numero_client
+                        FROM {$this->dbIps}:Informix.sav_eor
+                        WHERE seor_serv = 'DEV'
+                        AND seor_soc = '$codeSociete'
+                        AND seor_numor = '$numDevis'
+        ";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
+
+        return $data[0]['numero_client'] ?? null;
+    }
+
+    public function recupNumDitIps(string $numDevis, string $codeSociete): ?string
+    {
+        $statement = " SELECT trim(seor_refdem) as num_dit
+                    FROM {$this->dbIps}:Informix.sav_eor 
+                    where seor_serv='DEV'
+                    AND seor_soc = '$codeSociete'
+                    AND seor_numor = '$numDevis' 
+        ";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
+
+        return $data[0]['num_dit'] ?? null;
+    }
+
+    public function recupServDebiteur(string $numDevis, string $codeSociete): ?string
+    {
+        $statement = " SELECT sitv_succdeb as serv_debiteur
+                        FROM {$this->dbIps}:Informix.sav_itv sitv 
+                        inner join {$this->dbIps}:Informix.sav_eor seor on sitv.sitv_numor = seor.seor_numor and seor.seor_serv ='DEV'
+                        WHERE seor.seor_numor = '$numDevis'
+                        AND seor.seor_soc = '$codeSociete'
+        ";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
+
+        return $data[0]['serv_debiteur'] ?? null;
     }
 
     /**
@@ -369,5 +434,265 @@ class DitDevisSoumisAValidationModel extends Model
         $data = array_column($this->convertirEnUtf8($this->connect->fetchResults($result)), 'numero_version');
 
         return $data[0] ?? 1;
+    }
+
+    public function enregistrerDevis(array $data): void
+    {
+        // Exécuter la requête d'insertion
+        // S'assurer que la connexion est ouverte
+        $this->connect->connect();
+        try {
+            foreach ($data as $donnees) {
+                // Construire la requête d'insertion et l'exécuter
+                $builder = new InsertQueryBuilder("{$this->dbIrium}:Informix.devis_soumis_a_validation");
+                $builder->setData($donnees);
+                $result = $builder->build();
+
+                $this->connect->executeQuery($result['sql'], $result['params']);
+            }
+        } finally {
+            // ne fermez ici que si vous êtes sûr que c'est la dernière opération
+            $this->connect->close();
+        }
+    }
+
+    public function updateNumeroEtStatuDevis(string $numDit, string $codeSociete, array $data)
+    {
+
+        $updateBuilder = new UpdateQueryBuilder("{$this->dbIrium}:Informix.demande_intervention");
+
+        /// Définir les données à mettre à jour
+        $updateBuilder->setData($data);
+
+        // Ajouter les conditions WHERE
+        $updateBuilder->where('numero_demande_dit', $numDit);
+        $updateBuilder->where('code_societe',  $codeSociete);
+
+        // Changer l'opérateur des conditions (optionnel)
+        // $updateBuilder->setConditionOperator('AND');
+        // Construire et exécuter la requête
+        try {
+            $result = $updateBuilder->build();
+            $this->connect->connect();
+            try {
+                $this->connect->executeQuery($result['sql'], $result['params']);
+            } finally {
+                $this->connect->close();
+            }
+        } catch (\Exception $e) {
+            // Vous pouvez logger l'erreur ici
+            throw $e;
+        }
+    }
+
+    public function constructeurPieceMagasin(string $numDevis, string $codeSociete)
+    {
+        $statement = " SELECT
+                    CASE
+                        WHEN COUNT(CASE WHEN slor_constp = 'CAT' THEN 1 END) > 0
+                        AND COUNT(CASE WHEN slor_constp IN (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST') THEN 1 END) > 0
+                        THEN TRIM('CP')
+                    
+                        WHEN COUNT(CASE WHEN slor_constp = 'CAT' THEN 1 END) > 0
+                        AND COUNT(CASE WHEN slor_constp IN (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST') THEN 1 END) = 0
+                        THEN TRIM('C')
+
+                        WHEN COUNT(CASE WHEN slor_constp = 'CAT' THEN 1 END) = 0
+                        AND COUNT(CASE WHEN slor_constp IN (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST') THEN 1 END) = 0
+                        THEN TRIM('N')
+
+                        WHEN COUNT(CASE WHEN slor_constp = 'CAT' THEN 1 END) = 0
+                        AND COUNT(CASE WHEN slor_constp IN (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST') THEN 1 END) > 0
+                        THEN TRIM('P')
+                    END AS retour
+                FROM {$this->dbIps}:Informix.sav_lor
+                WHERE slor_numor = '$numDevis'
+                AND slor_soc = '$codeSociete'
+            ";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->connect->fetchResults($result);
+
+        return $this->convertirEnUtf8($data);
+    }
+
+    public function findDevisSoumiAvantForfait(string $numDevis, string $codeSociete): array
+    {
+        $statement = " SELECT * from {$this->dbIrium}:Informix.devis_soumis_a_validation 
+            where numerodevis ='$numDevis' 
+            and code_societe = '$codeSociete'
+            and montantforfait is not null
+            and numeroversion = (
+                    select MAX(dsv2.numeroversion ) 
+                    from {$this->dbIrium}:Informix.devis_soumis_a_validation dsv2 
+                    where dsv2.numerodevis ='$numDevis' 
+                    and dsv2.code_societe ='$codeSociete'
+                    and dsv2.montantforfait is not null 
+            ) 
+            ";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->connect->fetchResults($result);
+
+        return $this->convertirEnUtf8($data);
+    }
+
+    public function findDevisSoumiAvantMaxForfait(string $numDevis, string $codeSociete): array
+    {
+        $statement = " SELECT * from {$this->dbIrium}:Informix.devis_soumis_a_validation 
+            where numerodevis ='$numDevis' 
+            and code_societe = '$codeSociete'
+            and montantforfait is not null
+            and numeroversion = (
+                    (select MAX(dsv2.numeroversion ) 
+                    from {$this->dbIrium}:Informix.devis_soumis_a_validation dsv2 
+                    where dsv2.numerodevis ='$numDevis' 
+                    and dsv2.code_societe ='$codeSociete'
+                    and dsv2.montantforfait is not null ) - 1
+            ) 
+            ";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->connect->fetchResults($result);
+
+        return $this->convertirEnUtf8($data);
+    }
+
+    public function findDevisSoumiAvant(string $numDevis, string $codeSociete): array
+    {
+        $statement = " SELECT * from {$this->dbIrium}:Informix.devis_soumis_a_validation 
+            where numerodevis ='$numDevis' 
+            and code_societe = '$codeSociete'
+            and montantitv  <> 0.0
+            and numeroversion = (
+                    (select MAX(dsv2.numeroversion ) 
+                    from {$this->dbIrium}:Informix.devis_soumis_a_validation dsv2 
+                    where dsv2.numerodevis ='$numDevis' 
+                    and dsv2.code_societe ='$codeSociete'
+                    and montantitv  <> 0.0 )
+            ) 
+            ";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->connect->fetchResults($result);
+
+        return $this->convertirEnUtf8($data);
+    }
+
+    public function findDevisSoumiAvantMax(string $numDevis, string $codeSociete): array
+    {
+        $statement = " SELECT * from {$this->dbIrium}:Informix.devis_soumis_a_validation 
+            where numerodevis ='$numDevis' 
+            and code_societe = '$codeSociete'
+            and montantitv  <> 0.0
+            and numeroversion = (
+                    (select MAX(dsv2.numeroversion ) 
+                    from {$this->dbIrium}:Informix.devis_soumis_a_validation dsv2 
+                    where dsv2.numerodevis ='$numDevis' 
+                    and dsv2.code_societe ='$codeSociete'
+                    and montantitv  <> 0.0 ) - 1
+            ) 
+            ";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->connect->fetchResults($result);
+
+        return $this->convertirEnUtf8($data);
+    }
+
+    public function recupNbAchatLocaux(string $numDevis, string $codeSociete)
+    {
+        $statement = " SELECT
+            count(slor.slor_constp) as nbr_achat_locaux 
+            from sav_lor slor
+            INNER JOIN sav_eor seor ON slor.slor_numor = seor.seor_numor
+            where seor.seor_numor = '$numDevis'
+            and seor.seor_soc = '$codeSociete'
+            and slor.slor_constp in (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST')
+        ";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->connect->fetchResults($result);
+
+        return $this->convertirEnUtf8($data);
+    }
+
+    public function recupNbPieceMagasin2(string $numDevis, string $codeSociete)
+    {
+        $statement = " SELECT
+                    COUNT(slor.slor_constp) AS nbr_sortie_magasin
+                FROM sav_lor slor
+                INNER JOIN sav_eor seor ON slor.slor_numor = seor.seor_numor
+                WHERE seor.seor_numor = '$numDevis'
+                AND slor.slor_typlig = 'P'
+                AND (slor_refp not like '%-L' and slor_refp not like '%-CTRL')
+                AND seor.seor_soc = '$codeSociete'
+                AND slor.slor_constp IN (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST')
+            ";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->connect->fetchResults($result);
+
+        return $this->convertirEnUtf8($data);
+    }
+
+    public function recupInfoPieceClient(string $numDevis, string $codeSociete)
+    {
+        $statement = " SELECT 
+                        trim(slor_refp) as ref_piece,
+                        trim(slor_constp) as constructeur,
+                        slor_numcli as num_client,
+                        slor_numor as num_devis
+                        FROM sav_lor
+                        WHERE slor_numor = '$numDevis'
+                        AND slor_soc = '$codeSociete'
+        ";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->connect->fetchResults($result);
+
+        return $this->convertirEnUtf8($data);
+    }
+
+    /**
+     * Methode pour recupérer l'evolution de prix de chaque pièce
+     *
+     * @param array $infoPieceClient
+     * @return void
+     */
+    public function recupInfoPourChaquePiece(array $infoPieceClient, string $codeSociete)
+    {
+        $statement = " SELECT FIRST 3 
+                    trim(slor_constp) as CST, 
+                    trim(slor_refp) as RefPiece, 
+                    slor_datel as dateLigne,
+                    slor_pxnreel as prixVente,
+                    slor_typlig as type_ligne,
+                    seor_serv 
+                    FROM sav_lor
+                    inner join sav_eor 
+                    on seor_soc= slor_soc and seor_succ = slor_succ and seor_numor = slor_numor and slor_soc ='$codeSociete'
+                    WHERE slor_refp = '{$infoPieceClient['ref_piece']}'
+                    and slor_constp in (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST')
+                    AND (slor_refp not like '%-L' and slor_refp not like '%-CTRL')
+                    and seor_serv = 'SAV'
+                    and slor_pos in('CP','FC') 
+                    and slor_numcli = '{$infoPieceClient['num_client']}'
+                    ORDER BY slor_datel DESC
+        ";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->connect->fetchResults($result);
+
+        return $this->convertirEnUtf8($data);
     }
 }

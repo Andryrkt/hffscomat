@@ -33,7 +33,9 @@ class DitDevisSoumisAValidationFactory
         $ditDevisSoumisAValidationModel = new DitDevisSoumisAValidationModel();
         $dto->estCeVente = $this->estCeVente($dto->numeroDevis, $dto->codeSociete);
         $dto->numeroVersion = $ditDevisSoumisAValidationModel->recupNumeroVersion($dto->numeroDevis, $dto->codeSociete);
-
+        $dto->nbPieceSortieMagasin = $ditDevisSoumisAValidationModel->recupNbPieceMagasin($dto->numeroDevis, $dto->codeSociete);
+        $dto->infoDit = $ditDevisSoumisAValidationModel->recupInfoDit($dto->numeroDit, $dto->numeroDevis, $dto->codeSociete);
+        $dto->infoDevisIps = $ditDevisSoumisAValidationModel->recupDevisSoumisValidation($dto->numeroDevis, $dto->codeSociete);
         return $dto;
     }
 

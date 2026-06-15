@@ -3,6 +3,7 @@
 namespace App\Service\atelier\dit\soumission\Devis;
 
 use App\Constants\atelier\dit\soumission\Devis\ConstantStatutDevis;
+use App\Constants\atelier\dit\StatutDitConstant;
 use App\Dto\Atelier\Dit\soumission\Devis\DitDevisSoumisAValidationDto;
 use App\Model\Atelier\Dit\Soumission\Devis\DitDevisSoumisAValidationModel;
 use App\Service\historiqueOperation\atelier\dit\Devis\HistoriqueOperationDEVService;
@@ -63,6 +64,34 @@ class DevisValidationService
         $nbPieceSortieMagasin = $ditDevisSoumisAValidationModel->recupNbPieceMagasin($dto->numeroDevis, $dto->codeSociete);
         $nbPieceSortieMagasinDejaSoumi = $ditDevisSoumisAValidationModel->recupNbPieceMagasinDejaSoumi($dto->numeroDevis, $dto->codeSociete);
         $statutDevis = $ditDevisSoumisAValidationModel->findStatutDevisSelonNumDevis($dto->numeroDevis, $dto->codeSociete);
+        $infoDit = $ditDevisSoumisAValidationModel->recupInfoDit($dto->numeroDit, $dto->numeroDevis, $dto->codeSociete);
+        $numClientIps = $ditDevisSoumisAValidationModel->recupNumeroClientIps($dto->numeroDevis, $dto->codeSociete);
+        $numDitIps = $ditDevisSoumisAValidationModel->recupNumDitIps($dto->numeroDevis, $dto->codeSociete);
+        $servDebiteurIps = $ditDevisSoumisAValidationModel->recupServDebiteur($dto->numeroDevis, $dto->codeSociete);
+
+
+        // verifier si n° dit ips <> n° dit intranet
+        if ($numDitIps !== $infoDit['numero_demande_dit']) {
+            if ($numClientIps !== $infoDit['numero_client']) {
+                $message = "Erreur lors de la soumission, Impossible de soumettre le devis . . . le numero DIT dans IPS ne correspond pas à la DIT ";
+                $this->sendNotificationOR($message, $dto->numeroDevis, false);
+                return true;
+            }
+        }
+        // verifie si le n° client dans IPS est different du n° client dans intranet
+        if ($numClientIps !== $infoDit['numero_client']) {
+            $message = "Erreur lors de la soumission, Impossible de soumettre le devis . . . Veuillez vérifier le client car le client sur la DIT est différent de celui du devis ";
+            $this->sendNotificationOR($message, $dto->numeroDevis, false);
+            return true;
+        }
+
+        // verifie si le service debiteur n'est pas vide
+        if ($servDebiteurIps !== '' || $servDebiteurIps !== null) {
+            $message = "Erreur lors de la soumission, Impossible de soumettre le devis . . . le service débiteur n'est pas vide";
+            $this->sendNotificationOR($message, $dto->numeroDevis, false);
+            return true;
+        }
+        
 
         if ($dto->type === 'VP') {
 
@@ -123,7 +152,6 @@ class DevisValidationService
                 return true;
             }
 
-
             // verifie si le devis est statué "à valider atelier"
             if ($statutDevis === ConstantStatutDevis::A_VALIDER_ATELIER) {
                 $message = "Erreur lors de la soumission, Impossible de soumettre le devis  . . . un devis est déjà en cours de validation";
@@ -134,4 +162,6 @@ class DevisValidationService
 
         return false;
     }
+
+    public function validateApresSoumission(DitDevisSoumisAValidationDto $dto) {}
 }

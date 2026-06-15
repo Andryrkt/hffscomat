@@ -15,6 +15,11 @@ services:
       - "@doctrine.orm.default_entity_manager"
     public: true
 
+  App\Service\historiqueOperation\atelier\dit\Devis\HistoriqueOperationDEVService:
+    arguments:
+      - "@doctrine.orm.default_entity_manager"
+    public: true
+
   App\Service\historiqueOperation\Atelier\Dit\ORs\HistoriqueOperationORService:
     arguments:
       - "@doctrine.orm.default_entity_manager"

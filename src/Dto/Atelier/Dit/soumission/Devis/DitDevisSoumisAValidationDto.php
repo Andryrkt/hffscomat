@@ -71,4 +71,14 @@ class DitDevisSoumisAValidationDto
     public int $nbPieceSortieMagasin = 0;
 
     public int $uneDevisEstDejaValide = 0;
+
+    public array $infoDit = [];
+
+    public array $infoDevisIps = [];
+
+    // Comparaison des objets par leur numero d'intervention
+    public function estEgalParNumero(self $autre)
+    {
+        return $this->numeroItv === $autre->numeroItv;
+    }
 }

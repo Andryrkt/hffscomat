@@ -5,7 +5,11 @@ namespace App\Controller\Atelier\Dit\Soummission\Devis;
 use App\Controller\Controller;
 use App\Factory\Atelier\Dit\soumission\Devis\DitDevisSoumisAValidationFactory;
 use App\Form\Atelier\Dit\soumission\Devis\DitDevisSoumisAValidationType;
+use App\Mapper\Atelier\Dit\Soumission\Devis\DitDevisSoumisAValidationMapper;
+use App\Model\Atelier\Dit\Soumission\Devis\DitDevisSoumisAValidationModel;
 use App\Service\atelier\dit\soumission\Devis\DevisValidationService;
+use App\Service\atelier\dit\soumission\Devis\TraitementDeFicherService;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -26,7 +30,7 @@ class DitDevisSoumisAVAlidataionController extends Controller
 
         // Validation des données
         $devisValidationService = new DevisValidationService();
-        if($devisValidationService->validateAvantAffichageForm($dto)) {
+        if ($devisValidationService->validateAvantAffichageForm($dto)) {
             if ($request->query->get('continueDevis') == 1) {
                 $this->getSessionService()->set('devis_version_valide', 'KO');
             }
@@ -35,11 +39,41 @@ class DitDevisSoumisAVAlidataionController extends Controller
         // Creation du formulaire
         $form = $this->getFormFactory()->createBuilder(DitDevisSoumisAValidationType::class, $dto)->getForm();
 
+        // traitement du formulaire
+        $this->traitementFormulaire($form, $request);
+
         return $this->render('atelier/dit/soumission/devis/soumissionDevis.html.twig', [
             'form' => $form->createView(),
             'numDevis' => $dto->numeroDevis,
             'numDit' => $numDit,
             'type' => $type
         ]);
+    }
+
+
+    private function traitementFormulaire(FormInterface $form, Request $request)
+    {
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $dto = $form->getData();
+
+            $ditDevisSoumisAValidationModel = new DitDevisSoumisAValidationModel();
+
+            // enregistrement dans la base de donnée
+            $datas = DitDevisSoumisAValidationMapper::enregistreDevis($dto);
+            $ditDevisSoumisAValidationModel->enregistrerDevis($datas);
+            // edit du table demande_itervention en modifiant les colonnes, numero_devis_rattache et statut_devis
+            $donnees = DitDevisSoumisAValidationMapper::updateDit($dto);
+            $ditDevisSoumisAValidationModel->updateNumeroEtStatuDevis($dto->numeroDit, $dto->codeSociete, $donnees);
+
+            // traitement de fichier et copie dans DOCUWARE
+            $traitementDuFichier = new TraitementDeFicherService($this->getSecurityService());
+            $traitementDuFichier->traitementDeFicher($form, $dto);
+
+            // historisation
+            $message = 'Le devis a été soumis avec succès';
+            $this->historiqueOperation->sendNotificationCreation($message, $dto->numDevis, 'dit_liste', true);
+        }
     }
 }
