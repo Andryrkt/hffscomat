@@ -2,7 +2,7 @@
 
 namespace App\Dto\Atelier\Dit\soumission;
 
-class bcSoumisDto
+class BcSoumisDto
 {
     public ?int $id = null;
     public ?string $numeroDit = null;

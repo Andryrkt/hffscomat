@@ -4,7 +4,7 @@ namespace App\Dto\Atelier\Dit\soumission;
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
-class accuseReceptionDto
+class AccuseReceptionDto
 {
     public ?string $nomClient = null;
     public ?string $emailClient = null;
