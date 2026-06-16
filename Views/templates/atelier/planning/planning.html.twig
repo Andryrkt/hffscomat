@@ -9,20 +9,13 @@
     <link rel="stylesheet" href="{{ App.base_path }}/Views/css/planning/planning.css?v=2025.10.22.08.00">
 {% endblock %}
 
-{% block overlay %}
-    {% include "/shared/_overlay.html.twig"  %}
-{% endblock %}
-
-
 {% block content %}
     <div class="sticky-header-titre">
         <div class="container">
-            {% include "atelier/planning/_formulaire.html.twig" %}
-            {#
+            {% include "/atelier/planning/_formulaire.html.twig" %}
             <div class="d-flex justify-content-between">
                 {% include "/partials/_statutSituationPiece.html.twig" with { 'avecBackOrder' : true } %}
             </div>
-            #}
         </div>
     </div>
     <div class="container-fluid">
@@ -97,9 +90,11 @@
             </tbody>
         </table>
     </div>
+
+    <!-- FIN tableau -->
     {# body modal #}
-    {% include "atelier/planning/_modal.html.twig"  %}
-    {% include "atelier/dit/shared/_modalNiveauUrgence.html.twig"  %}
+    {% include "/atelier/planning/_modal.html.twig"  %}
+    {% include "/atelier/dit/shared/_modalNiveauUrgence.html.twig"  %}
 {% endblock %}
 {% block javascript %}
 <script src="{{ App.base_path }}/Views/js/utils/positionSticky.js?v=2025.10.22.08.00"></script>
