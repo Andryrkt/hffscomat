@@ -2,12 +2,29 @@
 
 namespace App\Model\magasin\Ors\Livrer;
 
+use App\Dto\Magasin\Ors\Livrer\OrLivrerSearchDto;
+use App\Model\Informix\SelectWhereCondition;
 use App\Model\Model;
 
 class OrLivrerModel extends Model
 {
-    public function recupereListeMaterielValider(): array
+    public function recupereListeMaterielValider(OrLivrerSearchDto $dtoSearch): array
     {
+        $selectWhereCondition = new SelectWhereCondition();
+
+        $conditions = "
+            {$selectWhereCondition->like('slor_desi',$dtoSearch->designation)}
+            {$selectWhereCondition->like('seor_refdem',$dtoSearch->numDit)}
+            {$selectWhereCondition->eq('slor_numor',$dtoSearch->numOr)}
+            {$selectWhereCondition->like('slor_refp',$dtoSearch->referencePiece)}
+            {$selectWhereCondition->between('slor_datec',$dtoSearch->dateDebut,$dtoSearch->dateFin)}
+            {$selectWhereCondition->eq('w.description',$dtoSearch->niveauUrgence)}
+            {$selectWhereCondition->eq('slor_succdeb', trim(explode('-',$dtoSearch->agence)[0]))}
+            {$selectWhereCondition->eq('slor_servdeb', trim(explode('-',$dtoSearch->service)[0]))}
+            {$selectWhereCondition->eq('slor_succdeb', trim(explode('-',$dtoSearch->agenceUser)[0]))}
+            {$selectWhereCondition->eq('T.situation',$dtoSearch->orCompletNon)}
+        ";
+
         $statement = " SELECT
             TRIM(seor_refdem) as referencedit
             , seor_numor as numeroOr
@@ -89,14 +106,14 @@ class OrLivrerModel extends Model
 			                WHEN slor_typlig = 'P' THEN (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec)
 			                    WHEN slor_typlig IN ('F','M','U','C') THEN slor_qterea
 			                    END) = sum(slor_qteres + slor_qterea)
-			            THEN 'COMPLET'
+			            THEN 'ORs COMPLET''
 			            WHEN
 			            sum(slor_qteres) > 0 AND
 			            sum(CASE
 			                WHEN slor_typlig = 'P' THEN (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec)
 			                    WHEN slor_typlig IN ('F','M','U','C') THEN slor_qterea
 			                    END) > sum(slor_qteres + slor_qterea)
-			            THEN 'INCOMPLET'
+			            THEN 'ORs INCOMPLETS'
 			            END as situation
 			            , situ.slor_numor as numero_or
 			            FROM sav_lor situ
@@ -125,7 +142,7 @@ class OrLivrerModel extends Model
             )
              AND slor_constp in (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST') AND (slor_refp not like '%-L' and slor_refp not like '%-CTRL')
             and seor_typeor not in('950', '501') -- a voir avec Atish ==> hoby
-         	AND T.situation = 'COMPLET' 
+            $conditions
 
             group by 1,2,3,4, 5, 6, 7, 8, 9, 10, 11, 12, 13,14,18, 19, 20, 21,22,23,24,25,26
             order by seor_numor asc, sitv_interv asc, slor_nolign asc;

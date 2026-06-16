@@ -35,6 +35,7 @@ class OrLivrerSearchFactory
         $dto = new OrLivrerSearchDto();
         $dto->codeSociete = $this->securityService->getCodeSocieteUser();
         $dto->agenceUser = $agenceUser;
+        $dto->orCompletNon = "ORs COMPLET";
 
         return $dto;
     }

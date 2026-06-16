@@ -25,8 +25,17 @@ class OrLivrerController extends Controller
             'method' => 'GET'
         ])->getForm();
 
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $dtoSearch = $form->getData();
+            dd($dtoSearch);
+            //enregistrer les critère de recherche dans la session
+            $this->getSessionService()->set('magasin_liste_or_livrer_search_criteria', $dtoSearch);
+        }
+
         $orLivrerModel = new OrLivrerModel();
-        $data = $orLivrerModel->recupereListeMaterielValider();
+        $data = $orLivrerModel->recupereListeMaterielValider($dtoSearch);
 
         return $this->render('magasin/ors/livrer/orLivrer.html.twig', [
             'data' => $data,
