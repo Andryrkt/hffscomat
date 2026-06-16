@@ -10,12 +10,12 @@
 
 
 {% block content %}
-	<div id="conteneur" data-page-type="or_a_livrer">
+	<div id="conteneur" data-page-type="or_a_livrer" class="mt-6">
 		<div class="container">
 			<h3 class="perso-titre">
 				Liste des OR à livrer
 			</h3>
-			{# {% include "/magasin/partials/_formulaireRechercheListeOrALivrer.html.twig" %} #}
+			{% include "/magasin/ors/livrer/_formulaireRechercheListeOrALivrer.html.twig" %}
 		</div>
 		<div class="container">
 			<div class="d-flex justify-content-between">
