@@ -27,7 +27,9 @@ vendor/bin/doctrine orm:generate-proxies
 fichier config.js à crée dans Views > js > utils > config.js
 
 ```Bash
-export const baseUrl = "/Hffintranet";
+export const baseUrl = "/scomat";
+
+export const baseUpload = `${window.location.origin}/Upload`;
 ```
 
 ## Déploiement
