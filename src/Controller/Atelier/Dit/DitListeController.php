@@ -13,6 +13,7 @@ use App\Form\Atelier\Dit\DocDansDwType;
 use App\Mapper\Atelier\Dit\DitListeMapper;
 use App\Mapper\Atelier\Dit\DitSearchMapper;
 use App\Model\Atelier\Dit\DitListeModel;
+use App\Model\Atelier\Dit\DitModel;
 use App\Model\Atelier\Dit\Soumission\DitOrSoumisAValidationModel;
 use App\Service\security\SecurityService;
 use Symfony\Component\Form\FormInterface;
@@ -104,9 +105,10 @@ class DitListeController extends Controller
         $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
 
         $dits = $this->ditListeModel->findPaginatedAndFiltered($codeSociete, $dtoSearch, $page, $perPage);
-        $ditDto = (new DitListeMapper())->map($dits['data'], $this->getSecurityService());
+        $ditDto = (new DitListeMapper())->map($dits['data']);
         $this->ajoutConditionAnnulationDit($ditDto);
         $this->ajoutEstOrASoumis($ditDto);
+        $this->ajoutEtatLivraison($ditDto);
         return [
             'data' => $ditDto,
             'totalItems' => $dits['totalItems'],
@@ -193,6 +195,22 @@ class DitListeController extends Controller
             return true;
         } else {
             return false;
+        }
+    }
+
+    private function ajoutEtatLivraison(array $datas)
+    {
+
+        $ditModel = new DitModel();
+        foreach ($datas as $dto) {
+            $quantites =  $ditModel->recupQuantiteQuatreStatutOr($dto->numeroOr);
+
+            $dto->quantiteDemanderOr = $quantites["quantitedemander"] ?? 0;
+            $dto->quantiteLivreeOr = $quantites["quantitelivree"] ?? 0;
+            $dto->quantiteReserverOr =  $quantites["quantitereserver"] ?? 0;
+            $dto->quantiteReliquatOr =  $quantites["quantitereliquat"] ?? 0;
+            $dto->qteLivOr =  $quantites["quantitelivree"] ?? 0;
+            $dto->etatLivraison = $dto->getEtatLivraison();
         }
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service\atelier\Planning;
+namespace App\Service\Atelier\Planning;
 
 use App\Dto\Atelier\Planning\PlanningAtelierDto;
 use App\Dto\Atelier\Planning\PresenceDto;

@@ -33,12 +33,12 @@ class StatutDemandeModel extends Model
 
         return array_column($data, 'id')[0] ?? 0;
     }
-    public function getDescriptionById($id): string
+
+    public function getDescriptionById(int $id): string
     {
         $statement = " SELECT description as description
                 from {$this->dbIrium}:informix.statut_demande 
-                where id_statut_demande ='$id' 
-               
+                where id_statut_demande ='$id'
         ";
 
         $result = $this->connect->executeQuery($statement);

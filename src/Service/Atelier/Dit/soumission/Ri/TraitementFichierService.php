@@ -4,7 +4,7 @@ namespace App\Service\atelier\dit\soumission\Ri;
 
 use App\Dto\Atelier\Dit\soumission\DitRiSoumisAValidationDto;
 use App\Service\fichier\TraitementDeFichier;
-use App\Service\historiqueOperation\atelier\dit\Ri\HistoriqueOperationRIService;
+use App\Service\historiqueOperation\Atelier\Dit\Ri\HistoriqueOperationRIService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;

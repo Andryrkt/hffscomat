@@ -3,7 +3,7 @@
 namespace App\Service\atelier\dit\soumission\Ri;
 
 use App\Dto\Atelier\Dit\soumission\DitRiSoumisAValidationDto;
-use App\Service\historiqueOperation\atelier\dit\Ri\HistoriqueOperationRIService;
+use App\Service\historiqueOperation\Atelier\Dit\Ri\HistoriqueOperationRIService;
 use App\Service\SessionManagerService;
 
 class RiValidationService
