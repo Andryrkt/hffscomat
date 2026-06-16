@@ -20,13 +20,13 @@ export const config = {
   },
   or_a_livrer: {
     tableBody: "#tableBody",
-    agenceInput: "#magasin_liste_or_a_livrer_search_agence",
-    serviceInput: "#magasin_liste_or_a_livrer_search_service",
+    agenceInput: "#or_livrer_search_agence",
+    serviceInput: "#or_livrer_search_service",
     spinnerService: "#spinner-service",
     serviceContainer: "#service-container",
-    numDitInput: "#magasin_liste_or_a_livrer_search_numDit",
-    refPieceInput: "#magasin_liste_or_a_livrer_search_referencePiece",
-    numOrInput: "#magasin_liste_or_a_livrer_search_numOr",
+    numDitInput: "or_livrer_search_numDit",
+    refPieceInput: "#or_livrer_search_referencePiece",
+    numOrInput: "#or_livrer_search_numOr",
     cellIndices: cellIndicesOrALivrer, // Utilise la config avec `user: 18`
   },
 

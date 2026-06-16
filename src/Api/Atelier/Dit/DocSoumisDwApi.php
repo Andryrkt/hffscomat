@@ -4,7 +4,7 @@ namespace App\Api\Atelier\Dit;
 
 use App\Controller\Controller;
 use App\Model\Atelier\Dit\DitModel;
-use App\Model\Atelier\Dit\Soumission\DitDevisSoumisAValidationModel;
+use App\Model\Atelier\Dit\Soumission\Devis\DitDevisSoumisAValidationModel;
 use App\Model\Atelier\Dit\Soumission\DitOrSoumisAValidationModel;
 use Symfony\Component\Routing\Annotation\Route;
 

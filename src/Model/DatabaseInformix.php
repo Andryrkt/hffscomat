@@ -123,12 +123,12 @@ class DatabaseInformix implements DatabaseConnectionInterface
      * Méthode pour récupérer les résultats d'une requête
      * sous forme d'un tableau associatif
      */
-    public function fetchResults($result)
+    public function fetchResults($result, string $fromEncoding = "ISO-8859-1, UTF-8, ASCII")
     {
         $rows = [];
         if ($result) {
             while ($row = odbc_fetch_array($result)) {
-                $rows[] = $this->convertToUtf8($row);
+                $rows[] = $this->convertToUtf8($row, $fromEncoding);
             }
         }
         return $rows;
@@ -138,12 +138,12 @@ class DatabaseInformix implements DatabaseConnectionInterface
      * Méthode pour récupérer les résultats d'une requête
      * sous forme d'une seule ligne (tableau associatif)
      */
-    public function fetchScalarResults($result)
+    public function fetchScalarResults($result, string $fromEncoding = "ISO-8859-1, UTF-8, ASCII")
     {
         if ($result) {
             $row = odbc_fetch_array($result);
             if ($row !== false) {
-                return $this->convertToUtf8($row);
+                return $this->convertToUtf8($row, $fromEncoding);
             }
         }
         return [];
@@ -152,15 +152,15 @@ class DatabaseInformix implements DatabaseConnectionInterface
     /**
      * Convertit récursivement les données en UTF-8
      */
-    private function convertToUtf8($data)
+    private function convertToUtf8($data, string $fromEncoding = "ISO-8859-1, UTF-8, ASCII")
     {
         if (is_array($data)) {
             foreach ($data as $key => $value) {
-                $data[$key] = $this->convertToUtf8($value);
+                $data[$key] = $this->convertToUtf8($value, $fromEncoding);
             }
         } elseif (is_string($data)) {
             // Détection et conversion intelligente vers UTF-8
-            return mb_convert_encoding($data, 'UTF-8', 'ISO-8859-1, UTF-8, ASCII');
+            return mb_convert_encoding($data, 'UTF-8', $fromEncoding);
         }
 
         return $data;

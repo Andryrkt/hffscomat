@@ -10,7 +10,7 @@ use App\Model\Atelier\Dit\Soumission\DitRiSoumisAValidationModel;
 use App\Service\atelier\dit\soumission\Ri\RiValidationService;
 use App\Service\atelier\dit\soumission\Ri\TraitementFichierService;
 use App\Service\genererPdf\dit\ri\GenererPdfRiSoumisAValidataion;
-use App\Service\historiqueOperation\atelier\dit\Ri\HistoriqueOperationRIService;
+use App\Service\historiqueOperation\Atelier\Dit\Ri\HistoriqueOperationRIService;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;

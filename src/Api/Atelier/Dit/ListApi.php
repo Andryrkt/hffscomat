@@ -3,12 +3,14 @@
 namespace App\Api\Atelier\Dit;
 
 use App\Controller\Controller;
+use App\Dto\Atelier\Dit\soumission\DitRiSoumisAValidationDto;
 use App\Model\dit\DitListModel;
 
 use App\Entity\dit\DitFactureSoumisAValidation;
 use App\Model\Atelier\Dit\DitListeModel;
 use App\Model\Atelier\Dit\DitModel;
 use App\Model\Atelier\Dit\Soumission\DitFactureSoumisAValidationModel;
+use App\Model\Atelier\Dit\Soumission\DitRiSoumisAValidationModel;
 use Symfony\Component\Routing\Annotation\Route;
 
 
@@ -74,6 +76,8 @@ class ListApi extends Controller
      * */
     public function facturation($numOr)
     {
+        // Code Société de l'utilisateur
+        $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
 
         if (empty($numOr)) {
             header("Content-type:application/json");
@@ -83,7 +87,7 @@ class ListApi extends Controller
 
         $ditListeModel = new DitListeModel($this->getSecurityService());
 
-        $facture = (new DitFactureSoumisAValidationModel())->findNumItvFacStatut($numOr);
+        $facture = (new DitFactureSoumisAValidationModel())->findNumItvFacStatut($numOr, $codeSociete);
 
         $itvNumFac = $ditListeModel->recupItvNumFac($numOr);
 
@@ -91,9 +95,9 @@ class ListApi extends Controller
         foreach ($itvNumFac as $value) {
             $found = false;
             foreach ($facture as $item) {
-                if ($item['numeroItv'] == $value['itv']) {
-                    $result[] = $item;
+                if ($item['numeroitv'] == $value['itv']) {
                     $found = true;
+                    $result[] = $item;
                     break;
                 }
             }
@@ -101,8 +105,8 @@ class ListApi extends Controller
 
             if (!$found) {
                 $result[] = [
-                    "numeroItv" => $value['itv'],
-                    "numeroFact" => $value['numerofac'] ? $value['numerofac'] : "-",
+                    "numeroitv" => $value['itv'],
+                    "numerofact" => $value['numerofac'] ? $value['numerofac'] : "-",
                     "statut" => "-"
                 ];
             }
@@ -119,6 +123,8 @@ class ListApi extends Controller
      * */
     public function ri($numOr)
     {
+        $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
+
         if (empty($numOr)) {
             header("Content-type:application/json");
             echo json_encode([]);
@@ -126,21 +132,26 @@ class ListApi extends Controller
         }
 
 
-        // $ditListeModel = new DitListeModel($this->getSecurityService());
+        $ditListeModel = new DitListeModel($this->getSecurityService());
 
-        // $ri = $ditListeModel->recupItvComment($numOr);
+        $ri = $ditListeModel->recupItvComment($numOr);
 
-        // $ri = (new DitRi)
-        // $riSoumis = $this->getEntityManager()->getRepository(DitRiSoumisAValidation::class)->findNumItv($numOr);
 
-        // foreach ($ri as &$value) {
-        //     $estRiSoumis = in_array($value['numeroitv'], $riSoumis);
-        //     $value['riSoumis'] = $estRiSoumis;
-        // }
-        // unset($value); // Libère la référence
+        $ditRiSoumisValidation = new DitRiSoumisAValidationModel();
 
-        // header("Content-type:application/json");
-        // echo json_encode($ri);
+        $riSoumis = $ditRiSoumisValidation->findNumItv($numOr, $codeSociete);
+
+
+
+        foreach ($ri as &$value) {
+            $estRiSoumis = in_array($value['numeroitv'], $riSoumis);
+            $value['riSoumis'] = $estRiSoumis;
+        }
+
+        unset($value); // Libère la référence
+
+        header("Content-type:application/json");
+        echo json_encode($ri);
     }
 
     /** 
