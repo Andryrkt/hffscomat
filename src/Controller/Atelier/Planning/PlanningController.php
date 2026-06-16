@@ -45,7 +45,7 @@ class PlanningController extends Controller
         $this->searchDto->facture = 'ENCOURS';
         $this->searchDto->plan = 'PLANIFIE';
         $this->searchDto->interneExterne = 'TOUS';
-        $this->searchDto->typeLigne = 'TOUETS';
+        $this->searchDto->typeLigne = 'TOUTES';
         $this->searchDto->months = 3;
         $this->planningMapper = new PlanningMapper();
         $this->planningService = new PlanningService();
@@ -79,6 +79,7 @@ class PlanningController extends Controller
         else
         {
             $data = [];
+            dd($data);
             $numOrItvBack = [];
         }
 

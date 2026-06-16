@@ -116,7 +116,7 @@ class PlanningMaterielModel extends Model
         return $this->connect->fetchResults($results);
     }
 
-    public function getDetailPieceInformix(string $numOrItv, PlanningSearchDto $searchDto)
+    public function getDetailPieceInformix(string $numOr, PlanningSearchDto $searchDto)
     {
         $vTypeLigne = "";
         if (!empty($searchDto->typeLigne))
@@ -329,7 +329,7 @@ class PlanningMaterielModel extends Model
                 FROM sav_lor
 	              JOIN sav_itv ON slor_numor = sitv_numor AND sitv_interv = slor_nogrp / 100
               LEFT JOIN neg_lig ON slor_numcf = nlig_numcde AND slor_refp = nlig_refp
-                WHERE slor_numor || '-' || sitv_interv = '" . $numOrItv . "'
+                WHERE cast(slor_numor as varchar(10)) = '" . $numOr . "'
                 AND (slor_refp not like '%-L' and slor_refp not like '%-CTRL')
                 
                 --AND slor_typlig = 'P'

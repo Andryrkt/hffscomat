@@ -212,6 +212,11 @@ class PlanningModel extends Model
 
     public function getNumeroOrValider(PlanningSearchDto $searchDto): array
     {
+
+        $td = $searchDto->typeDocument;
+        if (!$td && empty($searchDto->numOr))
+            $td = 1;
+
         $statement = "SELECT distinct
                 osv.numeroOR                                as num_or,
                 osv.numeroItv                               as num_itv,
@@ -223,10 +228,10 @@ class PlanningModel extends Model
                 from {$this->dbIrium}:Informix.ors_soumis_a_validation oo
                 where oo.numeroor = osv.numeroor)
             and osv.statut like 'Valid%'
-            {$this->selectCond->eq('type_document', $searchDto->typeDocument)}
+            {$this->selectCond->eq('type_document', $td)}
             {$this->selectCond->eq('reparation_realise', $searchDto->reparationRealise)}
             {$this->selectCond->eq('numero_or', $searchDto->numOr)}
-            {$this->selectCond->eq('id_niveau_urgence', $searchDto->niveauUrgence ? $searchDto->niveauUrgence : null)}
+            {$this->selectCond->eq('id_niveau_urgence', $searchDto->niveauUrgence)}
             order by numeroOR asc
         ";
 
@@ -259,15 +264,16 @@ class PlanningModel extends Model
         //     $data[] = $tabType;
         // }
         // return $data;
+        return [];
     }
 
 
-    public function getEtatPiecePart(string $numCmd, string $refP)
+    public function getEtaPiecePart(string $numCmd, string $refP)
     {
         $statement = " SELECT fcdl_solde as solde,
                           fcdl_qte as qte
                   FROM FRN_CDL 
-                  WHERE 1
+                  WHERE 1=1
                   {$this->selectCond->eq('fcdl_numcde', $numCmd)}
                   {$this->selectCond->eq('fcdl_refp', $refP)}
         ";
@@ -305,6 +311,42 @@ class PlanningModel extends Model
 
         $result = $this->connect->executeQuery($statement);
         return $this->convertirEnUtf8($this->connect->fetchResults($result));
+    }
+
+    public function getTechnicientIntervenantSkw(string $numOr, string $numItv)
+    {
+        $statement = " SELECT distinct 
+                ssal_numsal             AS matricule, 
+                ssal_nom                AS matriculeNomPrenom
+            from skw
+            inner join ska on ska.skw_id = skw.skw_id
+            inner join sav_sal
+                on sav_sal.ssal_numsal = ska.skr_id
+                {$this->selectCond->eq('ofs_id', $numItv)}
+            where ssal_numsal <> 9999
+            {$this->selectCond->eq('skw.ofh_id', $numOr)}
+        ";
+
+        $results = $this->connect->executeQuery($statement);
+        $data = $this->connect->fetchResults($results);
+        return $this->convertirEnUtf8($data);
+    }
+
+    public function getTechnicientIntervenantItv(string $numOr, string $numItv)
+    {
+        $statement = " SELECT distinct 
+                ssal_numsal             AS matricule, 
+                ssal_nom                AS matriculeNomPrenom
+            from sav_itv
+            inner join sav_sal on sav_sal.ssal_numsal = sitv_techn
+            where ssal_numsal <> 9999
+            {$this->selectCond->eq('sitv_interv', $numItv)}
+            {$this->selectCond->eq('sitv_numor', $numOr)}
+        ";
+
+        $results = $this->connect->executeQuery($statement);
+        $data = $this->connect->fetchResults($results);
+        return $this->convertirEnUtf8($data);
     }
 
 }
