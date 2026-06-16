@@ -58,6 +58,7 @@ class MenuGroupe
                 'icon'     => 'warehouse',
                 'subitems' => [
                     ['label' => 'Liste à traiter', 'icon' => 'tasks',        'route' => 'magasinListe_index'],
+                    ['label' => 'Liste à livrer',  'icon' => 'truck-loading', 'route' => 'magasinListe_or_Livrer'],
                 ],
             ],
             [
