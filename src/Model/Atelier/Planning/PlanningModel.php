@@ -212,11 +212,6 @@ class PlanningModel extends Model
 
     public function getNumeroOrValider(PlanningSearchDto $searchDto): array
     {
-
-        $td = $searchDto->typeDocument;
-        if (!$td && empty($searchDto->numOr))
-            $td = 1;
-
         $statement = "SELECT distinct
                 osv.numeroOR                                as num_or,
                 osv.numeroItv                               as num_itv,
@@ -228,7 +223,7 @@ class PlanningModel extends Model
                 from {$this->dbIrium}:Informix.ors_soumis_a_validation oo
                 where oo.numeroor = osv.numeroor)
             and osv.statut like 'Valid%'
-            {$this->selectCond->eq('type_document', $td)}
+            {$this->selectCond->eq('type_document', $searchDto->typeDocument)}
             {$this->selectCond->eq('reparation_realise', $searchDto->reparationRealise)}
             {$this->selectCond->eq('numero_or', $searchDto->numOr)}
             {$this->selectCond->eq('id_niveau_urgence', $searchDto->niveauUrgence)}

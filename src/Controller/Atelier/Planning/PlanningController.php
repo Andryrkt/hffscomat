@@ -79,7 +79,6 @@ class PlanningController extends Controller
         else
         {
             $data = [];
-            dd($data);
             $numOrItvBack = [];
         }
 

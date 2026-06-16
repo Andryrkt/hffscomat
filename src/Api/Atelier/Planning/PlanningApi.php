@@ -92,7 +92,7 @@ class PlanningApi extends Controller
 
             echo json_encode([
                 'avecOnglet' => false,
-                'data' => $details,
+                'data' => $this->regroupeParIntervention($details),
             ]);
         }
     }
@@ -113,5 +113,18 @@ class PlanningApi extends Controller
         echo json_encode($matriculeNom);
     }
 
+    private function regroupeParIntervention(array $details): array
+    {
+        $groupedDetails = [];
+
+        foreach ($details as $detail) {
+            $intvKey = $detail['intv']; // La valeur de 'intv' utilisée comme clé
+            if (!isset($groupedDetails[$intvKey])) {
+                $groupedDetails[$intvKey] = [];
+            }
+            $groupedDetails[$intvKey][] = $detail; // Ajouter l'élément au groupe correspondant
+        }
+        return $groupedDetails;
+    }
 
 }

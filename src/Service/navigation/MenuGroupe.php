@@ -48,10 +48,22 @@ class MenuGroupe
                 ],
             ],
             [
-                'label'   => "Planning Interne Atelier",
-                'icon'    => 'calendar',
-                'route'   => 'planningAtelier_vue',
-            ]
+                'route'    => 'planning_vue',
+                'label'    => 'Planning',
+                'icon'     => 'calendar-alt',
+                'params'   => ['action' => 'oui'],
+            ],
+            [
+                'route'    => 'liste_planning',
+                'label'    => 'Planning détaillé',
+                'icon'     => 'calendar-day',
+                'params'   => ['action' => 'oui'],
+            ],
+            [
+                'route'    => 'planningAtelier_vue',
+                'label'    => 'Planning interne Atelier',
+                'icon'     => 'calendar-alt',
+            ],
         ];
     }
 
