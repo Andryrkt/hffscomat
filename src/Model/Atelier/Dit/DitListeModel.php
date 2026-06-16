@@ -11,12 +11,19 @@ use App\Service\security\SecurityService;
 class DitListeModel extends Model
 {
     private SecurityService $securityService;
+    private array $defaultStatuts;
+
 
     public function __construct(
         SecurityService $securityService
     ) {
         parent::__construct();
         $this->securityService = $securityService;
+        $this->defaultStatuts = [
+            StatutDitConstant::STATUT_A_AFFECTER,
+            StatutDitConstant::STATUT_AFFECTEE_SECTION,
+            StatutDitConstant::STATUT_CLOTUREE_VALIDER,
+        ];
     }
 
     public function findPaginatedAndFiltered(string $codeSociete, DitSearchDto $ditSearchdto, int $page, int $perPage)
@@ -139,18 +146,14 @@ class DitListeModel extends Model
                 AND (d0_.statut_or NOT LIKE 'Refus%' OR d0_.statut_or IS NULL)                
         ";
         $conditions = $this->filtre($ditSearchdto);
-        $defaultStatuts = [
-            StatutDitConstant::STATUT_A_AFFECTER,
-            StatutDitConstant::STATUT_AFFECTEE_SECTION,
-            StatutDitConstant::STATUT_CLOTUREE_VALIDER
-        ];
+
 
         if (!empty($conditions)) {
             $statement .= " AND " . implode("AND", $conditions);
         } else {
             $quotedStatuses = array_map(
                 fn($status) => "'" . str_replace("'", "''", $status) . "'",
-                $defaultStatuts
+                $this->defaultStatuts
             );
             $statement .= " AND s3_.description IN (" . implode(',', $quotedStatuses) . ")";
         }
@@ -268,6 +271,12 @@ class DitListeModel extends Model
 
         if (!empty($conditions)) {
             $statement .= " AND " . implode("AND", $conditions);
+        } else {
+            $quotedStatuses = array_map(
+                fn($status) => "'" . str_replace("'", "''", $status) . "'",
+                $this->defaultStatuts
+            );
+            $statement .= " AND s3_.description IN (" . implode(',', $quotedStatuses) . ")";
         }
 
 
@@ -380,17 +389,13 @@ class DitListeModel extends Model
                 AND (d0_.statut_or NOT LIKE 'Refus%' OR d0_.statut_or IS NULL)
         ";
 
-        $defaultStatuts = [
-            StatutDitConstant::STATUT_A_AFFECTER,
-            StatutDitConstant::STATUT_AFFECTEE_SECTION,
-            StatutDitConstant::STATUT_CLOTUREE_VALIDER
-        ];
+
         if (!empty($conditions)) {
             $countStatement .= " AND " . implode(" AND ", $conditions);
         } else {
             $quotedStatuses = array_map(
                 fn($status) => "'" . str_replace("'", "''", $status) . "'",
-                $defaultStatuts
+                $this->defaultStatuts
             );
             $countStatement .= " AND s3_.description IN (" . implode(',', $quotedStatuses) . ")";
         }

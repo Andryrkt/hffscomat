@@ -178,7 +178,7 @@ class DitRiSoumisAValidationModel extends Model
     public function findNumeroVersionMax(string $numOr, string $codeSociete): int
     {
         $statement = "
-        SELECT numero_soumission AS numero_version_max
+        SELECT MAX(numero_soumission) AS numero_version_max
         FROM {$this->dbIrium}:Informix.ri_soumis_a_validation
         WHERE numero_or = '$numOr'
           AND code_societe = '$codeSociete'
@@ -199,7 +199,7 @@ class DitRiSoumisAValidationModel extends Model
 
         // Étape 2 : Utiliser le numeroVersionMax pour récupérer le numero d'intervention
         $statement = "
-        SELECT numeroItv AS numeroItv
+        SELECT numeroitv AS numeroitv
         FROM {$this->dbIrium}:Informix.ri_soumis_a_validation
         WHERE numero_or = '$numOr' 
         AND numero_soumission = '$numeroVersionMax' 
@@ -209,6 +209,6 @@ class DitRiSoumisAValidationModel extends Model
 
         $data = $this->connect->fetchResults($result);
 
-        return (array)($data[0]['numeroItv'] ?? 0);
+        return (array)($data[0]['numeroitv'] ?? 0);
     }
 }
