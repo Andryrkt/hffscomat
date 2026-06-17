@@ -16,7 +16,7 @@ trait PdfConversionTrait
 
     private function convertPdfWithGhostscript(string $filePath)
     {
-        $gsPath = 'C:\Program Files\gs\gs10.07.1\bin\gswin64c.exe'; // Modifier selon l'OS
+        $gsPath = 'C:\Program Files\gs\gs10.05.0\bin\gswin64c.exe'; // Modifier selon l'OS
         $tempFile = $filePath . "_temp.pdf";
 
         // Vérifier si le fichier existe et est accessible

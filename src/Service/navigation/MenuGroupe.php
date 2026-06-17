@@ -45,7 +45,15 @@ class MenuGroupe
                     ['label' => 'Nouvelle demande',            'icon' => 'plus-circle', 'route' => 'dit_new'],
                     ['label' => 'Consultation',                'icon' => 'search',      'route' => 'dit_liste'],
                     ['label' => 'Dossier DIT',                 'icon' => 'folder',      'route' => 'dit_dossier_intervention_atelier'],
+                    ['label' => 'Matrice des responsabilités', 'icon' => 'table',       'route' => 'dit_new', 'link'  => '{basePath}/documentation/MATRICE DE RESPONSABILITES OR v9.xlsx'],
                 ],
+            ],
+            [
+                'route'    => 'dit_new',
+                'label'    => 'Glossaire OR',
+                'icon'     => 'book',
+                'link'     => '{basePath}/dit/glossaire_or/Glossaire_OR.pdf',
+                'target'   => '_blank',
             ],
         ];
     }
