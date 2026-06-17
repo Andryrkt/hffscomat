@@ -6,13 +6,13 @@ use Exception;
 use App\Entity\dit\AcSoumis;
 use App\Entity\dit\BcSoumis;
 use App\Controller\Controller;
-use App\Form\dit\AcSoumisType;
 use App\Entity\dit\DemandeIntervention;
 use App\Service\TableauEnStringService;
 use Symfony\Component\Form\FormInterface;
 use App\Service\fichier\FileUploaderService;
 use App\Entity\dit\DitDevisSoumisAValidation;
 use App\Factory\Atelier\Dit\soumission\AcBc\AccuseReceptionFactory;
+use App\Form\Atelier\Dit\soumission\AcSoumisType;
 use App\Model\Atelier\Dit\Soumission\AcBc\AcBcSoumisModel;
 use Symfony\Component\HttpFoundation\Request;
 use App\Service\genererPdf\GenererPdfAcSoumis;
@@ -64,7 +64,7 @@ class AcBcSoumisController extends Controller
 
         if (!$this->acBcValidationService->isValidAvantAffichageForm($accuseReceptionDto, $numDit)) return;
 
-        $form = $this->getFormFactory()->createBuilder(AcSoumisType::class, $acSoumis)->getForm();
+        $form = $this->getFormFactory()->createBuilder(AcSoumisType::class, $accuseReceptionDto)->getForm();
 
         $form->handleRequest($request);
 
@@ -107,213 +107,11 @@ class AcBcSoumisController extends Controller
             $this->envoieBcDansBd($bcSoumis);
 
             $message = 'Le bon de commande et l\'accusé de reception  ont été soumis avec succès';
-            $this->historiqueOperation->sendNotificationCreation($message, $numBc, 'dit_index', true);
+            $this->historiqueOperation->sendNotificationCreation($message, $numBc, 'dit_liste', true);
         }
 
-        return $this->render('dit/AcBcSoumis.html.twig', [
+        return $this->render('atelier/dit/soumission/acBc/soumissionAcBc.html.twig', [
             'form' => $form->createView()
         ]);
-    }
-
-    private function ConvertirLesPdf(array $tousLesFichersAvecChemin)
-    {
-        $tousLesFichiers = [];
-        foreach ($tousLesFichersAvecChemin as $filePath) {
-            $tousLesFichiers[] = $this->convertPdfWithGhostscript($filePath);
-        }
-
-
-        return $tousLesFichiers;
-    }
-
-    private function convertPdfWithGhostscript($filePath)
-    {
-        $gsPath = 'C:\Program Files\gs\gs10.05.0\bin\gswin64c.exe'; // Modifier selon l'OS
-        $tempFile = $filePath . "_temp.pdf";
-
-        // Vérifier si le fichier existe et est accessible
-        if (!file_exists($filePath)) {
-            throw new Exception("Fichier introuvable : $filePath");
-        }
-
-        if (!is_readable($filePath)) {
-            throw new Exception("Le fichier PDF ne peut pas être lu : $filePath");
-        }
-
-        // Commande Ghostscript
-        $command = "\"$gsPath\" -sDEVICE=pdfwrite -dCompatibilityLevel=1.4 -o \"$tempFile\" \"$filePath\"";
-        // echo "Commande exécutée : $command<br>";
-
-        exec($command, $output, $returnVar);
-
-        if ($returnVar !== 0) {
-            echo "Sortie Ghostscript : " . implode("\n", $output);
-            throw new Exception("Erreur lors de la conversion du PDF avec Ghostscript");
-        }
-
-        // Remplacement du fichier
-        if (!rename($tempFile, $filePath)) {
-            throw new Exception("Impossible de remplacer l'ancien fichier PDF.");
-        }
-
-        return $filePath;
-    }
-    // private function pieceGererMagasinConstructeur($numDevis)
-    // {
-    //     $constructeur = $this->ditDevisSoumisAValidationModel->constructeurPieceMagasin($numDevis);
-
-    //     if(isset($constructeur[0])) {
-    //         $containsCAT = in_array("CAT", $constructeur[0]);
-    //         $containsOther = count(array_filter($constructeur[0], fn($el) => $el !== "CAT"));
-
-    //         if($containsOther === 0) {
-    //             $suffix = 'C';
-    //         } else if(!$containsCAT) {
-    //             $suffix = 'P';
-    //         } else if ($containsOther > 0 ) {
-    //             $suffix = 'CP';
-    //         } else {
-    //             $suffix = 'N';
-    //         }
-    //     } else {
-    //         $suffix = 'N';
-    //     }
-
-    //     return $suffix;
-    // }
-
-    private function filtredataDevis($numDit)
-    {
-        $devi = $this->getEntityManager()->getRepository(DitDevisSoumisAValidation::class)->findInfoDevis($numDit);
-
-        return array_filter($devi, function ($item) {
-            return $item->getNatureOperation() === 'VTE' && ($item->getMontantItv() - $item->getMontantForfait()) >= 0.00;
-        });
-    }
-
-    private function enregistrementEtFusionFichier(FormInterface $form, string $numClientBcDevis, string $numeroVersion)
-    {
-        $chemin = $_ENV['BASE_PATH_FICHIER'] . '/dit/ac_bc/';
-        $fileUploader = new FileUploaderService($chemin);
-        $prefix = 'bc';
-        $options = [
-            'prefix'        => $prefix,
-            'numeroDoc'     => $numClientBcDevis,
-            'numeroVersion' => $numeroVersion,
-            'mainFirstPage' => true
-        ];
-        $fileName = $fileUploader->chargerEtOuFusionneFichier($form, $options);
-
-        return $fileName;
-    }
-
-    private function envoieBcDansBd(BcSoumis $bcSoumis): void
-    {
-        $this->getEntityManager()->persist($bcSoumis);
-        $this->getEntityManager()->flush();
-    }
-
-    private function ajoutDonneeBc(AcSoumis $acSoumis, ?int $numeroVersionMax): BcSoumis
-    {
-        $this->bcSoumis
-            ->setNumDit($acSoumis->getNumeroDit())
-            ->setNumDevis($acSoumis->getNumeroDevis())
-            ->setNumBc($acSoumis->getNumeroBc())
-            ->setDateBc($acSoumis->getDateBc())
-            ->setDateDevis($acSoumis->getDateDevis())
-            ->setMontantDevis($acSoumis->getMontantDevis())
-            ->setCodeSociete($acSoumis->getCodeSociete())
-            ->setDateHeureSoumission(new \DateTime())
-            ->setNumVersion($this->autoIncrement($numeroVersionMax))
-            ->setStatut('Soumis à validation')
-        ;
-        return $this->bcSoumis;
-    }
-
-    private function autoIncrement($num)
-    {
-        if ($num === null) {
-            $num = 0;
-        }
-        return $num + 1;
-    }
-
-    private function initialisation(array $devis, string $numDit, string $codeSociete): AcSoumis
-    {
-        $reparationRealiser = $this->ditRepository->findAteRealiserPar($numDit, $codeSociete);
-        $atelier = $this->contactAgenceAteRepository->findContactSelonAtelier($reparationRealiser);
-
-        $this->acSoumis
-            ->setDateCreation(new \DateTime($this->getDatesystem()))
-            ->setNumeroDevis($devis[0]->getNumeroDevis())
-            ->setStatutDevis($devis[0]->getStatut())
-            ->setNumeroDit($devis[0]->getNumeroDit())
-            ->setDateDevis($devis[0]->getDateHeureSoumission())
-            ->setMontantDevis($this->calculMontantDevis($devis, $codeSociete))
-            ->setEmailContactHff($this->emailHff($atelier))
-            ->setTelephoneContactHff($this->telephoneHff($atelier))
-            ->setDevise($devis[0]->getDevise())
-            ->setCodeSociete($codeSociete)
-        ;
-        return $this->acSoumis;
-    }
-
-    private function telephoneHff(array $atelier)
-    {
-        return TableauEnStringService::TableauEnString(' / ', array_map(fn($el) => $el->getTelephone(), $atelier), '');
-    }
-
-    private function emailHff(array $atelier)
-    {
-        return TableauEnStringService::TableauEnString(' / ', array_map(fn($el) => $el->getEmailString(), $atelier), '');
-    }
-
-    /**
-     * METHODE POUR CALCULER LE MONTANT DEVIS
-     * le mont devis c'est le mont du vente
-     * donc il faut soustraire du montant forfait s'il existe
-     *
-     * @param array $devis
-     * @return void
-     */
-    private function calculMontantDevis(array $devis, string $codeSociete): float
-    {
-        if ($this->estCeVente($devis[0]->getNumeroDevis(), $codeSociete)) {
-            return $this->sommeMontantTousItv($devis);
-        } else {
-            return $this->sommeMontantPremierItv($devis);
-        }
-    }
-
-    private function sommeMontantPremierItv(array $devis): float
-    {
-        return $devis[0]->getMontantItv();
-    }
-
-    private function sommeMontantTousItv(array $devis): float
-    {
-        return array_reduce($devis, function ($acc, $item) {
-            return $acc + $item->getMontantItv();
-        }, 0);
-    }
-
-
-    /**
-     * Methode qui permet de savoir si la soumission
-     * est une Devis vente ou forfait
-     *
-     * @param string $numDevis
-     * @return boolean
-     */
-    public function estCeVente(string $numDevis, $codeSociete): bool
-    {
-        $recupConstRefPremDev = $this->ditDevisSoumisAValidationModel->recupConstRefPremDev($numDevis, $codeSociete);
-        $recupNbrItvDev = $this->ditDevisSoumisAValidationModel->recupNbrItvDev($numDevis, $codeSociete);
-
-        if ($recupConstRefPremDev[0]['contructeur'] === 'ZDI-FORFAIT' && (int)$recupNbrItvDev[0]['itv'] > 0) {
-            return false; //Devis forfait
-        } else {
-            return true; //Devis vente
-        }
     }
 }

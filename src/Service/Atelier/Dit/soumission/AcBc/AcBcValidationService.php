@@ -38,7 +38,7 @@ class AcBcValidationService
             $message = "Le DIT n° {$numDit} est interne";
         }
 
-        if (!$isValid) $this->historiqueOperation->sendNotificationCreation("Erreur lors de la soumission, Impossible de soumettre le BC . . . $message", $numDit, 'dit_index');
+        if (!$isValid) $this->historiqueOperation->sendNotificationCreation("Erreur lors de la soumission, Impossible de soumettre le BC . . . $message", $numDit, 'dit_liste');
 
         return $isValid;
     }
