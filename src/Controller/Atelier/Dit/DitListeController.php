@@ -28,33 +28,24 @@ class DitListeController extends Controller
 
     private DitListeModel $ditListeModel;
 
-
     public function __construct(DitListeModel $ditListeModel)
     {
         parent::__construct();
         $this->ditListeModel = $ditListeModel;
     }
+
     /**
      * @Route("/dit-liste", name="dit_liste")
      */
     public function index(Request $request)
     {
-
-        $page = (int) $request->query->get('page', 1);
-        if ($page < 1) {
-            $page = 1;
-        }
-        $perPage = 20;
-        $criteria = [];
-
         $allAgenceServices = $this->getSecurityService()->getAllAgenceServices();
         //création et initialisation du formulaire de la recherche
         $form = $this->getFormFactory()->createBuilder(DitSearchType::class, null, [
             'method' => 'GET',
             'allAgenceServices' => $allAgenceServices
         ])->getForm();
-        $dto = new DitSearchDto();
-        $dtoSearch  = $this->traitementFormualireRecherhce($form, $request, $dto);
+        $dtoSearch  = $this->traitementFormualireRecherhce($form, $request);
 
         /**  Docs à intégrer dans DW * */
         $formDocDansDW = $this->getFormFactory()->createBuilder(DocDansDwType::class, null, [
@@ -80,8 +71,9 @@ class DitListeController extends Controller
             }
         }
 
-        $dataDit = $this->getDataDitEnDto($dtoSearch, $page, $perPage);
+        $dataDit = $this->getDataDitEnDto($dtoSearch, $request);
 
+        $criteria = [];
         return $this->render('atelier/dit/list.html.twig', [
             'data'          => $dataDit['data'],
             'currentPage'   => $dataDit['currentPage'],
@@ -99,10 +91,15 @@ class DitListeController extends Controller
      *
      * @return array
      */
-    private function getDataDitEnDto(DitSearchDto $dtoSearch, $page, $perPage): array
+    private function getDataDitEnDto(DitSearchDto $dtoSearch, Request $request): array
     {
         // Code Société de l'utilisateur
         $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
+        $page = (int) $request->query->get('page', 1);
+        if ($page < 1) {
+            $page = 1;
+        }
+        $perPage = 20;
 
         $dits = $this->ditListeModel->findPaginatedAndFiltered($codeSociete, $dtoSearch, $page, $perPage);
         $ditDto = (new DitListeMapper())->map($dits['data']);

@@ -20,6 +20,12 @@ class StatutDitConstant
     public const STATUT_TERMINER_ID = 57;
     public const STATUT_A_VALIDER_CHEF_RENTAL_ID = 78;
 
+    public const DEFAULT_STATUT_ID = [
+        self::STATUT_A_AFFECTER_ID,
+        self::STATUT_AFFECTEE_SECTION_ID,
+        self::STATUT_CLOTUREE_VALIDER_ID,
+    ];
+
     public const CSS_CLASS_MAP_STATUT_DIT = [
         self::STATUT_A_AFFECTER => 'A AFFECTER',
         self::STATUT_AFFECTEE_SECTION => 'AFFECTEE SECTION',

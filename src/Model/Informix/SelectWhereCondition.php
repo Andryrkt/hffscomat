@@ -18,11 +18,22 @@ class SelectWhereCondition
         return "AND $column <> '$value'";
     }
 
-    public function in(string $column, ?array $values): string
+    public function in(string $column, ?array $values, bool $withAnd = true): string
     {
-        $values = $values ? implode(',', $values) : null;
-        if (!$values) return '';
-        return "AND $column in ('$values')";
+        if (empty($values)) return '';
+
+        // Échapper et traiter chaque valeur
+        $formattedValues = array_map(function ($value) {
+            // Si c'est un entier, pas de guillemets
+            if (is_int($value)) {
+                return $value;
+            }
+            // Sinon, on met des guillemets simples et on échappe
+            return "'" . addslashes($value) . "'";
+        }, $values);
+
+        $values = implode(',', $formattedValues);
+        return $withAnd ? " AND $column IN ($values)" : " $column IN ($values)";
     }
 
     public function ni(string $column, array $values): string
@@ -64,5 +75,11 @@ class SelectWhereCondition
         if ($d2) $condition .= "AND $column <= datetime($d2) year to day";
 
         return $condition;
+    }
+
+    public function null(string $column, bool $value = false): string
+    {
+        if (!$value) return '';
+        return "AND ($column IS NULL  OR $column <> '' ";
     }
 }
