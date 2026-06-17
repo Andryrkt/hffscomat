@@ -10,7 +10,14 @@ class GenererPdfAcSoumis extends GeneratePdf
 {
     use FormatageTrait;
 
-    function genererPdfAc(AcSoumis $acSoumis, string $numeroDunom, string $numeroVersionMax, $nomFichier)
+    public function copyToDwAcSoumis(string $fileName)
+    {
+        $cheminFichierDistant = $this->baseCheminDocuware . "BC ATELIER/$fileName";
+        $cheminDestinationLocal = $this->baseCheminDuFichier . "dit/ac_bc/$fileName";
+        $this->copyFile($cheminDestinationLocal, $cheminFichierDistant);
+    }
+
+    public function genererPdfAc(AcSoumis $acSoumis, string $numeroDunom, string $numeroVersionMax, $nomFichier)
     {
         // Création de l'objet PDF
         $pdf = new TCPDF(PDF_PAGE_ORIENTATION, PDF_UNIT, PDF_PAGE_FORMAT, true, 'UTF-8', false);

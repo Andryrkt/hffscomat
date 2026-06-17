@@ -16,4 +16,9 @@ class BcSoumisDto
     public ?\DateTime $dateDevis = null;
     public ?string $nomFichier = null;
     public float $montantDevis = 0.0;
+
+    public function __construct()
+    {
+        $this->dateSoumissionBc = new \DateTime();
+    }
 }

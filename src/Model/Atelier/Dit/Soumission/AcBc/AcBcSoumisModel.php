@@ -121,4 +121,17 @@ class AcBcSoumisModel extends Model
                 AND l.slor_soc = '$codeSociete'
                 ORDER BY l.slor_nolign";
     }
+
+    public function findNumeroVersionMaxBcSoumis(string $numeroBc, string $codeSociete): int
+    {
+        $statement = "SELECT FIRST 1 MAX(numero_version) as version 
+        FROM {$this->dbIrium}:Informix.bc_soumis b 
+        WHERE b.numerobc = '$numeroBc' AND b.code_societe = '$codeSociete'";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->connect->fetchScalarResults($result);
+
+        return array_column($this->convertirEnUtf8($data), 'version')[0] ?? 0;
+    }
 }

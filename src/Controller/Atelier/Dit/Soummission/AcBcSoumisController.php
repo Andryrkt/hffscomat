@@ -12,6 +12,7 @@ use Symfony\Component\Form\FormInterface;
 use App\Service\fichier\FileUploaderService;
 use App\Entity\dit\DitDevisSoumisAValidation;
 use App\Factory\Atelier\Dit\soumission\AcBc\AccuseReceptionFactory;
+use App\Factory\Atelier\Dit\soumission\AcBc\BcSoumisFactory;
 use App\Form\Atelier\Dit\soumission\AcSoumisType;
 use App\Model\Atelier\Dit\Soumission\AcBc\AcBcSoumisModel;
 use Symfony\Component\HttpFoundation\Request;
@@ -32,7 +33,7 @@ class AcBcSoumisController extends Controller
     // private $bcSoumis;
     // private $genererPdfAc;
     private AcBcValidationService $acBcValidationService;
-    private AccuseReceptionFactory $accuseReceptionFactory;
+    private BcSoumisFactory $bcSoumisFactory;
     // private DitRepository $ditRepository;
     // private BcSoumisRepository $bcRepository;
     private AcBcSoumisModel $acBcModel;
@@ -42,7 +43,7 @@ class AcBcSoumisController extends Controller
         parent::__construct();
 
         $this->acBcValidationService = new AcBcValidationService($this->getEntityManager());
-        $this->accuseReceptionFactory = new AccuseReceptionFactory();
+        $this->bcSoumisFactory = new BcSoumisFactory();
         // $this->acSoumis = new AcSoumis();
         // $this->bcSoumis = new BcSoumis();
         // $this->bcRepository = $this->getEntityManager()->getRepository(BcSoumis::class);
@@ -69,6 +70,11 @@ class AcBcSoumisController extends Controller
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $numeroVersionMaxBcSoumis = $this->acBcModel->findNumeroVersionMaxBcSoumis($accuseReceptionDto->numeroBc, $codeSociete);
+
+            $bcSoumisDto = $this->bcSoumisFactory->hydrate($accuseReceptionDto, $numeroVersionMaxBcSoumis);
+
+            dd($bcSoumisDto);
             $acSoumis = $this->initialisation($devis, $numDit, $codeSociete);
             $numBc = $acSoumis->getNumeroBc(); // recupère le numero bon de commande
             $numDevis = $acSoumis->getNumeroDevis(); // recupère le numero devis
@@ -106,8 +112,7 @@ class AcBcSoumisController extends Controller
             $bcSoumis->setNomFichier($nomFichier);
             $this->envoieBcDansBd($bcSoumis);
 
-            $message = 'Le bon de commande et l\'accusé de reception  ont été soumis avec succès';
-            $this->historiqueOperation->sendNotificationCreation($message, $numBc, 'dit_liste', true);
+            $this->acBcValidationService->notifySuccessSubmission($numDit);
         }
 
         return $this->render('atelier/dit/soumission/acBc/soumissionAcBc.html.twig', [
