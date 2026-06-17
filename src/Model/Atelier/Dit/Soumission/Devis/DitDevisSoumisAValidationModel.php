@@ -701,7 +701,7 @@ class DitDevisSoumisAValidationModel extends Model
      * @param string $numDit      numéro du DIT
      * @param string $codeSociete code société
      * 
-     * @return array
+     * @return array{numero_dit:string,numero_devis:string,statut_devis:string,date_soumission:string,montant:string,devise:string}
      */
     public function findInfoDevis(string $numDit, string $codeSociete): array
     {
@@ -724,6 +724,7 @@ class DitDevisSoumisAValidationModel extends Model
                     dsav.numeroDevis AS numero_devis,
                     dsav.statut AS statut_devis,
                     dsav.dateheuresoumission AS date_soumission,
+                    dsav.devise AS devise,
                     CASE
                         WHEN cst.nom = 'ZDI-FORFAIT' AND itv.nb > 0
                         THEN first_itv.montantItv
@@ -737,7 +738,7 @@ class DitDevisSoumisAValidationModel extends Model
 
         $result = $this->connect->executeQuery($statement);
 
-        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
+        $data = $this->convertirEnUtf8($this->connect->fetchScalarResults($result));
 
         return $data;
     }
@@ -751,7 +752,8 @@ class DitDevisSoumisAValidationModel extends Model
                     d.statut,
                     d.dateheuresoumission,
                     d.numeroItv,
-                    d.numeroVersion
+                    d.numeroVersion,
+                    d.devise
                 FROM {$this->dbIrium}:Informix.devis_soumis_a_validation d
                 JOIN (
                     SELECT 
