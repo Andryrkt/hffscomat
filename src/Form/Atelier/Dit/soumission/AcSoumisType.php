@@ -14,7 +14,6 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 
-
 class AcSoumisType extends AbstractType
 {
     use FormatageTrait;
@@ -24,81 +23,70 @@ class AcSoumisType extends AbstractType
         $builder
             ->add('nomClient', TextType::class, [
                 'label'    => 'Client *',
-                'required' => true,
                 'attr'     => [
                     'class'        => 'autocomplete',
                     'autocomplete' => 'off',
                 ]
             ])
             ->add('numeroBc', TextType::class, [
-                'label'    => 'N° de bon de commande *',
-                'required' => true,
+                'label'    => 'N° de bon de commande *'
             ])
             ->add('dateBc', DateType::class, [
                 'widget'   => 'single_text',
                 'label'    => 'Date du bon de commande *',
-                'required' => true,
             ])
             ->add('descriptionBc', TextareaType::class, [
-                'label'    => 'Description bon de commande *',
-                'required' => true,
+                'label'    => 'Déscription du bon de commande *',
                 'attr'     => [
                     'rows'  => 5,
                     'class' => 'detailDemande'
                 ],
             ])
             ->add('emailClient', EmailType::class, [
-                'label'    => 'Adress email client *',
-                'required' => true
+                'label'    => 'Adresse email client *'
             ])
             ->add('dateCreation', DateType::class, [
+                'widget'   => 'single_text',
                 'label'    => 'Date',
-                'required' => false,
                 'attr'     => [
-                    'disabled' => true
+                    'class' => 'div-disabled'
                 ]
             ])
             ->add('numeroDevis', TextType::class, [
                 'label'    => 'N° devis',
-                'required' => false,
                 'attr'     => [
-                    'disabled' => true
+                    'class' => 'div-disabled'
                 ]
             ])
             ->add('statutDevis', TextType::class, [
                 'label'    => 'Statut devis',
-                'required' => false,
                 'attr'     => [
-                    'disabled' => true
+                    'class' => 'div-disabled'
                 ]
             ])
             ->add('numeroDit', TextType::class, [
                 'label'    => 'N° DIT',
-                'required' => false,
                 'attr'     => [
-                    'disabled' => true
+                    'class' => 'div-disabled'
                 ]
             ])
-            ->add('dateDevis', TextType::class, [
-                'label'    => 'Date devis',
-                'required' => false,
+            ->add('dateDevis', DateType::class, [
+                'widget'   => 'single_text',
+                'label'    => 'Date de soumission du devis',
                 'attr'     => [
-                    'disabled' => true
+                    'class' => 'div-disabled'
                 ]
             ])
             ->add('montantDevis', TextType::class, [
-                'label'    => 'Montant devis',
-                'required' => false,
+                'label'    => 'Montant du devis',
                 'attr'     => [
-                    'disabled' => false
+                    'class' => 'div-disabled'
                 ]
             ])
             ->add('pieceJoint01', FileType::class, [
-                'label' => 'Bon de commande (PDF) *',
-                'required' => true,
                 'constraints' => [
                     new File([
-                        'maxSize' => '5M',
+                        'maxSize'   => '5M',
                         'mimeTypes' => [
                             'application/pdf'
                         ],
