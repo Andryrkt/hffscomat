@@ -28,67 +28,62 @@
 					{{ form_start(form, {'attr': {'enctype': 'multipart/form-data', 'id': 'upload-form'}}) }}
 					{{ form_errors(form)}}
 					<div class="row">
-						<div class="row">
-							<div class="col-12 col-md-5">
-								<div class="row">
-									<div class="col-12 col-md-6">
-										{{ form_row(form.numeroBc)}}
-										{{ form_errors(form.numeroBc)}}
-										{{ form_row(form.dateBc)}}
-										{{ form_errors(form.dateBc)}}
-									</div>
-									<div class="col-12 col-md-6">
-										{{ form_row(form.nomClient)}}
-										{{ form_errors(form.nomClient)}}
-										<div id="suggestion" class="suggestions"></div>
-										{{ form_row(form.emailClient)}}
-										{{ form_errors(form.emailClient)}}
-									</div>
-									{{ form_row(form.descriptionBc)}}
-									{{ form_errors(form.descriptionBc)}}
+						<div class="col-12 col-md-5">
+							<div class="row">
+								<div class="col-12 col-md-6">
+									{{ form_row(form.numeroBc)}}
+									{{ form_errors(form.numeroBc)}}
+									{{ form_row(form.dateBc)}}
+									{{ form_errors(form.dateBc)}}
+								</div>
+								<div class="col-12 col-md-6">
+									{{ form_row(form.nomClient)}}
+									{{ form_errors(form.nomClient)}}
+									<div id="suggestion" class="suggestions"></div>
+									{{ form_row(form.emailClient)}}
+									{{ form_errors(form.emailClient)}}
+								</div>
+								{{ form_row(form.descriptionBc)}}
+								{{ form_errors(form.descriptionBc)}}
+							</div>
+						</div>
+						<div class="col-12 col-md-7">
+							<div class="row">
+								<div class="col-12 col-md-4">
+									{{ form_row(form.numeroDevis)}}
+									{{ form_errors(form.numeroDevis)}}
+									{{ form_row(form.dateDevis)}}
+									{{ form_errors(form.dateDevis)}}
+								</div>
+								<div class="col-12 col-md-4">
+									{{ form_row(form.statutDevis)}}
+									{{ form_errors(form.statutDevis)}}
+									{{ form_row(form.montantDevis)}}
+									{{ form_errors(form.montantDevis)}}
+								</div>
+								<div class="col-12 col-md-4">
+									{{ form_row(form.dateCreation)}}
+									{{ form_errors(form.dateCreation)}}
+									{{ form_row(form.numeroDit)}}
+									{{ form_errors(form.numeroDit)}}
 								</div>
 							</div>
-							<div class="col-12 col-md-7">
-								<div class="row">
-									<div class="col-12 col-md-4">
-										{{ form_row(form.numeroDevis)}}
-										{{ form_errors(form.numeroDevis)}}
-										{{ form_row(form.dateDevis)}}
-										{{ form_errors(form.dateDevis)}}
+							<div class="row">
+								<div class="col-12 col-md-8">
+									<p>Veuillez insérer
+										<strong>le BC à valider *</strong>
+									</p>
+									<div id="dropzone-1" style="border: 2px dashed #ccc; padding: 50px; text-align: center;">
+										<i class="fa fa-cloud-upload upload-icon"></i>
+										<br>
+										Glissez et déposez votre fichier PDF ici, ou cliquez pour sélectionner un fichier PDF.
+										<br>
+										<button type="button" id="upload-btn-1" class="btn btn-primary">Sélectionner un fichier</button>
 									</div>
-									<div class="col-12 col-md-4">
-										{{ form_row(form.statutDevis)}}
-										{{ form_errors(form.statutDevis)}}
-										{{ form_row(form.montantDevis)}}
-										{{ form_errors(form.montantDevis)}}
-									</div>
-									<div class="col-12 col-md-4">
-										{{ form_row(form.dateCreation)}}
-										{{ form_errors(form.dateCreation)}}
-										{{ form_row(form.numeroDit)}}
-										{{ form_errors(form.numeroDit)}}
-									</div>
-								</div>
-								<div class="row">
-									<div class="col-12 col-md-8">
-										<p>Veuillez insérer
-											<strong>le BC à valider *</strong>
-										</p>
-										<div id="dropzone-1" style="border: 2px dashed #ccc; padding: 50px; text-align: center;">
-											<i class="fa fa-cloud-upload upload-icon"></i>
-											<br>
-											Glissez et déposez votre fichier PDF ici, ou cliquez pour sélectionner un fichier PDF.
-											<br>
-											<button type="button" id="upload-btn-1" class="btn btn-primary">Sélectionner un fichier</button>
-										</div>
-										{{ form_widget(form.pieceJoint01, {'attr': {'style': 'display:none;'}}) }}
-										{{ form_errors(form.pieceJoint01)}}
-										<div class="file-name-1" style="margin-top: 10px;"></div>
-										<div class="file-size" id="file-size-1"></div>
-									</div>
-									<div id="pdf-preview-1" class="pdf-preview" style="display: none;">
-										<embed id="pdf-embed-1" type="application/pdf" width="100%" height="500px">
-									</div>
+									{{ form_widget(form.pieceJoint01, {'attr': {'style': 'display:none;'}}) }}
+									{{ form_errors(form.pieceJoint01)}}
+									<div class="file-name-1" style="margin-top: 10px;"></div>
+									<div class="file-size" id="file-size-1"></div>
 								</div>
 							</div>
 						</div>
@@ -100,6 +95,9 @@
 						</button>
 					</div>
 					{{ form_end(form) }}
+					<div id="pdf-preview-1" class="pdf-preview" style="display: none;">
+						<embed id="pdf-embed-1" type="application/pdf" width="100%" height="500px">
+					</div>
 				</div>
 			</div>
 		</div>

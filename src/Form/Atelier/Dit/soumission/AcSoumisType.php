@@ -38,8 +38,7 @@ class AcSoumisType extends AbstractType
             ->add('descriptionBc', TextareaType::class, [
                 'label'    => 'Déscription du bon de commande *',
                 'attr'     => [
-                    'rows'  => 5,
-                    'class' => 'detailDemande'
+                    'rows'  => 7
                 ],
             ])
             ->add('emailClient', EmailType::class, [

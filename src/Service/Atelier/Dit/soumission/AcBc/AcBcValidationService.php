@@ -42,4 +42,17 @@ class AcBcValidationService
 
         return $isValid;
     }
+
+    /** 
+     * Notifier le succès de la soumission
+     * 
+     * @param string $numDit
+     * 
+     * @return void
+     */
+    public function notifySuccessSubmission(string $numDit)
+    {
+        $message = "Le bon de commande et l'accusé de réception ont été soumis avec succès.";
+        $this->historiqueOperation->sendNotificationCreation($message, $numDit, 'dit_liste', true);
+    }
 }
