@@ -12,6 +12,7 @@ use App\Service\TableauEnStringService;
 use Symfony\Component\Form\FormInterface;
 use App\Service\fichier\FileUploaderService;
 use App\Entity\dit\DitDevisSoumisAValidation;
+use App\Factory\Atelier\Dit\soumission\AcBc\AccuseReceptionFactory;
 use App\Model\Atelier\Dit\Soumission\AcBc\AcBcSoumisModel;
 use Symfony\Component\HttpFoundation\Request;
 use App\Service\genererPdf\GenererPdfAcSoumis;
@@ -31,6 +32,7 @@ class AcBcSoumisController extends Controller
     // private $bcSoumis;
     // private $genererPdfAc;
     private AcBcValidationService $acBcValidationService;
+    private AccuseReceptionFactory $accuseReceptionFactory;
     // private DitRepository $ditRepository;
     // private BcSoumisRepository $bcRepository;
     private AcBcSoumisModel $acBcModel;
@@ -40,6 +42,7 @@ class AcBcSoumisController extends Controller
         parent::__construct();
 
         $this->acBcValidationService = new AcBcValidationService($this->getEntityManager());
+        $this->accuseReceptionFactory = new AccuseReceptionFactory();
         // $this->acSoumis = new AcSoumis();
         // $this->bcSoumis = new BcSoumis();
         // $this->bcRepository = $this->getEntityManager()->getRepository(BcSoumis::class);
@@ -57,26 +60,9 @@ class AcBcSoumisController extends Controller
         // Code Société de l'utilisateur
         $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
 
-        $infoDevis = $this->acBcModel->findInfoDevis($numDit, $codeSociete);
+        $accuseReceptionDto = $this->acBcModel->findInfoDevis($numDit, $codeSociete);
 
-        if (!$this->acBcValidationService->isValidAvantAffichageForm($infoDevis, $numDit)) return;
-
-        /** @var DitDevisSoumisAValidationRepository $repository */
-        $repository = $this->getEntityManager()->getRepository(DitDevisSoumisAValidation::class);
-        $devis = $repository->findInfoDevis($numDit, $codeSociete);
-
-        $ditInterneouExterne = $this->ditRepository->findInterneExterne($numDit, $codeSociete);
-        if ($ditInterneouExterne === 'INTERNE') {
-            $message = "Erreur lors de la soumission, Impossible de soumettre le BC . . . le DIT est interne";
-            $this->historiqueOperation->sendNotificationCreation($message, $numDit, 'dit_index');
-        }
-
-        if (empty($devis)) {
-            $message = "Erreur lors de la soumission, Impossible de soumettre le BC . . . l'information du devis est vide ou le statut n'est pas 'Validé atelier' pour le numero {$numDit}";
-            $this->historiqueOperation->sendNotificationCreation($message, $numDit, 'dit_index');
-        }
-
-        $acSoumis = $this->initialisation($devis, $numDit, $codeSociete);
+        if (!$this->acBcValidationService->isValidAvantAffichageForm($accuseReceptionDto, $numDit)) return;
 
         $form = $this->getFormFactory()->createBuilder(AcSoumisType::class, $acSoumis)->getForm();
 

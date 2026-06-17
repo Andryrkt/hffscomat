@@ -2,6 +2,8 @@
 
 namespace App\Model\Atelier\Dit\Soumission\AcBc;
 
+use App\Dto\Atelier\Dit\soumission\AcBc\AccuseReceptionDto;
+use App\Factory\Atelier\Dit\soumission\AcBc\AccuseReceptionFactory;
 use App\Model\Model;
 
 class AcBcSoumisModel extends Model
@@ -13,9 +15,9 @@ class AcBcSoumisModel extends Model
      * @param string $numDit      numéro du DIT
      * @param string $codeSociete code société
      * 
-     * @return array{numero_dit:string,numero_devis:string,statut_devis:string,date_soumission:string,montant:string,devise:string,interne_externe:string,numero_client:string}
+     * @return ?AccuseReceptionDto
      */
-    public function findInfoDevis(string $numDit, string $codeSociete): array
+    public function findInfoDevis(string $numDit, string $codeSociete): ?AccuseReceptionDto
     {
         $statement = "WITH
                 dsav AS ({$this->getQueryDevisSoumisValide($numDit,$codeSociete)}),
@@ -54,7 +56,7 @@ class AcBcSoumisModel extends Model
 
         $data = $this->convertirEnUtf8($this->connect->fetchScalarResults($result));
 
-        return $data;
+        return (new AccuseReceptionFactory)->hydrate($data);
     }
 
     private function getQueryDevisSoumisValide(string $numDit, string $codeSociete): string
