@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Dto\Atelier\Dit\soumission;
+namespace App\Dto\Atelier\Dit\soumission\AcBc;
 
 class BcSoumisDto
 {

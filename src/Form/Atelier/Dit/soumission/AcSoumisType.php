@@ -3,7 +3,7 @@
 namespace App\Form\Atelier\Dit\soumission;
 
 use App\Controller\Traits\FormatageTrait;
-use App\Dto\Atelier\Dit\soumission\AccuseReceptionDto;
+use App\Dto\Atelier\Dit\soumission\AcBc\AccuseReceptionDto;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Validator\Constraints\File;
