@@ -27,6 +27,7 @@ class AccuseReceptionFactory
         $dto->numeroClient   = $data["numero_client"];
         $dto->montantDevis   = (float) $data["montant"];
         $dto->dateDevis      = new \DateTime($data["date_soumission"]);
+        $dto->codeSociete    = $data["code_societe"];
 
         return $dto;
     }

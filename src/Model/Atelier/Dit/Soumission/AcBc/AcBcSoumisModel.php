@@ -41,6 +41,7 @@ class AcBcSoumisModel extends Model
                     dsav.devise AS devise,
                     dsav.internet_externe AS interne_externe,
                     dsav.numero_client as numero_client,
+                    '$codeSociete' as code_societe,
                     CASE
                         WHEN cst.nom = 'ZDI-FORFAIT' AND itv.nb > 0
                         THEN first_itv.montantItv
