@@ -696,12 +696,12 @@ class DitDevisSoumisAValidationModel extends Model
     }
 
     /** 
-     * Méthode pour retourner les infos sur le Devis
+     * Méthode pour retourner les infos sur le Devis associé au DIT avec $numDit
      * 
      * @param string $numDit      numéro du DIT
      * @param string $codeSociete code société
      * 
-     * @return array{numero_dit:string,numero_devis:string,statut_devis:string,date_soumission:string,montant:string,devise:string}
+     * @return array{numero_dit:string,numero_devis:string,statut_devis:string,date_soumission:string,montant:string,devise:string,interne_externe:string}
      */
     public function findInfoDevis(string $numDit, string $codeSociete): array
     {
@@ -725,6 +725,7 @@ class DitDevisSoumisAValidationModel extends Model
                     dsav.statut AS statut_devis,
                     dsav.dateheuresoumission AS date_soumission,
                     dsav.devise AS devise,
+                    dsav.internet_externe AS interne_externe,
                     CASE
                         WHEN cst.nom = 'ZDI-FORFAIT' AND itv.nb > 0
                         THEN first_itv.montantItv
@@ -753,8 +754,12 @@ class DitDevisSoumisAValidationModel extends Model
                     d.dateheuresoumission,
                     d.numeroItv,
                     d.numeroVersion,
-                    d.devise
+                    d.devise,
+                    dit.internet_externe
                 FROM {$this->dbIrium}:Informix.devis_soumis_a_validation d
+                JOIN {$this->dbIrium}:Informix.demande_intervention dit
+                    ON dit.numero_demande_dit = d.numeroDit
+                    AND dit.code_societe = d.code_societe
                 JOIN (
                     SELECT 
                         numeroDit,
@@ -763,13 +768,12 @@ class DitDevisSoumisAValidationModel extends Model
                     FROM {$this->dbIrium}:Informix.devis_soumis_a_validation
                     WHERE numeroDit = '$numDit'
                     AND code_societe = '$codeSociete'
-                    AND statut LIKE 'Valid%'
-                    AND statut LIKE '%atelier'
                     GROUP BY numeroDit, code_societe
                 ) m
-                ON m.numeroDit = d.numeroDit
-                AND m.code_societe = d.code_societe
-                AND m.maxVersion = d.numeroVersion";
+                    ON m.numeroDit = d.numeroDit
+                    AND m.code_societe = d.code_societe
+                    AND m.maxVersion = d.numeroVersion
+                WHERE d.statut LIKE 'Valid%' AND d.statut LIKE '%atelier'";
     }
 
     private function getQueryNbrIntervention(string $codeSociete, string $aliasDevisSoumisValide): string
