@@ -10,6 +10,8 @@
 	<link href="{{ App.base_path }}/Views/css/atelier/dit/ditInsertionOr.css?v=2025.10.22.08.00" rel="stylesheet"/>
 {% endblock %}
 
+{% import "macroForm.html.twig" as  formMacro %}
+
 {% block content %}
 	<div class=" container mt-6 mb-4">
 		<div class="card">
@@ -58,7 +60,10 @@
 								<div class="col-12 col-md-4">
 									{{ form_row(form.statutDevis)}}
 									{{ form_errors(form.statutDevis)}}
-									{{ form_row(form.montantDevis)}}
+									{{ formMacro.readOnly('Montant du devis', '0', "", "montant-devis-display") }}
+									<div class="d-none">
+										{{ form_row(form.montantDevis)}}
+									</div>
 									{{ form_errors(form.montantDevis)}}
 								</div>
 								<div class="col-12 col-md-4">

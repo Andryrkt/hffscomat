@@ -10,11 +10,9 @@ const fetchManager = new FetchManager();
 const fileInput = document.querySelector("#ac_soumis_pieceJoint01");
 initializeFileHandlers(1, fileInput);
 
+const montantDevisDisplay = document.querySelector("#montant-devis-display");
 const montantDevis = document.querySelector("#ac_soumis_montantDevis");
-montantDevis.value = formatNumberSpecial(montantDevis.value);
-montantDevis.addEventListener("input", (e) => {
-  e.target.value = formatNumberSpecial(e.target.value);
-});
+montantDevisDisplay.textContent = formatNumberSpecial(montantDevis.value);
 
 /**=======================================
  * Methode pour l'autocomplet nom client
