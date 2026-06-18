@@ -25,6 +25,7 @@ class DitListeModel extends Model
         $skip = ($page - 1) * $perPage;
 
         $conditions = $this->filtreService->filtre($ditSearchdto);
+
         $conditionsMultisucursal = $this->filtreService->conditionAgenceService();
 
         $statement = " SELECT SKIP $skip FIRST $perPage

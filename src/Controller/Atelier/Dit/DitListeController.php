@@ -40,8 +40,11 @@ class DitListeController extends Controller
     public function index(Request $request)
     {
         $allAgenceServices = $this->getSecurityService()->getAllAgenceServices();
+
+        $dtoSearch = $this->getSessionService()->get('criteria_for_excel_dit_liste');
+
         //création et initialisation du formulaire de la recherche
-        $form = $this->getFormFactory()->createBuilder(DitSearchType::class, null, [
+        $form = $this->getFormFactory()->createBuilder(DitSearchType::class, $dtoSearch, [
             'method' => 'GET',
             'allAgenceServices' => $allAgenceServices
         ])->getForm();
