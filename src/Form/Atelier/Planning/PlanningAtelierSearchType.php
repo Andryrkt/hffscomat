@@ -34,7 +34,7 @@ class PlanningAtelierSearchType extends AbstractType
         $section = $this->transformeValeur($section, 'section', 'num');
         $ressource = $this->atelierModel->getResource('HF');
         $ressource = $this->transformEnSeulTableau($ressource);
-        $agence = $this->model->getAgenceIrium();
+        $agence = $this->model->getAgences();
         $agence = $this->transformEnSeulTableauAvecKey($agence);
         $agenceDebite = $this->model->getAgenceDebite();
 
@@ -102,7 +102,7 @@ class PlanningAtelierSearchType extends AbstractType
 
             $serviceDebite = [];
 
-            if (isset($data['agenceDeb'])) {
+            if (!empty($data['agenceDeb'])) {
                 $serviceDebite = $this->model->getServiceDebiteByAgence($data['agenceDeb']);
                 $serviceDebite = $this->transformEnSeulTableauAvecKeyService($serviceDebite);
             }

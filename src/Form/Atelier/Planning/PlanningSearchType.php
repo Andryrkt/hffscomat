@@ -32,11 +32,10 @@ class PlanningSearchType extends AbstractType
     ];
     const FACTURE = [
         'TOUS'          => 'TOUS',
-        ' DEJA FACTURE' => 'FACTURE',
+        'DEJA FACTURE'  => 'FACTURE',
         'ENCOURS'       => 'ENCOURS'
     ];
     const PLANIFIER = [
-        // 'TOUS' => 'TOUS',
         'PLANIFIE'     => 'PLANIFIE',
         'NON PLANIFIE' => 'NON_PLANIFIE',
     ];
@@ -67,7 +66,7 @@ class PlanningSearchType extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $agence = $this->transformEnSeulTableauAvecKey($this->planningModel->getAgenceIrium('HF'));
+        $agence = $this->transformEnSeulTableauAvecKey($this->planningModel->getAgences('HF'));
         $agenceDebite = $this->planningModel->getAgenceDebite('HF');
         $sections = $this->planningModel->getSections();
         $documents = $this->getTypeDocuments();
@@ -105,9 +104,9 @@ class PlanningSearchType extends AbstractType
                 'required' => true,
                 'choices' => self::FACTURE,
                 'attr' => ['class' => 'facture'],
-                'data' => 'ENCOURS'
+                'data' => 'TOUS'
             ])
-            ->add('plan', ChoiceType::class, [
+            ->add('planning', ChoiceType::class, [
                 'label' => 'Planification',
                 'required' => true,
                 'choices' => self::PLANIFIER,
@@ -199,7 +198,7 @@ class PlanningSearchType extends AbstractType
                 $data = $event->getData();
 
                 $serviceDebite = [];
-                if (isset($data['agenceDebite'])) {
+                if (!empty($data['agenceDebite'])) {
                     $serviceDebite = $this->transformEnSeulTableauAvecKeyService($this->planningModel->getServiceDebiteByAgence($data['agenceDebite']));
                 }
 

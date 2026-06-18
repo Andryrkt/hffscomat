@@ -43,7 +43,7 @@ class PlanningController extends Controller
         $this->searchDto = new PlanningSearchDto();
         $this->searchDto->annee = date('Y');
         $this->searchDto->facture = 'ENCOURS';
-        $this->searchDto->plan = 'PLANIFIE';
+        $this->searchDto->planning = 'PLANIFIE';
         $this->searchDto->interneExterne = 'TOUS';
         $this->searchDto->typeLigne = 'TOUTES';
         $this->searchDto->months = 3;
@@ -69,22 +69,10 @@ class PlanningController extends Controller
         $dto = $this->traitementFormulaire($form, $request);
         $this->getSessionService()->set('planning_search_criteria', $dto);
 
+        $data = [];
         if($request->query->get('action') !== 'oui')
-        {
-            ['num_ors' => $numOrs] = $this->planningModel->getNumeroOrValider($dto);
-            ['num_ors' => $numOrSoumis] = $this->planningModel->getOrsSoumis();
-            ['num_or_itvs' => $numOrItvBack] = $this->planningModel->getBackOrderPlanning($numOrs, $numOrSoumis, $dto);
-            $data = $this->planningMaterielModel->getMaterielPlanifier($numOrs, $numOrSoumis, $numOrItvBack, $dto);
-        }
-        else
-        {
-            $data = [];
-            $numOrItvBack = [];
-        }
-
-        $data = $this->planningMapper->getMaterielData($data, $numOrItvBack);
+            $data = $this->planningService->getPlanningMaterielData($dto);
         $data = $this->planningService->getDataList($data, $dto->months);
-
         $this->logUserVisit('planning_vue');
 
         return $this->render('atelier/planning/planning.html.twig', [

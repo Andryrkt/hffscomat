@@ -47,9 +47,7 @@ class PlanningApi extends Controller
     {
         $dto = $this->getSessionService()->get('planning_search_criteria', []);
         if ($numOr === '')
-        {
             $details = [];
-        }
         else
         {
             $details = $this->planningMaterielModel->getDetailPieceInformix($numOr, $dto);
@@ -59,8 +57,14 @@ class PlanningApi extends Controller
             $magasins = [];
             $parts = [];
             for ($i = 0; $i < $detailSize; $i++) {
-                $parts[] = $this->planningModel->getEtaPiecePart($details[$i]['numerocdecis'], $details[$i]['ref']);
-                $magasins[] = $this->planningModel->getEtaMagasin($details[$i]['numerocdecis'], $details[$i]['ref'], $details[$i]['cst']);
+                if ($details[$i]['num_cmd_cis'])
+                {
+                    $parts[] = $this->planningModel->getEtatPiecePartiel($details[$i]['num_cmd_cis'], $details[$i]['ref']);
+                    $magasins[] = $this->planningModel->getEtaMagasin($details[$i]['num_cmd_cis'], $details[$i]['ref'], $details[$i]['cst']);
+                } else
+                {
+                    $parts[] = [];
+                }
 
                 $details[$i]['Eta_ivato'] = "";
                 $details[$i]['Eta_magasin'] = "";
@@ -78,7 +82,7 @@ class PlanningApi extends Controller
                 }
 
                 $details[$i]['Ord'] = "";
-                $details[$i]['dateLivLIg'] = "";
+                $details[$i]['date_liv'] = "";
                 $details[$i]['dateAllLIg'] = "";
                 $details[$i]['qteORlig'] = "";
                 $details[$i]['qtealllig'] = "";
@@ -92,7 +96,7 @@ class PlanningApi extends Controller
 
             echo json_encode([
                 'avecOnglet' => false,
-                'data' => $this->regroupeParIntervention($details),
+                'data' => $details,
             ]);
         }
     }
@@ -118,11 +122,11 @@ class PlanningApi extends Controller
         $groupedDetails = [];
 
         foreach ($details as $detail) {
-            $intvKey = $detail['intv']; // La valeur de 'intv' utilisée comme clé
-            if (!isset($groupedDetails[$intvKey])) {
-                $groupedDetails[$intvKey] = [];
+            $itvKey = $detail['num_itv']; // La valeur de 'num_itv' utilisée comme clé
+            if (!isset($groupedDetails[$itvKey])) {
+                $groupedDetails[$itvKey] = [];
             }
-            $groupedDetails[$intvKey][] = $detail; // Ajouter l'élément au groupe correspondant
+            $groupedDetails[$itvKey][] = $detail; // Ajouter l'élément au groupe correspondant
         }
         return $groupedDetails;
     }

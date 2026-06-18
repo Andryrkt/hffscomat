@@ -142,12 +142,13 @@ document.addEventListener("DOMContentLoaded", (event) => {
         planningTableHeadOR.innerHTML = "";
         planningTableHeadLign.innerHTML = "";
 
+        console.log(data.data, data.data.length)
         if (data.data.length > 0) {
           if (
-            data.data[0].numor.startsWith("5") ||
-            data.data[0].numor.startsWith("4") ||
-            data.data[0].numor.startsWith("3") ||
-            data.data[0].numor.startsWith("2")
+            data.data[0].num_or.startsWith("5") ||
+            data.data[0].num_or.startsWith("4") ||
+            data.data[0].num_or.startsWith("3") ||
+            data.data[0].num_or.startsWith("2")
           ) {
             let rowHeader = `<th>N° OR</th>
                             <th>Intv</th>
@@ -193,14 +194,14 @@ document.addEventListener("DOMContentLoaded", (event) => {
           data.data.forEach((detail) => {
             console.log(detail);
 
-            Ornum.innerHTML = `${detail.numor} - ${detail.intv} | intitulé : ${detail.commentaire} | `;
-            if (detail.plan == "PLANIFIE") {
+            Ornum.innerHTML = `${detail.num_or} - ${detail.num_itv} | intitulé : ${detail.commentaire} | `;
+            if (detail.planning == "PLANIFIE") {
               Ornum.innerHTML += `planifié le : ${formaterDate(
-                detail.dateplanning
+                detail.date_planning
               )}`;
             } else {
               Ornum.innerHTML += `date début : ${formaterDate(
-                detail.dateplanning
+                detail.date_planning
               )}`;
             }
             // Formater la date
@@ -249,10 +250,10 @@ document.addEventListener("DOMContentLoaded", (event) => {
             } else {
               dateMagasin = formaterDate(detail.Eta_magasin);
             }
-            if (detail.numerocmd == null) {
+            if (detail.num_cmd == null) {
               numCde = "";
             } else {
-              numCde = detail.numerocmd;
+              numCde = detail.num_cmd;
             }
             if (detail.ref == null) {
               numRef = "";
@@ -276,15 +277,15 @@ document.addEventListener("DOMContentLoaded", (event) => {
               message = detail.message;
             }
 
-            if (detail.numcis == "0") {
+            if (detail.num_cis == "0") {
               numCis = "";
             } else {
-              numCis = detail.numcis;
+              numCis = detail.num_cis;
             }
-            if (detail.numerocdecis == null) {
+            if (detail.num_cmd_cis == null) {
               numeroCdeCis = "";
             } else {
-              numeroCdeCis = detail.numerocdecis;
+              numeroCdeCis = detail.num_cmd_cis;
             }
             if (detail.statut_ctrmq_cis == null) {
               StatutCtrmqCis = "";
@@ -328,25 +329,25 @@ document.addEventListener("DOMContentLoaded", (event) => {
             }
 
             if (
-              (detail.numor && detail.numor.startsWith("5")) ||
-              (detail.numor && detail.numor.startsWith("4")) ||
-              (detail.numor && detail.numor.startsWith("3")) ||
-              (detail.numor && detail.numor.startsWith("2"))
+              (detail.num_or && detail.num_or.startsWith("5")) ||
+              (detail.num_or && detail.num_or.startsWith("4")) ||
+              (detail.num_or && detail.num_or.startsWith("3")) ||
+              (detail.num_or && detail.num_or.startsWith("2"))
             ) {
               // Affichage
               let row = `<tr>
-                        <td>${detail.numor}</td> 
-                        <td>${detail.intv}</td> 
+                        <td>${detail.num_or}</td> 
+                        <td>${detail.num_itv}</td> 
                         <td ${cmdColor}>${numCis}</td> 
                         <td ></td> 
                         <td></td> 
                         <td>${detail.cst}</td> 
                         <td>${numRef}</td> 
                         <td>${detail.desi}</td> 
-                        <td>${parseInt(detail.qteres_or)}</td> 
-                        <td>${parseInt(detail.qteall)}</td> 
-                        <td>${parseInt(detail.qtereliquat)}</td> 
-                        <td>${parseInt(detail.qteliv)}</td> 
+                        <td>${parseInt(detail.qte_res_or)}</td> 
+                        <td>${parseInt(detail.qte_all)}</td> 
+                        <td>${parseInt(detail.qte_reliquat)}</td> 
+                        <td>${parseInt(detail.qte_liv)}</td> 
                         <td  >${statut} </td> 
                         <td>${dateStatut}</td> 
                         <td></td> 
@@ -357,8 +358,8 @@ document.addEventListener("DOMContentLoaded", (event) => {
               tableBodyOR.innerHTML += row;
               if (numCis) {
                 let row1 = `<tr>
-                        <td>${detail.numor}</td> 
-                        <td>${detail.intv}</td> 
+                        <td>${detail.num_or}</td> 
+                        <td>${detail.num_itv}</td> 
                         <td>${numCis}</td> 
                         <td ${cmdColor}>${numeroCdeCis}</td> 
                         <td ${cmdColorRmq}>${StatutCtrmqCis}</td> 
@@ -397,17 +398,17 @@ document.addEventListener("DOMContentLoaded", (event) => {
             } else {
               // Affichage
               let row = `<tr>
-                      <td>${detail.numor}</td> 
-                      <td>${detail.intv}</td> 
+                      <td>${detail.num_or}</td> 
+                      <td>${detail.num_itv}</td> 
                       <td ${cmdColor}>${numCde}</td> 
                       <td ${cmdColorRmq}>${statrmq}</td> 
                       <td>${detail.cst}</td> 
                       <td>${numRef}</td> 
                       <td>${detail.desi}</td> 
-                      <td>${parseInt(detail.qteres_or)}</td> 
-                      <td>${parseInt(detail.qteall)}</td> 
-                      <td>${parseInt(detail.qtereliquat)}</td> 
-                      <td>${parseInt(detail.qteliv)}</td> 
+                      <td>${parseInt(detail.qte_res_or)}</td> 
+                      <td>${parseInt(detail.qte_all)}</td> 
+                      <td>${parseInt(detail.qte_reliquat)}</td> 
+                      <td>${parseInt(detail.qte_liv)}</td> 
                       <td >${statut}</td> 
                       <td>${dateStatut}</td> 
                       <td>${dateEtaIvato}</td> 

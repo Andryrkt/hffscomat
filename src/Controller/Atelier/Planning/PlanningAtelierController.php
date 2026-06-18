@@ -50,7 +50,7 @@ class PlanningAtelierController extends Controller
         if ($form->isSubmitted() && $form->isValid()) {
             $this->getSessionService()->set('planning_atelier_search_criteria', $dto);
 
-            $codeSociete = 'HFF';
+            $codeSociete = 'HF';
 
             $startStr = $dto->dateDebut ? $dto->dateDebut->format('Y-m-d') : null;
             $endStr = $dto->dateFin ? $dto->dateFin->format('Y-m-d') : null;

@@ -24,61 +24,84 @@ class PlanningMapper
         return $res;
     }
 
-    /**
-     * @param array<PlanningMaterielDto> $data
-     * @param array $orItvBack
-     * @return array
-     */
-    public function getMaterielData(array $data, array $orItvBack): array
-    {
-        $data = $this->toDtoArray($data, $orItvBack);
-        $res = [];
-        foreach ($data as $item) {
-            $key = $item->idMat;
-            if (!isset($res[$key])) { $res[$key] = $item; }
-            else { $res[$key]->addMoisDetails($item->moisDetails); }
-        }
-        return $res;
-    }
-
     public function mapToMaterielDto(array $item, array $orItvBack): PlanningMaterielDto
     {
 
         $dto = new PlanningMaterielDto();
 
-        $dto->codeSuc = $item['codesuc'] ?? '';
-        $dto->libsuc = $item['libsuc'] ?? '';
-        $dto->codeServ = $item['codeserv'] ?? '';
-        $dto->libServ = $item['libserv'] ?? '';
-        $dto->idMat = $item['idmat'] ?? '';
+        $dto->codeSuc     = $item['code_suc'] ?? '';
+        $dto->libSuc      = $item['lib_suc'] ?? '';
+        $dto->codeServ    = $item['code_serv'] ?? '';
+        $dto->libServ     = $item['lib_serv'] ?? '';
         $dto->commentaire = $item['commentaire'] ?? '';
-        $dto->markMat = $item['markmat'] ?? '';
-        $dto->typeMat = $item['typemat'] ?? '';
-        $dto->numSerie = $item['numserie'] ?? '';
-        $dto->numParc = $item['numparc'] ?? '';
-        $dto->casier = $item['casier'] ?? '';
-        $dto->annee = $item['annee'] ?? null;
-        $dto->mois = $item['mois'] ?? null;
-        $dto->orIntv = $item['orintv'] ?? '';
-        $dto->qteCdm = $item['qtecmd'] ?? 0.0;
-        $dto->qteLiv = $item['qtliv'] ?? 0.0;
-        $dto->qteAll = $item['qteall'] ?? 0.0;
+
+        $dto->idMat       = $item['id_mat'] ?? '';
+        $dto->markMat     = $item['mark_mat'] ?? '';
+        $dto->typeMat     = $item['type_mat'] ?? '';
+        $dto->numSerie    = $item['num_serie'] ?? '';
+        $dto->numParc     = $item['num_parc'] ?? '';
+        $dto->casier      = $item['casier'] ?? '';
+
+        $dto->annee       = $item['annee'] ?? null;
+        $dto->mois        = $item['mois'] ?? null;
+        $dto->orItv       = $item['or_itv'] ?? '';
+        $dto->numOr       = $item['num_or'] ?? '';
+        $dto->itv         = $item['itv'] ?? '';
+
+        $dto->qteCdm      = (float)($item['qte_cmd'] ?? 0);
+        $dto->qteLiv      = (float)($item['qte_liv'] ?? 0);
+        $dto->qteAll      = (float)($item['qte_all'] ?? 0);
+        $dto->qteReliquant = (float)($item['qte_reliquant'] ?? 0);
+        $dto->qteResOr    = (float)($item['qte_res_or'] ?? 0);
+
+        $dto->statutB     = $item['statut_b'] ?? '';
+        $dto->statut      = $item['statut'] ?? '';
+        $dto->statutCtrmq = $item['statut_ctrmq'] ?? '';
+        $dto->statutCtrmqCis = $item['statut_ctrmq_cis'] ?? '';
+        $dto->datePlanning = $item['date_planning'] ?? null;
+        $dto->dateStatut = $item['date_statut'] ?? null;
+
+        $dto->cst         = $item['cst'] ?? '';
+        $dto->ref         = $item['ref'] ?? '';
+        $dto->desi        = $item['desi'] ?? '';
+        $dto->numCmd      = $item['num_cmd'] ?? '';
+        $dto->numCis      = $item['num_cis'] ?? '';
+        $dto->numCmdCis   = $item['num_cmd_cis'] ?? '';
+        $dto->message     = $item['message'] ?? '';
 
         $detail = [
-            'mois' => $dto->mois,
-            'annee' => $dto->annee,
-            'orIntv' => $dto->orIntv,
-            'qteCdm' => $dto->qteCdm,
-            'qteLiv' => $dto->qteLiv,
-            'qteAll' => $dto->qteAll,
-            //TODO - add num dit
-            //TODO - add migration
-            'commentaire' => $dto->commentaire,
-            'back' => in_array($dto->orIntv, $orItvBack)
+            'mois'       => $dto->mois,
+            'annee'      => $dto->annee,
+            'orIntv'     => $dto->orItv,
+            'qteCdm'     => $dto->qteCdm,
+            'qteLiv'     => $dto->qteLiv,
+            'qteAll'     => $dto->qteAll,
+            'commentaire'=> $dto->commentaire,
+            'back'       => in_array($dto->orItv, $orItvBack, true),
+            'statut'     => $dto->statut,
         ];
         $dto->addMoisDetails($detail);
 
         return $dto;
+    }
+
+    /**
+     * Regroupe par idMat
+     * @param PlanningMaterielDto[] $dtos
+     * @return PlanningMaterielDto[]
+     */
+    public function groupByMateriel(array $dtos): array
+    {
+        $grouped = [];
+        foreach ($dtos as $dto) {
+            $key = $dto->idMat;
+            if (!isset($grouped[$key])) {
+                $grouped[$key] = $dto;
+            } else {
+                $grouped[$key]->addMoisDetails($dto->moisDetails[0] ?? []);
+            }
+        }
+        return $grouped;
     }
 
 }

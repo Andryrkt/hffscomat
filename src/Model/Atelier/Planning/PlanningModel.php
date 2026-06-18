@@ -3,6 +3,8 @@
 namespace App\Model\Atelier\Planning;
 
 use App\Dto\Atelier\Planning\PlanningSearchDto;
+use App\Model\connexionDote4;
+use App\Model\connexionDote4Gcot;
 use App\Model\Informix\SelectWhereCondition;
 use App\Model\Model;
 use PHPUnit\Util\Exception;
@@ -18,7 +20,7 @@ class PlanningModel extends Model
         $this->selectCond = new SelectWhereCondition();
     }
 
-    public function getAgenceIrium(?string $codeSociete = 'HF'): array
+    public function getAgences(?string $codeSociete = 'HF'): array
     {
         $statement = "SELECT
                 trim(asuc_num)              as asuc_num,
@@ -36,7 +38,6 @@ class PlanningModel extends Model
 
         $results = $this->connect->executeQuery($statement);
         $data = $this->connect->fetchResults($results);
-        $data = $this->convertirEnUtf8($data);
 
         return array_map(function ($item) {
             return [$item['asuc_num'] . '-' . $item['asuc_lib'] => $item['asuc_num']];
@@ -59,7 +60,6 @@ class PlanningModel extends Model
 
         $results = $this->connect->executeQuery($statement);
         $data = $this->connect->fetchResults($results);
-        $data = $this->convertirEnUtf8($data);
 
         return array_combine(
             array_column($data, 'asuc_lib'),
@@ -88,7 +88,7 @@ class PlanningModel extends Model
         );
     }
 
-    public function getServiceDebiteByAgence(string $agence)
+    public function getServiceDebiteByAgence(string $agence): array
     {
         $statement = " SELECT distinct 
                 trim(atab_code) as atab_code ,
@@ -105,7 +105,6 @@ class PlanningModel extends Model
         ";
         $result = $this->connect->executeQuery($statement);
         $data = $this->connect->fetchResults($result);
-        $data = $this->convertirEnUtf8($data);
         return array_map(function ($item) {
             return [
                 "value" => $item['atab_code'],
@@ -126,7 +125,6 @@ class PlanningModel extends Model
 
         $result = $this->connect->executeQuery($query);
         $data = $this->connect->fetchResults($result);
-        $data = $this->convertirEnUtf8($data);
         return array_combine(
             array_column($data, 'annee'),
             array_column($data, 'annee')
@@ -165,13 +163,12 @@ class PlanningModel extends Model
 
         $results = $this->connect->executeQuery($statement);
         $data = $this->connect->fetchResults($results);
-        $data = $this->convertirEnUtf8($data);
 
-        $numOrs = array_column($data, 'num_or');
-        $numItvs = array_column($data, 'num_itv');
-        $numOrItvs = array_column($data, 'num_or_itvs');
-
-        return ["num_ors" => $numOrs, "num_itvs" => $numItvs, "num_or_itvs" => $numOrItvs];
+        return [
+            "num_ors" => array_column($data, 'num_or'),
+            "num_itvs" => array_column($data, 'num_itv'),
+            "num_or_itvs" => array_column($data, 'num_or_itvs')
+        ];
     }
 
     public function getBackOrderPlanningNoItv(array $orsValides, array $orsSoumis, PlanningSearchDto $searchDto)
@@ -210,6 +207,12 @@ class PlanningModel extends Model
         return array_map(function ($item) { return $item['intervention']; }, $data);
     }
 
+    /**
+     * Recuperation numero `OR` valide dans `DW` (demande intervention)
+     * @param PlanningSearchDto $searchDto
+     * @return array
+     * @throws \Exception
+     */
     public function getNumeroOrValider(PlanningSearchDto $searchDto): array
     {
         $statement = "SELECT distinct
@@ -217,53 +220,61 @@ class PlanningModel extends Model
                 osv.numeroItv                               as num_itv,
                 osv.numeroOR || '-' || osv.numeroItv        as num_or_itv
             from {$this->dbIrium}:Informix.ors_soumis_a_validation    osv
-            inner join {$this->dbIrium}:Informix.demande_intervention di on di.numero_or = osv.numeroor
-            where numeroversion = (select
-                max(numeroversion) 
-                from {$this->dbIrium}:Informix.ors_soumis_a_validation oo
-                where oo.numeroor = osv.numeroor)
-            and osv.statut like 'Valid%'
-            {$this->selectCond->eq('type_document', $searchDto->typeDocument)}
-            {$this->selectCond->eq('reparation_realise', $searchDto->reparationRealise)}
-            {$this->selectCond->eq('numero_or', $searchDto->numOr)}
-            {$this->selectCond->eq('id_niveau_urgence', $searchDto->niveauUrgence)}
-            order by numeroOR asc
+            inner join (
+                select
+                    numeroOR,
+                    max(numeroversion)  as max_version
+                from {$this->dbIrium}:Informix.ors_soumis_a_validation
+                group by numeroOR
+            ) latest
+                on latest.numeroOR = osv.numeroOR
+                and latest.max_version = osv.numeroversion
+            where osv.statut like 'Valid%'
+                and exists (
+                    select 1
+                    from {$this->dbIrium}:Informix.demande_intervention di
+                    where di.numero_or = osv.numeroOR
+                        {$this->selectCond->eq('type_document', $searchDto->typeDocument)}
+                        {$this->selectCond->eq('reparation_realise', $searchDto->reparationRealise)}
+                        {$this->selectCond->eq('numero_or', $searchDto->numOr)}
+                        {$this->selectCond->eq('id_niveau_urgence', $searchDto->niveauUrgence)}
+                )
+            order by osv.numeroOR asc
         ";
 
         $results = $this->connect->executeQuery($statement);
-        $data = $this->convertirEnUtf8($this->connect->fetchResults($results));
-        $numOrs = array_column($data, 'num_or');
-        $numItvs = array_column($data, 'num_itv');
-        $numOrItvs = array_column($data, 'num_or_itv');
-        return ["num_ors" => $numOrs, "num_itvs" => $numItvs, "num_or_itvs" => $numOrItvs];
+        $data = $this->connect->fetchResults($results);
+        return [
+            "num_ors" => array_column($data, 'num_or'),
+            "num_itvs" => array_column($data, 'num_itv'),
+            "num_or_itvs" => array_column($data, 'num_or_itv')
+        ];
     }
 
-    public function getEtaMagasin(string $numeroCmd, string $refP, string $cst)
+    public function getEtaMagasin(string $numeroCmd, string $refP, string $cst): array
     {
-        // if ($cst == 'CAT')
-        //     $cst = 'K230';
+        if ($cst == 'CAT')
+            $cst = 'K230';
 
-        // $statement = "SELECT
-        //         Eta_ivato,
-        //         Eta_magasin,
-        //         Est_ship_date
-        //     from Ces_magasin
-        //     where Cust_ref = '$numeroCmd'
-        //     {$this->selectCond->eq('Part_no', $refP)}
-        //     {$this->selectCond->eq('custCode', $cst)}
-        // ";
+        $statement = "SELECT
+                Eta_ivato,
+                Eta_magasin,
+                Est_ship_date
+            from Ces_magasin
+            where Cust_ref = '$numeroCmd'
+                {$this->selectCond->eq('Part_no', $refP)}
+                {$this->selectCond->eq('custCode', $cst)}
+        ";
 
-        // $sql = $this->connexion04->query($statement);
-        // $data = array();
-        // while ($tabType = odbc_fetch_array($sql)) {
-        //     $data[] = $tabType;
-        // }
-        // return $data;
-        return [];
+        $sql = $this->connexion->query($statement);
+        $data = array();
+        while ($tabType = odbc_fetch_array($sql)) {
+            $data[] = $tabType;
+        }
+        return $data;
     }
 
-
-    public function getEtaPiecePart(string $numCmd, string $refP)
+    public function getEtatPiecePartiel(string $numCmd, string $refP): array
     {
         $statement = " SELECT fcdl_solde as solde,
                           fcdl_qte as qte
@@ -274,11 +285,10 @@ class PlanningModel extends Model
         ";
 
         $result = $this->connect->executeQuery($statement);
-        $data = $this->connect->fetchResults($result);
-        return $this->convertirEnUtf8($data);
+        return $this->connect->fetchResults($result);
     }
 
-    public function getOrsSoumis()
+    public function getOrsSoumis(): array
     {
         $statement = "SELECT distinct
             numeroor                        as num_or,
@@ -288,24 +298,13 @@ class PlanningModel extends Model
         ";
 
         $result = $this->connect->executeQuery($statement);
-        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
+        $data = $this->connect->fetchResults($result);
 
-        $numOrs = array_column($data, 'num_or');
-        $numItvs = array_column($data, 'num_itv');
-        $numOrItvs = array_column($data, 'num_or_itv');
-
-        return ["num_ors" => $numOrs, "num_itvs" => $numItvs, "num_or_itvs" => $numOrItvs];
-    }
-
-    public function getOrsSoumisValider()
-    {
-        $statement = "SELECT distinct
-            osv.numeroor || '-' || osv.numeroitv    as numero_or_numero_itv
-            from {$this->dbIrium}:Informix.ors_soumis_a_validation    osv
-        ";
-
-        $result = $this->connect->executeQuery($statement);
-        return $this->convertirEnUtf8($this->connect->fetchResults($result));
+        return [
+            'num_ors' => array_column($data, 'num_or'),
+            'num_itvs' => array_column($data, 'num_itv'),
+            'num_or_itvs' => array_column($data, 'num_or_itv')
+        ];
     }
 
     public function getTechnicientIntervenantSkw(string $numOr, string $numItv)
@@ -323,8 +322,7 @@ class PlanningModel extends Model
         ";
 
         $results = $this->connect->executeQuery($statement);
-        $data = $this->connect->fetchResults($results);
-        return $this->convertirEnUtf8($data);
+        return $this->connect->fetchResults($results);
     }
 
     public function getTechnicientIntervenantItv(string $numOr, string $numItv)
@@ -340,8 +338,90 @@ class PlanningModel extends Model
         ";
 
         $results = $this->connect->executeQuery($statement);
-        $data = $this->connect->fetchResults($results);
-        return $this->convertirEnUtf8($data);
+        return $this->connect->fetchResults($results);
+    }
+
+    public function getQteLigneCIS(string $numOr, string $numItv, string $refP): array
+    {
+        $statement = "SELECT 
+                trunc(nvl(nlig_qtecde,0)) as qteorlig,
+                trunc(nvl(nlig_qtealiv,0) )as qtealllig,
+                trunc(nvl((nlig_qtecde - nlig_qtealiv - nlig_qteliv) ,0))as qtereliquatlig,
+                trunc(nvl(nlig_qteliv,0)) as qtelivlig
+            from sav_lor
+            inner join neg_lig
+                on nlig_soc = slor_soc
+                and nlig_succd = slor_succ
+                and nlig_numcde = slor_numcf
+                and nlig_constp = slor_constp
+                and nlig_refp = slor_refp
+            where nlig_natop = 'CIS'
+                {$this->selectCond->eq('slor_numor', $numOr)}
+                {$this->selectCond->eq('trunc(slor_nogrp/100)', $numItv)}
+                {$this->selectCond->eq('slor_refp', $refP)}
+        ";
+
+        $result = $this->connect->executeQuery($statement);
+        return $this->connect->fetchResults($result);
+    }
+
+    public function getDateLivraisonCIS(string $numCIS, string $refP, string $cst): array
+    {
+        $statement = "SELECT
+                max(nliv_dateexp)   as date_livraison
+            from neg_liv, neg_llf
+            where nliv_soc = nllf_soc
+                {$this->selectCond->eq('nllf_numcde', $numCIS)}
+                and nliv_numliv = nllf_numliv
+                {$this->selectCond->eq('nllf_constp', $cst)}
+                {$this->selectCond->eq('nllf_refp', $refP)}
+        ";
+
+        $result = $this->connect->executeQuery($statement);
+        return $this->connect->fetchResults($result);
+    }
+
+    public function getOrCIS(string $numOrItv): array
+    {
+        $statement = "SELECT
+                decode(seor_succ,'01','','60','','80','','CIS') as succ
+            from sav_lor, sav_eor
+            where slor_succ = seor_succ
+                and slor_numor = seor_numor
+                {$this->selectCond->eq('slor_numor  || '-' || trunc(slor_nogrp/100)', $numOrItv)}
+        ";
+
+        $result = $this->connect->executeQuery($statement);
+        return $this->connect->fetchResults($result);
+    }
+
+    public function getItvCount(string $numOr, array $restItv): array
+    {
+        $statement = "SELECT 
+                count(sitv_interv) as nb_itv
+            from sav_itv
+            where sitv_numor = '$numOr'
+                {$this->selectCond->ni($restItv)}
+        ";
+
+        $result = $this->connect->executeQuery($statement);
+        return $this->connect->fetchResults($result);
+    }
+
+    public function getDateAllocationCIS(string $numCIS, string $refP, string $cst): array
+    {
+        $statement = "SELECT
+                max(npic_date)   as     date_allocation
+            from neg_pic, neg_pil
+            where npic_soc = npil_soc
+                and npic_numcde = npil_numcde
+                {$this->selectCond->eq('npic_numcde', $numCIS)}
+                {$this->selectCond->eq('npil_constp', $cst)}
+                {$this->selectCond->eq('npil_refp', $refP)}
+        ";
+
+        $result = $this->connect->executeQuery($statement);
+        return $this->connect->fetchResults($result);
     }
 
 }
