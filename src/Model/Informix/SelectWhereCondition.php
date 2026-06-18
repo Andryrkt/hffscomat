@@ -18,10 +18,10 @@ class SelectWhereCondition
         return "AND $column <> '$value'";
     }
 
-    public function in(string $column, ?array $values): string
+    public function in(string $column, ?array $values, bool $withAnd = true): string
     {
         $values = $values ? implode(',', $values) : null;
-        if (empty($values)) return '';
+        if (!$values) return '';
         return "AND $column in ('$values')";
     }
 
@@ -64,5 +64,11 @@ class SelectWhereCondition
         if ($d2) $condition .= "AND $column <= datetime($d2) year to day";
 
         return $condition;
+    }
+
+    public function null(string $column, bool $value = false): string
+    {
+        if (!$value) return '';
+        return "AND ($column IS NULL  OR $column <> '' ";
     }
 }

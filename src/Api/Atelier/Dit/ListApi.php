@@ -30,7 +30,6 @@ class ListApi extends Controller
             $commandes = [];
         } else {
             $ditModel = new DitModel();
-            // Probleme requete probable
             $commandes = $ditModel->recupereCommandeOr($numOr);
         }
 

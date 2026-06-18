@@ -132,7 +132,6 @@ class DitModel extends Model
     {
 
 
-        dd("Dto", $dto);
         // Convertir le DTO en tableau associatif pour l'insertion
         $donnees = DitMapper::toArrayDit($dto, $ors);
 
@@ -494,21 +493,22 @@ class DitModel extends Model
     public function recupereCommandeOr($numero_or)
     {
         $statement = "SELECT
-        slor_numcf,
-        fcde_date,
-        slor_typcf,
-        fcde_posc,
-        fcde_posl
-
+        slor_numcf as slor_numcf,
+        fcde_date as fcde_date, 
+        slor_typcf as slor_typcf,
+        fcde_posc as fcde_posc,
+        fcde_posl as fcde_posl
       from sav_lor
       inner join frn_cde on frn_cde.fcde_numcde = slor_numcf
       where
-      slor_soc = 'HF'
-      --and slor_succ = '01'
-      and slor_constp not like '%Z'
+      slor_soc = 'HF'  
+      --and slor_succ = '01'  
+      and slor_constp not like '%Z'  
       and slor_numor in (select seor_numor from sav_eor where seor_serv = 'SAV')
       and slor_numor = '" . $numero_or . "'
       group by 1,2,3,4,5";
+
+
         $result = $this->connect->executeQuery($statement);
 
         $data = $this->connect->fetchResults($result);
