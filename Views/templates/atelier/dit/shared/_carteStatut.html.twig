@@ -1,0 +1,8 @@
+<div class="status-list">
+    {% for statut_name,quantity in statusCounts %}
+        <span class="status-badge {{ statut_name | lower | replace({' ': '_'}) }}">
+            <span class="count">{{ quantity }}</span>
+            <span class="label">{{ statut_name }}</span>
+        </span>
+    {% endfor %}
+</div>

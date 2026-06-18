@@ -15,6 +15,31 @@ services:
       - "@doctrine.orm.default_entity_manager"
     public: true
 
+  App\Service\historiqueOperation\atelier\dit\Devis\HistoriqueOperationDEVService:
+    arguments:
+      - "@doctrine.orm.default_entity_manager"
+    public: true
+
+  App\Service\historiqueOperation\Atelier\Dit\ORs\HistoriqueOperationORService:
+    arguments:
+      - "@doctrine.orm.default_entity_manager"
+    public: true
+
+  App\Service\historiqueOperation\Atelier\Dit\HistoriqueOperationDITService:
+    arguments:
+      - "@doctrine.orm.default_entity_manager"
+    public: true
+
+  App\Service\historiqueOperation\Atelier\Dit\Ri\HistoriqueOperationRIService:
+    arguments:
+      - "@doctrine.orm.default_entity_manager"
+    public: true
+
+  App\Service\historiqueOperation\Atelier\dit\Facture\HistoriqueOperationFACService:
+    arguments:
+      - "@doctrine.orm.default_entity_manager"
+    public: true
+
   App\Service\historiqueOperation\magasin\bc\HistoriqueOperationBcMagasinService:
     arguments:
       - "@doctrine.orm.default_entity_manager"
@@ -35,8 +60,6 @@ services:
       - "@doctrine.orm.default_entity_manager"
       - '@App\Model\LdapModel'
     public: true
-
-
 
   App\Service\Admin\PermissionsService:
     arguments:
@@ -60,4 +83,15 @@ services:
       $entityManager: "@doctrine.orm.default_entity_manager"
       $permissionsService: '@App\Service\Admin\PermissionsService'
       $permissionsFactory: '@App\Factory\admin\PermissionsFactory'
+    public: true
+
+  App\Controller\Atelier\Dit\DitListeController:
+    arguments:
+      - '@App\Model\Atelier\Dit\DitListeModel'
+    public: true
+
+  App\Controller\Atelier\Planning\PlanningAtelierController:
+    arguments:
+      - '@App\Service\Atelier\Planning\PlanningAtelierService'
+      - '@App\Model\Atelier\Planning\PlanningAtelierModel'
     public: true

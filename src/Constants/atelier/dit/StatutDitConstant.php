@@ -1,0 +1,38 @@
+<?php
+
+namespace App\Constants\atelier\dit;
+
+class StatutDitConstant
+{
+    public const STATUT_A_AFFECTER = 'A AFFECTER';
+    public const STATUT_AFFECTEE_SECTION = 'AFFECTEE SECTION';
+    public const STATUT_CLOTUREE_ANNULEE = 'CLOTUREE ANNULEE';
+    public const STATUT_CLOTUREE_VALIDER = 'CLOTUREE VALIDEE';
+    public const STATUT_CLOTUREE_HORS_DELAI = 'CLOTUREE HORS DELAI';
+    public const STATUT_TERMINER = 'TERMINEE';
+    public const STATUT_A_VALIDER_CHEF_RENTAL = 'A VALIDER RESP RENTAL';
+
+    public const STATUT_A_AFFECTER_ID = 50;
+    public const STATUT_AFFECTEE_SECTION_ID = 51;
+    public const STATUT_CLOTUREE_ANNULEE_ID = 52;
+    public const STATUT_CLOTUREE_VALIDER_ID = 53;
+    public const STATUT_CLOTUREE_HORS_DELAI_ID = 54;
+    public const STATUT_TERMINER_ID = 57;
+    public const STATUT_A_VALIDER_CHEF_RENTAL_ID = 78;
+
+    public const DEFAULT_STATUT_ID = [
+        self::STATUT_A_AFFECTER_ID,
+        self::STATUT_AFFECTEE_SECTION_ID,
+        self::STATUT_CLOTUREE_VALIDER_ID,
+    ];
+
+    public const CSS_CLASS_MAP_STATUT_DIT = [
+        self::STATUT_A_AFFECTER => 'A AFFECTER',
+        self::STATUT_AFFECTEE_SECTION => 'AFFECTEE SECTION',
+        self::STATUT_CLOTUREE_ANNULEE => 'CLOTUREE ANNULEE',
+        self::STATUT_CLOTUREE_VALIDER => 'CLOTUREE VALIDEE',
+        self::STATUT_CLOTUREE_HORS_DELAI => 'CLOTUREE HORS DELAI',
+        self::STATUT_TERMINER => 'TERMINEE',
+        self::STATUT_A_VALIDER_CHEF_RENTAL => 'A VALIDER RESP RENTAL'
+    ];
+}

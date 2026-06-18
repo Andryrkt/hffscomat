@@ -56,7 +56,7 @@ class DevisNegBcController extends Controller
             'method' => 'POST',
         ])->getForm();
 
-        $this->tratitementFormulaire($form, $request);
+        $this->traitementFormulaire($form, $request);
 
         //affichage du formulaire
         return $this->render('magasin/devis/soumission/bc.html.twig', [
@@ -64,7 +64,7 @@ class DevisNegBcController extends Controller
         ]);
     }
 
-    public function tratitementFormulaire($form, Request $request)
+    public function traitementFormulaire($form, Request $request)
     {
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {

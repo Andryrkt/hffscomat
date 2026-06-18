@@ -3,555 +3,197 @@
 namespace App\Model\dw;
 
 use App\Controller\Traits\ConversionTrait;
+use App\Dto\Atelier\Dit\DossierDit\DossierInterventionAtelierSearchDto;
+use App\Model\Informix\SelectWhereCondition;
 use App\Model\Model;
 
 class dossierInterventionAtelierModel extends Model
 {
-
     use ConversionTrait;
+    private SelectWhereCondition $selectCond;
 
-
-    private function conditionLike(string $colonneBase, string $indexCriteria, $criteria)
+    public function __construct()
     {
-        if (!empty($criteria[$indexCriteria])) {
-            $condition = " AND {$colonneBase} LIKE '%" . $criteria[$indexCriteria] . "%'";
-        } else {
-            $condition = "";
-        }
-
-        return $condition;
+        parent::__construct();
+        $this->selectCond = new SelectWhereCondition();
     }
 
-    private function conditionLikeTypeIntervention($colonne, $criteria)
+    private function getCountQueryWithDit(string $table, ?string $colonne = null): string
     {
-        if (!empty($criteria["typeIntervention"])) {
-            $condition = " AND {$colonne} LIKE '%" . $criteria["typeIntervention"] . "%'";
-        } else {
-            $condition = " AND {$colonne} is not null";
-        }
-
-        return $condition;
+        $colonnes = $colonne ? "numero_dit, $colonne" : "numero_dit";
+        return "SELECT $colonnes, COUNT(*) as n from {$this->dbIrium}:Informix.$table GROUP BY $colonnes";
     }
 
-    private function conditionDateSigne(string $colonneBase, string $indexCriteria, array $criteria, string $signe)
+    private function getCountQueryWithOr(string $table): string
     {
-        if (!empty($criteria[$indexCriteria])) {
-            // Vérifie si $criteria['dateDebut'] est un objet DateTime
-            if ($criteria[$indexCriteria] instanceof \DateTime) {
-                // Formate la date au format SQL (par exemple, 'Y-m-d')
-                $formattedDate = $criteria[$indexCriteria]->format('Y-m-d');
-            } else {
-                // Si ce n'est pas un objet DateTime, le considérer comme une chaîne
-                $formattedDate = $criteria[$indexCriteria];
-            }
-
-            $condition = " AND {$colonneBase} {$signe} '" . $formattedDate . "'";
-        } else {
-            $condition = "";
-        }
-        return $condition;
+        return "SELECT numero_or, COUNT(*) as n from {$this->dbIrium}:Informix.$table GROUP BY numero_or";
     }
 
-    public function findAllDwDit($criteria = [], $codeAgence = '40', bool $multisuccursale = false)
+    /** 
+     * Fonction pour récupérer tous les DwDemandeIntervention avec le nombre de document associé
+     * @param DossierInterventionAtelierSearchDto $dto
+     * @return array
+     */
+    public function findAllDwDit(DossierInterventionAtelierSearchDto $dto): array
     {
+        $conditions = "
+            {$this->selectCond->like('dit.numero_dit',$dto->numDit)}
+            {$this->selectCond->like('cnt_or.numero_or',$dto->numOr)}
+            {$this->selectCond->like('cnt_dd.numero_devis',$dto->numDev)}
+            {$this->selectCond->like('dit.designation_materiel',$dto->designation)}
+            {$this->selectCond->like('dit.id_materiel',$dto->idMateriel)}
+            {$this->selectCond->like('dit.numero_parc',$dto->numParc)}
+            {$this->selectCond->like('dit.numero_serie',$dto->numSerie)}
+            {$this->selectCond->like('dit.type_reparation',$dto->typeIntervention)}
+            {$this->selectCond->between('dit.date_creation',$dto->dateDebut,$dto->dateFin)}
+        ";
 
-        $numeroDit = $this->conditionLike('dit.numero_dit', 'numDit', $criteria);
-        $numeroOr = $this->conditionLike('ord.numero_or', 'numOr', $criteria);
-        $numeroDev = $this->conditionLike('dd.numero_devis', 'numDev', $criteria);
-        $designation = $this->conditionLike('dit.designation_materiel', 'designation', $criteria);
-        $idMateriel = $this->conditionLike('dit.id_materiel', 'idMateriel', $criteria);
-        $numParc = $this->conditionLike('dit.numero_parc', 'numParc', $criteria);
-        $numSerie = $this->conditionLike('dit.numero_serie', 'numSerie', $criteria);
-        $dateDebut = $this->conditionDateSigne('dit.date_creation', 'dateDebut', $criteria, '>=');
-        $dateFin = $this->conditionDateSigne('dit.date_creation', 'dateFin', $criteria, '<=');
-        $typeIntervention = $this->conditionLikeTypeIntervention('dit.type_reparation', $criteria);
-        $reparationRealise = $multisuccursale ? "" : " AND reparation_realise in (select agence_atelier_realise.code_atelier from agence_atelier_realise where code_agence = '$codeAgence')";
-
-        $sql = " SELECT 
-            dit.date_creation AS date_creation_intervention,
-            dit.numero_dit AS numero_dit_intervention,
-            dit.type_reparation AS type_reparation_intervention,
-            dit.id_materiel AS id_materiel_intervention,
-            dit.numero_parc AS numero_parc_intervention,
-            dit.numero_serie AS numero_serie_intervention,
-            dit.designation_materiel AS designation_materiel_intervention,
-            ord.numero_or AS numero_or_reparation
-            FROM DW_Demande_Intervention dit
-            LEFT JOIN (
-                SELECT DISTINCT numero_dit, numero_or
-                FROM DW_Ordre_De_Reparation
-            ) ord ON dit.numero_dit = ord.numero_dit
-            LEFT JOIN (
-                SELECT DISTINCT numero_dit
-                FROM DW_Devis
-            ) dd ON dit.numero_dit = dd.numero_dit
-            JOIN demande_intervention di ON dit.numero_dit = di.numero_demande_dit
+        $statement = "WITH
+                cnt_or  AS ({$this->getCountQueryWithDit('dw_ordre_de_reparation', 'numero_or')}),
+                cnt_dd  AS ({$this->getCountQueryWithDit('dw_devis_ate', 'numero_devis')}),
+                cnt_bcc AS ({$this->getCountQueryWithDit('dw_bc_client')}),
+                cnt_cde AS ({$this->getCountQueryWithOr('dw_commande')}),
+                cnt_ri  AS ({$this->getCountQueryWithOr('dw_rapport_intervention')}),
+                cnt_fac AS ({$this->getCountQueryWithOr('dw_facture')})
+            SELECT
+                dit.numero_dit,
+                cnt_or.numero_or,
+                cnt_dd.numero_devis,
+                dit.numero_parc,
+                dit.numero_serie,
+                dit.id_materiel,
+                dit.date_creation,
+                dit.designation_materiel,
+                dit.type_reparation,
+                1
+                + COALESCE(cnt_or.n, 0)
+                + COALESCE(cnt_dd.n, 0)
+                + COALESCE(cnt_bcc.n, 0)
+                + COALESCE(cnt_cde.n, 0)
+                + COALESCE(cnt_ri.n, 0)
+                + COALESCE(cnt_fac.n, 0)
+                AS nb_docs
+            FROM {$this->dbIrium}:Informix.dw_demande_intervention dit
+                LEFT JOIN cnt_or  ON cnt_or.numero_dit  = dit.numero_dit
+                LEFT JOIN cnt_dd  ON cnt_dd.numero_dit  = dit.numero_dit
+                LEFT JOIN cnt_bcc ON cnt_bcc.numero_dit = dit.numero_dit
+                LEFT JOIN cnt_cde ON cnt_cde.numero_or  = cnt_or.numero_or
+                LEFT JOIN cnt_ri  ON cnt_ri.numero_or   = cnt_or.numero_or
+                LEFT JOIN cnt_fac ON cnt_fac.numero_or  = cnt_or.numero_or
             WHERE 1=1
-            $reparationRealise
-            $typeIntervention
-            $numeroDev
-            $numeroDit
-            $numeroOr
-            $designation
-            $dateDebut
-            $dateFin
-            $idMateriel
-            $numParc
-            $numSerie
+            $conditions
             ORDER BY dit.date_creation DESC
-        ";
-        $exec = $this->connexion->query($sql);
-        $tab = [];
-        while ($result = odbc_fetch_array($exec)) {
-            $tab[] = $result;
-        };
+            ;";
 
-        return $this->ConvertirEnUtf_8($tab);
+        $result = $this->connect->executeQuery($statement);
+
+        return $this->connect->fetchResults($result, "Windows-1252, UTF-8, ASCII");
     }
 
-    public function findAll($numDit)
+    private function getTypeDoc(string $table): string
     {
-        $sql = " SELECT 
-        -- DEMANDE D'INTERVENTION
-        dit.numero_dit AS numero_dit_intervention,
-        dit.date_creation AS date_creation_intervention,
-        dit.date_derniere_modification AS date_modification_intervention,
-        dit.extension_fichier As extension_fichier_intervention,
-        dit.type_reparation AS type_reparation_intervention,
-        dit.id_materiel AS id_materiel_intervention,
-        dit.numero_parc AS numero_parc_intervention,
-        dit.numero_serie AS numero_serie_intervention,
-        dit.designation_materiel AS designation_materiel_intervention,
-        dit.total_page AS total_page_intervention,
-        dit.taille_fichier AS taille_fichier_intervention,
-        dit.path AS path_intervention,
-        
-        --ORDRE DE REPARATION
-        ord.numero_or AS numero_or_reparation,
-        ord.date_creation AS date_creation_reparation,
-        ord.date_derniere_modification AS date_modification_reparation,
-        ord.statut_or AS statut_or_reparation,
-        ord.extension_fichier As extension_fichier_reparation,
-        ord.total_page AS total_page_reparation,
-        ord.taille_fichier AS taille_fichier_reparation,
-        ord.path AS path_reparation,
-        
-        --FACTURE
-        fac.numero_fac AS numero_facture,
-        fac.date_creation AS date_creation_facture,
-        fac.date_derniere_modification AS date_modification_facture,
-        fac.extension_fichier As extension_fichier_facture,
-        fac.total_page AS total_page_facture,
-        fac.taille_fichier AS taille_fichier_facture,
-        fac.path AS path_facture,
-        
-        --RAPORT D'INTERVENTION
-        ri.numero_ri AS numero_rapport_intervention,
-        ri.date_creation AS date_creation_rapport_intervention,
-        ri.date_derniere_modification AS date_modification_rapport_intervention,
-        ri.extension_fichier As extension_fichier_rapport_intervention,
-        ri.total_page AS total_page_rapport_intervention,
-        ri.taille_fichier AS taille_fichier_rapport_intervention,
-        ri.path AS path_rapport_intervention,
-        
-        --COMMANDE
-        cde.numero_cde AS numero_commande,
-        cde.date_creation AS date_creation_commande,
-        cde.date_derniere_modification AS date_modification_commande,
-        cde.extension_fichier As extension_fichier_commande,
-        cde.total_page AS total_page_commande,
-        cde.taille_fichier AS taille_fichier_commande,
-        cde.path AS path_commande
+        $typeDocMap = [
+            "dw_demande_intervention" => "Demande d''intervention",
+            "dw_ordre_de_reparation"  => "Ordre de réparation",
+            "dw_bc_client"            => "Bon de Commande Client",
+            "dw_devis_ate"            => "Devis",
+            "dw_commande"             => "Commande",
+            "dw_rapport_intervention" => "Rapport d''intervention",
+            "dw_facture"              => "Facture",
+        ];
 
-            FROM DW_Demande_Intervention dit
-            LEFT JOIN DW_Ordre_De_Reparation ord 
-            ON dit.numero_dit = ord.numero_dit
-			LEFT JOIN DW_Facture fac
-			ON fac.numero_or = ord.numero_or
-			LEFT JOIN DW_Rapport_Intervention ri
-			ON ri.numero_or = ord.numero_or
-			LEFT JOIN DW_Commande cde
-			ON cde.numero_or = ord.numero_or
-			WHERE dit.numero_dit = '" . $numDit . "'
-        ";
-
-        $exec = $this->connexion->query($sql);
-
-        $result = odbc_fetch_array($exec);
-        return $this->ConvertirEnUtf_8($result);
+        return $typeDocMap[$table] ?? '';
     }
 
-    public function findDwDit($numDit)
+    private function getColumn(string $table): string
     {
-        $sql = " SELECT 
-        -- DEMANDE D'INTERVENTION
-        dit.numero_dit AS numero_doc,
-        dit.date_creation AS date_creation,
-        dit.date_derniere_modification AS date_modification,
-        dit.extension_fichier As extension_fichier,
-        dit.total_page AS total_page,
-        dit.taille_fichier AS taille_fichier,
-        dit.path AS chemin
+        $columnMap = [
+            "dw_demande_intervention" => "numero_dit",
+            "dw_ordre_de_reparation"  => "numero_or",
+            "dw_bc_client"            => "numero_bc",
+            "dw_devis_ate"            => "numero_devis",
+            "dw_commande"             => "numero_cde",
+            "dw_rapport_intervention" => "numero_ri",
+            "dw_facture"              => "numero_fac",
+        ];
 
-        FROM DW_Demande_Intervention dit
-        WHERE dit.numero_dit = '" . $numDit . "'
-        ";
-
-        $exec = $this->connexion->query($sql);
-        $tab = [];
-        while ($result = odbc_fetch_array($exec)) {
-            $tab[] = $result;
-        }
-
-        return $this->ConvertirEnUtf_8($tab);
+        return $columnMap[$table] ?? '';
     }
 
-    public function findDwOr($numDit)
+    private function getQueryRef(string $numDit): string
     {
-        $sql = " SELECT 
-        --ORDRE DE REPARATION
-        ord.numero_or AS numero_doc,
-        ord.date_creation AS date_creation,
-        ord.date_derniere_modification AS date_modification,
-        ord.extension_fichier As extension_fichier,
-        ord.total_page AS total_page,
-        ord.taille_fichier AS taille_fichier,
-        ord.path AS chemin,
-        ord.numero_version AS numero_version,
-        ord.statut_or AS statut_or
-
-        FROM DW_Ordre_De_Reparation ord
-        WHERE ord.numero_dit = '" . $numDit . "'
-        ORDER BY ord.numero_version ASC
-        ";
-
-        $exec = $this->connexion->query($sql);
-        $tab = [];
-        while ($result = odbc_fetch_array($exec)) {
-            $tab[] = $result;
-        }
-        return $this->ConvertirEnUtf_8($tab);
+        return "SELECT dit.numero_dit, ord.numero_or
+            FROM {$this->dbIrium}:Informix.dw_demande_intervention dit
+            LEFT JOIN {$this->dbIrium}:Informix.dw_ordre_de_reparation ord
+                ON ord.numero_dit = dit.numero_dit
+            WHERE dit.numero_dit = '$numDit'";
     }
 
-    public function findDwFac($numOr)
+    private function getQueryDoc(string $table, string $alias, bool $withVersion = true): string
     {
-        $sql = " SELECT 
-        --FACTURE
-        fac.numero_fac AS numero_doc,
-        fac.date_creation AS date_creation,
-        fac.date_derniere_modification AS date_modification,
-        fac.extension_fichier As extension_fichier,
-        fac.total_page AS total_page,
-        fac.taille_fichier AS taille_fichier,
-        fac.path AS chemin
+        $typeDoc = $this->getTypeDoc($table);
+        $column = $this->getColumn($table);
+        $version = $withVersion ? "$alias.numero_version" : 0;
 
-        FROM DW_Facture fac
-        WHERE fac.numero_or = '" . $numOr . "'
+        return "SELECT
+            TRIM('$typeDoc') AS nom_doc,
+            {$alias}.{$column} AS numero_doc,
+            {$alias}.date_creation,
+            {$alias}.date_derniere_modification,
+            {$version} AS numero_version,
+            {$alias}.total_page,
+            {$alias}.taille_fichier,
+            {$alias}.extension_fichier,
+            {$alias}.path AS chemin
+        FROM {$this->dbIrium}:Informix.$table {$alias}
         ";
-
-        $exec = $this->connexion->query($sql);
-        $tab = [];
-        while ($result = odbc_fetch_array($exec)) {
-            $tab[] = $result;
-        }
-        return $this->ConvertirEnUtf_8($tab);
     }
 
-    public function findDwRi($numOr)
+    /** 
+     * Fonction pour récupérer tous les documents liés à un DwDemandeIntervention 
+     * @param string $numDit
+     * @return array
+     */
+    public function findAllDwDocs(string $numDit): array
     {
-        $sql = " SELECT 
-            --RAPORT D'INTERVENTION
-            ri.numero_ri AS numero_doc,
-            ri.date_creation AS date_creation,
-            ri.date_derniere_modification AS date_modification,
-            ri.extension_fichier As extension_fichier,
-            ri.total_page AS total_page,
-            ri.taille_fichier AS taille_fichier,
-            ri.path AS chemin
-
-            FROM DW_Rapport_Intervention ri
-            WHERE ri.numero_or = '" . $numOr . "'
+        $statement =
+            "WITH
+            ref AS ({$this->getQueryRef($numDit)}),
+            docs AS
+            (
+                {$this->getQueryDoc('dw_demande_intervention', 'dit', false)}
+                WHERE dit.numero_dit = '$numDit'
+            UNION ALL
+                {$this->getQueryDoc('dw_ordre_de_reparation', 'ord')}
+                INNER JOIN ref r
+                    ON ord.numero_dit = r.numero_dit
+            UNION ALL
+                {$this->getQueryDoc('dw_bc_client', 'bcc')}
+                INNER JOIN ref r
+                    ON bcc.numero_dit = r.numero_dit
+            UNION ALL
+                {$this->getQueryDoc('dw_devis_ate', 'dev')}
+                INNER JOIN ref r
+                    ON dev.numero_dit = r.numero_dit
+            UNION ALL
+                {$this->getQueryDoc('dw_commande', 'cde', false)}
+                INNER JOIN ref r
+                    ON cde.numero_or = r.numero_or
+            UNION ALL
+                {$this->getQueryDoc('dw_rapport_intervention', 'ri', false)}
+                INNER JOIN ref r
+                    ON ri.numero_or = r.numero_or
+            UNION ALL
+                {$this->getQueryDoc('dw_facture', 'fac', false)}
+                INNER JOIN ref r
+                    ON fac.numero_or = r.numero_or
+            )
+            SELECT *
+            FROM docs;
         ";
 
-        $exec = $this->connexion->query($sql);
-        $tab = [];
-        while ($result = odbc_fetch_array($exec)) {
-            $tab[] = $result;
-        }
-        return $this->ConvertirEnUtf_8($tab);
-    }
+        $result = $this->connect->executeQuery($statement);
 
-    public function findDwCde($numOr)
-    {
-        $sql = " SELECT 
-            --COMMANDE
-            cde.numero_cde AS numero_doc,
-            cde.date_creation AS date_creation,
-            cde.date_derniere_modification AS date_modification,
-            cde.extension_fichier As extension_fichier,
-            cde.total_page AS total_page,
-            cde.taille_fichier AS taille_fichier,
-            cde.path AS chemin
-
-            FROM DW_Commande cde
-            WHERE cde.numero_or = '" . $numOr . "'
-        ";
-
-        $exec = $this->connexion->query($sql);
-        $tab = [];
-        while ($result = odbc_fetch_array($exec)) {
-            $tab[] = $result;
-        }
-        return $this->ConvertirEnUtf_8($tab);
-    }
-
-    public function findDwBca($numOr)
-    {
-        $sql = " SELECT 
-            --COMMANDE APPRO
-            bca.numero_bca AS numero_doc,
-            bca.date_creation AS date_creation,
-            bca.date_derniere_modification AS date_modification,
-            bca.extension_fichier As extension_fichier,
-            bca.total_page AS total_page,
-            bca.taille_fichier AS taille_fichier,
-            bca.path AS chemin
-
-            FROM DW_BC_Appro bca
-            WHERE bca.numero_or = '" . $numOr . "'
-        ";
-
-        $exec = $this->connexion->query($sql);
-        $tab = [];
-        while ($result = odbc_fetch_array($exec)) {
-            $tab[] = $result;
-        }
-        return $this->ConvertirEnUtf_8($tab);
-    }
-
-    public function findDwFacBl($numOr)
-    {
-        $sql = " SELECT 
-            --FACTURE ET BL
-            fac_bl.id_fac_bl AS numero_doc,
-            fac_bl.date_creation AS date_creation,
-            fac_bl.date_derniere_modification AS date_modification,
-            fac_bl.extension_fichier As extension_fichier,
-            fac_bl.total_page AS total_page,
-            fac_bl.taille_fichier AS taille_fichier,
-            fac_bl.path AS chemin
-
-            FROM DW_FAC_BL fac_bl
-            WHERE fac_bl.numero_or = '" . $numOr . "'
-        ";
-
-        $exec = $this->connexion->query($sql);
-        $tab = [];
-        while ($result = odbc_fetch_array($exec)) {
-            $tab[] = $result;
-        }
-        return $this->ConvertirEnUtf_8($tab);
-    }
-
-    public function findDwBc($numDit)
-    {
-        $sql = " SELECT 
-            --BON DE COMMANDE CLIENT 
-            bcc.numero_bc AS numero_doc,
-            bcc.date_creation AS date_creation,
-            bcc.date_derniere_modification AS date_modification,
-            bcc.extension_fichier As extension_fichier,
-            bcc.total_page AS total_page,
-            bcc.taille_fichier AS taille_fichier,
-            bcc.path AS chemin
-
-            FROM DW_BC_Client bcc
-            WHERE bcc.numero_dit = '" . $numDit . "'
-        ";
-
-        $exec = $this->connexion->query($sql);
-        $tab = [];
-        while ($result = odbc_fetch_array($exec)) {
-            $tab[] = $result;
-        }
-        return $this->ConvertirEnUtf_8($tab);
-    }
-
-    public function findDwDev($numDit)
-    {
-        $sql = " SELECT 
-            --DEVIS 
-            dev.numero_devis AS numero_doc,
-            dev.date_creation AS date_creation,
-            dev.date_derniere_modification AS date_modification,
-            dev.extension_fichier As extension_fichier,
-            dev.total_page AS total_page,
-            dev.taille_fichier AS taille_fichier,
-            dev.path AS chemin
-
-            FROM DW_Devis dev
-            WHERE dev.numero_dit = '" . $numDit . "'
-        ";
-
-        $exec = $this->connexion->query($sql);
-        $tab = [];
-        while ($result = odbc_fetch_array($exec)) {
-            $tab[] = $result;
-        }
-        return $this->ConvertirEnUtf_8($tab);
-    }
-
-
-    public function findCheminDit($numDoc)
-    {
-        $sql = " SELECT DISTINCT 
-        dit.path AS chemin
-
-        FROM DW_Demande_Intervention dit
-        WHERE dit.numero_dit = '" . $numDoc . "'
-        ";
-
-        $exec = $this->connexion->query($sql);
-        $tab = [];
-        while ($result = odbc_fetch_array($exec)) {
-            $tab[] = $result;
-        }
-
-        return $this->ConvertirEnUtf_8($tab);
-    }
-
-    public function findCheminOr($numDoc, $numVersion)
-    {
-        $sql = " SELECT DISTINCT 
-        ord.path AS chemin
-
-        FROM DW_Ordre_De_Reparation ord
-        WHERE ord.numero_or = '" . $numDoc . "'
-        AND ord.numero_version = '" . $numVersion . "'
-        ";
-
-        $exec = $this->connexion->query($sql);
-        $tab = [];
-        while ($result = odbc_fetch_array($exec)) {
-            $tab[] = $result;
-        }
-        return $this->ConvertirEnUtf_8($tab);
-    }
-
-    public function findCheminFac($numDoc)
-    {
-        $sql = " SELECT DISTINCT 
-        --FACTURE
-        fac.path AS chemin
-
-        FROM DW_Facture fac
-        WHERE fac.numero_fac = '" . $numDoc . "'
-        ";
-
-        $exec = $this->connexion->query($sql);
-        $tab = [];
-        while ($result = odbc_fetch_array($exec)) {
-            $tab[] = $result;
-        }
-        return $this->ConvertirEnUtf_8($tab);
-    }
-
-    public function findCheminRi($numDoc)
-    {
-        $sql = " SELECT DISTINCT 
-            --RAPORT D'INTERVENTION
-            ri.path AS chemin
-
-            FROM DW_Rapport_Intervention ri
-            WHERE ri.numero_ri = '" . $numDoc . "'
-        ";
-
-        $exec = $this->connexion->query($sql);
-        $tab = [];
-        while ($result = odbc_fetch_array($exec)) {
-            $tab[] = $result;
-        }
-        return $this->ConvertirEnUtf_8($tab);
-    }
-
-    public function findCheminCde($numDoc)
-    {
-        $sql = " SELECT DISTINCT 
-            --COMMANDE
-            cde.path AS chemin
-
-            FROM DW_Commande cde
-            WHERE cde.numero_cde = '" . $numDoc . "'
-        ";
-
-        $exec = $this->connexion->query($sql);
-        $tab = [];
-        while ($result = odbc_fetch_array($exec)) {
-            $tab[] = $result;
-        }
-        return $this->ConvertirEnUtf_8($tab);
-    }
-
-    public function findCheminOrVersionMax($numDoc)
-    {
-        if (!$numDoc) {
-            return [];
-        }
-        $sql = "SELECT TOP 1
-                ord.path AS chemin
-            FROM DW_Ordre_De_Reparation ord
-            WHERE ord.numero_or = '" . $numDoc . "'
-            ORDER BY ord.numero_version DESC
-        ";
-
-        $exec = $this->connexion->query($sql);
-        $result = odbc_fetch_array($exec);
-
-        return $this->ConvertirEnUtf_8($result ? $result : []);
-    }
-
-    public function findCheminOrDernierValide(?string $numeroDit, string $numeroDa)
-    {
-        if (!$numeroDit || !$numeroDa) return [];
-
-        // Étape 1 : récupérer la date de référence
-        $sqlDate = "SELECT TOP 1 date_derniere_bav
-                        FROM da_afficher
-                        WHERE numero_demande_appro = '$numeroDa' 
-                        ORDER BY numero_version DESC";
-        $execDate = $this->connexion->query($sqlDate);
-        $resultDate = odbc_fetch_array($execDate);
-        $dateDerniereBav = $resultDate ? $resultDate['date_derniere_bav'] : null;
-
-        if (!$dateDerniereBav) return []; // Aucun résultat pour la demande d'appro
-
-        // Étape 2 : récupérer les OR lié au DIT avec numero $numeroDit
-        $sqlOrdre = "WITH DernierOR AS (
-                        SELECT TOP 1 o.numeroOR
-                        FROM ors_soumis_a_validation o
-                        WHERE o.numeroDIT = '$numeroDit'
-                        ORDER BY o.numeroVersion DESC
-                    )
-                    SELECT 
-                        ord.numero_or as numero,
-                        ord.path AS chemin, 
-                        ord.statut_or AS statut,
-                        ord.date_derniere_modification AS date_modif, 
-                        ord.heure_derniere_modification AS heure_modif
-                    FROM DW_Ordre_De_Reparation ord
-                    JOIN DernierOR o ON ord.numero_or = o.numeroOR
-                    ORDER by ord.date_derniere_modification DESC, ord.heure_derniere_modification DESC";
-
-        $execOrdre = $this->connexion->query($sqlOrdre);
-        while ($result = odbc_fetch_array($execOrdre)) {
-            $data = $this->convertirEnUtf8($result);
-            // si statut = Validé
-            if ($data['statut'] === 'Validé') {
-                $dateTimeOrdre = $data['date_modif'] . ' ' . $data['heure_modif'];
-                // si dateTimeOrdre > dateDerniereBav
-                if ($dateTimeOrdre > $dateDerniereBav) return $data;
-            }
-        }
-        return [];
+        return $this->connect->fetchResults($result, "Windows-1252, UTF-8, ASCII");
     }
 }

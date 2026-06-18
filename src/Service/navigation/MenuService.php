@@ -135,6 +135,7 @@ class MenuService
     {
         $modules = [
             ['id' => 'documentationModal', 'title' => 'Documentation', 'icon' => 'book',           'groupes' => MenuGroupe::documentationGroupes()],
+            ['id' => 'atelierModal',       'title' => 'Atelier',       'icon' => 'tools',          'groupes' => MenuGroupe::atelierGroupes()],
             ['id' => 'magasinModal',       'title' => 'Magasin',       'icon' => 'dolly',          'groupes' => MenuGroupe::magasinGroupes()]
         ];
 
