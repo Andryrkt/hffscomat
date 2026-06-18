@@ -83,9 +83,8 @@ class DitOrsSoumisAValidationController extends Controller
             $dto = $this->orSoummissionFactory->apresSoumission($numDit, $dto);
 
             // blocage de soumision
-            if ($this->validationService->validateSubmittedFile($form, null, $dto)) {
-                return;
-            }
+            if ($this->validationService->validateSubmittedFile($form, null, $dto)) return;
+
 
             /** ENVOIE des DONNEE dans BASE DE DONNEE */
             $this->envoieDonnerDansBd($dto);

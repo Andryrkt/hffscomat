@@ -19,18 +19,26 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class DitFactureSoumisAValidationController extends Controller
 {
+    private DitFactureSoumisAValidationFactory $ditFactorySoumisAValidationFactory;
+    private FactureValidationService $factureValidationService;
+
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->ditFactorySoumisAValidationFactory = new DitFactureSoumisAValidationFactory();
+        $this->factureValidationService = new FactureValidationService();
+    }
     /**
      * @Route("/soumission-facture/{numDit}", name="dit_insertion_facture")
      */
     public function factureSoumisAValidation(Request $request, string $numDit)
     {
         // initialisation du DTO
-        $ditFactorySoumisAValidationFactory = new DitFactureSoumisAValidationFactory();
-        $dto = $ditFactorySoumisAValidationFactory->initialisation($numDit, $this->getSecurityService());
+        $dto = $this->ditFactorySoumisAValidationFactory->initialisation($numDit, $this->getSecurityService());
 
         // bloquer si une condition n'est pas valide
-        $factureValidationService = new FactureValidationService();
-        if ($factureValidationService->validateAvantAffichageForm($dto)) return;
+        if ($this->factureValidationService->validateAvantAffichageForm($dto)) return;
 
         // creation du formulaire
         $form = $this->getFormFactory()->createBuilder(DitFactureSoumisAValidationType::class, $dto)->getForm();
@@ -51,12 +59,10 @@ class DitFactureSoumisAValidationController extends Controller
             $dto = $form->getData();
 
             // recharge du DTO
-            $ditFactorySoumisAValidationFactory = new DitFactureSoumisAValidationFactory();
-            $dto = $ditFactorySoumisAValidationFactory->apresSoumission($dto, $form, $numDit);
+            $dto = $this->ditFactorySoumisAValidationFactory->apresSoumission($dto, $form, $numDit);
 
             // bloquer si des conditions n'est pas valide
-            $factureValidationService = new FactureValidationService();
-            if ($factureValidationService->validateApresSoumissionForm($form, $dto)) return;
+            if ($this->factureValidationService->validateApresSoumissionForm($form, $dto)) return;
 
             // traitement de fichier
             $traitementDeFichierService = new TraitementDeFichierService($this->getSecurityService());
