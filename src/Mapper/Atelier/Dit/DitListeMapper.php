@@ -37,6 +37,8 @@ class DitListeMapper
             $dto->ri = $item['ri'];
             $dto->utilisateurDemandeur = $item['utilisateur'];
             $dto->nbrPj = $item['nbrpj'];
+            $dto->estAnnulable = $item['est_annulable'] == 1 ? true : false;
+            $dto->estOrASoumi = $item['est_a_soumis'] == 1 ? true : false;
 
             $dto->quantiteDemanderOr = $item['quantitedemanderor'] ?? 0;
             $dto->quantiteReserverOr = $item['quantitereserveror'] ?? 0;
