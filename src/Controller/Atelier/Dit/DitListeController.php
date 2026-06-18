@@ -2,20 +2,14 @@
 
 namespace App\Controller\Atelier\Dit;
 
-use App\Constants\admin\ApplicationConstant;
-use App\Constants\atelier\dit\StatutDitConstant;
+
 use App\Controller\Controller;
-use App\Controller\Traits\DitListeTrait;
-use App\Dto\Atelier\Dit\DitDto;
 use App\Dto\Atelier\Dit\DitSearchDto;
 use App\Form\Atelier\Dit\DitSearchType;
 use App\Form\Atelier\Dit\DocDansDwType;
 use App\Mapper\Atelier\Dit\DitListeMapper;
-use App\Mapper\Atelier\Dit\DitSearchMapper;
 use App\Model\Atelier\Dit\DitListeModel;
 use App\Model\Atelier\Dit\DitModel;
-use App\Model\Atelier\Dit\Soumission\DitOrSoumisAValidationModel;
-use App\Service\security\SecurityService;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -41,14 +35,14 @@ class DitListeController extends Controller
     {
         $allAgenceServices = $this->getSecurityService()->getAllAgenceServices();
 
-        $dtoSearch = $this->getSessionService()->get('criteria_for_excel_dit_liste');
+        $dtoSearch =  $this->getSessionService()->has('criteria_for_excel_dit_liste') ? $this->getSessionService()->get('criteria_for_excel_dit_liste') : new DitSearchDto();
 
         //création et initialisation du formulaire de la recherche
         $form = $this->getFormFactory()->createBuilder(DitSearchType::class, $dtoSearch, [
             'method' => 'GET',
             'allAgenceServices' => $allAgenceServices
         ])->getForm();
-        $dtoSearch  = $this->traitementFormualireRecherhce($form, $request);
+        $dtoSearch  = $this->traitementFormualireRecherhce($form, $request, $dtoSearch);
 
         /**  Docs à intégrer dans DW * */
         $formDocDansDW = $this->getFormFactory()->createBuilder(DocDansDwType::class, null, [
@@ -99,9 +93,7 @@ class DitListeController extends Controller
         // Code Société de l'utilisateur
         $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
         $page = (int) $request->query->get('page', 1);
-        if ($page < 1) {
-            $page = 1;
-        }
+        if ($page < 1) $page = 1;
         $perPage = 20;
 
         $dits = $this->ditListeModel->findPaginatedAndFiltered($codeSociete, $dtoSearch, $page, $perPage);
@@ -117,17 +109,18 @@ class DitListeController extends Controller
         ];
     }
 
-    private function traitementFormualireRecherhce(FormInterface $form, Request $request): DitSearchDto
+    private function traitementFormualireRecherhce(FormInterface $form, Request $request, DitSearchDto $dtoSearch): DitSearchDto
     {
         $form->handleRequest($request);
-        $dto = $form->getData() ?? new DitSearchDto();
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $dtoSearch = $form->getData();
+
             //recupères les données du criteria dans une session nommé dit_serch_criteria
-            $this->getSessionService()->set('criteria_for_excel_dit_liste', $dto);
+            $this->getSessionService()->set('criteria_for_excel_dit_liste', $dtoSearch);
         }
 
-        return $dto;
+        return $dtoSearch;
     }
 
     private function ajoutEtatLivraison(array $datas)

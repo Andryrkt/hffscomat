@@ -46,6 +46,7 @@ class ValidationService
     ): void {
 
         $criteria = (array)$this->getSessionService()->get('criteria_for_excel_dit_liste');
+
         $nomInputSearch = 'dit_search'; // initialistion de nom de chaque champ ou input
         $this->getHistoriqueService()->sendNotificationSoumission(
             $message,

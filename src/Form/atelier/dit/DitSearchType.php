@@ -217,7 +217,8 @@ class DitSearchType extends AbstractType
                 CheckboxType::class,
                 [
                     'label' => 'DIT sans OR',
-                    'required' => false
+                    'required' => false,
+                    'data' => false
                 ]
             )
 
