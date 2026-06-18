@@ -5,7 +5,7 @@ namespace App\Service\atelier\dit\soumission\Devis;
 use App\Constants\atelier\dit\soumission\Devis\ConstantStatutDevis;
 use App\Dto\Atelier\Dit\soumission\Devis\DitDevisSoumisAValidationDto;
 use App\Model\Atelier\Dit\Soumission\Devis\DitDevisSoumisAValidationModel;
-use App\Service\historiqueOperation\atelier\dit\Devis\HistoriqueOperationDEVService;
+use App\Service\historiqueOperation\Atelier\Dit\Devis\HistoriqueOperationDEVService;
 use App\Service\SessionManagerService;
 
 class DevisValidationService

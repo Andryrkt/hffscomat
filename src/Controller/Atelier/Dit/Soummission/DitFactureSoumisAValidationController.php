@@ -9,7 +9,7 @@ use App\Mapper\Atelier\Dit\Soumission\DItFactureSoumisAValidationMapper;
 use App\Model\Atelier\Dit\Soumission\DitFactureSoumisAValidationModel;
 use App\Service\atelier\dit\soumission\Facture\FactureValidationService;
 use App\Service\atelier\dit\soumission\Facture\TraitementDeFichierService;
-use App\Service\historiqueOperation\atelier\dit\Facture\HistoriqueOperationFACService;
+use App\Service\historiqueOperation\Atelier\Dit\Facture\HistoriqueOperationFACService;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
