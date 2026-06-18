@@ -4,7 +4,6 @@ namespace App\Service\atelier\dit\soumission\ORs;
 
 use App\Controller\Traits\PdfConversionTrait;
 use App\Dto\atelier\dit\soumission\OrSoumissionDto;
-use App\Factory\atelier\Dit\Soumission\OrSoumissionFactory;
 use App\Mapper\Atelier\Dit\Soumission\OrSoumissionMapper;
 use App\Model\Atelier\Dit\DitModel;
 use App\Model\Atelier\Dit\Soumission\DitOrSoumisAValidationModel;
@@ -181,7 +180,7 @@ class TraitementFichierService
         ];
     }
 
-    function compareTableaux($a, $b)
+    function compareTableaux(array $a, array $b)
     {
         if (count($a) != count($b)) {
             return false;
