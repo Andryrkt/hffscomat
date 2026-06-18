@@ -29,7 +29,6 @@ class OrLivrerController extends Controller
 
         if ($form->isSubmitted() && $form->isValid()) {
             $dtoSearch = $form->getData();
-            dd($dtoSearch);
             //enregistrer les critère de recherche dans la session
             $this->getSessionService()->set('magasin_liste_or_livrer_search_criteria', $dtoSearch);
         }

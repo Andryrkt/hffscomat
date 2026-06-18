@@ -19,14 +19,12 @@ class TraitementDeFichierService
     private GenererPdfFactureAValidation $genererPdfFacture;
     private FusionPdf $fusionPdf;
     private SecurityService $securityService;
-    private FileUploaderService $fileUploaderService;
 
     public function __construct(SecurityService $securityService)
     {
         $this->securityService = $securityService;
         $this->genererPdfFacture = new GenererPdfFactureAValidation();
         $this->fusionPdf = new FusionPdf();
-        $this->fileUploaderService = new FileUploaderService($_ENV['BASE_PATH_FICHIER'] . '/vfac/');
     }
 
     public function traitmenetDeFichier(DitFactureSoumisAValidationDto $dto, FormInterface $form)
@@ -36,7 +34,8 @@ class TraitementDeFichierService
         $pathFichiers = $this->enregistrerFichiers($form, $dto);
 
         if ($dto->interneExterne === 'INTERNE') {
-            $ficherAfusioner = $this->fileUploaderService->insertFileAtPosition($pathFichiers, $pathPageDeGarde, 0);
+            $fileUploaderService = new FileUploaderService($_ENV['BASE_PATH_FICHIER'] . '/vfac/');
+            $ficherAfusioner = $fileUploaderService->insertFileAtPosition($pathFichiers, $pathPageDeGarde, 0);
             $fichierConvertie = $this->ConvertirLesPdf($ficherAfusioner);
             $this->fusionPdf->mergePdfs($fichierConvertie, $pathPageDeGarde);
             $this->genererPdfFacture->copyToDwFactureSoumis($dto->numeroSoumission, $dto->numeroFact);
@@ -270,17 +269,15 @@ class TraitementDeFichierService
 
     public function enregistrerFichiers(FormInterface $form, DitFactureSoumisAValidationDto $dto): array
     {
-        if ($dto->interneExterne == 'INTERNE') {
-            $prefix = 'factureValidation';
-        } else {
-            $prefix = 'facture_client';
-        }
+        $prefix = $dto->interneExterne == 'INTERNE' ? 'factureValidation' : 'facture_client';
 
         $options = [
             'prefixFichier' => $prefix,
             'numeroDoc' => $dto->numeroFact,
             'numeroVersion' => $dto->numeroSoumission,
         ];
-        return $this->fileUploaderService->getPathFiles($form, $options);
+
+        $fileUploaderService = new FileUploaderService($_ENV['BASE_PATH_FICHIER'] . '/vfac/');
+        return $fileUploaderService->getPathFiles($form, $options);
     }
 }
