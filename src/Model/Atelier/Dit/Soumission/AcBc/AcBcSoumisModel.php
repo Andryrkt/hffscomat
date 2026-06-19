@@ -122,11 +122,40 @@ class AcBcSoumisModel extends Model
                 ORDER BY l.slor_nolign";
     }
 
+    /** 
+     * Méthode pour retourner le numéro de version maximum du BC
+     * 
+     * @param string $numeroBc    numéro du BC
+     * @param string $codeSociete code société
+     * 
+     * @return int
+     */
     public function findNumeroVersionMaxBcSoumis(string $numeroBc, string $codeSociete): int
     {
         $statement = "SELECT FIRST 1 MAX(numeroversion) as version 
         FROM {$this->dbIrium}:Informix.bc_soumis b 
         WHERE b.numerobc = '$numeroBc' AND b.code_societe = '$codeSociete'";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->connect->fetchScalarResults($result);
+
+        return $this->convertirEnUtf8($data['version'] ?? 0);
+    }
+
+    /** 
+     * Méthode pour retourner le numéro de version maximum du BC pour un DIT
+     * 
+     * @param string $numDit      numéro du DIT
+     * @param string $codeSociete code société
+     * 
+     * @return int
+     */
+    public function findNumeroVersionMaxParDit(string $numDit, string $codeSociete): int
+    {
+        $statement = "SELECT FIRST 1 MAX(numeroversion) as version 
+        FROM {$this->dbIrium}:Informix.bc_soumis b
+        WHERE b.numerodit = '$numDit' AND b.code_societe = '$codeSociete'";
 
         $result = $this->connect->executeQuery($statement);
 
