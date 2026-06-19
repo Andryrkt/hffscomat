@@ -78,33 +78,11 @@ class AcBcValidationService
             $traitementDeFichierService = new TraitementDeFichierService($accuseReceptionDto->numeroDit);
             $traitementDeFichierService->traitementDeFichier($accuseReceptionDto);
 
-            dd("Traitement de fichier terminé");
-
-            //crée le pdf
-            $this->genererPdfAc->genererPdfAc($acSoumis, $numClientBcDevis, $numeroVersionMaxDit, $nomFichier);
-
-            //fusionne le pdf
-            $chemin = $_ENV['BASE_PATH_FICHIER']  . "/dit/$numDit/";
-            $fileUploader = new FileUploaderService($chemin);
-            $file = $form->get('pieceJoint01')->getData();
-
-            $uploadedFilePath = $fileUploader->uploadFileSansName($file, $nomFichier);
-            $uploadedFiles = $fileUploader->insertFileAtPosition([$uploadedFilePath], $chemin . $nomFichier, count([$uploadedFilePath]));
-
-            $this->ConvertirLesPdf($uploadedFiles); // très important pour les pdf externe
-
-            $fileUploader->fusionFichers($uploadedFiles,  $chemin . $nomFichier);
-
-            //envoie le pdf dans docuware
-            $this->genererPdfAc->copyToDWAcSoumis($nomFichier); // copier le fichier dans docuware
-
             $numeroVersionMaxBcSoumis = $this->acBcModel->findNumeroVersionMaxBcSoumis($accuseReceptionDto->numeroBc, $codeSociete);
 
             $bcSoumisDto = $this->bcSoumisFactory->hydrate($accuseReceptionDto, $numeroVersionMaxBcSoumis);
 
-            /** Envoie des information du bc dans le table bc_soumis */
-            $bcSoumis->setNomFichier($nomFichier);
-            $this->envoieBcDansBd($bcSoumis);
+            $this->acBcModel->enregistrerBcSoumis($bcSoumisDto);
 
             $this->notifySuccessSubmission($accuseReceptionDto->numeroDit);
         }

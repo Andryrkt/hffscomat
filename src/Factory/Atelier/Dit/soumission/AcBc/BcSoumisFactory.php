@@ -27,6 +27,7 @@ class BcSoumisFactory
         $dto->montantDevis   = $accuseReceptionDto->montantDevis;
         $dto->codeSociete    = $accuseReceptionDto->codeSociete;
         $dto->numeroVersion  = $numeroVersionMaxBcSoumis + 1;
+        $dto->nomFichier     = $accuseReceptionDto->nomFichierAcSoumis;
         $dto->statut         = 'Soumis à validation';
 
         return $dto;

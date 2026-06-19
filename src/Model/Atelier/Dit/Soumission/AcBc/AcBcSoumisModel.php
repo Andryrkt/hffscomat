@@ -3,7 +3,9 @@
 namespace App\Model\Atelier\Dit\Soumission\AcBc;
 
 use App\Dto\Atelier\Dit\soumission\AcBc\AccuseReceptionDto;
+use App\Dto\Atelier\Dit\soumission\AcBc\BcSoumisDto;
 use App\Factory\Atelier\Dit\soumission\AcBc\AccuseReceptionFactory;
+use App\Model\Informix\InsertQueryBuilder;
 use App\Model\Model;
 
 class AcBcSoumisModel extends Model
@@ -153,5 +155,41 @@ class AcBcSoumisModel extends Model
         $data = $this->connect->fetchScalarResults($result);
 
         return $this->convertirEnUtf8($data['version'] ?? 0);
+    }
+
+    /** 
+     * Enregistrer le BC soumis
+     * 
+     * @param BcSoumisDto $bcSoumisDto
+     * 
+     * @return void
+     */
+    public function enregistrerBcSoumis(BcSoumisDto $bcSoumisDto): void
+    {
+        // S'assurer que la connexion est ouverte
+        $this->connect->connect();
+        try {
+            // Construire la requête d'insertion et l'exécuter
+            $builder = new InsertQueryBuilder("{$this->dbIrium}:Informix.bc_soumis");
+            $builder->setData([
+                'numerodit'           => $bcSoumisDto->numeroDit,
+                'numerodevis'         => $bcSoumisDto->numeroDevis,
+                'numerobc'            => $bcSoumisDto->numeroBc,
+                'numeroversion'       => $bcSoumisDto->numeroVersion,
+                'datebc'              => $bcSoumisDto->dateBc->format('Y-m-d'),
+                'datedevis'           => $bcSoumisDto->dateDevis->format('Y-m-d'),
+                'montantdevis'        => $bcSoumisDto->montantDevis,
+                'dateheuresoumission' => $bcSoumisDto->dateSoumissionBc->format('Y-m-d H:i:s'),
+                'nomfichier'          => $bcSoumisDto->nomFichier,
+                'statut'              => $bcSoumisDto->statut,
+                'code_societe'        => $bcSoumisDto->codeSociete,
+            ]);
+            $result = $builder->build();
+
+            $this->connect->executeQuery($result['sql'], $result['params']);
+        } finally {
+            // ne fermez ici que si vous êtes sûr que c'est la dernière opération
+            $this->connect->close();
+        }
     }
 }
