@@ -18,36 +18,26 @@ class TraitementDeFichierService
 
     public function __construct(string $numDit)
     {
-        $this->pdfGenerator        = new GenererPdfAcSoumis();
-        $this->fileUploaderService = new FileUploaderService($_ENV['BASE_PATH_FICHIER']  . "/dit/$numDit/");
+        $baseDirDitFiles           = "{$_ENV['BASE_PATH_FICHIER']}/dit/{$numDit}";
+        $this->pdfGenerator        = new GenererPdfAcSoumis($baseDirDitFiles);
+        $this->fileUploaderService = new FileUploaderService($baseDirDitFiles);
         $this->fusionPdf           = $this->fileUploaderService->getFusionPdf();
     }
 
     /** 
+     * Méthode pour gérer le traitement des fichiers (géneration PDF + fusion PDF + envoi DW)
+     * 
      * @param AccuseReceptionDto $accuseReceptionDto Dto pour l'accusé de réception dans le PDF
-     * @param string             $acFileName         nom du PDF généré pour l'accusé de réception
      */
-    public function traitementDeFichier(AccuseReceptionDto $accuseReceptionDto, string $acFileName)
+    public function traitementDeFichier(AccuseReceptionDto $accuseReceptionDto)
     {
-        /** CREATION PDF */
         $this->pdfGenerator->genererPdfAc($accuseReceptionDto);
 
         $ficherAfusioner = $this->fileUploaderService->insertFileAtPosition($pathFichiers, $pathPageDeGarde, 0);
         $fichierConvertie = $this->ConvertirLesPdf($ficherAfusioner);
         $this->fusionPdf->mergePdfs($fichierConvertie, $pathPageDeGarde);
-        $fileName = "";
-        $this->pdfGenerator->copyToDWAcSoumis($fileName);
-    }
 
-    private function enregistrerPdf(DitFactureSoumisAValidationDto $dto)
-    {
-        $ditFactureSoumisAValidationModel = new DitFactureSoumisAValidationModel();
 
-        $orSoumisFact = $ditFactureSoumisAValidationModel->recupOrSoumisValidation($dto->numeroOr, $dto->numeroFact, $dto->codeSociete);
-        $statut = $this->affectationStatutFac($dto, $ditFactureSoumisAValidationModel);
-        $montantPdf = $this->montantpdf($dto, $statut, $orSoumisFact);
-        $estFactureConformAOr = $this->estFactureConformAOr($dto);
-
-        return $this->genererPdfFacture->GenererPdfFactureSoumisAValidation($dto, $montantPdf, $this->securityService->getDataService()->getUserMail(), $estFactureConformAOr);
+        $this->pdfGenerator->copyToDWAcSoumis($accuseReceptionDto->nomFichierAcSoumis);
     }
 }

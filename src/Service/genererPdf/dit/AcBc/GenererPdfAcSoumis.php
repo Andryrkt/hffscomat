@@ -10,12 +10,18 @@ use TCPDF;
 class GenererPdfAcSoumis extends GeneratePdf
 {
     use FormatageTrait;
+    private string $baseDirDitFiles;
+
+    public function __construct(string $baseDirDitFiles)
+    {
+        parent::__construct();
+
+        $this->baseDirDitFiles = $baseDirDitFiles;
+    }
 
     public function copyToDwAcSoumis(string $fileName)
     {
-        $cheminFichierDistant = $this->baseCheminDocuware . "BC ATELIER/$fileName";
-        $cheminDestinationLocal = $this->baseCheminDuFichier . "dit/ac_bc/$fileName";
-        $this->copyFile($cheminDestinationLocal, $cheminFichierDistant);
+        $this->copyFile("{$this->baseDirDitFiles}/$fileName", "{$this->baseCheminDocuware}BC ATELIER/{$fileName}");
     }
 
     /** 
@@ -80,6 +86,6 @@ class GenererPdfAcSoumis extends GeneratePdf
 
         $pdf->writeHTML($html, true, false, true, false, '');
 
-        $pdf->Output("{$_ENV['BASE_PATH_FICHIER']}/dit/{$accuseReceptionDto->numeroDit}/{$accuseReceptionDto->nomFichierAcSoumis}", "F");
+        $pdf->Output("{$this->baseDirDitFiles}/{$accuseReceptionDto->nomFichierAcSoumis}", "F");
     }
 }

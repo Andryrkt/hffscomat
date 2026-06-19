@@ -76,7 +76,7 @@ class AcBcValidationService
             $this->generateNameForAcSoumis($accuseReceptionDto);
 
             $traitementDeFichierService = new TraitementDeFichierService($accuseReceptionDto->numeroDit);
-            $traitementDeFichierService->traitementDeFichier($accuseReceptionDto, $accuseReceptionDto->nomFichierAcSoumis);
+            $traitementDeFichierService->traitementDeFichier($accuseReceptionDto);
 
             //crée le pdf
             $this->genererPdfAc->genererPdfAc($acSoumis, $numClientBcDevis, $numeroVersionMaxDit, $nomFichier);
