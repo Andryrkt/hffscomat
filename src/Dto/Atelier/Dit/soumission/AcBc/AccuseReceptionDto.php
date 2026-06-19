@@ -26,6 +26,7 @@ class AccuseReceptionDto
     public ?string $descriptionBc = null;
     public ?\DateTime $dateBc = null;
     public ?UploadedFile $pieceJoint01 = null;
+    public ?string $nomFichierAcSoumis = null;
 
     public function __construct()
     {

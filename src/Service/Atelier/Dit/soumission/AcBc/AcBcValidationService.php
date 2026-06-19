@@ -73,14 +73,10 @@ class AcBcValidationService
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $numeroVersionMaxBcSoumis = $this->acBcModel->findNumeroVersionMaxBcSoumis($accuseReceptionDto->numeroBc, $codeSociete);
-
-            $bcSoumisDto = $this->bcSoumisFactory->hydrate($accuseReceptionDto, $numeroVersionMaxBcSoumis);
-
-            $acFileName = $this->generateNameAcSoumis($accuseReceptionDto);
+            $this->generateNameForAcSoumis($accuseReceptionDto);
 
             $traitementDeFichierService = new TraitementDeFichierService($accuseReceptionDto->numeroDit);
-            $traitementDeFichierService->traitementDeFichier($accuseReceptionDto, $acFileName);
+            $traitementDeFichierService->traitementDeFichier($accuseReceptionDto, $accuseReceptionDto->nomFichierAcSoumis);
 
             //crée le pdf
             $this->genererPdfAc->genererPdfAc($acSoumis, $numClientBcDevis, $numeroVersionMaxDit, $nomFichier);
@@ -100,6 +96,10 @@ class AcBcValidationService
             //envoie le pdf dans docuware
             $this->genererPdfAc->copyToDWAcSoumis($nomFichier); // copier le fichier dans docuware
 
+            $numeroVersionMaxBcSoumis = $this->acBcModel->findNumeroVersionMaxBcSoumis($accuseReceptionDto->numeroBc, $codeSociete);
+
+            $bcSoumisDto = $this->bcSoumisFactory->hydrate($accuseReceptionDto, $numeroVersionMaxBcSoumis);
+
             /** Envoie des information du bc dans le table bc_soumis */
             $bcSoumis->setNomFichier($nomFichier);
             $this->envoieBcDansBd($bcSoumis);
@@ -108,10 +108,9 @@ class AcBcValidationService
         }
     }
 
-    private function generateNameAcSoumis(AccuseReceptionDto $accuseReceptionDto): string
+    private function generateNameForAcSoumis(AccuseReceptionDto $accuseReceptionDto): void
     {
-        $numeroVersionMaxDit = $this->acBcModel->findNumeroVersionMaxParDit($accuseReceptionDto->numeroDit, $accuseReceptionDto->codeSociete) + 1;
         $suffix = $this->ditDevisSoumisAValidationModel->constructeurPieceMagasin($accuseReceptionDto->numeroDevis, $accuseReceptionDto->codeSociete)[0]['retour'];
-        return "bc_{$accuseReceptionDto->numeroClient}_{$accuseReceptionDto->numeroDevis}-{$numeroVersionMaxDit}#{$suffix}.pdf";
+        $accuseReceptionDto->nomFichierAcSoumis = "bc_{$accuseReceptionDto->numeroClient}_{$accuseReceptionDto->numeroDevis}-{$accuseReceptionDto->numeroVersionMaxByDit}#{$suffix}.pdf";
     }
 }

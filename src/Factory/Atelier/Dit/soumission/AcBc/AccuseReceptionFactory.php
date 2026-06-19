@@ -28,7 +28,7 @@ class AccuseReceptionFactory
         $dto->montantDevis          = (float) $data["montant"];
         $dto->dateDevis             = new \DateTime($data["date_soumission"]);
         $dto->codeSociete           = $data["code_societe"];
-        $dto->numeroVersionMaxByDit = (int) $data["version_bcs"];
+        $dto->numeroVersionMaxByDit = (int) $data["version_bcs"] + 1;
 
         return $dto;
     }
