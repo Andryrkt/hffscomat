@@ -124,7 +124,7 @@ class AcBcSoumisModel extends Model
 
     public function findNumeroVersionMaxBcSoumis(string $numeroBc, string $codeSociete): int
     {
-        $statement = "SELECT FIRST 1 MAX(numero_version) as version 
+        $statement = "SELECT FIRST 1 MAX(numeroversion) as version 
         FROM {$this->dbIrium}:Informix.bc_soumis b 
         WHERE b.numerobc = '$numeroBc' AND b.code_societe = '$codeSociete'";
 
@@ -132,6 +132,6 @@ class AcBcSoumisModel extends Model
 
         $data = $this->connect->fetchScalarResults($result);
 
-        return array_column($this->convertirEnUtf8($data), 'version')[0] ?? 0;
+        return $this->convertirEnUtf8($data['version'] ?? 0);
     }
 }
