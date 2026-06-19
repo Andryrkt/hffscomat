@@ -21,4 +21,6 @@ class PlanningAtelierSearchDto
     public ?string $agenceEm = null;
 
     public ?array $serviceDeb = [];
+
+    public ?bool $getBackOrder = false;
 }
