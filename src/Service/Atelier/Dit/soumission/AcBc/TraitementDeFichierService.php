@@ -30,8 +30,7 @@ class TraitementDeFichierService
     public function traitementDeFichier(AccuseReceptionDto $accuseReceptionDto, string $acFileName)
     {
         /** CREATION PDF */
-        $pathPageDeGarde = $this->enregistrerPdf($dto);
-        $pathFichiers = $this->enregistrerFichiers($form, $dto);
+        $this->pdfGenerator->genererPdfAc($accuseReceptionDto);
 
         $ficherAfusioner = $this->fileUploaderService->insertFileAtPosition($pathFichiers, $pathPageDeGarde, 0);
         $fichierConvertie = $this->ConvertirLesPdf($ficherAfusioner);

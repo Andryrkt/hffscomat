@@ -42,50 +42,26 @@ class GenererPdfAcSoumis extends GeneratePdf
 
         $pdf->SetTextColor(0, 0, 0);
         $pdf->SetXY(11, 2);
-        $pdf->Cell(35, 6, "AR-HFF-{$accuseReceptionDto->numeroVersionMaxByDit}", 0, 0, 'L');
-        $pdf->setY(20);
+        $pdf->Cell(35, 6, "AR-{$accuseReceptionDto->codeSociete}-{$accuseReceptionDto->numeroVersionMaxByDit}", 0, 0, 'L');
+        $pdf->setY(25);
         $html = "
         <style>
-            table {
-                width: 100%;
-            }
-            .left {
-                text-align: left;
-                font-size: 11px;
-            }
-            .right {
-                text-align: right;
-                font-size: 11px;
-            }
-            h1 {
-                text-align: center;
-                font-size: 18px;
-            }
-            p {
-                text-align: justify;
-                line-height: 1.5;
-            }
-            .footer {
-                text-align: center;
-                font-size: 10px;
-            }
+            table {width: 100%;}
+            h1 {text-align: center;font-size: 18px;}
+            p {text-align: justify;line-height: 1.5;}
         </style>
         <table>
             <tr>
-                <td class='left'>
-                    <b>HENRI FRAISE FILS & CIE</b><br>
-                    BP 28, 90 Làlana Ravoninahitriniarivo,<br>
-                    Antananarivo 101 - Madagascar<br>
-                    (+261) 20 22 227 21
+                <td>
+                    <b>SCOMAT</b><br>
+                    Grewals Lane, Pailles,<br>
+                    Mauritius<br>
+                    +(230) 206 0444
                 </td>
-                <td class='right'>
-                    <b>{$accuseReceptionDto->dateCreation->format('d/m/Y')}</b>
-                </td>
+                <td style=\"text-align: right; font-weight: bold; font-size: 11px;\">{$accuseReceptionDto->dateCreation->format('d/m/Y')}</td>
             </tr>
         </table>
-
         <h1>ACCUSE DE RECEPTION</h1>
-
         <p>
             <b>A l'attention de {$accuseReceptionDto->nomClient} </b> <br>
             <b>{$accuseReceptionDto->emailClient}</b><br>
@@ -95,23 +71,15 @@ class GenererPdfAcSoumis extends GeneratePdf
             <b>N°BC : </b> {$accuseReceptionDto->numeroBc} <br>
             <b>Date BC : </b> {$accuseReceptionDto->dateBc->format('d/m/Y')}
         </p>
-        <p>
-            Madame, Monsieur,<br><br>
-            Nous accusons réception de votre bon de commande, portant sur <br>{$accuseReceptionDto->descriptionBc}.<br><br>
-            Cette commande fait suite à : <br>
-            Devis : {$accuseReceptionDto->numeroDevis} ({$accuseReceptionDto->numeroDit}) du {$accuseReceptionDto->dateDevis->format('d/m/Y')}<br>
-            Montant HT : {$accuseReceptionDto->getMontantDevisFormatted()} {$accuseReceptionDto->devise}. <br>
-            Nous confirmons que votre commande a été enregistrée.<br><br>
-            Pour toute question ou demande d'information complémentaire concernant votre commande ou les travaux à réaliser, nous restons à votre disposition. Vous pouvez nous contacter par email ou par téléphone.<br><br>
-            Nous vous remercions pour votre confiance et restons à votre service pour toute autre demande.<br><br>
-            Dans l'attente, nous vous prions d'agréer, Madame, Monsieur, l'expression de nos salutations distinguées.<br>
-        </p>";
+        <p>Madame, Monsieur,</p>
+        <p>Nous accusons réception de votre bon de commande, portant sur <br>{$accuseReceptionDto->descriptionBc}.</p>
+        <p>Cette commande fait suite à : <br>Devis : {$accuseReceptionDto->numeroDevis} ({$accuseReceptionDto->numeroDit}) du {$accuseReceptionDto->dateDevis->format('d/m/Y')}<br>Montant HT : {$accuseReceptionDto->getMontantDevisFormatted()} {$accuseReceptionDto->devise}. <br>Nous confirmons que votre commande a été enregistrée.</p>
+        <p>Pour toute question ou demande d'information complémentaire concernant votre commande ou les travaux à réaliser, nous restons à votre disposition. Vous pouvez nous contacter par email ou par téléphone.</p>
+        <p>Nous vous remercions pour votre confiance et restons à votre service pour toute autre demande.</p>
+        <p>Dans l'attente, nous vous prions d'agréer, Madame, Monsieur, l'expression de nos salutations distinguées.</p>";
 
-        // Écriture du contenu HTML dans le PDF
         $pdf->writeHTML($html, true, false, true, false, '');
 
-        $pdf->Image("{$_ENV['BASE_PATH_LONG']}/Views/assets/footer.png", 27, 265, 160, '', 'PNG');
-
-        $pdf->Output("{$_ENV['BASE_PATH_FICHIER']}/dit/ac_bc/{$accuseReceptionDto->numeroDit}/{$accuseReceptionDto->nomFichierAcSoumis}", 'I');
+        $pdf->Output("{$_ENV['BASE_PATH_FICHIER']}/dit/{$accuseReceptionDto->numeroDit}/{$accuseReceptionDto->nomFichierAcSoumis}", "F");
     }
 }
