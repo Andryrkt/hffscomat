@@ -12,15 +12,16 @@ class TraitementDeFichierService
 {
     use PdfConversionTrait;
 
+    private string $baseDirDitFiles;
     private FusionPdf $fusionPdf;
     private GenererPdfAcSoumis $pdfGenerator;
     private FileUploaderService $fileUploaderService;
 
     public function __construct(string $numDit)
     {
-        $baseDirDitFiles           = "{$_ENV['BASE_PATH_FICHIER']}/dit/{$numDit}";
-        $this->pdfGenerator        = new GenererPdfAcSoumis($baseDirDitFiles);
-        $this->fileUploaderService = new FileUploaderService($baseDirDitFiles);
+        $this->baseDirDitFiles     = "{$_ENV['BASE_PATH_FICHIER']}/dit/{$numDit}";
+        $this->pdfGenerator        = new GenererPdfAcSoumis($this->baseDirDitFiles);
+        $this->fileUploaderService = new FileUploaderService($this->baseDirDitFiles);
         $this->fusionPdf           = $this->fileUploaderService->getFusionPdf();
     }
 
@@ -31,13 +32,23 @@ class TraitementDeFichierService
      */
     public function traitementDeFichier(AccuseReceptionDto $accuseReceptionDto)
     {
+        // Géneration PDF
         $this->pdfGenerator->genererPdfAc($accuseReceptionDto);
 
-        $ficherAfusioner = $this->fileUploaderService->insertFileAtPosition($pathFichiers, $pathPageDeGarde, 0);
-        $fichierConvertie = $this->ConvertirLesPdf($ficherAfusioner);
-        $this->fusionPdf->mergePdfs($fichierConvertie, $pathPageDeGarde);
+        // Nom de fichier avec chemin de dossier
+        $nomFichierAc = "{$this->baseDirDitFiles}/{$accuseReceptionDto->nomFichierAcSoumis}";
 
+        // Upload + Réarrangement des fichiers PDF
+        $uploadedFilePath = $this->fileUploaderService->uploadFileSansName($accuseReceptionDto->pieceJoint01, $accuseReceptionDto->nomFichierAcSoumis);
+        $fichiersAfusioner = $this->fileUploaderService->insertFileAtPosition([$uploadedFilePath], $nomFichierAc, 1);
 
+        // Conversion PDF
+        $fichierConvertis = $this->ConvertirLesPdf($fichiersAfusioner);
+
+        // Fusion PDF
+        $this->fusionPdf->mergePdfs($fichierConvertis, $nomFichierAc);
+
+        // Envoi dans DW
         $this->pdfGenerator->copyToDWAcSoumis($accuseReceptionDto->nomFichierAcSoumis);
     }
 }

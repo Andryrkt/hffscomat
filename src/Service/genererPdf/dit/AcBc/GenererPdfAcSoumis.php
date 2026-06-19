@@ -86,6 +86,9 @@ class GenererPdfAcSoumis extends GeneratePdf
 
         $pdf->writeHTML($html, true, false, true, false, '');
 
+        // Création du dossier s'il n'existe pas
+        if (!is_dir($this->baseDirDitFiles)) mkdir($this->baseDirDitFiles, 0777, true);
+
         $pdf->Output("{$this->baseDirDitFiles}/{$accuseReceptionDto->nomFichierAcSoumis}", "F");
     }
 }

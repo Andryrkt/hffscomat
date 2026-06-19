@@ -314,7 +314,7 @@ class FileUploaderService
             throw new InvalidArgumentException("Type de fichier non autorisé : {$file->getClientOriginalName()}.");
         }
 
-        $destination = $this->targetDirectory . $pathFichier;
+        $destination = rtrim($this->targetDirectory, '/') . '/' . $pathFichier;
 
         try {
             $file->move($destination, $fileName);

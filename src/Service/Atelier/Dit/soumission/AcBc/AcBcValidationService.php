@@ -78,6 +78,8 @@ class AcBcValidationService
             $traitementDeFichierService = new TraitementDeFichierService($accuseReceptionDto->numeroDit);
             $traitementDeFichierService->traitementDeFichier($accuseReceptionDto);
 
+            dd("Traitement de fichier terminé");
+
             //crée le pdf
             $this->genererPdfAc->genererPdfAc($acSoumis, $numClientBcDevis, $numeroVersionMaxDit, $nomFichier);
 
