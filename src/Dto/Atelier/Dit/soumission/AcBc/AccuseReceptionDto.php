@@ -20,7 +20,6 @@ class AccuseReceptionDto
     public ?string $emailClient = null;
     public ?string $numeroBc = null;
     public ?string $descriptionBc = null;
-    public int $numeroVersion = 1;
     public ?\DateTime $dateBc = null;
     public ?UploadedFile $pieceJoint01 = null;
 

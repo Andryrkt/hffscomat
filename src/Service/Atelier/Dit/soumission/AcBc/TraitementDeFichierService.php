@@ -3,6 +3,7 @@
 namespace App\Service\Atelier\Dit\soumission\AcBc;
 
 use App\Controller\Traits\PdfConversionTrait;
+use App\Dto\Atelier\Dit\soumission\AcBc\AccuseReceptionDto;
 use App\Service\fichier\FileUploaderService;
 use App\Service\FusionPdf;
 use App\Service\genererPdf\dit\AcBc\GenererPdfAcSoumis;
@@ -15,14 +16,18 @@ class TraitementDeFichierService
     private GenererPdfAcSoumis $pdfGenerator;
     private FileUploaderService $fileUploaderService;
 
-    public function __construct()
+    public function __construct(string $numDit)
     {
         $this->pdfGenerator        = new GenererPdfAcSoumis();
-        $this->fileUploaderService = new FileUploaderService($_ENV['BASE_PATH_FICHIER']  . '/dit/ac_bc/');
+        $this->fileUploaderService = new FileUploaderService($_ENV['BASE_PATH_FICHIER']  . "/dit/$numDit/");
         $this->fusionPdf           = $this->fileUploaderService->getFusionPdf();
     }
 
-    public function traitementDeFichier(DitFactureSoumisAValidationDto $dto, FormInterface $form)
+    /** 
+     * @param AccuseReceptionDto $accuseReceptionDto Dto pour l'accusé de réception dans le PDF
+     * @param string             $acFileName         nom du PDF généré pour l'accusé de réception
+     */
+    public function traitementDeFichier(AccuseReceptionDto $accuseReceptionDto, string $acFileName)
     {
         /** CREATION PDF */
         $pathPageDeGarde = $this->enregistrerPdf($dto);

@@ -3,16 +3,27 @@
 namespace App\Service\Atelier\Dit\soumission\AcBc;
 
 use App\Dto\Atelier\Dit\soumission\AcBc\AccuseReceptionDto;
+use App\Factory\Atelier\Dit\soumission\AcBc\BcSoumisFactory;
+use App\Model\Atelier\Dit\Soumission\AcBc\AcBcSoumisModel;
+use App\Model\Atelier\Dit\Soumission\Devis\DitDevisSoumisAValidationModel;
 use App\Service\historiqueOperation\Atelier\Dit\Bc\HistoriqueOperationBCService;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\Request;
 
 class AcBcValidationService
 {
+    private AcBcSoumisModel $acBcModel;
+    private BcSoumisFactory $bcSoumisFactory;
     private HistoriqueOperationBCService $historiqueOperation;
+    private DitDevisSoumisAValidationModel $ditDevisSoumisAValidationModel;
 
-    public function __construct(EntityManagerInterface $em)
+    public function __construct(EntityManagerInterface $em, AcBcSoumisModel $acBcModel)
     {
-        $this->historiqueOperation = new HistoriqueOperationBCService($em);
+        $this->acBcModel                  = $acBcModel;
+        $this->historiqueOperation        = new HistoriqueOperationBCService($em);
+        $this->bcSoumisFactory            = new BcSoumisFactory();
+        $this->ditDevisSoumisAValidationModel = new DitDevisSoumisAValidationModel();
     }
 
     /** 
@@ -50,9 +61,57 @@ class AcBcValidationService
      * 
      * @return void
      */
-    public function notifySuccessSubmission(string $numDit)
+    private function notifySuccessSubmission(string $numDit)
     {
         $message = "Le bon de commande et l'accusé de réception ont été soumis avec succès.";
         $this->historiqueOperation->sendNotificationCreation($message, $numDit, 'dit_liste', true);
+    }
+
+    public function submitForm(FormInterface $form, Request $request, AccuseReceptionDto $accuseReceptionDto, string $codeSociete)
+    {
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $numeroVersionMaxBcSoumis = $this->acBcModel->findNumeroVersionMaxBcSoumis($accuseReceptionDto->numeroBc, $codeSociete);
+
+            $bcSoumisDto = $this->bcSoumisFactory->hydrate($accuseReceptionDto, $numeroVersionMaxBcSoumis);
+
+            $acFileName = $this->generateNameAcSoumis($accuseReceptionDto);
+
+            $traitementDeFichierService = new TraitementDeFichierService($accuseReceptionDto->numeroDit);
+            $traitementDeFichierService->traitementDeFichier($accuseReceptionDto, $acFileName);
+
+            //crée le pdf
+            $this->genererPdfAc->genererPdfAc($acSoumis, $numClientBcDevis, $numeroVersionMaxDit, $nomFichier);
+
+            //fusionne le pdf
+            $chemin = $_ENV['BASE_PATH_FICHIER']  . "/dit/$numDit/";
+            $fileUploader = new FileUploaderService($chemin);
+            $file = $form->get('pieceJoint01')->getData();
+
+            $uploadedFilePath = $fileUploader->uploadFileSansName($file, $nomFichier);
+            $uploadedFiles = $fileUploader->insertFileAtPosition([$uploadedFilePath], $chemin . $nomFichier, count([$uploadedFilePath]));
+
+            $this->ConvertirLesPdf($uploadedFiles); // très important pour les pdf externe
+
+            $fileUploader->fusionFichers($uploadedFiles,  $chemin . $nomFichier);
+
+            //envoie le pdf dans docuware
+            $this->genererPdfAc->copyToDWAcSoumis($nomFichier); // copier le fichier dans docuware
+
+            /** Envoie des information du bc dans le table bc_soumis */
+            $bcSoumis->setNomFichier($nomFichier);
+            $this->envoieBcDansBd($bcSoumis);
+
+            $this->notifySuccessSubmission($accuseReceptionDto->numeroDit);
+        }
+    }
+
+    private function generateNameAcSoumis(AccuseReceptionDto $accuseReceptionDto): string
+    {
+        $numeroVersionMaxDit = $this->acBcModel->findNumeroVersionMaxParDit($accuseReceptionDto->numeroDit, $accuseReceptionDto->codeSociete) + 1;
+        $suffix = $this->ditDevisSoumisAValidationModel->constructeurPieceMagasin($accuseReceptionDto->numeroDevis, $accuseReceptionDto->codeSociete)[0]['retour'];
+        return "bc_{$accuseReceptionDto->numeroClient}_{$accuseReceptionDto->numeroDevis}-{$numeroVersionMaxDit}#{$suffix}.pdf";
     }
 }
