@@ -42,6 +42,7 @@ class AcBcSoumisModel extends Model
                     dsav.internet_externe AS interne_externe,
                     dsav.numero_client as numero_client,
                     '$codeSociete' as code_societe,
+                    dsav.version_bcs,
                     CASE
                         WHEN cst.nom = 'ZDI-FORFAIT' AND itv.nb > 0
                         THEN first_itv.montantItv
@@ -72,7 +73,8 @@ class AcBcSoumisModel extends Model
                     d.numeroVersion,
                     d.devise,
                     dit.internet_externe,
-                    dit.numero_client
+                    dit.numero_client,
+                    COALESCE(b.version, 0) AS version_bcs
                 FROM {$this->dbIrium}:Informix.devis_soumis_a_validation d
                 JOIN {$this->dbIrium}:Informix.demande_intervention dit
                     ON dit.numero_demande_dit = d.numeroDit
@@ -90,6 +92,16 @@ class AcBcSoumisModel extends Model
                     ON m.numeroDit = d.numeroDit
                     AND m.code_societe = d.code_societe
                     AND m.maxVersion = d.numeroVersion
+                LEFT JOIN (
+                    SELECT 
+                        numerodit,
+                        code_societe,
+                        MAX(numeroversion) AS version
+                    FROM {$this->dbIrium}:Informix.bc_soumis
+                    GROUP BY numerodit, code_societe
+                ) b
+                    ON b.numerodit = d.numeroDit
+                    AND b.code_societe = d.code_societe
                 WHERE d.statut LIKE 'Valid%' AND d.statut LIKE '%atelier'";
     }
 
@@ -135,27 +147,6 @@ class AcBcSoumisModel extends Model
         $statement = "SELECT FIRST 1 MAX(numeroversion) as version 
         FROM {$this->dbIrium}:Informix.bc_soumis b 
         WHERE b.numerobc = '$numeroBc' AND b.code_societe = '$codeSociete'";
-
-        $result = $this->connect->executeQuery($statement);
-
-        $data = $this->connect->fetchScalarResults($result);
-
-        return $this->convertirEnUtf8($data['version'] ?? 0);
-    }
-
-    /** 
-     * Méthode pour retourner le numéro de version maximum du BC pour un DIT
-     * 
-     * @param string $numDit      numéro du DIT
-     * @param string $codeSociete code société
-     * 
-     * @return int
-     */
-    public function findNumeroVersionMaxParDit(string $numDit, string $codeSociete): int
-    {
-        $statement = "SELECT FIRST 1 MAX(numeroversion) as version 
-        FROM {$this->dbIrium}:Informix.bc_soumis b
-        WHERE b.numerodit = '$numDit' AND b.code_societe = '$codeSociete'";
 
         $result = $this->connect->executeQuery($statement);
 

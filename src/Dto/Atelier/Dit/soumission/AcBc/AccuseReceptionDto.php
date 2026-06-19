@@ -2,15 +2,19 @@
 
 namespace App\Dto\Atelier\Dit\soumission\AcBc;
 
+use App\Controller\Traits\FormatageTrait;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class AccuseReceptionDto
 {
+    use FormatageTrait;
+
     public ?string $numeroDit = null;
     public ?string $numeroDevis = null;
     public ?string $statutDevis = null;
     public ?\DateTime $dateDevis = null; // date de soumission de devis
     public ?\DateTime $dateCreation = null;
+    public int $numeroVersionMaxByDit = 0;
     public float $montantDevis = 0.0;
     public ?string $devise = null;
     public ?string $interneExterne = null;
@@ -26,5 +30,13 @@ class AccuseReceptionDto
     public function __construct()
     {
         $this->dateCreation = new \DateTime();
+    }
+
+    /**
+     * Get the value of montantDevis formatted
+     */
+    public function getMontantDevisFormatted(): string
+    {
+        return $this->formatNumberGeneral($this->montantDevis, ' ', '.', 2);
     }
 }
