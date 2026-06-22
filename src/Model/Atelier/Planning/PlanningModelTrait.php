@@ -216,7 +216,7 @@ trait PlanningModelTrait
     {
         if ($dto->orBackOrder)
         {
-            return $this->selectCond->in('cast(seor_numor ||'-'|| sitv_interv as varchar(10))', $orItvBack);
+            return $this->selectCond->in("cast(seor_numor ||'-'|| sitv_interv as varchar(10))", $orItvBack);
         }
         if (!empty($orsValides))
         {
