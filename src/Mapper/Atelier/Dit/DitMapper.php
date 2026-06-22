@@ -171,8 +171,8 @@ class DitMapper
         // $dto->date_depot_pdf_dw =  $ditInformations['date_depot_pdf_dw'] ?? null;
 
         //Agence et service debiteurs
-        $dto->agence = $em->getRepository(Agence::class)->find($ditInformations["agence_debiteur_id"]);
-        $dto->service = $em->getRepository(Service::class)->find($ditInformations["service_debiteur_id"]);
+        $dto->agence = $ditInformations["agence_debiteur_id"] ? $em->getRepository(Agence::class)->find($ditInformations["agence_debiteur_id"]) : null;
+        $dto->service = $ditInformations["service_debiteur_id"] ? $em->getRepository(Service::class)->find($ditInformations["service_debiteur_id"]) : null;
 
         $dto->numParc = $ditInformations['numero_parc'] ?? null;
         $dto->numSerie = $ditInformations['numero_serie'] ?? null;
