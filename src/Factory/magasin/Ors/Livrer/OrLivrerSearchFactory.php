@@ -29,7 +29,7 @@ class OrLivrerSearchFactory
             // Si l'utilisateur n'a pas d'agence et service autorisé, on prend son agence par défaut
             $codeAgence = empty($agenceServiceAutorises) ? [$this->securityService->getCodeAgenceUser()] : array_column($agenceServiceAutorises, 'agence_code');
 
-            $agenceUser = TableauEnStringService::TableauEnString(',', $codeAgence);
+            $agenceUser = TableauEnStringService::TableauEnString(',', $codeAgence, '');
         }
 
         $dto = new OrLivrerSearchDto();

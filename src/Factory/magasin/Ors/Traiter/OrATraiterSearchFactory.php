@@ -19,7 +19,7 @@ class OrATraiterSearchFactory
 
     public function initialisationSearch(): OrATraiterSearchDto
     {
-        $agenceUser = "''";
+        $agenceUser = "";
 
         // Vérifier la permission de voir tous les données
         $multisuccursale = $this->securityService->verifierPermission(SecurityService::PERMISSION_MULTI_SUCCURSALE);
@@ -30,7 +30,7 @@ class OrATraiterSearchFactory
             // Si l'utilisateur n'a pas d'agence et service autorisé, on prend son agence par défaut
             $codeAgence = empty($agenceServiceAutorises) ? [$this->securityService->getCodeAgenceUser()] : array_column($agenceServiceAutorises, 'agence_code');
 
-            $agenceUser = TableauEnStringService::TableauEnString(',', $codeAgence);
+            $agenceUser = TableauEnStringService::TableauEnString(',', $codeAgence, '');
         }
 
         $dto = new OrATraiterSearchDto();

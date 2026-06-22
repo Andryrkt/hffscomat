@@ -8,6 +8,7 @@ class SelectWhereCondition
     {
         $value = $value ? trim($value) : null;
         if (!$value) return '';
+        
         return "AND $column = '$value'";
     }
 
