@@ -58,7 +58,9 @@ class DitModel extends Model
         (select nvl(sum(mofi_mt),0) from mat_ofi where mofi_classe = 40 and mofi_ssclasse in (21,22,23) and mofi_numbil = mbil_numbil and mofi_typmt = 'R') as ChargeEntretien
 
       FROM {$this->dbIps}:Informix.MAT_MAT
-      LEFT JOIN {$this->dbIps}:Informix.mat_bil on mbil_nummat = mmat_nummat and mbil_dateclot <= '01/01/1900' and mbil_dateclot = '12/31/1899'
+      LEFT JOIN {$this->dbIps}:Informix.mat_bil on mbil_nummat = mmat_nummat 
+      --and mbil_dateclot <= '01/01/1900' 
+      --and mbil_dateclot = '12/31/1899'
       WHERE MMAT_ETSTOCK in ('ST','AT', '--')
       AND MMAT_AFFECT <> 'CAS'
       " . $conditionNummat . "
@@ -533,10 +535,10 @@ class DitModel extends Model
             sum(sliv_qteliv) as quantiteLivree,
             sum(slor_qterel) as quantiteReliquat,
             sum(slor_qterea) as qteLiv
-            from ips_test:informix.sav_lor 
-            inner join ips_test:informix.sav_eor on seor_soc = slor_soc and seor_succ = slor_succ 
+            from {$this->dbIrium}:informix.sav_lor 
+            inner join {$this->dbIrium}:informix.sav_eor on seor_soc = slor_soc and seor_succ = slor_succ 
             and seor_numor = slor_numor
-            left join ips_test:informix.sav_liv on sliv_soc = slor_soc and sliv_succ = slor_succ and sliv_numor = seor_numor and slor_nolign = sliv_nolign
+            left join {$this->dbIrium}:informix.sav_liv on sliv_soc = slor_soc and sliv_succ = slor_succ and sliv_numor = seor_numor and slor_nolign = sliv_nolign
             
             where 
             slor_soc = 'HF'

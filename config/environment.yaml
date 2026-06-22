@@ -10,13 +10,13 @@ app:
 database:
     host: 'localhost'
     port: 3306
-    name: 'scomat'
+    name: 'hffscomat'
     user: 'root'
     password: ''
 
 # Configuration des chemins
 paths:
-    base_path: '/scomat'
+    base_path: '/hffscomat'
     views_dir: '%kernel.project_dir%/Views/templates'
     public_dir: '%kernel.project_dir%/public'
 
