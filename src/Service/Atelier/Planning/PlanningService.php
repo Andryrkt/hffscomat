@@ -27,7 +27,7 @@ class PlanningService
      * @param PlanningSearchDto $dto
      * @return PlanningMaterielDto[]
      */
-    public function getPlanningMaterielData(PlanningSearchDto $dto): array
+    public function getPlanningMaterielData(PlanningSearchDto $dto, string $codeSociete): array
     {
         ['num_ors' => $orsValides] = $this->planningModel->getNumeroOrValider($dto);
         ['num_ors' => $orsSoumis] = $this->planningModel->getOrsSoumis();
@@ -37,7 +37,8 @@ class PlanningService
             $orsValides,
             $orsSoumis,
             $numOrItvBack,
-            $dto
+            $dto,
+            $codeSociete
         );
 
         $dtos = $this->mapper->toDtoArray($rawData, $numOrItvBack);

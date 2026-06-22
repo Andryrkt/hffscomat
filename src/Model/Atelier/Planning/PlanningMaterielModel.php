@@ -802,7 +802,7 @@ class PlanningMaterielModel extends Model
         return $this->connect->fetchResults($result);
     }
 
-    public function getMaterielListCount(array $numOrs, array $orSoumis, array $orItvBack, PlanningSearchDto $searchDto)
+    public function getMaterielListCount(array $numOrs, array $orSoumis, array $orItvBack, PlanningSearchDto $searchDto, string $codeSoc): int
     {
         $statement = " SELECT 
                 COUNT( distinct seor_numor ||'-'||sitv_interv )  as nb_numOR,
@@ -810,16 +810,7 @@ class PlanningMaterielModel extends Model
                 COUNT ( slor_constp) as nb_ligne
             FROM  sav_eor,sav_lor as C , sav_itv as D, agr_succ, agr_tab ser, mat_mat, agr_tab ope, outer agr_tab sec, outer neg_lig
             WHERE seor_numor = slor_numor
-            AND seor_soc = 'HF'
-            AND seor_serv <> 'DEV'
-            AND sitv_numor = slor_numor 
-            AND sitv_interv = slor_nogrp/100 
-            AND (seor_succ = asuc_num)
-            AND (seor_servcrt = ser.atab_code AND ser.atab_nom = 'SER')
-            AND (sitv_typitv = sec.atab_code AND sec.atab_nom = 'TYI')
-            AND (seor_ope = ope.atab_code AND ope.atab_nom = 'OPE')     
-            {$this->getFactureCondition($searchDto)}    
-            AND mmat_marqmat NOT like 'z%' AND mmat_marqmat NOT like 'Z%'
+            AND seor_soc = '$codeSoc' AND mmat_marqmat NOT like 'Z%'
             AND sitv_servcrt IN ('ATE','FOR','GAR','MAN','CSP','MAS', 'LR6', 'LST')
             AND (seor_nummat = mmat_nummat)
             --AND slor_constp NOT like '%ZDI%'

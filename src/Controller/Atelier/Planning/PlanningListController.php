@@ -45,14 +45,14 @@ class PlanningListController extends Controller
      */
     public function listPlanning(Request $request)
     {
-
+        $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
         $dto = $this->getSessionService()->get('planning_search_criteria');
         if (!$dto)
             $dto = $this->searchDto;
         $form = $this->getFormFactory()->createBuilder(
             PlanningSearchType::class,
             null,
-            ['method' => 'GET']
+            ['method' => 'GET', 'codeSociete' => $codeSociete]
         )->getForm();
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid())
