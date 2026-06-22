@@ -76,6 +76,22 @@ class DitModel extends Model
         return $this->convertirEnUtf8($data);
     }
 
+    public function getNumDitByNumOr($numOr, $codeSociete)
+    {
+        $statement = "SELECT DISTINCT
+                numero_demande_dit
+            FROM {$this->dbIrium}:Informix.demande_intervention
+            WHERE numero_or = '$numOr' 
+            AND code_societe = '$codeSociete'";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->connect->fetchResults($result);
+
+        $data = $this->convertirEnUtf8($data);
+        return $data[0]['numero_demande_dit'] ?? null;
+    }
+
     /**
      * Recupe tous les numéro et nom des clients
      *

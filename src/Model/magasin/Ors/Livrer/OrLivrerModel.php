@@ -59,13 +59,13 @@ class OrLivrerModel extends Model
 	                WHEN slor_typlig = 'P' THEN (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec)
 	                    WHEN slor_typlig IN ('F','M','U','C') THEN slor_qterea
 	                    END) = sum(slor_qteres + slor_qterea)
-	                THEN 'COMPLET'
+	                THEN 'ORs COMPLET'
 	                WHEN sum(slor_qteres) > 0 AND
 	                    sum(CASE
 	                        WHEN slor_typlig = 'P' THEN (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec)
 	                        WHEN slor_typlig IN ('F','M','U','C') THEN slor_qterea
 	                            END) > sum(slor_qteres + slor_qterea)
-	                THEN 'INCOMPLET'
+	                THEN 'ORs INCOMPLETS'
             	END as situation
             	, situ.slor_numor as numero_or
             
@@ -106,7 +106,7 @@ class OrLivrerModel extends Model
 			                WHEN slor_typlig = 'P' THEN (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec)
 			                    WHEN slor_typlig IN ('F','M','U','C') THEN slor_qterea
 			                    END) = sum(slor_qteres + slor_qterea)
-			            THEN 'ORs COMPLET''
+			            THEN 'ORs COMPLET'
 			            WHEN
 			            sum(slor_qteres) > 0 AND
 			            sum(CASE

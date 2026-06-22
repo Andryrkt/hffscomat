@@ -12,13 +12,11 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 class TraitementFichierService
 {
     private HistoriqueOperationRIService $historiqueOperation;
-    private string $cheminDeBase;
     private TraitementDeFichier $traitementDeFichier;
 
     public function __construct(EntityManagerInterface $em)
     {
         $this->historiqueOperation = new HistoriqueOperationRIService($em);
-        $this->cheminDeBase = $_ENV['BASE_PATH_FICHIER'] . '/vri/';
         $this->traitementDeFichier = new TraitementDeFichier();
     }
 
@@ -51,15 +49,16 @@ class TraitementFichierService
 
         try {
             $originalFileName = $this->genererNomFichier($dto->numeroOr, $firstItv, $file);
-            $this->traitementDeFichier->upload($file, $this->cheminDeBase, $originalFileName);
+            $cheminDeBase = $_ENV['BASE_PATH_FICHIER'] . '/dit/'. $dto->numeroDit .'/';
+            $this->traitementDeFichier->upload($file, $cheminDeBase, $originalFileName);
             $nomDesFichiers[] = $originalFileName;
-            $sourcePath = $this->cheminDeBase . $originalFileName;
+            $sourcePath = $cheminDeBase . $originalFileName;
 
             // On copie le fichier pour les autres ITVs
             for ($i = 1; $i < count($dto->itvCoches); $i++) {
                 $itv = $dto->itvCoches[$i];
                 $newFileName = $this->genererNomFichier($dto->numeroOr, $itv, $file);
-                $destinationPath = $this->cheminDeBase . $newFileName;
+                $destinationPath = $cheminDeBase . $newFileName;
                 if (copy($sourcePath, $destinationPath)) {
                     $nomDesFichiers[] = $newFileName;
                 } else {

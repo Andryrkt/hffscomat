@@ -4,11 +4,18 @@ namespace App\Service\docuware;
 
 class CopyDocuwareService
 {
-    public function copyCsvToDw($fileName, $filePath)
+    /** 
+     * Méthode pour copier le fichier csv des DIT clôturé vers le ftp de Docuware
+     * 
+     * @param string $fileName
+     * @param string $cheminDestination
+     * 
+     * @return void
+     */
+    public function copyCsvToDw(string $fileName, string $cheminDestination)
     {
-        $cheminFichierDepart = 'C:/Docuware/OR/' . $fileName;
-        // $cheminFichierDepart = 'ftp://ftp.docuware-online.de/VhhlMDUEYTbzBI_A8C6lpRt86g-wKO2lXFKfXfSP/data/' . $fileName;
-        $cheminDestination = $filePath;
+        $ftpDocuware = $_ENV['FTP_DOCUWARE'];
+        $cheminFichierDepart = "ftp://$ftpDocuware/data/$fileName";
 
         copy($cheminDestination, $cheminFichierDepart);
     }
