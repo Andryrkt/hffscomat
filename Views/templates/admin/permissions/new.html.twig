@@ -29,21 +29,21 @@
 
 					<div class="row">
 						<div class="col-3">
-							{{ macroForm.affichage2('Société', codeSociete ~ ' - ' ~ nomSociete, 'mb-2') }}
+							{{ macroForm.readOnly('Société', codeSociete ~ ' - ' ~ nomSociete, 'mb-2') }}
 						</div>
 					</div>
 					<div class="row mb-3">
 						<div class="col">
-							{{ macroForm.affichage2('Référence du profil', reference, 'mb-2') }}
+							{{ macroForm.readOnly('Référence du profil', reference, 'mb-2') }}
 						</div>
 						<div class="col">
-							{{ macroForm.affichage2('Nom du profil', nomProfil, 'mb-2') }}
+							{{ macroForm.readOnly('Nom du profil', nomProfil, 'mb-2') }}
 						</div>
 						<div class="col">
-							{{ macroForm.affichage2('Code de l’application', codeApp, 'mb-2') }}
+							{{ macroForm.readOnly('Code de l’application', codeApp, 'mb-2') }}
 						</div>
 						<div class="col">
-							{{ macroForm.affichage2('Nom de l’application', nomApp, 'mb-2') }}
+							{{ macroForm.readOnly('Nom de l’application', nomApp, 'mb-2') }}
 						</div>
 						{{ form_row(form.agenceServices) }}
 					</div>

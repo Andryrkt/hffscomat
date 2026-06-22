@@ -31,14 +31,18 @@ class PlanningAtelierController extends Controller
     }
 
     /**
-     * @Route("/planning-atelier", name="planning_atelier_index")
+     * @Route("/planning-atelier", name="planningAtelier_vue")
      */
     public function index(Request $request): \Symfony\Component\HttpFoundation\Response
     {
+        $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
         $form = $this->getFormFactory()->createBuilder(
             PlanningAtelierSearchType::class,
             null,
-            ['method' => 'GET']
+            [
+                'method' => 'GET',
+                'codeSociete' => $codeSociete,
+            ]
         )->getForm();
         $form->handleRequest($request);
         $dto = $form->getData() ?? new PlanningAtelierSearchDto();
@@ -50,7 +54,7 @@ class PlanningAtelierController extends Controller
         if ($form->isSubmitted() && $form->isValid()) {
             $this->getSessionService()->set('planning_atelier_search_criteria', $dto);
 
-            $codeSociete = 'HFF';
+            $codeSociete = 'HF';
 
             $startStr = $dto->dateDebut ? $dto->dateDebut->format('Y-m-d') : null;
             $endStr = $dto->dateFin ? $dto->dateFin->format('Y-m-d') : null;

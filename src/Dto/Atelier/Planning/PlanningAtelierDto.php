@@ -20,6 +20,8 @@ class PlanningAtelierDto
 
     public float $nbTotalJour = 0.0;
 
+    public float $totalHeures = 0.0;
+
     /** @var array<string, PresenceDto> */
     public array $presences = [];
 

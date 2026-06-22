@@ -2,8 +2,10 @@
 
 namespace App\Form\Atelier\Planning;
 
+use App\Controller\Traits\Transformation;
 use App\Dto\Atelier\Planning\PlanningAtelierSearchDto;
 use App\Model\Atelier\Planning\PlanningAtelierModel;
+use App\Model\Atelier\Planning\PlanningModel;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
@@ -15,23 +17,27 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class PlanningAtelierSearchType extends AbstractType
 {
+    use Transformation;
     private PlanningAtelierModel $atelierModel;
+    private PlanningModel $model;
 
     // L'injection de dépendances est obligatoire ici
     public function __construct()
     {
+        $this->model = new PlanningModel();
         $this->atelierModel = new PlanningAtelierModel();
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $section = $this->atelierModel->getSection('HFF');
-        $ressource = $this->atelierModel->getResource('HFF');
-
-        // TODO: Tu dois définir comment récupérer ces agences.
-        // J'initialise des tableaux vides pour éviter le crash.
-        $agence = [];
-        $agenceDebite = [];
+        $codeSociete = $options['codeSociete'];
+        $section = $this->atelierModel->getSection($codeSociete);
+        $section = $this->transformeValeur($section, 'section', 'num');
+        $ressource = $this->atelierModel->getResource($codeSociete);
+        $ressource = $this->transformEnSeulTableau($ressource);
+        $agence = $this->model->getAgences();
+        $agence = $this->transformEnSeulTableauAvecKey($agence);
+        $agenceDebite = $this->model->getAgenceDebite();
 
         $builder
             ->add('numeroSemaine', ChoiceType::class, [
@@ -97,11 +103,10 @@ class PlanningAtelierSearchType extends AbstractType
 
             $serviceDebite = [];
 
-            // Exemple logique :
-            // if (isset($data['agenceDeb'])) {
-            //     $serviceDebite = $this->atelierModel->getServicesByAgence($data['agenceDeb']);
-            // }
-
+            if (!empty($data['agenceDeb'])) {
+                $serviceDebite = $this->model->getServiceDebiteByAgence($data['agenceDeb']);
+                $serviceDebite = $this->transformEnSeulTableauAvecKeyService($serviceDebite);
+            }
             $form->add('serviceDeb', ChoiceType::class, [
                 'label' => 'Service Débiteur : ',
                 'multiple' => true,
@@ -116,7 +121,10 @@ class PlanningAtelierSearchType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'data_class' => PlanningAtelierSearchDto::class
+            'data_class' => PlanningAtelierSearchDto::class,
         ]);
+
+        $resolver->setRequired('codeSociete');
+        $resolver->setAllowedTypes('codeSociete', 'string');
     }
 }
