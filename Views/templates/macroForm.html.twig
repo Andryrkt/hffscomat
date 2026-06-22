@@ -139,8 +139,8 @@
 {% endif %}
 {% endmacro %}
 
-{% macro affichage2(label, value = "", class = "", id = "") %}
-	<label for="" class="mt-2">{{label}}</label>
+{% macro readOnly(label, value = "", class = "", id = "") %}
+	<label for="" class="mt-2 mb-1">{{label}}</label>
 	<div class="d-flex align-items-center {{ class }} div-disabled" id="{{id}}">
 		{{value}}
 	</div>
