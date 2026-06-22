@@ -132,7 +132,7 @@ class DitListeController extends Controller
 
         $ditModel = new DitModel();
         foreach ($datas as $dto) {
-            $quantites =  $ditModel->recupQuantiteQuatreStatutOr($dto->numeroOr);
+            $quantites =  $ditModel->recupQuantiteQuatreStatutOr($dto->numeroOr, $dto->codeSociete);
 
             $dto->quantiteDemanderOr = $quantites["quantitedemander"] ?? 0;
             $dto->quantiteLivreeOr = $quantites["quantitelivree"] ?? 0;

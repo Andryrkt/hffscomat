@@ -24,13 +24,16 @@ class ListApi extends Controller
      *
      * @return void
      */
-    public function commandModal($numOr)
+    public function commandModal(string $numOr)
     {
         if ($numOr === '') {
             $commandes = [];
         } else {
+            // Code Société de l'utilisateur
+            $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
+
             $ditModel = new DitModel();
-            $commandes = $ditModel->recupereCommandeOr($numOr);
+            $commandes = $ditModel->recupereCommandeOr($numOr, $codeSociete);
         }
 
         header("Content-type:application/json");

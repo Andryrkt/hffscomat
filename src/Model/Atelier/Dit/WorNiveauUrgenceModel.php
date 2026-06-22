@@ -15,8 +15,8 @@ class WorNiveauUrgenceModel extends Model
     public function getDescription(): array
     {
         $statement = " SELECT  description as description 
-                    FROM {$this->dbIrium}:Informix.wor_niveau_urgence 
-                    
+                    FROM {$this->dbIrium}:Informix.wor_niveau_urgence
+                    ORDER BY description DESC
                     ";
 
         $result = $this->connect->executeQuery($statement);
@@ -24,6 +24,7 @@ class WorNiveauUrgenceModel extends Model
 
         return $rows;
     }
+    
     /**
      * Recupère le description delon l'ID
      *

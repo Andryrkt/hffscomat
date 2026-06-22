@@ -48,6 +48,8 @@ class DitListeMapper
 
             $dto->etatLivraison = $dto->getEtatLivraison();
 
+            $dto->codeSociete = $item['code_societe'];
+
             return $dto;
         }, $data);
     }

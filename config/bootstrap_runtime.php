@@ -181,10 +181,13 @@ $_SERVER['REQUEST_URI']  ??= '/';
 $request = Request::createFromGlobals();
 $container->get('request_stack')->push($request);
 
-// Correction casse /scomat/
 $pathInfo = $request->getPathInfo();
-if (stripos($pathInfo, '/hffscomat') === 0 && strpos($pathInfo, '/hffscomat') !== 0) {
-    $correctUrl = preg_replace('#^/hffscomat#i', '/hffscomat', $pathInfo);
+$prefix = $_ENV['BASE_PATH_COURT'];
+
+// Si l'URL commence par le préfixe (insensible à la casse) MAIS pas exactement avec la bonne casse
+if (stripos($pathInfo, $prefix) === 0 && strpos($pathInfo, $prefix) !== 0) {
+    // Reconstruire l'URL avec la bonne casse
+    $correctUrl = $prefix . substr($pathInfo, strlen($prefix));
     (new \Symfony\Component\HttpFoundation\RedirectResponse($correctUrl, 301))->send();
     exit;
 }

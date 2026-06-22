@@ -70,7 +70,8 @@ class DitListeModel extends Model
                         OR (d0_.id_statut_demande = 53 AND COALESCE(osv_or.montantitv, osv_dit.montantitv) IS NOT NULL)
                         OR  d0_.id_statut_demande = 57
                         THEN 1 ELSE 0
-                    END AS est_a_soumis
+                    END AS est_a_soumis,
+                    d0_.code_societe as code_societe
 
                 FROM {$this->dbIrium}:informix.demande_intervention d0_
 

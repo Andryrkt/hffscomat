@@ -113,7 +113,9 @@ class DitModel extends Model
 
     public function recupAllClientExterne()
     {
-        $statement = " SELECT cbse_nomcli, cbse_numcli FROM cli_bse , cli_soc WHERE cbse_numcli = csoc_numcli and csoc_soc ='HF'";
+        $statement = " SELECT cbse_nomcli, cbse_numcli FROM cli_bse 
+        --cli_soc WHERE cbse_numcli = csoc_numcli and csoc_soc ='HF'
+        ";
 
         $result = $this->connect->executeQuery($statement);
 
@@ -492,7 +494,7 @@ class DitModel extends Model
 
         return $this->convertirEnUtf8($data);
     }
-    public function recupereCommandeOr($numero_or)
+    public function recupereCommandeOr(string $numero_or, string $codeSociete)
     {
         $statement = "SELECT
         slor_numcf as slor_numcf,
@@ -503,11 +505,11 @@ class DitModel extends Model
       from sav_lor
       inner join frn_cde on frn_cde.fcde_numcde = slor_numcf
       where
-      slor_soc = 'HF'  
+      slor_soc = '$codeSociete'  
       --and slor_succ = '01'  
       and slor_constp not like '%Z'  
       and slor_numor in (select seor_numor from sav_eor where seor_serv = 'SAV')
-      and slor_numor = '" . $numero_or . "'
+      and slor_numor = '$numero_or'
       group by 1,2,3,4,5";
 
 
@@ -541,8 +543,10 @@ class DitModel extends Model
         return  $data;
     }
 
-    public function recupQuantiteQuatreStatutOr($numOr)
+    public function recupQuantiteQuatreStatutOr(?string $numOr, string $codeSociete): array 
     {
+        if($numOr === null) return [];
+        
         $statement = "SELECT 
             trim(seor_refdem) as referenceDIT,
             seor_numor as numeroOr,
@@ -557,14 +561,14 @@ class DitModel extends Model
             left join {$this->dbIrium}:informix.sav_liv on sliv_soc = slor_soc and sliv_succ = slor_succ and sliv_numor = seor_numor and slor_nolign = sliv_nolign
             
             where 
-            slor_soc = 'HF'
+            slor_soc = '$codeSociete'
                    --and slor_succ = '01'
             and slor_typlig = 'P'
             and seor_serv ='SAV'
             and slor_constp not like 'Z%'
             and slor_constp not like 'LUB'
            
-            and seor_numor  = '" . $numOr . "'
+            and seor_numor  = '$numOr'
             group by 1,2;
         ";
 

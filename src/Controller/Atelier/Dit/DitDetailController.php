@@ -58,7 +58,7 @@ class DitDetailController extends Controller
         $dataMapped = DitMapper::toArrayDitDetail($ditDto, $data);
 
 
-        $commandes = $ditModel->RecupereCommandeOr($ditDto->numeroOr);
+        $commandes = $ditModel->RecupereCommandeOr($ditDto->numeroOr, $codeSociete);
 
         // $this->logUserVisit('dit_validationDit', [
         //     'id'     => $id,
