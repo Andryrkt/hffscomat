@@ -68,7 +68,7 @@ class SelectWhereCondition
     public function null(string $column, bool $value = false): string
     {
         if (!$value) return '';
-        return "AND ($column IS NULL  OR $column <> '' ";
+        return "AND ($column IS NULL  OR $column <> '' )";
     }
 
     private function createInConditionWithTemp(string $column, array $values, bool $isNotIn = false): string
