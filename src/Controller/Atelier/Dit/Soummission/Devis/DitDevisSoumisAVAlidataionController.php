@@ -9,7 +9,7 @@ use App\Mapper\Atelier\Dit\Soumission\Devis\DitDevisSoumisAValidationMapper;
 use App\Model\Atelier\Dit\Soumission\Devis\DitDevisSoumisAValidationModel;
 use App\Service\atelier\dit\soumission\Devis\DevisValidationService;
 use App\Service\atelier\dit\soumission\Devis\TraitementDeFicherService;
-use App\Service\historiqueOperation\atelier\dit\Devis\HistoriqueOperationDEVService;
+use App\Service\historiqueOperation\Atelier\Dit\Devis\HistoriqueOperationDEVService;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;

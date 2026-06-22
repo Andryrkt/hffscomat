@@ -61,7 +61,7 @@ class FiltreService
             return !empty(trim($condition));
         });
 
-        return implode(' AND ', $conditions);
+        return implode(' ', $conditions);
     }
 
     /**

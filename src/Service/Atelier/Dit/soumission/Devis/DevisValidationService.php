@@ -5,7 +5,7 @@ namespace App\Service\atelier\dit\soumission\Devis;
 use App\Constants\atelier\dit\soumission\Devis\ConstantStatutDevis;
 use App\Dto\Atelier\Dit\soumission\Devis\DitDevisSoumisAValidationDto;
 use App\Model\Atelier\Dit\Soumission\Devis\DitDevisSoumisAValidationModel;
-use App\Service\historiqueOperation\atelier\dit\Devis\HistoriqueOperationDEVService;
+use App\Service\historiqueOperation\Atelier\Dit\Devis\HistoriqueOperationDEVService;
 use App\Service\SessionManagerService;
 
 class DevisValidationService
@@ -64,6 +64,7 @@ class DevisValidationService
         $nbPieceSortieMagasinDejaSoumi = $ditDevisSoumisAValidationModel->recupNbPieceMagasinDejaSoumi($dto->numeroDevis, $dto->codeSociete);
         $statutDevis = $ditDevisSoumisAValidationModel->findStatutDevisSelonNumDevis($dto->numeroDevis, $dto->codeSociete);
         $infoDit = $ditDevisSoumisAValidationModel->recupInfoDit($dto->numeroDit, $dto->numeroDevis, $dto->codeSociete);
+
         $numClientIps = $ditDevisSoumisAValidationModel->recupNumeroClientIps($dto->numeroDevis, $dto->codeSociete);
         $numDitIps = $ditDevisSoumisAValidationModel->recupNumDitIps($dto->numeroDevis, $dto->codeSociete);
         $servDebiteurIps = $ditDevisSoumisAValidationModel->recupServDebiteur($dto->numeroDevis, $dto->codeSociete);
@@ -124,6 +125,13 @@ class DevisValidationService
             // verifie si une devie est déjà soumis et en cours de vérification
             if ($statutDevis === ConstantStatutDevis::PRIX_A_CONFIRMER) {
                 $message = "Erreur lors de la soumission, Impossible de soumettre le devis  . . . un devis est déjà en cours de vérification";
+                $this->sendNotificationOR($message, $dto->numeroDevis, false);
+                return true;
+            }
+
+            // verification si la reparation est réalise par WS PSSR (que pour les pièces)
+            if ($infoDit["reparation_realise"] === "WS PSSR (que pour les pièces)") {
+                $message = "Erreur lors de la soumission, Impossible de soumettre le devis  . . . l'atelier est 'WS PSSR (que pour les pièces)'";
                 $this->sendNotificationOR($message, $dto->numeroDevis, false);
                 return true;
             }
