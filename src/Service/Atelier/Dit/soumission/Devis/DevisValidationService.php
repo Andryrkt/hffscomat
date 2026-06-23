@@ -134,9 +134,9 @@ class DevisValidationService
                 return true;
             }
 
-            // verification si la reparation est réalise par WS PSSR (que pour les pièces)
-            if ($infoDit["reparation_realise"] === "WS PSSR (que pour les pièces)") {
-                $message = "Erreur lors de la soumission, Impossible de soumettre le devis  . . . l'atelier est 'WS PSSR (que pour les pièces)'";
+            // verification si la reparation est réalise par WS PSSR
+            if ($infoDit["reparation_realise"] === "WS PSSR") {
+                $message = "Erreur lors de la soumission, Impossible de soumettre le devis  . . . l'atelier est 'WS PSSR'";
                 $this->sendNotificationOR($message, $dto->numeroDevis, false);
                 return true;
             }

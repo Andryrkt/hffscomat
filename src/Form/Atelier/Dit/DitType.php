@@ -43,7 +43,7 @@ class DitType extends AbstractType
         "WS SCOMAT" => "WS SCOMAT",
         "WS AGRI TRUCK" => "WS AGRI TRUCK",
         "WS MACHINE" => "WS MACHINE",
-        "WS PSSR (que pour les pièces)" => "WS PSSR (que pour les pièces)",
+        "WS PSSR" => "WS PSSR",
     ];
 
     const INTERNE_EXTERNE = [
@@ -245,7 +245,7 @@ class DitType extends AbstractType
                             ->orderBy('a.codeAgence', 'ASC');
                         return $qb;
                     },
-                    'attr' => ['class' => 'agenceDebiteur']
+                    'attr' => ['class' => 'agenceDebiteur div-disabled']
                 ]
             )
             ->add(
