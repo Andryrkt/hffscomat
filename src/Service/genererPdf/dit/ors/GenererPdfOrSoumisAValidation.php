@@ -39,7 +39,7 @@ class GenererPdfOrSoumisAValidation extends GeneratePdf
 
 
         $pdf->setFont('helvetica', 'B', 17);
-        $pdf->Cell(0, 6, 'Validation OR', 0, 0, 'C', false, '', 0, false, 'T', 'M');
+        $pdf->Cell(0, 6, 'Validation OR SCT', 0, 0, 'C', false, '', 0, false, 'T', 'M');
         $pdf->Ln(10, true);
 
         // Début du bloc

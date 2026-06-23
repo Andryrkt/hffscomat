@@ -50,7 +50,7 @@ class GenererPdfFactureAValidation extends GeneratePdf
 
 
         $pdf->setFont('helvetica', 'B', 17);
-        $pdf->Cell(0, 6, 'Validation Facture', 0, 0, 'C', false, '', 0, false, 'T', 'M');
+        $pdf->Cell(0, 6, 'Validation Facture SCT', 0, 0, 'C', false, '', 0, false, 'T', 'M');
         $pdf->Ln(10, true);
 
         // Début du bloc
