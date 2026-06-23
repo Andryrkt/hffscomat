@@ -59,8 +59,13 @@ class DitDevisSoumisAVAlidataionController extends Controller
         if ($form->isSubmitted() && $form->isValid()) {
             $dto = $form->getData();
 
+            // 
             $ditDevisSoumisAValidationFactory = new DitDevisSoumisAValidationFactory($this->getSecurityService());
             $dto = $ditDevisSoumisAValidationFactory->apresSoumission($dto, $numDit);
+
+            // Validation des données
+            $devisValidationService = new DevisValidationService();
+            if($devisValidationService->validateApresSoumission( $form, $dto)) return ;
 
             $ditDevisSoumisAValidationModel = new DitDevisSoumisAValidationModel();
 

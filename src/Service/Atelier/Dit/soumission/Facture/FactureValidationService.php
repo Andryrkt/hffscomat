@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 class FactureValidationService
 {
     private const FILE_FIELD_NAME = 'pieceJoint01';
-    private const FILENAME_PATTERN = '/^(FACTURE CESSION|FACTURE-BON DE LIVRAISON|AVOIR|A V O I R)_(\d+)_(\d+)_(\d+)\\.pdf$/';
+    private const FILENAME_PATTERN = '/^(FACTURE CESSION|FACTURE-BON DE LIVRAISON|AVOIR|A V O I R|INVOICE)_(\d+)_(\d+)_(\d+)\\.pdf$/';
     private const TYPE_FACTURE_VENTE = [200, 201, 202, 203, 204, 205, 206, 207, 208, 209];
 
     private function getSessionService()
@@ -77,7 +77,7 @@ class FactureValidationService
 
         $file = $form->get(self::FILE_FIELD_NAME)->getData();
         $fileName = $file->getClientOriginalName();
-        // Vérifie si le nom du fichier correspond au pattern attendu (S'assurer que c'est bien un OR qui soit soumis)
+        //Vérifie si le nom du fichier correspond au pattern attendu (S'assurer que c'est bien un OR qui soit soumis)
         if (!$this->matchPattern($fileName, self::FILENAME_PATTERN)) {
             $message = "Le nom du fichier soumis n'est pas conforme au format attendu. Reçu: " . $fileName;
             $this->sendNotificationOR($message, $dto->numeroOr, false);

@@ -7,9 +7,14 @@ use App\Dto\Atelier\Dit\soumission\Devis\DitDevisSoumisAValidationDto;
 use App\Model\Atelier\Dit\Soumission\Devis\DitDevisSoumisAValidationModel;
 use App\Service\historiqueOperation\Atelier\Dit\Devis\HistoriqueOperationDEVService;
 use App\Service\SessionManagerService;
+use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class DevisValidationService
 {
+    private const FILE_FIELD_NAME = 'pieceJoint01';
+    private const FILENAME_PATTERN = '/^(QUOTATION)_(\d+)_(\d+)_(\d+)\\.pdf$/';
+
     private function getSessionService()
     {
         global $container;
@@ -170,5 +175,86 @@ class DevisValidationService
         return false;
     }
 
-    public function validateApresSoumission(DitDevisSoumisAValidationDto $dto) {}
+    public function validateApresSoumission(FormInterface $form, DitDevisSoumisAValidationDto $dto): bool
+    {
+         // Vérifie si un fichier a été soumis
+        if (!$this->isFileSubmitted($form, self::FILE_FIELD_NAME)) {
+            $message = "Aucun fichier n'a été soumis.";
+            $this->sendNotificationOR($message, $dto->numeroDevis, false);
+            return true;
+        }
+
+        $file = $form->get(self::FILE_FIELD_NAME)->getData();
+        $fileName = $file->getClientOriginalName();
+        //Vérifie si le nom du fichier correspond au pattern attendu (S'assurer que c'est bien un OR qui soit soumis)
+        if (!$this->matchPattern($fileName, self::FILENAME_PATTERN)) {
+            $message = "Le nom du fichier soumis n'est pas conforme au format attendu. Reçu: " . $fileName;
+            $this->sendNotificationOR($message, $dto->numeroDevis, false);
+            return true;
+        }
+
+        // Vérifie si le numéro du devis dans le nom du fichier correspond au numéro de dit attendu (S'assurer que le Facture envoyé corresponde à la ligne de facture utilisé pour la soumission dans l'intranet)
+        if (!$this->matchNumberAfterUnderscore($fileName, $dto->numeroDevis)) {
+            $message = "Le numéro de facture dans le nom du fichier ($fileName) ne correspond pas à l'OR du formulaire ( $dto->numeroDevis)";
+            $this->sendNotificationOR($message, $dto->numeroDevis, false);
+            return true;
+        }
+
+        return false;
+    }
+
+     /**
+     * Vérifie si un fichier a été soumis dans un champ de formulaire donné
+     * 
+     * @param FormInterface $form Le formulaire à vérifier
+     * @param string $fieldName Le nom du champ de fichier à vérifier
+     * @return bool true si un fichier a été soumis, false sinon
+     */
+    protected function isFileSubmitted(FormInterface $form, string $fieldName): bool
+    {
+        if (!$form->has($fieldName)) {
+            return false;
+        }
+
+        $file = $form->get($fieldName)->getData();
+
+        return $file instanceof UploadedFile;
+    }
+
+    /**
+     * Vérifie si une chaîne de caractères correspond à un pattern regex
+     * 
+     * @param string|null $subject La chaîne de caractères à tester
+     * @param string $pattern Le pattern regex à utiliser pour la correspondance
+     * @return bool true si la chaîne correspond au pattern, false sinon
+     */
+    protected function matchPattern(?string $subject, string $pattern): bool
+    {
+        if ($subject === null) {
+            return false;
+        }
+        return preg_match($pattern, $subject) === 1;
+    }
+
+    /**
+     * Extrait un numéro après un underscore (_) dans une chaîne et le compare à une valeur attendue
+     * 
+     * Cette méthode est utilisée pour valider que le numéro dans un nom de fichier
+     * correspond au numéro attendu (ex: "Ordre de réparation_123_456.pdf" avec expectedNumber "123")
+     * 
+     * @param string $subject La chaîne de caractères contenant le numéro à extraire
+     * @param string $expectedNumber Le numéro attendu pour la comparaison
+     * @return bool true si le numéro extrait correspond au numéro attendu, false sinon
+     */
+    protected function matchNumberAfterUnderscore(string $subject, string $expectedNumber): bool
+    {
+        // Trouve la première séquence de chiffres qui suit un underscore
+        if (preg_match('/_(\d+)/', $subject, $matches)) {
+            // $matches[1] contient les chiffres capturés
+            $extractedNumber = $matches[1];
+            return $extractedNumber === (string) $expectedNumber;
+        }
+
+        return false; // Aucun numéro trouvé après un underscore
+    }
 }

@@ -14,7 +14,7 @@ class ValidationService
 
 
     private const FILE_FIELD_NAME = 'pieceJoint01';
-    private const FILENAME_PATTERN = '/^(Ordre de réparation)_(\d+)_(\d+)_(\d+)\\.pdf$/';
+    private const FILENAME_PATTERN = '/^(Ordre de réparation|PROFORMA_INVOICE)_(\d+)_(\d+)_(\d+)\\.pdf$/';
 
     private function getSessionService()
     {

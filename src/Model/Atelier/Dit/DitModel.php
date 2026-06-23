@@ -494,8 +494,11 @@ class DitModel extends Model
 
         return $this->convertirEnUtf8($data);
     }
-    public function recupereCommandeOr(string $numero_or, string $codeSociete)
+    
+    public function recupereCommandeOr(?string $numero_or, string $codeSociete)
     {
+        if($numero_or === null) return [];
+
         $statement = "SELECT
         slor_numcf as slor_numcf,
         fcde_date as fcde_date, 

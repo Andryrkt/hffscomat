@@ -35,7 +35,7 @@ class GenererPdfDit extends GeneratePdf
         $pdf->Image($logoPath, '', '', 45, 12);
         $pdf->setAbsX(55);
         //$pdf->Cell(45, 12, 'LOGO', 0, 0, '', false, '', 0, false, 'T', 'M');
-        $pdf->Cell(110, 6, 'DEMANDE D\'INTERVENTION', 0, 0, 'C', false, '', 0, false, 'T', 'M');
+        $pdf->Cell(110, 6, 'DEMANDE D\'INTERVENTION - SCT', 0, 0, 'C', false, '', 0, false, 'T', 'M');
 
 
         $pdf->setAbsX(170);
