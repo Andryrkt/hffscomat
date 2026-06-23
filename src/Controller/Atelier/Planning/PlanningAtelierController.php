@@ -35,10 +35,14 @@ class PlanningAtelierController extends Controller
      */
     public function index(Request $request): \Symfony\Component\HttpFoundation\Response
     {
+        $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
         $form = $this->getFormFactory()->createBuilder(
             PlanningAtelierSearchType::class,
             null,
-            ['method' => 'GET']
+            [
+                'method' => 'GET',
+                'codeSociete' => $codeSociete,
+            ]
         )->getForm();
         $form->handleRequest($request);
         $dto = $form->getData() ?? new PlanningAtelierSearchDto();

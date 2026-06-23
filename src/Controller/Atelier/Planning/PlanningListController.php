@@ -45,14 +45,14 @@ class PlanningListController extends Controller
      */
     public function listPlanning(Request $request)
     {
-
+        $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
         $dto = $this->getSessionService()->get('planning_search_criteria');
         if (!$dto)
             $dto = $this->searchDto;
         $form = $this->getFormFactory()->createBuilder(
             PlanningSearchType::class,
             null,
-            ['method' => 'GET']
+            ['method' => 'GET', 'codeSociete' => $codeSociete]
         )->getForm();
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid())
@@ -106,6 +106,7 @@ class PlanningListController extends Controller
             'ctr_marque' => 'Ctr Marque ',
             'numerocmd' => 'Numéro CMD',
             'statut_ctrmq' => 'Statut CTRMQ',
+            /*
             'numcis' => 'Numéro CIS',
             'qteORlig_cis' => 'Qte OR CIS',
             'qtealllig_cis' => 'Qte All CIS',
@@ -118,6 +119,7 @@ class PlanningListController extends Controller
             'message' => 'Message',
             'ord' => 'Commande Envoyé',
             'status_b' => 'Statut'
+            */
         ];
         array_unshift($data, $header);
         $this->exporterDonneesExcel($data);

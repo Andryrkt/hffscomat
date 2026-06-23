@@ -151,7 +151,7 @@ class DitOrSoumisAValidationModel extends Model
         return $data[0]['numor'] ?? null;
     }
 
-    public function recupNumeroMatricule(string $numDit, string $numOr, string $codeSociete)
+    public function recupNumeroMatricule(string $numDit, string $numOr, string $codeSociete): int
     {
         $statement = " SELECT 
             seor_nummat as numMatricule

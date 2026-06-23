@@ -60,10 +60,7 @@ class DitDetailController extends Controller
 
         $commandes = $ditModel->RecupereCommandeOr($ditDto->numeroOr, $codeSociete);
 
-        // $this->logUserVisit('dit_validationDit', [
-        //     'id'     => $id,
-        //     'numDit' => $numDit,
-        // ]); // historisation du page visité par l'utilisateur  
+
         return  $this->render('atelier/dit/validation.html.twig', [
             'dit' => $dataMapped,
             'autoriser' => $autoriser,

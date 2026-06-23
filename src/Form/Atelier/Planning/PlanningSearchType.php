@@ -66,8 +66,9 @@ class PlanningSearchType extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $agence = $this->transformEnSeulTableauAvecKey($this->planningModel->getAgences('HF'));
-        $agenceDebite = $this->planningModel->getAgenceDebite('HF');
+        $codeSociete = $options['codeSociete'];
+        $agence = $this->transformEnSeulTableauAvecKey($this->planningModel->getAgences($codeSociete));
+        $agenceDebite = $this->planningModel->getAgenceDebite($codeSociete);
         $sections = $this->planningModel->getSections();
         $documents = $this->getTypeDocuments();
         $urgences = $this->getNiveauUrgences();
@@ -242,6 +243,9 @@ class PlanningSearchType extends AbstractType
             'data_class' => PlanningSearchDto::class,
             'planningDetaille' => false
         ]);
+
+        $resolver->setRequired('codeSociete');
+        $resolver->setAllowedTypes('codeSociete', 'string');
     }
 
     private function getTypeDocuments(): array

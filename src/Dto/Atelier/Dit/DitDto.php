@@ -82,6 +82,9 @@ class DitDto
     public ?int $quantiteReliquatOr = 0;
     public ?string $etatLivraison = null;
 
+
+    public ?string $numeroDevisRattacher = null;
+
     public function getEtatLivraison(): string
     {
 

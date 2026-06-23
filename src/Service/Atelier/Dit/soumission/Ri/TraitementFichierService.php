@@ -109,6 +109,6 @@ class TraitementFichierService
     private function genererNomFichier(string $numeroOR, int $itv, UploadedFile $file): string
     {
         $extension = $file->getClientOriginalExtension();
-        return sprintf('RI_%s-%d.%s', $numeroOR, $itv, $extension);
+        return sprintf('sctRI_%s-%d.%s', $numeroOR, $itv, $extension);
     }
 }

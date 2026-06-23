@@ -25,6 +25,7 @@ class DitListeModel extends Model
         $skip = ($page - 1) * $perPage;
 
         $conditions = $this->filtreService->filtre($ditSearchdto);
+
         $conditionsMultisucursal = $this->filtreService->conditionAgenceService();
 
         $statement = " SELECT SKIP $skip FIRST $perPage
@@ -183,7 +184,20 @@ class DitListeModel extends Model
                 (CASE WHEN d0_.piece_joint1 IS NOT NULL AND d0_.piece_joint1 <> '' AND d0_.piece_joint1 <> ' ' THEN 1 ELSE 0 END) + 
                 (CASE WHEN d0_.piece_joint2 IS NOT NULL AND d0_.piece_joint2 <> '' AND d0_.piece_joint2 <> ' ' THEN 1 ELSE 0 END) + 
                 (CASE WHEN d0_.piece_joint IS NOT NULL AND d0_.piece_joint <> '' AND d0_.piece_joint <> ' ' THEN 1 ELSE 0 END)
-            ) AS nbrPj
+            ) AS nbrPj,
+            CASE
+                        WHEN d0_.id_statut_demande = 50
+                        OR (d0_.id_statut_demande = 51 AND d0_.utilisateur_demandeur = 'lanto')
+                        OR (d0_.id_statut_demande = 53 AND (d0_.numero_or IS NULL OR d0_.numero_or = ''))
+                        THEN 1 ELSE 0
+                    END AS est_annulable,
+                    CASE
+                        WHEN (d0_.id_statut_demande = 51 AND COALESCE(osv_or.montantitv, osv_dit.montantitv) IS NULL)
+                        OR (d0_.id_statut_demande = 53 AND d0_.internet_externe = 'EXTERNE')
+                        OR (d0_.id_statut_demande = 53 AND COALESCE(osv_or.montantitv, osv_dit.montantitv) IS NOT NULL)
+                        OR  d0_.id_statut_demande = 57
+                        THEN 1 ELSE 0
+                    END AS est_a_soumis
 
                 FROM {$this->dbIrium}:informix.demande_intervention d0_
 

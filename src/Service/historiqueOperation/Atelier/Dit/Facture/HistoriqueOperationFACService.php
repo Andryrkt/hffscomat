@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Service\historiqueOperation\atelier\dit\Facture;
+namespace App\Service\historiqueOperation\Atelier\Dit\Facture;
 
 use App\Entity\admin\historisation\documentOperation\TypeDocument;
 use App\Service\historiqueOperation\HistoriqueOperationService;

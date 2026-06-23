@@ -48,7 +48,7 @@ class GenererPdfAcSoumis extends GeneratePdf
 
         $pdf->SetTextColor(0, 0, 0);
         $pdf->SetXY(11, 2);
-        $pdf->Cell(35, 6, "AR-{$accuseReceptionDto->codeSociete}-{$accuseReceptionDto->numeroVersionMaxByDit}", 0, 0, 'L');
+        $pdf->Cell(35, 6, "AR-SCT-{$accuseReceptionDto->numeroVersionMaxByDit}", 0, 0, 'L');
         $pdf->setY(25);
         $html = "
         <style>

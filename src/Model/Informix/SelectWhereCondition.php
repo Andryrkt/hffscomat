@@ -78,7 +78,7 @@ class SelectWhereCondition
             return $isNotIn ? "" : " AND 1=0";
         }
 
-        if (count($values) > 300) {
+        if (count($values) > 500) {
             $in = $isNotIn ? "NOT IN" : "IN";
             $escaped = array_map([$this, 'escapeString'], $values);
             $list = "'" . implode("','", $escaped) . "'";

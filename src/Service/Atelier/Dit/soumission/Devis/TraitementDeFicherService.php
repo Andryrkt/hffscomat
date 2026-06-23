@@ -34,21 +34,17 @@ class TraitementDeFicherService
 
         if ($dto->type == 'VP') {
             //generer le nom du fichier
-            $nomFichierGenerer = 'verificationprix_' . $dto->numeroDevis . '-' . $dto->numeroVersion . '#' . $suffix . '~' . $dto->tacheValidateur . '.pdf';
+            $nomFichierGenerer = "sctverificationprix_{$dto->numeroDevis}-{$dto->numeroVersion}#{$suffix}~{$dto->tacheValidateur}.pdf";
 
             // telecharger le fichier en copiant sur son repertoire
             $fileUploader->uploadFileSansName($file, $nomFichierGenerer);
 
-            //envoye des fichier dans le DW
-            if ($dto->estCeVente) { // si vrai c'est une vente
-                $generePdfDevis->copyToDWFichierDevisSoumisVp($nomFichierGenerer); // copier le fichier de devis dans docuware
-            } else {
-                $generePdfDevis->copyToDWFichierDevisSoumisVp($nomFichierGenerer); // copier le fichier de devis dans docuware
-            }
+            //envoye des fichier dans le DW pour les types "Vente" et "Forfait"
+            $generePdfDevis->copyToDWFichierDevisSoumisVp($nomFichierGenerer); // copier le fichier de devis dans docuware
         } else {
-            $nomFichierCtrl = 'devisctrl_' . $dto->numeroDevis . '-' . $dto->numeroVersion . '#' . $suffix . '.pdf';
+            $nomFichierCtrl = "sctdevisctrl_{$dto->numeroDevis}-{$dto->numeroVersion}#{$suffix}.pdf";
             //generer le nom du fichier
-            $nomFichierGenerer = 'devisatelier_' . $dto->numeroDevis . '-' . $dto->numeroVersion . '#' . $suffix . '.pdf';
+            $nomFichierGenerer = "sctdevisatelier_{$dto->numeroDevis}-{$dto->numeroVersion}#{$suffix}.pdf";
 
             // telecharger le fichier en copiant sur son repertoire
             $fileUploader->uploadFileSansName($file, $nomFichierGenerer);
@@ -56,15 +52,9 @@ class TraitementDeFicherService
             //pour création du pdf
             $this->creationPdf($dto, $generePdfDevis, $nomFichierCtrl, $dto->codeSociete);
 
-            // envoyer les fichiers dans DW
-            if ($dto->estCeVente) { // si vrai c'est une vente
-                $generePdfDevis->copyToDWDevisSoumis($nomFichierCtrl);
-                $generePdfDevis->copyToDWFichierDevisSoumis($nomFichierGenerer); // copier le fichier de devis dans docuware
-            } else {
-                /**envoie des fichiers dans docuware*/
-                $generePdfDevis->copyToDWDevisSoumis($nomFichierCtrl); // copier le fichier de controlle dans docuware
-                $generePdfDevis->copyToDWFichierDevisSoumis($nomFichierGenerer); // copier le fichier de devis dans docuware
-            }
+            // envoyer les fichiers dans DW pour les types "Vente" et "Forfait"
+            $generePdfDevis->copyToDWDevisSoumis($nomFichierCtrl); // copier le fichier de controlle dans docuware
+            $generePdfDevis->copyToDWFichierDevisSoumis($nomFichierGenerer); // copier le fichier de devis dans docuware
         }
     }
 
