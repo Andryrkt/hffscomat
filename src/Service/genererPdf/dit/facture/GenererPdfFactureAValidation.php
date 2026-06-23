@@ -12,26 +12,29 @@ class GenererPdfFactureAValidation extends GeneratePdf
 
     use FormatageTrait;
 
-    public function copyToDwFactureSoumis($numeroVersion, $numeroOR)
+    public function copyToDwFactureSoumis(int $numeroSoumission, ?string $numeroFact)
     {
-        $cheminFichierDistant = $this->baseCheminDocuware . 'ORDRE_DE_MISSION/factureValidation_' . $numeroOR . '_' . $numeroVersion . '.pdf';
-        $cheminDestinationLocal = $this->baseCheminDuFichier . 'vfac/factureValidation_' . $numeroOR . '_' . $numeroVersion . '.pdf';
+        $nomFichier = "factureValidation_{$numeroFact}_{$numeroSoumission}.pdf";
+        $cheminFichierDistant = $this->baseCheminDocuware . "FACTURE OR/$nomFichier";
+        $cheminDestinationLocal = $this->baseCheminDuFichier . "vfac/$nomFichier";
         copy($cheminDestinationLocal, $cheminFichierDistant);
     }
 
 
-    public function copyToDwFacture($numeroVersion, $numeroDoc)
+    public function copyToDwFacture(int $numeroSoumission, ?string $numeroFact)
     {
-        $cheminFichierDistant = $this->baseCheminDocuware . 'ORDRE_DE_MISSION/validation_facture_client_' . $numeroDoc . '_' . $numeroVersion . '.pdf';
-        $cheminDestinationLocal = $this->baseCheminDuFichier . 'vfac/validation_facture_client_' . $numeroDoc . '_' . $numeroVersion . '.pdf';
+        $nomFichier = "validation_facture_client_{$numeroFact}_{$numeroSoumission}.pdf";
+        $cheminFichierDistant = $this->baseCheminDocuware . "FACTURE OR/$nomFichier";
+        $cheminDestinationLocal = $this->baseCheminDuFichier . "vfac/$nomFichier";
         copy($cheminDestinationLocal, $cheminFichierDistant);
     }
 
 
-    public function copyToDwFactureFichier($numeroVersion, $numeroDoc, array $pathFichiers)
+    public function copyToDwFactureFichier(int $numeroSoumission, ?string $numeroFact, array $pathFichiers)
     {
         for ($i = 0; $i < count($pathFichiers); $i++) {
-            $cheminFichierDistant = $this->baseCheminDocuware . 'ORDRE_DE_MISSION/facture_client_' . $numeroDoc . '_' . $numeroVersion . '_' . $i . '.pdf';
+            $nomFichier = "facture_client_{$numeroFact}_{$numeroSoumission}_{$i}.pdf";
+            $cheminFichierDistant = $this->baseCheminDocuware . "FACTURE OR/$nomFichier";
             $cheminDestinationLocal = $pathFichiers[$i];
             $this->copyFile($cheminDestinationLocal, $cheminFichierDistant);
         }
