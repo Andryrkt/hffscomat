@@ -3,7 +3,7 @@
 namespace App\Service\atelier\dit\soumission\Facture;
 
 use App\Dto\atelier\dit\soumission\DitFactureSoumisAValidationDto;
-use App\Service\historiqueOperation\atelier\dit\Facture\HistoriqueOperationFACService;
+use App\Service\historiqueOperation\Atelier\Dit\Facture\HistoriqueOperationFACService;
 use App\Service\SessionManagerService;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;

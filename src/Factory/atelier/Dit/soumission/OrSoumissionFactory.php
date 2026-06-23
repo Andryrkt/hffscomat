@@ -37,6 +37,9 @@ class OrSoumissionFactory
         $ditOrsoumisAValidationModel = new DitOrSoumisAValidationModel();
         $ditModel = new DitModel();
 
+        $dto->numeroDit = $numDit;
+        $dto->numeroOr = $ditOrsoumisAValidationModel->recupNumeroOr($numDit, $dto->codeSociete);
+
         $idMaterielIps = $ditOrsoumisAValidationModel->recupNumeroMatricule($numDit, $dto->numeroOr, $dto->codeSociete);
         $dit = $ditModel->recupInformationsDit($numDit, $dto->codeSociete);
         $agServInformix = $ditModel->recupAgenceServiceDebiteur($dto->numeroOr, $dto->codeSociete);
@@ -47,8 +50,7 @@ class OrSoumissionFactory
         $existeNumclient = $ditOrsoumisAValidationModel->numcliExiste($numclient, $dto->codeSociete);
 
 
-        $dto->numeroDit = $numDit;
-        $dto->numeroOr = $ditOrsoumisAValidationModel->recupNumeroOr($numDit, $dto->codeSociete);
+
         $dto->numeroVersion = $this->getVersion($numDit, $dto->numeroOr);
         $dto->heureSoumission =  date('H:i');
         $dto->dateSoumission = date('Y-m-d');

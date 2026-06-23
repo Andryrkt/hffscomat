@@ -48,10 +48,12 @@
 				<th class="border border-1 border-white" rowspan="2" style="width: 194px;">Agence - Service Travaux</th>
 				<th class="border border-1 border-white" colspan="12">Matériel</th>
 				<th class="border border-1 border-white" colspan="9">ORDRE DE REPARATION</th>
+				{#
 				<th class="border border-1 border-white" colspan="7">CESSION INTER STOCK</th>
-				<th class="border border-1 border-white" rowspan="2">ETA Ivato</th>
+                <th class="border border-1 border-white" rowspan="2">ETA Ivato</th>
 				<th class="border border-1 border-white" rowspan="2">ETA Magasin</th>
 				<th class="border border-1 border-white" rowspan="2">Message</th>
+                #}
 			</tr>
 			<tr class="align-middle text-center">
 				<th class="border-bottom">Marque</th>
@@ -75,6 +77,7 @@
 				<th class="border-bottom">Ctr Marque</th>
 				<th class="border-bottom">Cde frn</th>
 				<th class="border-end border-bottom">Statut ctrmrq</th>
+                {#
 				<th class="border-bottom">numCIS</th>
 				<th class="border-bottom">Qté Cde</th>
 				<th class="border-bottom">Qté all</th>
@@ -82,6 +85,7 @@
 				<th class="border-bottom">Qté liv</th>
 				<th class="border-bottom">Statut</th>
 				<th class="border-bottom">Date statut</th>
+                #}
 			</tr>
 		</thead>
 		<tbody id="tableBody">
@@ -139,6 +143,7 @@
 					<td>{{ item.ctr_marque }}</td>
 					<td>{{ item.numerocmd }}</td>
 					<td style="{{classe}}">{{item.statut_ctrmq}}</td>
+                    {#
 					<td>{{ item.numcis }}</td>
 					<td>{{ item.qteORlig_cis  }}</td>
 					<td>{{ item.qtealllig_cis  }}</td>
@@ -149,6 +154,7 @@
 					<td>{{ item.Eta_ivato  }}</td>
 					<td>{{ item.Eta_magasin  }}</td>
 					<td>{{ item.message }}</td>
+                    #}
 				</tr>
 			{% endfor %}
 		</tbody>

@@ -20,7 +20,7 @@ class PlanningModel extends Model
         $this->selectCond = new SelectWhereCondition();
     }
 
-    public function getAgences(?string $codeSociete = 'HF'): array
+    public function getAgences(string $codeSociete): array
     {
         $statement = "SELECT
                 trim(asuc_num)              as asuc_num,
@@ -44,7 +44,7 @@ class PlanningModel extends Model
         }, $data);
     }
 
-    public function getAgenceDebite(?string $codeSociete = 'HF')
+    public function getAgenceDebite(string $codeSociete)
     {
         $statement = "SELECT
                     trim(asuc_lib) as asuc_lib,

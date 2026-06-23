@@ -30,9 +30,10 @@ class PlanningAtelierSearchType extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $section = $this->atelierModel->getSection('HF');
+        $codeSociete = $options['codeSociete'];
+        $section = $this->atelierModel->getSection($codeSociete);
         $section = $this->transformeValeur($section, 'section', 'num');
-        $ressource = $this->atelierModel->getResource('HF');
+        $ressource = $this->atelierModel->getResource($codeSociete);
         $ressource = $this->transformEnSeulTableau($ressource);
         $agence = $this->model->getAgences();
         $agence = $this->transformEnSeulTableauAvecKey($agence);
@@ -120,7 +121,10 @@ class PlanningAtelierSearchType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'data_class' => PlanningAtelierSearchDto::class
+            'data_class' => PlanningAtelierSearchDto::class,
         ]);
+
+        $resolver->setRequired('codeSociete');
+        $resolver->setAllowedTypes('codeSociete', 'string');
     }
 }

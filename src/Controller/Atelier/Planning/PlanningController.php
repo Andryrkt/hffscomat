@@ -55,14 +55,17 @@ class PlanningController extends Controller
      * @Route("/planning-vue", name="planning_vue")
      */
     public function listPlanning(Request $request): \Symfony\Component\HttpFoundation\Response
+
     {
 
+        $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
         $form = $this->getFormFactory()->createBuilder(
             PlanningSearchType::class,
-            null,
+            $this->searchDto,
             [
                 'method' => 'GET',
-                'planningDetaille' => false
+                'planningDetaille' => false,
+                'codeSociete' => $codeSociete,
             ]
         )->getForm();
 
@@ -71,7 +74,7 @@ class PlanningController extends Controller
 
         $data = [];
         if($request->query->get('action') !== 'oui')
-            $data = $this->planningService->getPlanningMaterielData($dto);
+            $data = $this->planningService->getPlanningMaterielData($dto, $codeSociete);
         $data = $this->planningService->getDataList($data, $dto->months);
         $this->logUserVisit('planning_vue');
 
@@ -82,7 +85,6 @@ class PlanningController extends Controller
         ]);
 
     }
-
     private function traitementFormulaire(FormInterface $form, Request $request)
     {
         $form->handleRequest($request);

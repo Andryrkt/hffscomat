@@ -8,8 +8,8 @@ class GenererPdfRiSoumisAValidataion extends GeneratePdf
 {
     public function copyToDw(string $fileName)
     {
-        $cheminFichierDistant = $this->baseCheminDocuware . 'RAPPORT_INTERVENTION/' . $fileName;
-        $cheminDestinationLocal = $this->baseCheminDuFichier . 'vri/' . $fileName; // avec tiret 6
+        $cheminFichierDistant = $this->baseCheminDocuware . "RAPPORT INTERVENTION/$fileName";
+        $cheminDestinationLocal = $this->baseCheminDuFichier . "vri/$fileName";
         $this->copyFile($cheminDestinationLocal, $cheminFichierDistant);
     }
 }
