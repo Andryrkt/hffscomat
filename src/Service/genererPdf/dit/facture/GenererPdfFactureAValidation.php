@@ -14,7 +14,7 @@ class GenererPdfFactureAValidation extends GeneratePdf
 
     public function copyToDwFactureSoumis(int $numeroSoumission, ?string $numeroFact)
     {
-        $nomFichier = "factureValidation_{$numeroFact}_{$numeroSoumission}.pdf";
+        $nomFichier = "sctfactureValidation_{$numeroFact}_{$numeroSoumission}.pdf";
         $cheminFichierDistant = $this->baseCheminDocuware . "FACTURE OR/$nomFichier";
         $cheminDestinationLocal = $this->baseCheminDuFichier . "vfac/$nomFichier";
         copy($cheminDestinationLocal, $cheminFichierDistant);
@@ -23,7 +23,7 @@ class GenererPdfFactureAValidation extends GeneratePdf
 
     public function copyToDwFacture(int $numeroSoumission, ?string $numeroFact)
     {
-        $nomFichier = "validation_facture_client_{$numeroFact}_{$numeroSoumission}.pdf";
+        $nomFichier = "sctvalidation_facture_client_{$numeroFact}_{$numeroSoumission}.pdf";
         $cheminFichierDistant = $this->baseCheminDocuware . "FACTURE OR/$nomFichier";
         $cheminDestinationLocal = $this->baseCheminDuFichier . "vfac/$nomFichier";
         copy($cheminDestinationLocal, $cheminFichierDistant);
@@ -33,7 +33,7 @@ class GenererPdfFactureAValidation extends GeneratePdf
     public function copyToDwFactureFichier(int $numeroSoumission, ?string $numeroFact, array $pathFichiers)
     {
         for ($i = 0; $i < count($pathFichiers); $i++) {
-            $nomFichier = "facture_client_{$numeroFact}_{$numeroSoumission}_{$i}.pdf";
+            $nomFichier = "sctfacture_client_{$numeroFact}_{$numeroSoumission}_{$i}.pdf";
             $cheminFichierDistant = $this->baseCheminDocuware . "FACTURE OR/$nomFichier";
             $cheminDestinationLocal = $pathFichiers[$i];
             $this->copyFile($cheminDestinationLocal, $cheminFichierDistant);
@@ -48,9 +48,7 @@ class GenererPdfFactureAValidation extends GeneratePdf
     {
         $pdf = new TCPDF();
 
-
         $pdf->AddPage();
-
 
         $pdf->setFont('helvetica', 'B', 17);
         $pdf->Cell(0, 6, 'Validation Facture', 0, 0, 'C', false, '', 0, false, 'T', 'M');
@@ -317,9 +315,9 @@ class GenererPdfFactureAValidation extends GeneratePdf
 
         $Dossier = $_ENV['BASE_PATH_FICHIER'] . '/vfac/';
         if ($dto->interneExterne == 'INTERNE') {
-            $filePath = $Dossier . 'factureValidation_' . $dto->numeroFact . '_' . $dto->numeroSoumission . '.pdf';
+            $filePath = "{$Dossier}sctfactureValidation_{$dto->numeroFact}_{$dto->numeroSoumission}.pdf";
         } else {
-            $filePath = $Dossier . 'validation_facture_client_' . $dto->numeroFact . '_' . $dto->numeroSoumission . '.pdf';
+            $filePath = "{$Dossier}sctvalidation_facture_client_{$dto->numeroFact}_{$dto->numeroSoumission}.pdf";
         }
 
         $pdf->Output($filePath, 'F');

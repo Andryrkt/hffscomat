@@ -91,6 +91,6 @@ class AcBcValidationService
     private function generateNameForAcSoumis(AccuseReceptionDto $accuseReceptionDto): void
     {
         $suffix = $this->ditDevisSoumisAValidationModel->constructeurPieceMagasin($accuseReceptionDto->numeroDevis, $accuseReceptionDto->codeSociete)[0]['retour'];
-        $accuseReceptionDto->nomFichierAcSoumis = "bc_{$accuseReceptionDto->numeroClient}_{$accuseReceptionDto->numeroDevis}-{$accuseReceptionDto->numeroVersionMaxByDit}#{$suffix}.pdf";
+        $accuseReceptionDto->nomFichierAcSoumis = "sctbc_{$accuseReceptionDto->numeroClient}_{$accuseReceptionDto->numeroDevis}-{$accuseReceptionDto->numeroVersionMaxByDit}#{$suffix}.pdf";
     }
 }

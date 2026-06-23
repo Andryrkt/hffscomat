@@ -77,7 +77,6 @@ class DitFactureSoumisAValidationController extends Controller
             $data = DItFactureSoumisAValidationMapper::updateDit($dto->etatOr);
             $dtiFactureSoumisAValidationModel->updateEtatFacture($dto->numeroDit, $dto->codeSociete, $data);
 
-
             // historisation de soumission
             $historiqueOperationFACService = new HistoriqueOperationFACService($this->getEntityManager());
             $message = "Le document de controle a été généré et soumis pour validation {$dto->numeroFact}";
