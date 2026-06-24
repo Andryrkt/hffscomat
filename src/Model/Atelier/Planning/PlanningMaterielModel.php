@@ -160,36 +160,6 @@ class PlanningMaterielModel extends Model
                         and slor_qterel = 0
                         and slor_qterea = 0 THEN trim('DISPO STOCK')
                     WHEN slor_qterea =  (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) THEN trim('LIVRE')
-                    WHEN slor_natcm = 'C' THEN
-                        (SELECT libelle_type
-                        from  gcot_acknow_cat
-                        where cast(Numero_PO as varchar(10)) = CAST(slor_numcf  as varchar(10))
-                            and Parts_Number = slor_refp
-                            and Parts_CST = slor_constp
-                            and Line_Number = slor_noligncm
-                            and id_gcot_acknow_cat = (
-                                select max(id_gcot_acknow_cat)
-                                from gcot_acknow_cat
-                                where cast(Numero_PO as varchar(10)) = CAST(slor_numcf  as varchar(10))
-                                    and Parts_Number = slor_refp
-                                    and Parts_CST = slor_constp
-                                    and Line_Number = slor_noligncm)
-                                )
-                    WHEN slor_typcf = 'CIS' THEN
-                        (select libelle_type
-                            from  gcot_acknow_cat
-                            where cast(Numero_PO as varchar(10)) = CAST(nlig_numcf  as varchar(10))
-                                and Parts_Number = slor_refp
-                                and Parts_CST = slor_constp
-                                and (Line_Number = slor_nolign OR Line_Number = nlig_noligncm)
-                                and id_gcot_acknow_cat = (
-                                    select max(id_gcot_acknow_cat)
-                                    from gcot_acknow_cat
-                                    where cast(Numero_PO as varchar(10)) = CAST(nlig_numcf  as varchar(10))
-                                        and Parts_Number = slor_refp
-                                        and Parts_CST = slor_constp
-                                        and (Line_Number = slor_nolign OR Line_Number = nlig_noligncm))
-                                    )
                     END                                                 as statut,
                 CASE WHEN slor_qteres = (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec)
                         and slor_qterel >0 THEN
@@ -207,89 +177,12 @@ class PlanningMaterielModel extends Model
                             ), '%Y-%m-%d')
                     WHEN slor_qterea = (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) THEN
                         TO_CHAR(((
-                            select sliv_date 
+                            select min(sliv_date) 
                             from sav_liv 
                             where sliv_numor = slor_numor 
                                 and sliv_nolign = slor_nolign)
                         ), '%Y-%m-%d')
-                    WHEN slor_natcm = 'C' THEN
-                        TO_CHAR(((
-                            select date_creation
-                            from  gcot_acknow_cat 
-                            where CAST( Numero_PO as varchar(10)) = CAST(slor_numcf  as varchar(10)) 
-                                and Parts_Number = slor_refp  
-                                and Parts_CST = slor_constp 
-                                and (Line_Number = slor_noligncm OR Line_Number = slor_nolign)
-                                and id_gcot_acknow_cat = (
-                                    select MAX(id_gcot_acknow_cat)
-                                    from gcot_acknow_cat
-                                    where CAST(Numero_PO as varchar(10)) = CAST(slor_numcf  as varchar(10))
-                                        and Parts_Number = slor_refp
-                                        and Parts_CST = slor_constp
-                                        and (Line_Number = slor_noligncm OR Line_Number = slor_nolign)
-                        ))), '%Y-%m-%d')
-                    WHEN slor_typcf = 'CIS' THEN
-                        TO_CHAR(((
-                            select date_creation
-                            from gcot_acknow_cat 
-                            where CAST( Numero_PO as varchar(10)) = CAST(nlig_numcf  as varchar(10))
-                                and Parts_Number = slor_refp  
-                                and Parts_CST = slor_constp 
-                                and (Line_Number = slor_nolign OR Line_Number = nlig_noligncm )
-                                and id_gcot_acknow_cat = (
-                                    select MAX(id_gcot_acknow_cat)
-                                    from gcot_acknow_cat
-                                    where CAST( Numero_PO as varchar(10)) = CAST(nlig_numcf  as varchar(10))
-                                        and Parts_Number = slor_refp
-                                        and Parts_CST = slor_constp
-                                        and (Line_Number = slor_nolign OR Line_Number = nlig_noligncm)
-                        ))), '%Y-%m-%d')
-                    END                                                             as dateStatut,
-                CASE WHEN slor_qterea <> (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) THEN
-                        (SELECT message
-                        FROM gcot_acknow_cat
-                        WHERE CAST( Numero_PO as varchar(10)) = CAST(slor_numcf  as varchar(10))
-                            AND Parts_Number = slor_refp
-                            AND Parts_CST = slor_constp
-                            AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign)
-                            AND id_gcot_acknow_cat = (
-                                SELECT MAX(id_gcot_acknow_cat)
-                                FROM gcot_acknow_cat
-                                WHERE CAST( Numero_PO as varchar(10)) = CAST(slor_numcf  as varchar(10))
-                                    AND Parts_Number = slor_refp
-                                    AND Parts_CST = slor_constp
-                                    AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign))
-                            )
-                    WHEN slor_typcf = 'CIS' THEN
-                        (SELECT message FROM  gcot_acknow_cat
-                            WHERE CAST( Numero_PO as varchar(10)) = CAST(nlig_numcf  as varchar(10))
-                                AND Parts_Number = slor_refp
-                                AND Parts_CST = slor_constp
-                                AND (Line_Number = slor_nolign OR Line_Number = nlig_noligncm )
-                                AND id_gcot_acknow_cat = (
-                                    SELECT MAX(id_gcot_acknow_cat)
-                                    FROM gcot_acknow_cat
-                                    WHERE CAST( Numero_PO as varchar(10)) = CAST(nlig_numcf  as varchar(10))
-                                        AND Parts_Number = slor_refp
-                                        AND Parts_CST = slor_constp
-                                        AND (Line_Number = slor_nolign OR Line_Number = nlig_noligncm)
-                                )
-                            )
-                    END                                                                  as message,
-                CASE
-                    WHEN nlig_natcm = 'C' THEN 'COMMANDE'
-                    WHEN nlig_natcm = 'L' THEN 'RECEPTION'
-                    END                                                                  as statut_ctrmq_cis,
-                CASE
-                    WHEN nlig_natcm = 'C' THEN nlig_numcf   
-                    WHEN nlig_natcm = 'L' THEN(
-                        SELECT MAX(fllf_numcde)
-                        FROM frn_llf
-                        WHERE fllf_numliv = nlig_numcf
-                            AND fllf_ligne = nlig_noligncm
-                            AND fllf_refp = nlig_refp
-                        )
-                    END                                                                  as num_cmd_cis
+                    END                                                             as dateStatut
             from sav_lor
             join sav_itv
                 on slor_numor = sitv_numor
@@ -303,7 +196,7 @@ class PlanningMaterielModel extends Model
                     and slor_refp not like '%-CTRL'
                 )
                 {$this->getTypeLignePieceCondition($searchDto)}
-            GROUP BY 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20
+            GROUP BY 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18
         ";
 
         $result = $this->connect->executeQuery($statement);
@@ -384,35 +277,7 @@ class PlanningMaterielModel extends Model
                         trim('DISPO STOCK')
                       WHEN slor_qterea =  (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) THEN
                          trim('LIVRE')
-                      WHEN slor_natcm = 'C' THEN
-                                ( SELECT libelle_type 
-                                  FROM  gcot_acknow_cat 
-                                  WHERE Numero_PO = slor_numcf 
-                                  AND Parts_Number = slor_refp  
-                                  AND Parts_CST = slor_constp 
-                                  AND Line_Number = slor_noligncm 
-		   		                        AND id_gcot_acknow_cat = ( SELECT MAX(id_gcot_acknow_cat)
-                                                             FROM gcot_acknow_cat 
-                                                             WHERE Numero_PO = slor_numcf  
-                                                             AND Parts_Number = slor_refp  
-                                                             AND Parts_CST = slor_constp 
-                                                             AND Line_Number = slor_noligncm )
-					                    	 )
-                      WHEN slor_typcf = 'CIS' THEN
-		                            ( SELECT libelle_type 
-                                  FROM  gcot_acknow_cat 
-                                  WHERE Numero_PO = nlig_numcf
-                                  AND Parts_Number = slor_refp  
-                                  AND Parts_CST = slor_constp 
-                                  AND (Line_Number = slor_nolign OR Line_Number = nlig_noligncm )
-	                                AND id_gcot_acknow_cat = ( SELECT MAX(id_gcot_acknow_cat)
-                                                             FROM gcot_acknow_cat 
-                                                             WHERE Numero_PO = nlig_numcf
-                                                             AND Parts_Number = slor_refp  
-                                                             AND Parts_CST = slor_constp 
-                                                             AND (Line_Number = slor_nolign OR Line_Number = nlig_noligncm ))
-				                         )
-	                    END as Statut,
+	                  END as Statut,
 
                     CASE WHEN slor_qteres = (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) AND slor_qterel >0 THEN
                     TO_CHAR((
@@ -434,74 +299,7 @@ class PlanningMaterielModel extends Model
 		                        FROM sav_liv 
                             WHERE sliv_numor = slor_numor 
 		                        AND sliv_nolign = slor_nolign)), '%Y-%m-%d')
-	                  WHEN slor_natcm = 'C' THEN
- 		                    TO_CHAR((	
-                                  ( SELECT date_creation
-                                    FROM  gcot_acknow_cat 
-                                    WHERE Numero_PO = slor_numcf 
-                                    AND Parts_Number = slor_refp  
-                                    AND Parts_CST = slor_constp 
-                                    AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign)
-                                    AND id_gcot_acknow_cat = ( SELECT MAX(id_gcot_acknow_cat) 
-                                                               FROM gcot_acknow_cat 
-                                                               WHERE Numero_PO = slor_numcf  
-                                                               AND Parts_Number = slor_refp  
-                                                               AND Parts_CST = slor_constp 
-                                                               AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign) )
-	                        	       )
-                                 ), 
-                                 '%Y-%m-%d')
-                    WHEN slor_typcf = 'CIS' THEN
-		                       TO_CHAR((
-                                  ( SELECT date_creation
-                                    FROM  gcot_acknow_cat 
-                                    WHERE Numero_PO = nlig_numcf
-                                    AND Parts_Number = slor_refp  
-                                    AND Parts_CST = slor_constp 
-                                    AND (Line_Number = nlig_noligncm OR Line_Number = slor_nolign)
-                                    AND id_gcot_acknow_cat = ( SELECT MAX(id_gcot_acknow_cat) 
-                                                               FROM gcot_acknow_cat 
-                                                               WHERE Numero_PO = nlig_numcf
-                                                               AND Parts_Number = slor_refp  
-                                                               AND Parts_CST = slor_constp 
-                                                               AND (Line_Number = nlig_noligncm OR Line_Number = slor_nolign))
-                                    )
-                                 ), '%Y-%m-%d')
-	                  END AS dateStatut,
-
-                      CASE  WHEN slor_qterea <> (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) THEN
-	                     ( SELECT message FROM  gcot_acknow_cat 
-                          WHERE Numero_PO = slor_numcf 
-                          AND Parts_Number = slor_refp  
-                          AND Parts_CST = slor_constp 
-                          AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign)
-		   		                AND id_gcot_acknow_cat = ( SELECT MAX(id_gcot_acknow_cat) 
-                                                      FROM gcot_acknow_cat 
-                                                      WHERE Numero_PO = slor_numcf  
-                                                      AND Parts_Number = slor_refp  
-                                                      AND Parts_CST = slor_constp 
-                                                      AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign))
-					            	)
-                        WHEN slor_typcf = 'CIS' THEN
-                                  ( SELECT message FROM  gcot_acknow_cat 
-                                            WHERE Numero_PO = nlig_numcf
-                                            AND Parts_Number = slor_refp  
-                                            AND Parts_CST = slor_constp 
-                                            AND (Line_Number = nlig_noligncm OR Line_Number = slor_nolign)
-                                            AND id_gcot_acknow_cat = ( SELECT MAX(id_gcot_acknow_cat) 
-                                                                         FROM gcot_acknow_cat 
-                                                                         WHERE Numero_PO = nlig_numcf
-                                                                         AND Parts_Number = slor_refp  
-                                                                         AND Parts_CST = slor_constp 
-                                                                         AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign) )
-                                  )
-	                    END as Message ,
-                    CASE  
-                      WHEN nlig_natcm = 'C' THEN 'COMMANDE'
-                      WHEN nlig_natcm = 'L' THEN 'RECEPTION'
-                    END AS Statut_ctrmq_cis,
-                    nlig_numcf as numerocdecis                        
-
+	                  END AS dateStatut
                 FROM sav_lor
 	              JOIN sav_itv ON slor_numor = sitv_numor AND sitv_interv = slor_nogrp / 100
               LEFT JOIN neg_lig ON slor_numcf = nlig_numcde AND slor_refp = nlig_refp
@@ -727,42 +525,7 @@ class PlanningMaterielModel extends Model
                                 AND sliv_nolign = slor_nolign
                             )
                         ), '%Y-%m-%d')
-                    END                                                                                                                         as date_statut,
-                --------- Date Statut End
-                --------- Message Start
-                CASE  
-                    WHEN slor_qterea <> (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) THEN 
-                        (SELECT message
-                        FROM  gcot_acknow_cat 
-                        WHERE CAST( Numero_PO as varchar(10)) = CAST(slor_numcf  as varchar(10))
-                            AND Parts_Number = slor_refp  
-                            AND Parts_CST = slor_constp 
-                            AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign)
-                            AND id_gcot_acknow_cat = (
-                                SELECT MAX(id_gcot_acknow_cat) 
-                                FROM gcot_acknow_cat 
-                                WHERE CAST( Numero_PO as varchar(10)) = CAST(slor_numcf  as varchar(10)) 
-                                    AND Parts_Number = slor_refp  
-                                    AND Parts_CST = slor_constp 
-                                    AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign))
-                        ) 
-                    END                                                                                                                         as message,
-                -------- Message End
-                slor_numcf                                                                                                                      as num_cis,
-                CASE  
-                  WHEN nlig_natcm = 'C' THEN 'COMMANDE'
-                  WHEN nlig_natcm = 'L' THEN 'RECEPTION'
-                END                                                                                                                             as statut_ctrmq_cis,
-                CASE
-                    WHEN nlig_natcm = 'C' THEN nlig_numcf   
-                    WHEN nlig_natcm = 'L'THEN
-                        (SELECT MAX(fllf_numcde)
-                        FROM frn_llf
-                        WHERE fllf_numliv = nlig_numcf
-                            AND fllf_ligne = nlig_noligncm
-                            AND fllf_refp = nlig_refp
-                        )
-                END                                                                                                                             as num_cmd_cis
+                    END                                                                                                                         as date_statut
             FROM  sav_eor,sav_lor as C , sav_itv as D, agr_succ, agr_tab ser, mat_mat, agr_tab ope, outer agr_tab sec, outer neg_lig
             WHERE seor_numor = slor_numor
                 AND seor_soc = '$codeSoc'
@@ -794,7 +557,7 @@ class PlanningMaterielModel extends Model
                 {$this->getNumSerieCondition($searchDto)}
                 {$this->getCasierCondition($searchDto)}
                 {$this->getSectionCondition($searchDto)}
-            group by 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36
+            group by 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32
             order by 10,14 
         ";
 
@@ -808,7 +571,7 @@ class PlanningMaterielModel extends Model
                 COUNT( distinct seor_numor ||'-'||sitv_interv )  as nb_numOR,
                 COUNT( sitv_interv ) as nb_itv,
                 COUNT ( slor_constp) as nb_ligne
-            FROM  sav_eor,sav_lor as C , sav_itv as D, agr_succ, agr_tab ser, mat_mat, agr_tab ope, outer agr_tab sec, outer neg_lig
+            FROM  sav_eor,sav_lor as C , sav_itv as D, agr_succ, agr_tab ser, mat_mat, agr_tab ope, outer neg_lig
             WHERE seor_numor = slor_numor
             AND seor_soc = '$codeSoc' AND mmat_marqmat NOT like 'Z%'
             AND sitv_servcrt IN ('ATE','FOR','GAR','MAN','CSP','MAS', 'LR6', 'LST')
