@@ -113,9 +113,11 @@ document.addEventListener("DOMContentLoaded", (event) => {
 
   function fetchDetailModal(id, signal) {
     // Fetch request to get the data
+    console.log(id, signal);
     fetch(`${baseUrl}/api/detail-modal/${id}`, { signal })
       .then((response) => {
         if (!response.ok) {
+          console.log(response);
           throw new Error("Network response was not ok");
         }
         return response.json();
@@ -143,14 +145,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
         planningTableHeadLign.innerHTML = "";
 
         console.log(data.data, data.data.length)
-        if (data.data.length > 0) {
-          if (
-            data.data[0].num_or.startsWith("5") ||
-            data.data[0].num_or.startsWith("4") ||
-            data.data[0].num_or.startsWith("3") ||
-            data.data[0].num_or.startsWith("2")
-          ) {
-            let rowHeader = `<th>N° OR</th>
+        let rowHeader = `<th>N° OR</th>
                             <th>Intv</th>
                             <th>N° CIS</th>
                             <th>N° Commande</th>
@@ -163,32 +158,18 @@ document.addEventListener("DOMContentLoaded", (event) => {
                             <th>QTé RLQ</th>
                             <th>QTé LIV</th>
                             <th>Statut</th>
-                            <th>Date Statut</th>
-                            <th>ETA Ivato</th>
-                            <th>ETA Magasin</th>
-                            <th>ESD </th>
-                            <th>Message</th>`;
+                            <th>Date Statut</th>`
+        if (data.data.length > 0) {
+          if (
+            data.data[0].num_or.startsWith("5") ||
+            data.data[0].num_or.startsWith("4") ||
+            data.data[0].num_or.startsWith("3") ||
+            data.data[0].num_or.startsWith("2")
+          ) {
             planningTableHead.innerHTML += rowHeader;
             planningTableHeadOR.innerHTML += rowHeader;
             planningTableHeadLign.innerHTML += rowHeader;
           } else {
-            let rowHeader = `<th>N° OR</th>
-                            <th>Intv</th>
-                            <th>N° Commande</th>
-                            <th>Statut ctrmrq</th>
-                            <th>CST</th>
-                            <th>Ref</th>
-                            <th>Désignation</th>
-                            <th>Qté OR</th>
-                            <th>Qté ALL</th>
-                            <th>QTé RLQ</th>
-                            <th>QTé LIV</th>
-                            <th>Statut</th>
-                            <th>Date Statut</th>
-                            <th>ETA Ivato</th>
-                            <th>ETA Magasin</th>
-                            <th>ESD </th>
-                            <th>Message</th>`;
             planningTableHead.innerHTML += rowHeader;
           }
           data.data.forEach((detail) => {
@@ -349,10 +330,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
                         <td>${parseInt(detail.qte_reliquat)}</td> 
                         <td>${parseInt(detail.qte_liv)}</td> 
                         <td  >${statut} </td> 
-                        <td>${dateStatut}</td> 
-                        <td></td> 
-                        <td></td> 
-                        <td></td> 
+                        <td>${dateStatut}</td>
                     </tr>`;
               // tableBody.innerHTML += row;
               tableBodyOR.innerHTML += row;
@@ -410,11 +388,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
                       <td>${parseInt(detail.qte_reliquat)}</td> 
                       <td>${parseInt(detail.qte_liv)}</td> 
                       <td >${statut}</td> 
-                      <td>${dateStatut}</td> 
-                      <td>${dateEtaIvato}</td> 
-                      <td>${dateMagasin}</td> 
-                        <td>${Est_ship_date}</td> 
-                      <td>${message}</td> 
+                      <td>${dateStatut}</td>
                   </tr>`;
               tableBody.innerHTML += row;
             }

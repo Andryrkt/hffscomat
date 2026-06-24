@@ -196,7 +196,7 @@ class PlanningMaterielModel extends Model
                     and slor_refp not like '%-CTRL'
                 )
                 {$this->getTypeLignePieceCondition($searchDto)}
-            GROUP BY 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18
+            GROUP BY 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17
         ";
 
         $result = $this->connect->executeQuery($statement);
@@ -574,7 +574,6 @@ class PlanningMaterielModel extends Model
             FROM  sav_eor,sav_lor as C , sav_itv as D, agr_succ, agr_tab ser, mat_mat, agr_tab ope, outer neg_lig
             WHERE seor_numor = slor_numor
             AND seor_soc = '$codeSoc' AND mmat_marqmat NOT like 'Z%'
-            AND sitv_servcrt IN ('ATE','FOR','GAR','MAN','CSP','MAS', 'LR6', 'LST')
             AND (seor_nummat = mmat_nummat)
             --AND slor_constp NOT like '%ZDI%'
             AND slor_numcf = nlig_numcde AND slor_refp = nlig_refp
