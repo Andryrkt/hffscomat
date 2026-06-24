@@ -27,7 +27,6 @@ class SelectWhereCondition
 
     public function ni(string $column, array $values): string
     {
-
         if (empty($values)) return '';
         return $this->createInConditionWithTemp($column, $values, true);
     }
@@ -39,11 +38,99 @@ class SelectWhereCondition
         return "AND $column LIKE '%$value%'";
     }
 
-    public function nlike(string $column, ?string $value): string
+    /**
+     * cette methode permet de faire le filtre like et not like selon l'option qu'on donne
+     * 
+     * Exemple d'utilisation:
+     * // Contient "john"
+    * $sql = $this->nlike('username', 'john');
+    *
+    * // Commence par "admin"
+    * $sql = $this->nlike('username', 'admin', ['position' => 'starts']);
+    * 
+    * // Termine par ".fr"
+    * $sql = $this->nlike('email', '.fr', ['position' => 'ends']);
+    * 
+    * // Recherche exacte
+    * $sql = $this->nlike('code', 'ABC123', ['position' => 'exact']);
+    * 
+    * // Case sensitive
+    * $sql = $this->nlike('password', 'Secret', [
+    *     'position' => 'contains',
+    *     'caseSensitive' => true
+    * ]);
+    * 
+    * // NOT LIKE
+    * $sql = $this->nlike('status', 'deleted', ['not' => true]);
+    * 
+    * // Avec table alias
+    * $sql = $this->nlike('name', 'martin', [
+    *     'tableAlias' => 'users',
+    *     'position' => 'starts'
+    * ]);
+    * 
+    * // Combinaison
+    * $sql = $this->nlike('email', 'gmail', [
+    *     'position' => 'ends',
+    *     'not' => true,
+    *     'caseSensitive' => false
+    * ]);
+     */
+    public function nlike(string $column, ?string $value, array $options = []): string
     {
+        $defaults = [
+            'position' => 'contains',
+            'caseSensitive' => false,
+            'tableAlias' => '',
+            'not' => false,
+            'escape' => true
+        ];
+        
+        $options = array_merge($defaults, $options);
+        
+        // Valider la position
+        $validPositions = ['contains', 'starts', 'ends', 'exact'];
+        if (!in_array($options['position'], $validPositions)) {
+            $options['position'] = 'contains';
+        }
+        
         $value = $value ? trim($value) : null;
-        if (!$value) return '';
-        return "AND $column NOT LIKE '%$value%'";
+        if ($value === null || $value === '') {
+            return '';
+        }
+
+        // Échapper la valeur
+        $escapedValue = $options['escape'] ? addslashes($value) : $value;
+        
+        // Construire le nom de la colonne
+        $columnName = $options['tableAlias'] 
+            ? "{$options['tableAlias']}.$column" 
+            : "$column";
+        
+        // Construire l'opérateur
+        $operator = $options['caseSensitive'] ? 'LIKE BINARY' : 'LIKE';
+        if ($options['not']) {
+            $operator = "NOT $operator";
+        }
+        
+        // Construire le motif
+        switch ($options['position']) {
+            case 'starts':
+                $pattern = "'$escapedValue%'";
+                break;
+            case 'ends':
+                $pattern = "'%$escapedValue'";
+                break;
+            case 'exact':
+                $pattern = "'$escapedValue'";
+                break;
+            case 'contains':
+            default:
+                $pattern = "'%$escapedValue%'";
+                break;
+        }
+        
+        return " AND $columnName $operator $pattern";
     }
 
     /**

@@ -116,7 +116,6 @@ class DitListeModel extends Model
                 AND osv_or.numeroor IS NULL
 
                 WHERE d0_.code_societe = '$codeSociete'
-                AND (d0_.statut_or NOT LIKE 'Refus%' OR d0_.statut_or IS NULL)
                 $conditions
                 $conditionsMultisucursal
                 ORDER BY d0_.date_demande DESC, d0_.numero_demande_dit ASC              

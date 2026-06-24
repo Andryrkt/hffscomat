@@ -79,7 +79,7 @@
 
                     {% set classeQuatreStatutOr = '' %}
 
-                    {% if item.etatLivraison == 'Tout livré' %}
+                  {#  {% if item.etatLivraison == 'Tout livré' %}
                         {% set classeQuatreStatutOr = 'bg-success text-white' %}
                     {% elseif item.etatLivraison == 'Partiellement livré' %}
                         {% set classeQuatreStatutOr = 'bg-warning text-white' %}
@@ -90,6 +90,7 @@
                     {% else %}
                         {% set classeQuatreStatutOr = 'bg-danger text-white' %}
                     {% endif %}
+                    #}
                     {# FIN LOGIQUE #}
                     <tr>
                         {# Début Action #}
