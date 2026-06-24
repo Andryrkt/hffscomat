@@ -62,10 +62,9 @@ class PlanningListController extends Controller
         if ($request->query->get('action') !== 'oui') {
             ['num_ors' => $numOrs] = $this->planningModel->getNumeroOrValider($dto);
             ['num_ors' => $numOrSoumis] = $this->planningModel->getOrsSoumis();
-            ['num_or_itvs' => $numOrItvBack] = $this->planningModel->getBackOrderPlanning($numOrs, $numOrSoumis, $dto);
-            $result = $this->planningMaterielModel->getMaterielPlanningList($numOrs, $numOrSoumis, $numOrItvBack, $dto);
-            $data = $this->planningService->getDetailledDataList($result, $numOrItvBack);
-            $count = $this->planningMaterielModel->getMaterielListCount($numOrs, $numOrSoumis, $numOrItvBack, $dto, $codeSociete);
+            $result = $this->planningMaterielModel->getMaterielPlanningList($numOrs, $numOrSoumis, [], $dto);
+            $data = $this->planningService->getDetailledDataList($result, []);
+            $count = $this->planningMaterielModel->getMaterielListCount($numOrs, $numOrSoumis, [], $dto, $codeSociete);
             $this->getSessionService()->set('data_planning_detail_excel', $data['data_excel']);
         }
 

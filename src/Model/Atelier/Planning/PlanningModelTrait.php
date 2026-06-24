@@ -179,7 +179,7 @@ trait PlanningModelTrait
 
     private function getAgenceCondition(PlanningSearchDto $dto)
     {
-        return $this->selectCond->in('seor_succ', $dto->agence);
+        return $this->selectCond->eq('seor_succ', $dto->agence);
     }
     private function getAgenceDebiteCondition(PlanningSearchDto $dto)
     {
@@ -192,20 +192,20 @@ trait PlanningModelTrait
     }
     private function getIdMaterielCondition(PlanningSearchDto $dto)
     {
-        return $this->selectCond->in('mmat_nummat', $dto->idMat);
+        return $this->selectCond->eq('mmat_nummat', $dto->idMat);
     }
     private function getNumOrCondition(PlanningSearchDto $dto)
     {
-        return $this->selectCond->in('slor_numor', $dto->numOr);
+        return $this->selectCond->eq('slor_numor', $dto->numOr);
     }
     private function getNumSerieCondition(PlanningSearchDto $dto)
     {
-        return $this->selectCond->in('mmat_numserie', $dto->numSerie);
+        return $this->selectCond->eq('mmat_numserie', $dto->numSerie);
     }
 
     private function getNumParcCondition(PlanningSearchDto $dto)
     {
-        return $this->selectCond->in('mmat_recalph', $dto->numParc);
+        return $this->selectCond->eq('mmat_recalph', $dto->numParc);
     }
     private function getCasierCondition(PlanningSearchDto $dto)
     {
@@ -214,10 +214,6 @@ trait PlanningModelTrait
 
     private function getOrValidBackOrderCondition(PlanningSearchDto $dto, array $orItvBack, array $orsValides, array $orsSoumis): string
     {
-        if ($dto->orBackOrder)
-        {
-            return $this->selectCond->in("cast(seor_numor ||'-'|| sitv_interv as varchar(10))", $orItvBack);
-        }
         if (!empty($orsValides))
         {
             if ($dto->orNonValiderDw)

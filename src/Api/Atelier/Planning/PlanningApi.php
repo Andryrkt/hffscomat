@@ -46,12 +46,13 @@ class PlanningApi extends Controller
     public function detailModal(string $numOr)
     {
         $dto = $this->getSessionService()->get('planning_search_criteria', []);
+        $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
         if ($numOr === '')
             $details = [];
         else
         {
             $details = $this->planningMaterielModel->getDetailPieceInformix($numOr, $dto);
-            $numDit = $this->ditModel->getNumDitByNumOr($numOr, 'HF');
+            $numDit = $this->ditModel->getNumDitByNumOr($numOr, $codeSociete);
             $detailSize = count($details);
 
             $magasins = [];

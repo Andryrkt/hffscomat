@@ -183,7 +183,7 @@ class DitOrSoumisAValidationModel extends Model
         return $this->convertirEnUtf8($data);
     }
 
-    public function recupPositonOr(string $numor, string $codeSociete): string
+    public function recupPositonOr(string $numor, string $codeSociete)
     {
         $statement = " SELECT seor_pos as position 
                     from {$this->dbIps}:Informix.sav_eor 
@@ -371,7 +371,7 @@ class DitOrSoumisAValidationModel extends Model
         return array_column($data, 'numcli')[0] ?? '';
     }
 
-    public function validationArticleZstDa($numOr)
+    public function validationArticleZstDa($numOr, string $codeSociete)
     {
         $statement = " SELECT 
                     --TRIM(isl.slor_constp) as contructeur, 
@@ -381,7 +381,7 @@ class DitOrSoumisAValidationModel extends Model
                     TRIM(isl.slor_desi) as designation
                     from Informix.sav_lor isl 
                     where slor_constp ='ZST' 
-                    and slor_soc ='HF' 
+                    and slor_soc ='$codeSociete' 
                     --and isl.slor_refp != 'ST'
                     and isl.slor_numor ='$numOr'
                     order by isl.slor_refp DESC
