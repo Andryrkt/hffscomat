@@ -3,6 +3,7 @@
 namespace App\Service\atelier\dit\soumission\Devis;
 
 use App\Dto\Atelier\Dit\soumission\Devis\DitDevisSoumisAValidationDto;
+use App\Mapper\Atelier\Dit\Soumission\Devis\DitDevisSoumisAValidationMapper;
 use App\Model\Atelier\Dit\Soumission\Devis\DitDevisSoumisAValidationModel;
 use App\Service\autres\MontantPdfService;
 use App\Service\fichier\FileUploaderService;
@@ -92,10 +93,10 @@ class TraitementDeFicherService
     {
         $ditDevisSoumisAValidationModel = new DitDevisSoumisAValidationModel();
         return [
-            'devisSoumisAvantForfait'    => $ditDevisSoumisAValidationModel->findDevisSoumiAvantForfait($numDevis, $codeSociete),
-            'devisSoumisAvantMaxForfait' => $ditDevisSoumisAValidationModel->findDevisSoumiAvantMaxForfait($numDevis, $codeSociete),
-            'devisSoumisAvantVte'        => $ditDevisSoumisAValidationModel->findDevisSoumiAvant($numDevis, $codeSociete),
-            'devisSoumisAvantMaxVte'     => $ditDevisSoumisAValidationModel->findDevisSoumiAvantMax($numDevis, $codeSociete),
+            'devisSoumisAvantForfait'    => DitDevisSoumisAValidationMapper::mapArrayToDto($ditDevisSoumisAValidationModel->findDevisSoumiAvantForfait($numDevis, $codeSociete)),
+            'devisSoumisAvantMaxForfait' => DitDevisSoumisAValidationMapper::mapArrayToDto($ditDevisSoumisAValidationModel->findDevisSoumiAvantMaxForfait($numDevis, $codeSociete)),
+            'devisSoumisAvantVte'        => DitDevisSoumisAValidationMapper::mapArrayToDto($ditDevisSoumisAValidationModel->findDevisSoumiAvant($numDevis, $codeSociete)),
+            'devisSoumisAvantMaxVte'     => DitDevisSoumisAValidationMapper::mapArrayToDto($ditDevisSoumisAValidationModel->findDevisSoumiAvantMax($numDevis, $codeSociete)),
         ];
     }
 

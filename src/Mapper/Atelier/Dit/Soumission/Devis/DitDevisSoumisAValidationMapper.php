@@ -83,4 +83,40 @@ class DitDevisSoumisAValidationMapper
             'statut_devis' => $dto->type === 'VP' ? ConstantStatutDevis::PRIX_A_CONFIRMER : ConstantStatutDevis::A_VALIDER_ATELIER,
         ];
     }
+
+
+
+    public static function mapArrayToDto(array $data): array
+    {
+        return array_map(function ($item) {
+            $devisDto = new DitDevisSoumisAValidationDto();
+            $devisDto->numeroVersion = $item['numeroversion'];
+            $devisDto->dateHeureSoumission = $item['dateheuresoumission'];
+            $devisDto->numeroDevis = $item['numerodevis'];
+            $devisDto->numeroDit = $item['numerodit'];
+            $devisDto->numeroItv = $item['numeroitv'];
+            $devisDto->nombreLigneItv = $item['nombreligneitv'];
+            $devisDto->montantItv = $item['montantitv'];
+            $devisDto->montantPiece = $item['montantpiece'];
+            $devisDto->montantMo = $item['montantmo'];
+            $devisDto->montantAchatLocaux = $item['montantachatlocaux'];
+            $devisDto->montantFraisDivers = $item['montantfraisdivers'];
+            $devisDto->montantLubrifiants = $item['montantlubrifiants'];
+            $devisDto->libellelItv = $item['libellelitv'];
+            $devisDto->statut = $item['statut'];
+            $devisDto->natureOperation = $item['natureoperation'];
+            $devisDto->montantForfait = $item['montantforfait'];
+            $devisDto->devisVenteOuForfait = $item['devisventeouforfait'];
+            $devisDto->devise = $item['devise'];
+            $devisDto->type = $item['type'];
+            $devisDto->tacheValidateur = $item['tache_validateur'];
+            $devisDto->codeSociete = $item['code_societe'];
+            $devisDto->montantVente = $item['montantvente'];
+            $devisDto->nombreLignePiece = $item['nombrelignepiece'];
+            // $devisDto->observation= $item['observation'];
+            // $devisDto->montantrevient = $item['montantrevient'];
+            // $devisDto->margerevient = $item['margerevient'];
+            return $devisDto;
+        }, $data);
+    }
 }

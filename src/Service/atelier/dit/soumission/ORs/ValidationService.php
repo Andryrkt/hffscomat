@@ -11,10 +11,8 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class ValidationService
 {
-
-
     private const FILE_FIELD_NAME = 'pieceJoint01';
-    private const FILENAME_PATTERN = '/^(Ordre de réparation|PROFORMA_INVOICE)_(\d+)_(\d+)_(\d+)\\.pdf$/';
+    private const FILENAME_PATTERN = '/^(Ordre de réparation|PROFORMA INVOICE)_(\d+)_(\d+)_(\d+)\\.pdf$/';
 
     private function getSessionService()
     {
@@ -165,11 +163,11 @@ class ValidationService
         }
 
         // Vérifie si le nom du fichier correspond au pattern attendu (S'assurer que c'est bien un OR qui soit soumis)
-        if (!$this->matchPattern($fileName, self::FILENAME_PATTERN)) {
-            $message = "Le nom du fichier soumis n'est pas conforme au format attendu. Reçu: " . $fileName;
-            $this->sendNotificationOR($message, $dto->numeroOr, false);
-            return true;
-        }
+        // if (!$this->matchPattern($fileName, self::FILENAME_PATTERN)) {
+        //     $message = "Le nom du fichier soumis n'est pas conforme au format attendu. Reçu: " . $fileName;
+        //     $this->sendNotificationOR($message, $dto->numeroOr, false);
+        //     return true;
+        // }
 
         // Vérifie si le numéro de OR dans le nom du fichier correspond au numéro de dit attendu (S'assurer que le OR envoyé corresponde à la ligne de OR utilisé pour la soumission dans l'intranet)
         if (!$this->matchNumberAfterUnderscore($fileName, $dto->numeroOr)) {

@@ -74,6 +74,12 @@ class DevisValidationService
         $numDitIps = $ditDevisSoumisAValidationModel->recupNumDitIps($dto->numeroDevis, $dto->codeSociete);
         $servDebiteurIps = $ditDevisSoumisAValidationModel->recupServDebiteur($dto->numeroDevis, $dto->codeSociete);
 
+        // verifie si l'information du demande d'intervention rattacher au devis est bien recupérer
+        if(empty($infoDit)) {
+            $message = " Nous n'avons pas pu récupérer les informations de la demande d'intervention rattachée au devis n° {$dto->numeroDevis}.";
+                    $this->sendNotificationOR($message, $dto->numeroDevis, false);
+                    return true;
+        }
 
         // verifier si n° dit ips <> n° dit intranet
         if ($numDitIps !== $infoDit['numero_demande_dit']) {
@@ -83,6 +89,7 @@ class DevisValidationService
                 return true;
             }
         }
+        
         // verifie si le n° client dans IPS est different du n° client dans intranet
         if ($numClientIps !== $infoDit['numero_client']) {
             $message = "Erreur lors de la soumission, Impossible de soumettre le devis . . . Veuillez vérifier le client car le client sur la DIT est différent de celui du devis ";
@@ -104,7 +111,7 @@ class DevisValidationService
             $montantIps = $ditDevisSoumisAValidationModel->getMontantItv($dto->numeroDevis, $dto->codeSociete);
             $montantIrium = $ditDevisSoumisAValidationModel->recupMontantItvIrium($dto->numeroDevis, $dto->codeSociete);
 
-            // verifie si statut devi prix réfuseé magasin, pas de nouvelle ligne et les montants ne change pas
+            // verifie si statut devis prix réfuseé magasin, pas de nouvelle ligne et les montants ne change pas
             if ($statutDevis === ConstantStatutDevis::PRIX_REFUSE_MAGASIN && $nbPieceSortieMagasin === $nbPieceSortieMagasinDejaSoumi && (abs((float)$montantIps - (float)$montantIrium) < PHP_FLOAT_EPSILON)) {
                 $message = "Le prix a été déjà vérifié ... Veuillez soumettre à validation à l'atelier";
                 $this->sendNotificationOR($message, $dto->numeroDevis, false);
@@ -134,12 +141,7 @@ class DevisValidationService
                 return true;
             }
 
-            // verification si la reparation est réalise par WS PSSR
-            if ($infoDit["reparation_realise"] === "WS PSSR") {
-                $message = "Erreur lors de la soumission, Impossible de soumettre le devis  . . . l'atelier est 'WS PSSR'";
-                $this->sendNotificationOR($message, $dto->numeroDevis, false);
-                return true;
-            }
+            
         } else {
             $estPremierSoumission = $ditDevisSoumisAValidationModel->estPremierSoumission($dto->numeroDevis, $dto->codeSociete);
 
@@ -167,6 +169,13 @@ class DevisValidationService
             // verifie si le devis est statué "à valider atelier"
             if ($statutDevis === ConstantStatutDevis::A_VALIDER_ATELIER) {
                 $message = "Erreur lors de la soumission, Impossible de soumettre le devis  . . . un devis est déjà en cours de validation";
+                $this->sendNotificationOR($message, $dto->numeroDevis, false);
+                return true;
+            }
+
+            // verification si la reparation est réalise par WS PSSR
+            if ($infoDit["reparation_realise"] === "WS PSSR") {
+                $message = "Erreur lors de la soumission, Impossible de soumettre le devis  . . . l'atelier est 'WS PSSR'";
                 $this->sendNotificationOR($message, $dto->numeroDevis, false);
                 return true;
             }

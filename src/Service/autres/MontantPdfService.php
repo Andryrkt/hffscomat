@@ -56,14 +56,14 @@ class MontantPdfService
 
         for ($i = 0; $i < count($OrSoumisAvant); $i++) {
 
-            $montantAvant = isset($OrSoumisAvantMax[$i]) ? $OrSoumisAvantMax[$i]->getMontantVente() : 0.00;
-            $montantApres = isset($OrSoumisAvant[$i]) ? $OrSoumisAvant[$i]->getMontantVente() : 0.00;
+            $montantAvant = isset($OrSoumisAvantMax[$i]) ? $OrSoumisAvantMax[$i]->montantVente : 0.00;
+            $montantApres = isset($OrSoumisAvant[$i]) ? $OrSoumisAvant[$i]->montantVente : 0.00;
 
-            $itv = $OrSoumisAvant[$i]->getNumeroItv();
-            $libelleItv = $OrSoumisAvant[$i]->getLibellelItv();
-            $nbLigAp = isset($OrSoumisAvant[$i]) ? $OrSoumisAvant[$i]->getNombreLigneItv() : 0;
+            $itv = $OrSoumisAvant[$i]->numeroItv;
+            $libelleItv = $OrSoumisAvant[$i]->libellelItv;
+            $nbLigAp = isset($OrSoumisAvant[$i]) ? $OrSoumisAvant[$i]->nombreLigneItv : 0;
             $mttTotalAp = $montantApres;
-            $nbLigAv = isset($OrSoumisAvantMax[$i]) ? $OrSoumisAvantMax[$i]->getNombreLigneItv() : 0;
+            $nbLigAv = isset($OrSoumisAvantMax[$i]) ? $OrSoumisAvantMax[$i]->nombreLigneItv : 0;
             $mttTotalAv = $montantAvant;
 
             $recapAvantApres[] = [
@@ -101,14 +101,14 @@ class MontantPdfService
 
         for ($i = 0; $i < count($OrSoumisAvant); $i++) {
 
-            $montantAvant = isset($OrSoumisAvantMax[$i]) ? $OrSoumisAvantMax[$i]->getMontantForfait() : 0.00;
-            $montantApres = isset($OrSoumisAvant[$i]) ? $OrSoumisAvant[$i]->getMontantForfait() : 0.00;
+            $montantAvant = isset($OrSoumisAvantMax[$i]) ? $OrSoumisAvantMax[$i]->montantForfait : 0.00;
+            $montantApres = isset($OrSoumisAvant[$i]) ? $OrSoumisAvant[$i]->montantForfait : 0.00;
 
-            $itv = $OrSoumisAvant[$i]->getNumeroItv();
-            $libelleItv = $OrSoumisAvant[$i]->getLibellelItv();
-            $nbLigAp = isset($OrSoumisAvant[$i]) ? $OrSoumisAvant[$i]->getNombreLigneItv() : 0;
+            $itv = $OrSoumisAvant[$i]->numeroItv;
+            $libelleItv = $OrSoumisAvant[$i]->libellelItv;
+            $nbLigAp = isset($OrSoumisAvant[$i]) ? $OrSoumisAvant[$i]->nombreLigneItv : 0;
             $mttTotalAp = $montantApres;
-            $nbLigAv = isset($OrSoumisAvantMax[$i]) ? $OrSoumisAvantMax[$i]->getNombreLigneItv() : 0;
+            $nbLigAv = isset($OrSoumisAvantMax[$i]) ? $OrSoumisAvantMax[$i]->nombreLigneItv : 0;
             $mttTotalAv = $montantAvant;
 
             $recapAvantApres[] = [
@@ -153,7 +153,7 @@ class MontantPdfService
     private function trierTableauParNumero(array &$tableau)
     {
         usort($tableau, function ($a, $b) {
-            return strcmp($a->getNumeroItv(), $b->getNumeroItv());
+            return strcmp($a->numeroItv, $b->numeroItv);
         });
     }
 
@@ -328,13 +328,13 @@ class MontantPdfService
 
         foreach ($orSoumisValidataion as $orSoumis) {
             $recapOr[] = [
-                'itv' => $orSoumis->getNumeroItv(),
-                'mttTotal' => $orSoumis->getMontantItv(),
-                'mttPieces' => $orSoumis->getMontantPiece(),
-                'mttMo' => $orSoumis->getMontantMo(),
-                'mttSt' => $orSoumis->getMontantAchatLocaux(),
-                'mttLub' => $orSoumis->getMontantLubrifiants(),
-                'mttAutres' => $orSoumis->getMontantFraisDivers(),
+                'itv' => $orSoumis->numeroItv,
+                'mttTotal' => $orSoumis->montantItv,
+                'mttPieces' => $orSoumis->montantPiece,
+                'mttMo' => $orSoumis->montantMo,
+                'mttSt' => $orSoumis->montantAchatLocaux,
+                'mttLub' => $orSoumis->montantLubrifiants,
+                'mttAutres' => $orSoumis->montantFraisDivers,
             ];
         }
         return $recapOr;
@@ -360,12 +360,12 @@ class MontantPdfService
         ];
         foreach ($orSoumisValidataion as $orSoumis) {
             // Faire la somme des montants et les stocker dans le tableau
-            $totalRecapOr['mttTotal'] += $orSoumis->getMontantItv();
-            $totalRecapOr['mttPieces'] += $orSoumis->getMontantPiece();
-            $totalRecapOr['mttMo'] += $orSoumis->getMontantMo();
-            $totalRecapOr['mttSt'] += $orSoumis->getMontantAchatLocaux();
-            $totalRecapOr['mttLub'] += $orSoumis->getMontantLubrifiants();
-            $totalRecapOr['mttAutres'] += $orSoumis->getMontantFraisDivers();
+            $totalRecapOr['mttTotal'] += $orSoumis->montantItv;
+            $totalRecapOr['mttPieces'] += $orSoumis->montantPiece;
+            $totalRecapOr['mttMo'] += $orSoumis->montantMo;
+            $totalRecapOr['mttSt'] += $orSoumis->montantAchatLocaux;
+            $totalRecapOr['mttLub'] += $orSoumis->montantLubrifiants;
+            $totalRecapOr['mttAutres'] += $orSoumis->montantFraisDivers;
         }
 
         return $totalRecapOr;
@@ -378,14 +378,14 @@ class MontantPdfService
 
         foreach ($orSoumisValidataion as $orSoumis) {
             $recapOr[] = [
-                'itv' => $orSoumis->getNumeroItv(),
-                'mttTotal' => $orSoumis->getMontantItv(),
-                'mttForfait' => $orSoumis->getMontantForfait(),
-                'mttPieces' => $orSoumis->getMontantPiece(),
-                'mttMo' => $orSoumis->getMontantMo(),
-                'mttSt' => $orSoumis->getMontantAchatLocaux(),
-                'mttLub' => $orSoumis->getMontantLubrifiants(),
-                'mttAutres' => $orSoumis->getMontantFraisDivers(),
+                'itv' => $orSoumis->numeroItv,
+                'mttTotal' => $orSoumis->montantItv,
+                'mttForfait' => $orSoumis->montantForfait,
+                'mttPieces' => $orSoumis->montantPiece,
+                'mttMo' => $orSoumis->montantMo,
+                'mttSt' => $orSoumis->montantAchatLocaux,
+                'mttLub' => $orSoumis->montantLubrifiants,
+                'mttAutres' => $orSoumis->montantFraisDivers,
             ];
         }
         return $recapOr;
@@ -412,13 +412,13 @@ class MontantPdfService
         ];
         foreach ($orSoumisValidataion as $orSoumis) {
             // Faire la somme des montants et les stocker dans le tableau
-            $totalRecapOr['mttTotal'] += $orSoumis->getMontantItv();
-            $totalRecapOr['mttForfait'] = $orSoumis->getMontantForfait();
-            $totalRecapOr['mttPieces'] += $orSoumis->getMontantPiece();
-            $totalRecapOr['mttMo'] += $orSoumis->getMontantMo();
-            $totalRecapOr['mttSt'] += $orSoumis->getMontantAchatLocaux();
-            $totalRecapOr['mttLub'] += $orSoumis->getMontantLubrifiants();
-            $totalRecapOr['mttAutres'] += $orSoumis->getMontantFraisDivers();
+            $totalRecapOr['mttTotal'] += $orSoumis->montantItv;
+            $totalRecapOr['mttForfait'] = $orSoumis->montantForfait;
+            $totalRecapOr['mttPieces'] += $orSoumis->montantPiece;
+            $totalRecapOr['mttMo'] += $orSoumis->montantMo;
+            $totalRecapOr['mttSt'] += $orSoumis->montantAchatLocaux;
+            $totalRecapOr['mttLub'] += $orSoumis->montantLubrifiants;
+            $totalRecapOr['mttAutres'] += $orSoumis->montantFraisDivers;
         }
 
         return $totalRecapOr;

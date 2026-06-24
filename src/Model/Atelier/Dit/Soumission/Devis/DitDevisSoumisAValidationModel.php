@@ -98,7 +98,7 @@ class DitDevisSoumisAValidationModel extends Model
 
         $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
 
-        return (int)$data[0]['nbr_ligne_piece'] ?? 0;
+        return !empty($data) ? (int)$data[0]['nbr_ligne_piece'] : 0;
     }
 
     public function recupDevisValide(string $numDevis, string $codeSociete): int
@@ -189,7 +189,7 @@ class DitDevisSoumisAValidationModel extends Model
         $statement = " SELECT  *
                         from {$this->dbIrium}:Informix.demande_intervention 
                         where numero_demande_dit ='$numDit'
-                        and numero_devis_rattache = '$numDevis'
+                        --and numero_devis_rattache = '$numDevis'
                         and code_societe ='$codeSociete'
                     ";
 
