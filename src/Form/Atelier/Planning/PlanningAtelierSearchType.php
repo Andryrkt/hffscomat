@@ -35,9 +35,9 @@ class PlanningAtelierSearchType extends AbstractType
         $section = $this->transformeValeur($section, 'section', 'num');
         $ressource = $this->atelierModel->getResource($codeSociete);
         $ressource = $this->transformEnSeulTableau($ressource);
-        $agence = $this->model->getAgences();
+        $agence = $this->model->getAgences($codeSociete);
         $agence = $this->transformEnSeulTableauAvecKey($agence);
-        $agenceDebite = $this->model->getAgenceDebite();
+        $agenceDebite = $this->model->getAgenceDebite($codeSociete);
 
         $builder
             ->add('numeroSemaine', ChoiceType::class, [
