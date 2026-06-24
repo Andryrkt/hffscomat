@@ -241,7 +241,6 @@ class PlanningModel extends Model
                 )
             order by osv.numeroOR asc
         ";
-
         $results = $this->connect->executeQuery($statement);
         $data = $this->connect->fetchResults($results);
         return [

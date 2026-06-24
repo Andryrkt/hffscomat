@@ -77,7 +77,7 @@ class PlanningMapper
             'qteLiv'     => $dto->qteLiv,
             'qteAll'     => $dto->qteAll,
             'commentaire'=> $dto->commentaire,
-            'back'       => in_array($dto->orItv, $orItvBack, true),
+            'back'       => false,
             'statut'     => $dto->statut,
         ];
         $dto->addMoisDetails($detail);
