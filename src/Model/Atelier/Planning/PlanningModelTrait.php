@@ -114,12 +114,11 @@ trait PlanningModelTrait
         $monthDateNonPlanifier =  " MONTH ( DATE(sitv_datdeb) ) ";
         switch ($dto->planning) {
             case "PLANIFIE":
-                $vMonthStatutPlan = $monthDatePlanifier;
-                break;
+                return $monthDatePlanifier;
             case "NON_PLANIFIE":
-                $vMonthStatutPlan = $monthDateNonPlanifier;
+                return $monthDateNonPlanifier;
         }
-        return  $vMonthStatutPlan;
+        return  '';
     }
 
     private function getDateDebutCondition(PlanningSearchDto $dto)

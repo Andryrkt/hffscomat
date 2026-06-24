@@ -178,10 +178,16 @@ class PlanningService
     {
         $data_excel = [];
         $res = [];
+        $itv_arr = [];
+        $nb_ligne = 0;
 
         if (!empty($data)) {
             for ($i = 0; $i < count($data); $i++) {
                 $orItv = $data[$i]['or_itv'];
+                $nb_ligne++;
+                if (!in_array($orItv, $itv_arr)) {
+                    $itv_arr[] = $orItv;
+                }
                 if (in_array($orItv, $back)) {
                     $data[$i]['backOrder'] = $excelBack === false ? 'back' : '';
                 }
@@ -222,7 +228,7 @@ class PlanningService
                     'status_b' => $data[$i]['statut_b'],
                     //'Qte_Solde' => $data[$i]['qteSlode'],
                     //'qte' => $data[$i]['qte'],
-                    'backorder' => $data[$i]['backOrder']
+                    'backorder' => $data[$i]['backOrder'],
                 ];
 
                 $row_excel = $row;
@@ -234,7 +240,7 @@ class PlanningService
             }
         }
 
-        return ['data' => $res, 'data_excel' => $data_excel];
+        return ['data' => $res, 'data_excel' => $data_excel, 'nb_num_or' => count($itv_arr), 'nb_ligne' => $nb_ligne];
 
     }
 

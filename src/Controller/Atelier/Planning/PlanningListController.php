@@ -58,13 +58,11 @@ class PlanningListController extends Controller
         if ($form->isSubmitted() && $form->isValid())
             $dto = $form->getData();
         $data = ['data' => []];
-        $count = [];
         if ($request->query->get('action') !== 'oui') {
             ['num_ors' => $numOrs] = $this->planningModel->getNumeroOrValider($dto);
             ['num_ors' => $numOrSoumis] = $this->planningModel->getOrsSoumis();
             $result = $this->planningMaterielModel->getMaterielPlanningList($numOrs, $numOrSoumis, [], $dto);
             $data = $this->planningService->getDetailledDataList($result, []);
-            $count = $this->planningMaterielModel->getMaterielListCount($numOrs, $numOrSoumis, [], $dto, $codeSociete);
             $this->getSessionService()->set('data_planning_detail_excel', $data['data_excel']);
         }
 
@@ -72,7 +70,7 @@ class PlanningListController extends Controller
             'form' => $form->createView(),
             'criteria' => $dto->toArray(),
             'data' => $data['data'],
-            'count' => $count,
+            'count' => [['nb_numor' => $data['nb_num_or'], 'nb_ligne' => $data['nb_ligne']]],
         ]);
     }
 

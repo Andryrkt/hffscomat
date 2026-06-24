@@ -3,6 +3,7 @@
 namespace App\Api\Atelier\Planning;
 
 use App\Controller\Controller;
+use App\Dto\Atelier\Planning\PlanningSearchDto;
 use App\Model\Atelier\Dit\DitModel;
 use App\Model\Atelier\Planning\PlanningMaterielModel;
 use App\Model\Atelier\Planning\PlanningModel;
@@ -45,7 +46,9 @@ class PlanningApi extends Controller
      */
     public function detailModal(string $numOr)
     {
-        $dto = $this->getSessionService()->get('planning_search_criteria', []);
+        $dto = $this->getSessionService()->get('planning_search_criteria');
+        if (!$dto)
+            $dto = new PlanningSearchDto();
         $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
         if ($numOr === '')
             $details = [];
@@ -58,18 +61,7 @@ class PlanningApi extends Controller
             $magasins = [];
             $parts = [];
             for ($i = 0; $i < $detailSize; $i++) {
-                if ($details[$i]['num_cmd_cis'])
-                {
-                    $parts[] = $this->planningModel->getEtatPiecePartiel($details[$i]['num_cmd_cis'], $details[$i]['ref']);
-                    $magasins[] = $this->planningModel->getEtaMagasin($details[$i]['num_cmd_cis'], $details[$i]['ref'], $details[$i]['cst']);
-                } else
-                {
-                    $parts[] = [];
-                }
-
-                $details[$i]['Eta_ivato'] = "";
-                $details[$i]['Eta_magasin'] = "";
-                $details[$i]['Est_ship_date'] = "";
+                $parts[] = [];
 
                 if ($parts[$i])
                 {
@@ -92,7 +84,6 @@ class PlanningApi extends Controller
                 $details[$i]['migration'] = "";
                 $details[$i]['numDit'] = $numDit;
             }
-
             header("Content-type:application/json");
 
             echo json_encode([
