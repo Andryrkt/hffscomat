@@ -49,7 +49,6 @@ class OrLivrerModel extends Model
             , sum(slor_qteres) as qteALivrer
             , sum(slor_qterea) as quantiteLivree
             , trim(atab_lib) as nomPrenom
-            -- mety tsy ilaina
             , (
 	            SELECT F.situation FROM (select
 	            CASE
@@ -75,6 +74,7 @@ class OrLivrerModel extends Model
 	            and situ.slor_constp in (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST')
 	            group by 2 ) as F
             ) as situationtest
+            -- mety tsy ilaina
             , seor_usr as idUser
             , trim(ausr_nom) as nomUtilisateur
             
@@ -96,7 +96,15 @@ class OrLivrerModel extends Model
 	            and I.sitv_succ = slor_succ
 	            and I.sitv_numor = slor_numor
 	            and I.sitv_interv = slor_nogrp /100
-	            and sitv_numor || '-' || sitv_interv in ('16417354-1')
+	            and sitv_numor || '-' || sitv_interv in (    SELECT DISTINCT osv.numeroor || '-' || osv.numeroitv
+    FROM {$this->dbIrium}:informix.ors_soumis_a_validation osv
+    WHERE osv.statut LIKE 'Valid%'
+    AND osv.numeroversion = (
+        SELECT MAX(osv2.numeroversion)
+        FROM {$this->dbIrium}:informix.ors_soumis_a_validation osv2
+        WHERE osv2.id = osv.id
+    )
+    )
             inner join(
 			            SELECT F.* FROM (select
 			            CASE
@@ -118,7 +126,15 @@ class OrLivrerModel extends Model
 			            , situ.slor_numor as numero_or
 			            FROM sav_lor situ
 			            WHERE
-			            situ.slor_numor in ('16417354')
+			            situ.slor_numor in (    SELECT DISTINCT osv.numeroor
+    FROM {$this->dbIrium}:informix.ors_soumis_a_validation osv
+    WHERE osv.statut LIKE 'Valid%'
+    AND osv.numeroversion = (
+        SELECT MAX(osv2.numeroversion)
+        FROM {$this->dbIrium}:informix.ors_soumis_a_validation osv2
+        WHERE osv2.id = osv.id
+    )
+    )
 			             AND situ.slor_constp in (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST') AND (slor_refp not like '%-L' and slor_refp not like '%-CTRL')
 			            group by 2 ) as F
             		) as T ON T.numero_or = OR.slor_numor
@@ -135,7 +151,15 @@ class OrLivrerModel extends Model
             where seor_numor in
             (
 	            select slor_numor from sav_lor l
-	            where l.slor_numor  in ('16417354')
+	            where l.slor_numor  in (    SELECT DISTINCT osv.numeroor
+    FROM {$this->dbIrium}:informix.ors_soumis_a_validation osv
+    WHERE osv.statut LIKE 'Valid%'
+    AND osv.numeroversion = (
+        SELECT MAX(osv2.numeroversion)
+        FROM {$this->dbIrium}:informix.ors_soumis_a_validation osv2
+        WHERE osv2.id = osv.id
+    )
+    )
 	             AND l.slor_constp in (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST') AND (slor_refp not like '%-L' and slor_refp not like '%-CTRL')
 	            group by l.slor_numor
 	            having sum(l.slor_qteres) > 0

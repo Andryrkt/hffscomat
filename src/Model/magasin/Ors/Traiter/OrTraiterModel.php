@@ -24,7 +24,7 @@ class OrTraiterModel extends Model
             {$selectWhereCondition->eq('w.description',$dtoSearch->niveauUrgence)}
             {$selectWhereCondition->eq('slor_succdeb', trim(explode('-',$dtoSearch->agence)[0]))}
             {$selectWhereCondition->eq('slor_servdeb', trim(explode('-',$dtoSearch->service)[0]))}
-            {$selectWhereCondition->eq('slor_succdeb', trim(explode('-',$dtoSearch->agenceUser)[0]))}
+            {$selectWhereCondition->eq('slor_succ', trim(explode('-',$dtoSearch->agenceUser)[0]))}
         "; // 10-ANTALAHA => 10
 
 
@@ -63,7 +63,7 @@ class OrTraiterModel extends Model
             , trim(atab_lib) as nomPrenom
 
             from {$this->dbIps}:Informix.sav_lor 
-            inner join {$this->dbIps}:Informix.sav_eor on seor_soc = slor_soc and seor_succ = slor_succ and seor_numor = slor_numor and seor_soc = 'HF'
+            inner join {$this->dbIps}:Informix.sav_eor on seor_soc = slor_soc and seor_succ = slor_succ and seor_numor = slor_numor and seor_soc = '{$dtoSearch->codeSociete}'
             inner join {$this->dbIps}:Informix.mat_mat on mmat_nummat =  seor_nummat
             inner join {$this->dbIps}:Informix.agr_usr on ausr_num = seor_usr
             inner join {$this->dbIps}:Informix.agr_tab on atab_nom = 'OPE' and atab_code = ausr_ope
