@@ -309,14 +309,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
               dateStatutCIS = "";
             }
 
-            if (
-              (detail.num_or && detail.num_or.startsWith("5")) ||
-              (detail.num_or && detail.num_or.startsWith("4")) ||
-              (detail.num_or && detail.num_or.startsWith("3")) ||
-              (detail.num_or && detail.num_or.startsWith("2"))
-            ) {
-              // Affichage
-              let row = `<tr>
+            let row = `<tr>
                         <td>${detail.num_or}</td> 
                         <td>${detail.num_itv}</td> 
                         <td ${cmdColor}>${numCis}</td> 
@@ -329,69 +322,11 @@ document.addEventListener("DOMContentLoaded", (event) => {
                         <td>${parseInt(detail.qte_all)}</td> 
                         <td>${parseInt(detail.qte_reliquat)}</td> 
                         <td>${parseInt(detail.qte_liv)}</td> 
-                        <td  >${statut} </td> 
+                        <td>${statut} </td> 
                         <td>${dateStatut}</td>
                     </tr>`;
               // tableBody.innerHTML += row;
               tableBodyOR.innerHTML += row;
-              if (numCis) {
-                let row1 = `<tr>
-                        <td>${detail.num_or}</td> 
-                        <td>${detail.num_itv}</td> 
-                        <td>${numCis}</td> 
-                        <td ${cmdColor}>${numeroCdeCis}</td> 
-                        <td ${cmdColorRmq}>${StatutCtrmqCis}</td> 
-                        <td>${detail.cst}</td> 
-                        <td>${numRef}</td> 
-                        <td>${detail.desi}</td> 
-                        <td>${
-                          isNaN(detail.qteORlig) || detail.qteORlig === ""
-                            ? ""
-                            : parseInt(detail.qteORlig)
-                        }</td> 
-                        <td>${
-                          isNaN(detail.qtealllig) || detail.qtealllig === ""
-                            ? ""
-                            : parseInt(detail.qtealllig)
-                        }</td> 
-                        <td>${
-                          isNaN(detail.qterlqlig) || detail.qterlqlig === ""
-                            ? ""
-                            : parseInt(detail.qterlqlig)
-                        }</td> 
-                        <td>${
-                          isNaN(detail.qtelivlig) || detail.qtelivlig === ""
-                            ? ""
-                            : parseInt(detail.qtelivlig)
-                        }</td> 
-                        <td >${statutCIS === null ? "" : statutCIS}</td> 
-                        <td>${dateStatutCIS === null ? "" : dateStatutCIS}</td> 
-                        <td>${dateEtaIvato}</td> 
-                        <td>${dateMagasin}</td> 
-                        <td>${Est_ship_date}</td> 
-                        <td>${message}</td> 
-                    </tr>`;
-                tableBodyLign.innerHTML += row1;
-              }
-            } else {
-              // Affichage
-              let row = `<tr>
-                      <td>${detail.num_or}</td> 
-                      <td>${detail.num_itv}</td> 
-                      <td ${cmdColor}>${numCde}</td> 
-                      <td ${cmdColorRmq}>${statrmq}</td> 
-                      <td>${detail.cst}</td> 
-                      <td>${numRef}</td> 
-                      <td>${detail.desi}</td> 
-                      <td>${parseInt(detail.qte_res_or)}</td> 
-                      <td>${parseInt(detail.qte_all)}</td> 
-                      <td>${parseInt(detail.qte_reliquat)}</td> 
-                      <td>${parseInt(detail.qte_liv)}</td> 
-                      <td >${statut}</td> 
-                      <td>${dateStatut}</td>
-                  </tr>`;
-              tableBody.innerHTML += row;
-            }
           });
 
           masquerSpinner();
