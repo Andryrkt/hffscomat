@@ -181,9 +181,6 @@ class PlanningService
         $res = [];
 
         if (!empty($data)) {
-            $qteCis = [];
-            $dateLivLigCIS = [];
-            $dateAllLigCIS = [];
             for ($i = 0; $i < count($data); $i++) {
                 $orItv = $data[$i]['or_itv'];
                 if (in_array($orItv, $back)) {
@@ -192,142 +189,15 @@ class PlanningService
                 else {
                     $data[$i]['backOrder'] = $excelBack === false ? 'not' : '';
                 }
-                if (substr($data[$i]['num_or'], 0, 1) == '5') {
-                    if ($data[$i]['num_cis'] !== "0" || $data[$i]['num_cmd_cis'] == "0") {
-                        $recupGcot = [];
-                        //$qteCis[] = $this->planningModel->recupeQteCISlig($data[$i]['numor'], $data[$i]['itv'], $data[$i]['ref']);
-                        //$dateLivLigCIS[] = $this->planningModel->dateLivraisonCIS($data[$i]['numcis'], $data[$i]['ref'], $data[$i]['cst']);
-                        //$dateAllLigCIS[] = $this->planningModel->dateAllocationCIS($data[$i]['numcis'], $data[$i]['ref'], $data[$i]['cst']);
-                        //$recupGcot['ord'] = $this->planningModel->recuperationinfodGcot($data[$i]['numerocdecis']);
-                    } else {
-                        //$etatMag[] = $this->planningModel->getEtaMagasin($data[$i]['num_cmd_cis'], $data[$i]['ref'], $data[$i]['cst']);
-                        //$qteCis[] = $this->planningModel->recupeQteCISlig($data[$i]['numor'], $data[$i]['itv'], $data[$i]['ref']);
-                        //$dateLivLigCIS[] = $this->planningModel->dateLivraisonCIS($data[$i]['numcis'], $data[$i]['ref'], $data[$i]['cst']);
-                        //$dateAllLigCIS[] = $this->planningModel->dateAllocationCIS($data[$i]['numcis'], $data[$i]['ref'], $data[$i]['cst']);
-                        //$recupGcot['ord'] = $this->planningModel->recuperationinfodGcot($data[$i]['numerocdecis']);
-                        //$recupPartiel[] = $this->planningModel->getEtatPiecePartiel($data[$i]['num_cmd_cis'], $data[$i]['ref']);
-                    }
-                }
-                else {
-                    if (empty($data[$i]['num_cmd']) || $data[$i]['num_cmd'] == '0') {
-                        $recupGcot = [];
-                    } else {
-                        //$recupPartiel[] = $this->planningModel->getEtatPiecePartiel($data[$i]['num_cmd'], $data[$i]['ref']);
-                        //$etatMag[] = $this->planningModel->getEtaMagasin($data[$i]['num_cmd'], $data[$i]['ref'], $data[$i]['cst']);
-                        //$recupGcot['ord'] = $this->planningModel->recuperationinfodGcot($data[$i]['num_cmd']);
-                    }
-                }
-
-
-                if (!empty($etatMag[0])) {
-                    $data[$i]['Eta_ivato'] = $etatMag[0][0]['Eta_ivato'];
-                    $data[$i]['Eta_magasin'] = $etatMag[0][0]['Eta_magasin'];
-                    $etatMag = [];
-                }
-                else {
-                    $data[$i]['Eta_ivato'] = "";
-                    $data[$i]['Eta_magasin'] = "";
-                    $etatMag = [];
-                }
-
-                if (!empty($recupPartiel[$i])) {
-                    $data[$i]['qteSlode'] = $recupPartiel[$i]['0']['solde'];
-                    $data[$i]['qte'] = $recupPartiel[$i]['0']['qte'];
-                } else {
-                    $data[$i]['qteSlode'] = "";
-                    $data[$i]['qte'] = "";
-                }
-
-                if (!empty($recupGcot)) {
-                    $data[$i]['Ord'] = $recupGcot['ord'] === false ? '' : ($sendCmd === false ? $recupGcot['ord']['Ord'] : "oui");
-                } else {
-                    $data[$i]['Ord'] = "";
-                }
-
-                if (!empty($dateLivLigCIS[$i][0])) {
-                    $data[$i]['dateLivLIg'] = $dateLivLigCIS[$i]['0']['datelivlig'];
-                } else {
-                    $data[$i]['dateLivLIg'] = "";
-                }
-
-                if (!empty($dateAllLigCIS)) {
-                    $data[$i]['dateAllLIg'] = $dateAllLigCIS[0]['0']['datealllig'];
-                } else {
-                    $data[$i]['dateAllLIg'] = "";
-                }
-
-                if (!empty($qteCis)) {
-                    if (!empty($qteCis[$i])) {
-                        $data[$i]['qteORlig'] = $qteCis[$i]['0']['qteorlig'];
-                        $data[$i]['qtealllig'] = $qteCis[$i]['0']['qtealllig'];
-                        $data[$i]['qterlqlig'] = $qteCis[$i]['0']['qtereliquatlig'];
-                        $data[$i]['qtelivlig'] = $qteCis[$i]['0']['qtelivlig'];
-                    } elseif (isset($qteCis[$i - 1]) && !empty($qteCis[$i - 1])) {
-                        $data[$i]['qteORlig'] = $qteCis[$i - 1]['0']['qteorlig'];
-                        $data[$i]['qtealllig'] = $qteCis[$i - 1]['0']['qtealllig'];
-                        $data[$i]['qterlqlig'] = $qteCis[$i - 1]['0']['qtereliquatlig'];
-                        $data[$i]['qtelivlig'] = $qteCis[$i - 1]['0']['qtelivlig'];
-                    } else {
-                        $data[$i]['qteORlig'] = "";
-                        $data[$i]['qtealllig'] = "";
-                        $data[$i]['qterlqlig'] = "";
-                        $data[$i]['qtelivlig'] = "";
-                    }
-                } else {
-                    $data[$i]['qteORlig'] = "";
-                    $data[$i]['qtealllig'] = "";
-                    $data[$i]['qterlqlig'] = "";
-                    $data[$i]['qtelivlig'] = "";
-                }
-                if ($data[$i]['qtelivlig'] > 0 && $data[$i]['qtealllig'] == 0 && $data[$i]['qterlqlig'] == 0) {
-                    $data[$i]['StatutCIS'] = "LIVRE";
-                    $data[$i]['DateStatutCIS'] = $data[$i]['dateLivLIg'];
-                } elseif ($data[$i]['qtealllig'] > 0) {
-                    $data[$i]['StatutCIS'] = "A LIVRER";
-                    $data[$i]['DateStatutCIS'] = $data[$i]['dateAllLIg'];
-                } else {
-                    $data[$i]['StatutCIS'] = "";
-                    $data[$i]['DateStatutCIS'] = "";
-                }
-                // dump($i, $data[$i]['numcis'] , $data[$i]['numerocmd'] );
-                if (substr($data[$i]['num_cis'], 0, 1) !== '1') {
-                    $data[$i]['num_cmd_cis'] = $data[$i]['num_cis'];
-                    $data[$i]['numcisOR'] = '';
-                } else {
-                    $data[$i]['num_cmd_cis'] = $data[$i]['num_cis'];
-                    $data[$i]['numcisOR'] = $data[$i]['num_cis'];
-                }
-
-
                 if ($data[$i]['statut'] == "" || $data[$i]['statut'] == null) {
                     $statutDetail = "";
                 } else {
                     $statutDetail = $data[$i]['statut'];
                 }
-                if ($data[$i]['StatutCIS'] == "" || $data[$i]['StatutCIS'] == null) {
-                    $statutCisDetail = "";
-                } else {
-                    $statutCisDetail = $data[$i]['StatutCIS'];
-                }
                 if ($data[$i]['date_statut'] == "" || $data[$i]['date_statut'] == null) {
                     $datestatutDetail = "";
                 } else {
                     $datestatutDetail = (new DateTime($data[$i]['date_statut']))->format('d/m/Y');
-                }
-                if ($data[$i]['DateStatutCIS'] == "" || $data[$i]['DateStatutCIS'] == null) {
-                    $datestatutCisDetail = "";
-                } else {
-                    $datestatutCisDetail = (new DateTime($data[$i]['DateStatutCIS']))->format('d/m/Y');
-                }
-                if ($data[$i]['Eta_ivato'] == "" || $data[$i]['Eta_ivato'] == null) {
-                    $dateEtaIvato = "";
-                } else {
-                    $dateEtaIvato = (new DateTime($data[$i]['Eta_ivato']))->format('d/m/Y');
-                }
-                if ($data[$i]['Eta_magasin'] == "" || $data[$i]['Eta_magasin'] == null) {
-                    $dateEtaMag = "";
-                } else {
-                    $dateEtaMag = (new DateTime($data[$i]['Eta_magasin']))->format('d/m/Y');
                 }
                 $row = [
                     'agenceServiceTravaux' => $data[$i]['lib_suc'] . ' - ' . $data[$i]['lib_serv'],
@@ -349,29 +219,16 @@ class PlanningService
                     'qteliv_or' => $data[$i]['qte_liv'] == 0 ? '' : $data[$i]['qte_liv'],
                     'statutOR' => $statutDetail,
                     'datestatutOR' => $datestatutDetail,
-                    'ctr_marque' => $data[$i]['num_cmd_cis'] == 0 ? '' : $data[$i]['num_cmd_cis'],
-                    'numerocmd' => $data[$i]['num_cmd_cis'],
-                    'statut_ctrmq' => $data[$i]['statut_ctrmq'] . $data[$i]['statut_ctrmq_cis'],
-                    'numcis' => $data[$i]['num_cis'] == 0 ? '' : $data[$i]['num_cis'],
-                    'qteORlig_cis' => $data[$i]['qteORlig'] == 0 ? '' : $data[$i]['qteORlig'],
-                    'qtealllig_cis' => $data[$i]['qtealllig'] == 0 ? '' : $data[$i]['qtealllig'],
-                    'qterlqlig_cis' => $data[$i]['qterlqlig'] == 0 ? '' : $data[$i]['qterlqlig'],
-                    'qtelivlig_cis' => $data[$i]['qtelivlig'] == 0 ? '' : $data[$i]['qtelivlig'],
-                    'statutCis' => $statutCisDetail,
-                    'datestatutCis' => $datestatutCisDetail,
-                    'Eta_ivato' => $dateEtaIvato == '01/01/1900' ? '' : $dateEtaIvato,
-                    'Eta_magasin' => $dateEtaMag == '01/01/1900' ? '' : $dateEtaMag,
-                    'message' => $data[$i]['message'],
-                    'ord' => $data[$i]['Ord'], //*****
+                    //'ord' => $data[$i]['Ord'], //*****
                     'status_b' => $data[$i]['statut_b'],
-                    'Qte_Solde' => $data[$i]['qteSlode'],
-                    'qte' => $data[$i]['qte'],
+                    //'Qte_Solde' => $data[$i]['qteSlode'],
+                    //'qte' => $data[$i]['qte'],
                     'backorder' => $data[$i]['backOrder']
                 ];
 
                 $row_excel = $row;
                 $row_excel['backorder'] = ''; // Supprimer la partie visuelle Excel
-                $row_excel['ord'] = $row_excel['ord'] !== '' ? 'oui' : ''; // Excel
+                // $row_excel['ord'] = $row_excel['ord'] !== '' ? 'oui' : ''; // Excel
 
                 $res[] = $row;
                 $data_excel[] = $row_excel;

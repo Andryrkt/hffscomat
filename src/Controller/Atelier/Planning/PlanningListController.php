@@ -51,7 +51,7 @@ class PlanningListController extends Controller
             $dto = $this->searchDto;
         $form = $this->getFormFactory()->createBuilder(
             PlanningSearchType::class,
-            null,
+            $dto,
             ['method' => 'GET', 'codeSociete' => $codeSociete]
         )->getForm();
         $form->handleRequest($request);
@@ -65,7 +65,7 @@ class PlanningListController extends Controller
             ['num_or_itvs' => $numOrItvBack] = $this->planningModel->getBackOrderPlanning($numOrs, $numOrSoumis, $dto);
             $result = $this->planningMaterielModel->getMaterielPlanningList($numOrs, $numOrSoumis, $numOrItvBack, $dto);
             $data = $this->planningService->getDetailledDataList($result, $numOrItvBack);
-            $count = $this->planningMaterielModel->getMaterielListCount($numOrs, $numOrSoumis, $numOrItvBack, $dto);
+            $count = $this->planningMaterielModel->getMaterielListCount($numOrs, $numOrSoumis, $numOrItvBack, $dto, $codeSociete);
             $this->getSessionService()->set('data_planning_detail_excel', $data['data_excel']);
         }
 
@@ -105,7 +105,6 @@ class PlanningListController extends Controller
             'datestatutOR' => 'Date statut OR',
             'ctr_marque' => 'Ctr Marque ',
             'numerocmd' => 'Numéro CMD',
-            'statut_ctrmq' => 'Statut CTRMQ',
             /*
             'numcis' => 'Numéro CIS',
             'qteORlig_cis' => 'Qte OR CIS',
@@ -120,6 +119,7 @@ class PlanningListController extends Controller
             'ord' => 'Commande Envoyé',
             'status_b' => 'Statut'
             */
+            'statut_ctrmq' => 'Statut CTRMQ',
         ];
         array_unshift($data, $header);
         $this->exporterDonneesExcel($data);
