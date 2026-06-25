@@ -43,6 +43,8 @@ class AcBcSoumisModel extends Model
                     dsav.devise AS devise,
                     dsav.internet_externe AS interne_externe,
                     dsav.numero_client as numero_client,
+                    dsav.nom_client as nom_client,
+                    dsav.mail_client as mail_client,
                     '$codeSociete' as code_societe,
                     dsav.version_bcs,
                     CASE
@@ -76,6 +78,8 @@ class AcBcSoumisModel extends Model
                     d.devise,
                     dit.internet_externe,
                     dit.numero_client,
+                    dit.nom_client,
+                    dit.mail_client,
                     COALESCE(b.version, 0) AS version_bcs
                 FROM {$this->dbIrium}:Informix.devis_soumis_a_validation d
                 JOIN {$this->dbIrium}:Informix.demande_intervention dit
