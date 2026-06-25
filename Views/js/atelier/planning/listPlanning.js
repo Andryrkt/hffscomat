@@ -129,7 +129,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
         const Ornum = document.getElementById("orIntv");
         const tableBody = document.getElementById("commandesTableBody");
         const planningTableHead = document.getElementById("planningTableHead");
-        const tableBodyOR = document.getElementById("commandesTableBodyOR");
+        const tableBodyOR = document.getElementById("commandesTableBodyORAte");
         const planningTableHeadOR = document.getElementById(
           "planningTableHeadOR"
         );
@@ -160,18 +160,9 @@ document.addEventListener("DOMContentLoaded", (event) => {
                             <th>Statut</th>
                             <th>Date Statut</th>`
         if (data.data.length > 0) {
-          if (
-            data.data[0].num_or.startsWith("5") ||
-            data.data[0].num_or.startsWith("4") ||
-            data.data[0].num_or.startsWith("3") ||
-            data.data[0].num_or.startsWith("2")
-          ) {
+          
             planningTableHead.innerHTML += rowHeader;
-            planningTableHeadOR.innerHTML += rowHeader;
-            planningTableHeadLign.innerHTML += rowHeader;
-          } else {
-            planningTableHead.innerHTML += rowHeader;
-          }
+          
           data.data.forEach((detail) => {
             console.log(detail);
 
@@ -186,9 +177,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
               )}`;
             }
             // Formater la date
-            let dateEtaIvato;
-            let Est_ship_date;
-            let dateMagasin;
             let dateStatut;
             let numCis;
             let numCde;
@@ -207,30 +195,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
             } else {
               dateStatut = formaterDate(detail.datestatut);
             }
-            if (
-              detail.Eta_ivato == "" ||
-              formaterDate(detail.Eta_ivato) === "01/01/1900"
-            ) {
-              dateEtaIvato = "";
-            } else {
-              dateEtaIvato = formaterDate(detail.Eta_ivato);
-            }
-            if (
-              detail.Est_ship_date == "" ||
-              formaterDate(detail.Est_ship_date) === "01/01/1900"
-            ) {
-              Est_ship_date = "";
-            } else {
-              Est_ship_date = formaterDate(detail.Est_ship_date);
-            }
-            if (
-              detail.Eta_magasin == "" ||
-              formaterDate(detail.Eta_magasin) === "01/01/1900"
-            ) {
-              dateMagasin = "";
-            } else {
-              dateMagasin = formaterDate(detail.Eta_magasin);
-            }
+           
             if (detail.num_cmd == null) {
               numCde = "";
             } else {
@@ -326,7 +291,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
                         <td>${dateStatut}</td>
                     </tr>`;
               // tableBody.innerHTML += row;
-              tableBodyOR.innerHTML += row;
+              tableBody.innerHTML += row;
           });
 
           masquerSpinner();
