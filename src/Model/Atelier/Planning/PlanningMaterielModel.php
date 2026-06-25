@@ -539,7 +539,7 @@ class PlanningMaterielModel extends Model
                 AND (seor_ope = ope.atab_code AND ope.atab_nom = 'OPE')     
                 {$this->getFactureCondition($searchDto)}
                 AND mmat_marqmat NOT like 'z%' AND mmat_marqmat NOT like 'Z%'
-                AND sitv_servcrt IN ('ATE','FOR','GAR','MAN','CSP','MAS', 'LR6', 'LST')
+                --AND sitv_servcrt IN ('ATE','FOR','GAR','MAN','CSP','MAS', 'LR6', 'LST')
                 AND (seor_nummat = mmat_nummat)
                 AND slor_numcf = nlig_numcde AND slor_refp = nlig_refp
                 {$this->getOrValidBackOrderCondition($searchDto, $orItvBack, $numOrs, $orSoumis)}
@@ -560,12 +560,12 @@ class PlanningMaterielModel extends Model
             group by 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32
             order by 10,14 
         ";
-
+// dd($statement);
         $result = $this->connect->executeQuery($statement);
         return $this->connect->fetchResults($result);
     }
 
-    public function getMaterielListCount(array $numOrs, array $orSoumis, array $orItvBack, PlanningSearchDto $searchDto, string $codeSoc): int
+    public function getMaterielListCount(array $numOrs, array $orSoumis, array $orItvBack, PlanningSearchDto $searchDto, string $codeSoc)
     {
         $statement = " SELECT 
                 COUNT( distinct seor_numor ||'-'||sitv_interv )  as nb_numOR,
