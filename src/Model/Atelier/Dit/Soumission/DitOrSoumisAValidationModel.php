@@ -379,7 +379,7 @@ class DitOrSoumisAValidationModel extends Model
                     TRIM(isl.slor_refp) as reference, 
                     isl.slor_pxnreel as montant,
                     TRIM(isl.slor_desi) as designation
-                    from Informix.sav_lor isl 
+                    from  {$this->dbIps}:Informix.sav_lor isl 
                     where slor_constp ='ZST' 
                     and slor_soc ='$codeSociete' 
                     --and isl.slor_refp != 'ST'
@@ -434,7 +434,7 @@ class DitOrSoumisAValidationModel extends Model
 
         $statement = "  SELECT 
                 MAX(slor_nolign) as numero_ligne
-                from informix.sav_lor
+                from  {$this->dbIps}:Informix.sav_lor
                 WHERE slor_constp = 'ZST' 
                 and slor_typlig = 'P'
                 and slor_refp not like ('PREST%')
