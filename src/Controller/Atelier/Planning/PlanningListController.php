@@ -57,7 +57,7 @@ class PlanningListController extends Controller
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid())
             $dto = $form->getData();
-        $data = ['data' => []];
+        $data = ['data' => [], 'nb_num_or' => 0, 'nb_ligne' => 0];
         if ($request->query->get('action') !== 'oui') {
             ['num_ors' => $numOrs] = $this->planningModel->getNumeroOrValider($dto);
             ['num_ors' => $numOrSoumis] = $this->planningModel->getOrsSoumis();
