@@ -40,7 +40,7 @@ class DitMapper
             'objet_demande' => $dto->objetDemande,
             'detail_demande' => $dto->detailDemande,
             'livraison_partiel' => $dto->livraisonPartiel,
-            'id_materiel' => $dto->idMateriel,
+            'id_materiel' => $dto->idMateriel ?? 0,
             'mail_demandeur' => $dto->mailDemandeur,
             'date_demande' => $dto->dateDemande,
             'heure_demande' => $dto->heureDemande,

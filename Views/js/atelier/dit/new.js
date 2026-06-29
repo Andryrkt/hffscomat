@@ -532,3 +532,36 @@ if (atePolTanaInput) {
     }
   });
 }
+
+/** ===============================================================================
+ * réparation réalisé par WS PSSR
+ *===============================================================================*/
+document.addEventListener("DOMContentLoaded", function () {
+  const select = document.getElementById("dit_reparationRealise");
+
+  const fields = [
+    document.getElementById("dit_idMateriel"),
+    document.getElementById("dit_numParc"),
+    document.getElementById("dit_numSerie"),
+  ];
+
+  if (!select) return;
+
+  function toggleFields() {
+    const isPssr = select.value === "WS PSSR";
+
+    fields.forEach((field) => {
+      if (!field) return;
+
+      if (isPssr) {
+        field.removeAttribute("required");
+      } else {
+        field.setAttribute("required", "required");
+      }
+    });
+  }
+
+  select.addEventListener("change", toggleFields);
+
+  toggleFields();
+});

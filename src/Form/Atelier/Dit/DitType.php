@@ -440,11 +440,6 @@ class DitType extends AbstractType
                         'class' => 'noEntrer autocomplete',
                         'autocomplete' => 'off',
                     ],
-                    'constraints' => [
-                        new NotBlank([
-                            'message' => 'l\id materiel ne peut pas être vide.', // Message d'erreur si le champ est vide
-                        ]),
-                    ],
                 ]
             )
             ->add(
