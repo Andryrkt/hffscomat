@@ -442,7 +442,7 @@ class TraitementFichierService
                 }
             }
         }
-        dd($tableauMargeCat, $tableauMargeMfn, $tableauMargeAutres);
+        // dd($tableauMargeCat, $tableauMargeMfn, $tableauMargeAutres);
         return [
             'tableauMargeCat' => $tableauMargeCat,
             'tableauMargeMfn' => $tableauMargeMfn,
