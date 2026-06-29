@@ -457,9 +457,8 @@ textarea.addEventListener("input", function (event) {
   let remainingCharacters = MAX_CHARACTERS - adjustedLength;
 
   // Mettre à jour l'affichage du compteur
-  charCount.textContent = `Il vous reste ${
-    remainingCharacters >= 0 ? remainingCharacters : 0
-  } caractères.`;
+  charCount.textContent = `Il vous reste ${remainingCharacters >= 0 ? remainingCharacters : 0
+    } caractères.`;
   charCount.style.color = remainingCharacters <= 0 ? "red" : "black";
 });
 
@@ -539,26 +538,19 @@ if (atePolTanaInput) {
 document.addEventListener("DOMContentLoaded", function () {
   const select = document.getElementById("dit_reparationRealise");
 
-  const fields = [
-    document.getElementById("dit_idMateriel"),
-    document.getElementById("dit_numParc"),
-    document.getElementById("dit_numSerie"),
-  ];
-
   if (!select) return;
 
   function toggleFields() {
     const isPssr = select.value === "WS PSSR";
 
-    fields.forEach((field) => {
-      if (!field) return;
+    if (!document.getElementById("dit_idMateriel")) return;
 
-      if (isPssr) {
-        field.removeAttribute("required");
-      } else {
-        field.setAttribute("required", "required");
-      }
-    });
+    if (isPssr) {
+      document.getElementById("dit_idMateriel").removeAttribute("required");
+    } else {
+      document.getElementById("dit_idMateriel").setAttribute("required", "required");
+    }
+
   }
 
   select.addEventListener("change", toggleFields);
