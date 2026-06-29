@@ -129,7 +129,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
         const Ornum = document.getElementById("orIntv");
         const tableBody = document.getElementById("commandesTableBody");
         const planningTableHead = document.getElementById("planningTableHead");
-        const tableBodyOR = document.getElementById("commandesTableBodyORAte");
+        // const tableBodyOR = document.getElementById("commandesTableBodyORAte");
         const planningTableHeadOR = document.getElementById(
           "planningTableHeadOR"
         );
@@ -158,11 +158,14 @@ document.addEventListener("DOMContentLoaded", (event) => {
                             <th>QTé RLQ</th>
                             <th>QTé LIV</th>
                             <th>Statut</th>
-                            <th>Date Statut</th>`
+                            <th>Date Statut</th>
+                            <th>ETA Maurice</th>
+                            <th>ETA Magasin</th>
+                            `
         if (data.data.length > 0) {
-          
-            planningTableHead.innerHTML += rowHeader;
-          
+
+          planningTableHead.innerHTML += rowHeader;
+
           data.data.forEach((detail) => {
             console.log(detail);
 
@@ -178,14 +181,10 @@ document.addEventListener("DOMContentLoaded", (event) => {
             }
             // Formater la date
             let dateStatut;
-            let numCis;
             let numCde;
-            let numeroCdeCis;
             let statrmq;
-            let StatutCtrmqCis;
             let statut;
             let message;
-            let cmdColorRmq = "";
             let numRef;
             if (
               formaterDate(detail.datestatut) == "01/01/1970" ||
@@ -195,7 +194,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
             } else {
               dateStatut = formaterDate(detail.datestatut);
             }
-           
+
             if (detail.num_cmd == null) {
               numCde = "";
             } else {
@@ -223,29 +222,9 @@ document.addEventListener("DOMContentLoaded", (event) => {
               message = detail.message;
             }
 
-            if (detail.num_cis == "0") {
-              numCis = "";
-            } else {
-              numCis = detail.num_cis;
-            }
-            if (detail.num_cmd_cis == null) {
-              numeroCdeCis = "";
-            } else {
-              numeroCdeCis = detail.num_cmd_cis;
-            }
-            if (detail.statut_ctrmq_cis == null) {
-              StatutCtrmqCis = "";
-            } else {
-              StatutCtrmqCis = detail.statut_ctrmq_cis;
-            }
+
 
             //reception partiel
-            let qteSolde = parseInt(detail.qteSlode);
-            let qteQte = parseInt(detail.qte);
-
-            if (qteSolde > 0 && qteSolde != qteQte) {
-              cmdColorRmq = 'style="background-color: yellow;"';
-            }
             let cmdColor;
             let Ord = detail.Ord;
             if (statut == "DISPO STOCK") {
@@ -255,29 +234,11 @@ document.addEventListener("DOMContentLoaded", (event) => {
             } else if (Ord == "ORD") {
               cmdColor = 'style="background-color:#9ACD32  ; color: white;"';
             }
-            //onglet CIS
-            let statutCIS;
-            let dateStatutCIS;
-
-            if (
-              parseInt(detail.qtelivlig) > 0 &&
-              parseInt(detail.qtealllig) === 0 &&
-              parseInt(detail.qterlqlig) === 0
-            ) {
-              statutCIS = "LIVRE";
-              dateStatutCIS = formaterDate(detail.dateLivLIg);
-            } else if (parseInt(detail.qtealllig) > 0) {
-              statutCIS = "A LIVRER";
-              dateStatutCIS = formaterDate(detail.dateAllLIg);
-            } else {
-              statutCIS = detail.statut;
-              dateStatutCIS = "";
-            }
 
             let row = `<tr>
                         <td>${detail.num_or}</td> 
                         <td>${detail.num_itv}</td> 
-                        <td ${cmdColor}>${numCis}</td> 
+                        <td ${cmdColor}>${numCde}</td> 
                         <td ></td> 
                         <td></td> 
                         <td>${detail.cst}</td> 
@@ -289,9 +250,11 @@ document.addEventListener("DOMContentLoaded", (event) => {
                         <td>${parseInt(detail.qte_liv)}</td> 
                         <td>${statut} </td> 
                         <td>${dateStatut}</td>
+                        <td></td>
+                        <td></td>
                     </tr>`;
-              // tableBody.innerHTML += row;
-              tableBody.innerHTML += row;
+            // tableBody.innerHTML += row;
+            tableBody.innerHTML += row;
           });
 
           masquerSpinner();
