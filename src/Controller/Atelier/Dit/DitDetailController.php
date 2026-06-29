@@ -51,9 +51,6 @@ class DitDetailController extends Controller
         $ditDto->categorieDemande = $libelleCategorie;
 
 
-
-
-
         $data = $ditModel->findAll($ditDto->idMateriel, $ditDto->numParc, $ditDto->numSerie);
         $dataMapped = DitMapper::toArrayDitDetail($ditDto, $data);
 

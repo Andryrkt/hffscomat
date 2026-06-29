@@ -95,7 +95,7 @@ class DitMapper
         $dto->agenceServiceEmetteur     = $ditInformations['agence_service_emmeteur'] ?? null;
         $dto->agenceServiceDebiteur     = $ditInformations['agence_service_debiteur'] ?? null;
 
-        $dto->nomClient     = $ditInformations['nomClient'] ?? null;
+        $dto->nomClient     = $ditInformations['nom_client'] ?? null;
         $dto->numeroTel     = $ditInformations['numero_telephone'] ?? null;
         $dto->dateSoumissionOr     = $ditInformations['date_or'] ?? null;
         $dto->heureDemande     = $ditInformations['heure_or'] ?? null;
