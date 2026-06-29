@@ -494,10 +494,10 @@ class DitModel extends Model
 
         return $this->convertirEnUtf8($data);
     }
-    
+
     public function recupereCommandeOr(?string $numero_or, string $codeSociete)
     {
-        if($numero_or === null) return [];
+        if ($numero_or === null) return [];
 
         $statement = "SELECT
         slor_numcf as slor_numcf,
@@ -546,10 +546,10 @@ class DitModel extends Model
         return  $data;
     }
 
-    public function recupQuantiteQuatreStatutOr(?string $numOr, string $codeSociete): array 
+    public function recupQuantiteQuatreStatutOr(?string $numOr, string $codeSociete): array
     {
-        if($numOr === null) return [];
-        
+        if ($numOr === null) return [];
+
         $statement = "SELECT 
             trim(seor_refdem) as referenceDIT,
             seor_numor as numeroOr,
@@ -558,10 +558,10 @@ class DitModel extends Model
             sum(sliv_qteliv) as quantiteLivree,
             sum(slor_qterel) as quantiteReliquat,
             sum(slor_qterea) as qteLiv
-            from {$this->dbIrium}:informix.sav_lor 
-            inner join {$this->dbIrium}:informix.sav_eor on seor_soc = slor_soc and seor_succ = slor_succ 
+            from {$this->dbIps}:informix.sav_lor 
+            inner join {$this->dbIps}:informix.sav_eor on seor_soc = slor_soc and seor_succ = slor_succ 
             and seor_numor = slor_numor
-            left join {$this->dbIrium}:informix.sav_liv on sliv_soc = slor_soc and sliv_succ = slor_succ and sliv_numor = seor_numor and slor_nolign = sliv_nolign
+            left join {$this->dbIps}:informix.sav_liv on sliv_soc = slor_soc and sliv_succ = slor_succ and sliv_numor = seor_numor and slor_nolign = sliv_nolign
             
             where 
             slor_soc = '$codeSociete'

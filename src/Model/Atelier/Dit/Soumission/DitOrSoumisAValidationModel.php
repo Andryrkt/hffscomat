@@ -4,21 +4,18 @@ namespace App\Model\Atelier\Dit\Soumission;
 
 
 use App\Dto\atelier\dit\soumission\OrSoumissionDto;
-use App\Mapper\Atelier\Dit\DitMapper;
 use App\Mapper\Atelier\Dit\Soumission\OrSoumissionMapper;
 use App\Model\Informix\InsertQueryBuilder;
 use App\Model\Informix\UpdateQueryBuilder;
 use App\Model\Model;
 use App\Model\Traits\ConversionModel;
-use App\Service\GlobalVariablesService;
 use App\Service\TableauEnStringService;
-use Symfony\Component\Validator\Constraints\IsNull;
 
 class DitOrSoumisAValidationModel extends Model
 {
     use ConversionModel;
 
-    public function recupOrSoumisValidation($numOr, $codeSociete)
+    public function recupOrSoumisValidation(string $numOr, string $codeSociete)
     {
         $statement = "SELECT
           slor_numor,
@@ -220,7 +217,7 @@ class DitOrSoumisAValidationModel extends Model
             and slor_typlig = 'P' 
             and slor_numor = '$numOr'
             and slor_soc = '$codeSociete'
-            AND slor_constp in (" . GlobalVariablesService::get('pieces_magasin') . ")
+            AND slor_constp in (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST')
             ";
 
         $result = $this->connect->executeQuery($statement);
@@ -237,7 +234,7 @@ class DitOrSoumisAValidationModel extends Model
             from sav_lor 
             where slor_numor = '$numOr'
             and slor_soc = '$codeSociete'
-            and slor_constp in (" . GlobalVariablesService::get('achat_locaux') . ")  
+            and slor_constp in (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST')  
         ";
 
         $result = $this->connect->executeQuery($statement);
@@ -254,7 +251,7 @@ class DitOrSoumisAValidationModel extends Model
             from sav_lor 
             where slor_numor = '$numOr'
             and slor_soc = '$codeSociete'
-            and slor_constp in (" . GlobalVariablesService::get('lub') . ")  
+            and slor_constp in (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST')  
         ";
 
         $result = $this->connect->executeQuery($statement);
@@ -299,19 +296,19 @@ class DitOrSoumisAValidationModel extends Model
         $statement = " SELECT
             CASE
                 WHEN COUNT(CASE WHEN slor_constp = 'CAT' THEN 1 END) > 0
-                AND COUNT(CASE WHEN slor_constp IN (" . GlobalVariablesService::get('pieceMagasinSansCat') . ") THEN 1 END) > 0
+                AND COUNT(CASE WHEN slor_constp IN (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST') THEN 1 END) > 0
                 THEN TRIM('CP')
             
                 WHEN COUNT(CASE WHEN slor_constp = 'CAT' THEN 1 END) > 0
-                AND COUNT(CASE WHEN slor_constp IN (" . GlobalVariablesService::get('pieceMagasinSansCat') . ") THEN 1 END) = 0
+                AND COUNT(CASE WHEN slor_constp IN (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST') THEN 1 END) = 0
                 THEN TRIM('C')
 
                 WHEN COUNT(CASE WHEN slor_constp = 'CAT' THEN 1 END) = 0
-                AND COUNT(CASE WHEN slor_constp IN (" . GlobalVariablesService::get('pieceMagasinSansCat') . ") THEN 1 END) = 0
+                AND COUNT(CASE WHEN slor_constp IN (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST') THEN 1 END) = 0
                 THEN TRIM('N')
 
                 WHEN COUNT(CASE WHEN slor_constp = 'CAT' THEN 1 END) = 0
-                AND COUNT(CASE WHEN slor_constp IN (" . GlobalVariablesService::get('pieceMagasinSansCat') . ") THEN 1 END) > 0
+                AND COUNT(CASE WHEN slor_constp IN (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST') THEN 1 END) > 0
                 THEN TRIM('P')
             END AS retour
         FROM sav_lor
@@ -399,7 +396,7 @@ class DitOrSoumisAValidationModel extends Model
     {
         $statement = "SELECT 
             TRIM(CASE 
-                WHEN slor_constp IN (" . GlobalVariablesService::get('pieces_magasin') . GlobalVariablesService::get('achat_locaux') . ", 'ZST') 
+                WHEN slor_constp IN (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST') 
                 THEN 'bloquer' 
                 ELSE 'pas bloquer' 
             END) AS est_bloquer
@@ -500,7 +497,7 @@ class DitOrSoumisAValidationModel extends Model
                 and fllf_soc = '$codeSociete'
                 and fcde_numfou not in (select asuc_num from informix.agr_succ where asuc_numsoc = '$codeSociete')
                 and fllf_qtefac > 0
-                and fllf_constp in (" . GlobalVariablesService::get('pieces_magasin') . ")
+                and fllf_constp in (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST')
                 order by ffac_numfac desc) as A
         ";
 
@@ -530,7 +527,7 @@ class DitOrSoumisAValidationModel extends Model
             AND sitv_interv = slor_nogrp / 100
             AND seor_soc = '$codeSociete'
             AND seor_numor = '$numOr'
-            AND slor_constp in (" . GlobalVariablesService::get('pieces_magasin') . ")
+            AND slor_constp in (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST')
         order by slor_numor, sitv_interv
         ";
         $result = $this->connect->executeQuery($statement);
@@ -791,5 +788,92 @@ class DitOrSoumisAValidationModel extends Model
         $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
 
         return ((int)($data[0]['total'] ?? 0)) > 0;
+    }
+
+    public function tableauDeMarge(
+        string $codeSociete,
+        string $numeroOr,
+        string $ref,
+        string $codeSuccursale = '01'
+    ) {
+        $statement = "WITH stats AS (
+            SELECT 
+                MAX(slor_pxnreel - ROUND(slor_pmp, 2)) AS max_mb,
+                MIN(slor_pxnreel - ROUND(slor_pmp, 2)) AS min_mb
+            FROM Informix.sav_lor
+            INNER JOIN Informix.sav_eor 
+            ON seor_numor = slor_numor 
+            AND seor_soc = slor_soc 
+            AND seor_succ = slor_succ
+            where slor_numor = '$numeroOr'
+                AND slor_soc = '$codeSociete'
+                AND slor_succ = '$codeSuccursale'
+                AND slor_refp = '$ref'
+                AND YEAR(slor_datec) = YEAR(TODAY)
+                --AND slor_qterel > 0
+                --AND seor_devise = 'AR'
+        )
+        SELECT 
+            slor_constp as constructeur,
+            -- Stock
+            CASE WHEN astp_stock IS NULL THEN 0 ELSE astp_stock END AS nb_ref,
+            
+            -- Prix et remises
+            ROUND(slor_pmp, 2) AS pmp,
+            slor_pxvteht AS pv_brut,
+            (slor_pxvteht - slor_pxnreel) AS mt_remise,
+            slor_pxnreel AS pv_net_remise,
+            
+            -- Marge brute
+            ROUND(slor_pxnreel - ROUND(slor_pmp, 2), 2) AS mb,
+            
+            -- Marge brute en pourcentage
+            CASE 
+                WHEN slor_pxnreel = 0 THEN 0 
+                ELSE ROUND(((slor_pxnreel - ROUND(slor_pmp, 2)) / slor_pxnreel) * 100, 2) 
+            END AS mb_p,
+            
+            -- Maximum MB
+            COALESCE(stats.max_mb, 0) AS max_mb,
+            
+            -- Maximum MB en pourcentage
+            CASE 
+                WHEN slor_pxnreel = 0 THEN 0
+                ELSE ROUND((COALESCE(stats.max_mb, 0) / slor_pxnreel) * 100, 2)
+            END AS max_mb_p,
+            
+            -- Minimum MB
+            COALESCE(stats.min_mb, 0) AS min_mb,
+            
+            -- Minimum MB en pourcentage
+            CASE 
+                WHEN slor_pxnreel = 0 THEN 0
+                ELSE ROUND((COALESCE(stats.min_mb, 0) / slor_pxnreel) * 100, 2)
+            END AS min_mb_p
+
+        FROM Informix.sav_lor
+        LEFT JOIN Informix.art_stp 
+            ON astp_refp = slor_refp 
+            AND astp_soc = slor_soc 
+            AND astp_succ = slor_succ 
+        INNER JOIN Informix.sav_eor 
+            ON seor_numor = slor_numor 
+            AND seor_soc = slor_soc 
+            AND seor_succ = slor_succ
+        CROSS JOIN stats
+
+        WHERE slor_numor = '$numeroOr' 
+            AND slor_succ = '$codeSuccursale'
+            AND slor_soc = '$codeSociete'
+            AND slor_refp = '$ref'
+            AND YEAR(slor_datec) = YEAR(TODAY)
+            --AND slor_qterel > 0
+            --AND seor_devise = 'AR'
+        ";
+
+        $result = $this->connect->executeQuery($statement);
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
+
+        return $data;
     }
 }

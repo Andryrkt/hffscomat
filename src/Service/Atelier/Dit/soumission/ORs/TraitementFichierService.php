@@ -129,15 +129,18 @@ class TraitementFichierService
 
         $OrSoumisAvantMax = OrSoumissionMapper::dataToDto($ditOrsoumisAValidationModel->findOrSoumiAvantMax($numeroOr, $codeSociete));
 
-        
+
         $montantPdf = $this->montantpdf($OrSoumisAvant, $OrSoumisAvantMax, $codeSociete);
-        
+
         $quelqueaffichage = $this->quelqueAffichage($numeroOr, $codeSociete);
 
         // information sur les pièces à faible achat
         $pieceFaibleAchat = $this->preparationDesPiecesFaibleAchat($numeroOr, $codeSociete);
 
-        $genererPdfOrSoumisAValidation->GenererPdf($dto, $montantPdf, $quelqueaffichage, $email, $pieceFaibleAchat, $nomAvecCheminFichier);
+        // tableau de marge
+        $tableauMarge = $this->tableauMarge($numeroOr, $codeSociete);
+
+        $genererPdfOrSoumisAValidation->GenererPdf($dto, $montantPdf, $quelqueaffichage, $email, $pieceFaibleAchat, $tableauMarge, $nomAvecCheminFichier);
     }
 
 
@@ -412,5 +415,38 @@ class TraitementFichierService
         usort($tableau, function ($a, $b) {
             return strcmp($a->numeroItv, $b->numeroItv);
         });
+    }
+
+    public function tableauMarge(string $numOr, string $codeSociete): array
+    {
+        $ditOrsoumisAValidationModel = new DitOrSoumisAValidationModel();
+
+        $infoOrs = $ditOrsoumisAValidationModel->getInformationOr($numOr, $codeSociete);
+
+        $tableauMargeCat = [];
+        $tableauMargeMfn = [];
+        $tableauMargeAutres = [];
+
+        if (!empty($infoOrs)) {
+            foreach ($infoOrs as $infoOr) {
+                $afficher = $ditOrsoumisAValidationModel->tableauDeMarge($codeSociete, $numOr, $infoOr['reference']);
+
+                foreach ($afficher as $value) {
+                    if ($value['constructeur'] == 'CAT') {
+                        $tableauMargeCat[] = $value;
+                    } elseif ($value['constructeur'] == 'MFN') {
+                        $tableauMargeMfn[] = $value;
+                    } else {
+                        $tableauMargeAutres[] = $value;
+                    }
+                }
+            }
+        }
+        dd($tableauMargeCat, $tableauMargeMfn, $tableauMargeAutres);
+        return [
+            'tableauMargeCat' => $tableauMargeCat,
+            'tableauMargeMfn' => $tableauMargeMfn,
+            'tableauMargeAutres' => $tableauMargeAutres
+        ];
     }
 }

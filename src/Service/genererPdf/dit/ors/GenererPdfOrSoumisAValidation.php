@@ -23,7 +23,7 @@ class GenererPdfOrSoumisAValidation extends GeneratePdf
     /**
      * generer pdf pour la soumission OR
      */
-    function GenererPdf(OrSoumissionDto $dto, array $montantPdf, array $quelqueaffichage, string $email, array $pieceFaibleAchat = [], string $nomAvecCheminFichier)
+    function GenererPdf(OrSoumissionDto $dto, array $montantPdf, array $quelqueaffichage, string $email, array $pieceFaibleAchat = [], array $tableauMarge, string $nomAvecCheminFichier)
     {
         $pdf = new HeaderPdf($email);
         $tableGenerator = new PdfTableGeneratorFlexible();
@@ -164,6 +164,55 @@ class GenererPdfOrSoumisAValidation extends GeneratePdf
             $html = $tableGenerator->generateTable(
                 $this->headerPieceFaibleActivite(),
                 $pieceFaibleAchat,
+                []
+            );
+
+            $pdf->writeHTML($html, true, false, true, false, '');
+        }
+
+        //==========================================================================================================
+        //Titre: Tableau de marge CAT
+        $pdf->SetTextColor(255, 0, 0);
+        $this->addTitle($pdf, empty($tableauMarge['tableauMargeCat']) ? '' : "Tableau de marge pour pièce 'CAT' .", 'helvetica', 'B', 10, 'L', 1);
+
+        $pdf->SetTextColor(0, 0, 0);
+        if (!empty($tableauMarge['tableauMargeCat'])) {
+            $pdf->setFont('helvetica', '', 12);
+            $html = $tableGenerator->generateTable(
+                $this->headerTableauMarge(),
+                $tableauMarge['tableauMargeCat'],
+                []
+            );
+
+            $pdf->writeHTML($html, true, false, true, false, '');
+        }
+        //==========================================================================================================
+        //Titre: Tableau de marge MFN
+        $pdf->SetTextColor(255, 0, 0);
+        $this->addTitle($pdf, empty($tableauMarge['tableauMargeMfn']) ? '' : "Tableau de marge pour pièce 'MFN' .", 'helvetica', 'B', 10, 'L', 1);
+
+        $pdf->SetTextColor(0, 0, 0);
+        if (!empty($tableauMarge['tableauMargeMfn'])) {
+            $pdf->setFont('helvetica', '', 12);
+            $html = $tableGenerator->generateTable(
+                $this->headerTableauMarge(),
+                $tableauMarge['tableauMargeMfn'],
+                []
+            );
+
+            $pdf->writeHTML($html, true, false, true, false, '');
+        }
+        //==========================================================================================================
+        //Titre: Tableau de marge Autres
+        $pdf->SetTextColor(255, 0, 0);
+        $this->addTitle($pdf, empty($tableauMarge['tableauMargeAutres']) ? '' : "Tableau de marge pour pièce 'Autres' .", 'helvetica', 'B', 10, 'L', 1);
+
+        $pdf->SetTextColor(0, 0, 0);
+        if (!empty($tableauMarge['tableauMargeAutres'])) {
+            $pdf->setFont('helvetica', '', 12);
+            $html = $tableGenerator->generateTable(
+                $this->headerTableauMarge(),
+                $tableauMarge['tableauMargeAutres'],
                 []
             );
 
@@ -476,6 +525,134 @@ class GenererPdfOrSoumisAValidation extends GeneratePdf
                 'default_value' => 'jamais commandé',
                 'type'         => 'date'
             ],
+        ];
+    }
+
+    /**============================================================================
+     * -------- Pour le tableau de marge ------------------
+     *=============================================================================*/
+
+    private function headerTableauMarge(): array
+    {
+        return [
+            [
+                'key'          => '',
+                'label'        => 'CAT',
+                'width'        => 40,
+                'style'        => 'font-weight: bold;',
+                'header_style' => 'font-weight: bold;',
+                'cell_style'   => 'text-align: center;',
+                'footer_style' => 'font-weight: 900;',
+                'default_value' => 'Dispo Stock'
+            ],
+            [
+                'key'          => 'nb_ref',
+                'label'        => 'Nb refs',
+                'width'        => 40,
+                'style'        => 'font-weight: bold;',
+                'header_style' => 'font-weight: bold;',
+                'cell_style'   => 'text-align: center;',
+                'footer_style' => 'font-weight: 900;'
+            ],
+            [
+                'key'          => 'pmp',
+                'label'        => 'PMP',
+                'width'        => 40,
+                'style'        => 'font-weight: bold;',
+                'header_style' => 'font-weight: bold;',
+                'cell_style'   => '',
+                'footer_style' => 'font-weight: 900;'
+            ],
+            [
+                'key'          => 'pv_brut',
+                'label'        => 'PV Brut',
+                'width'        => 40,
+                'style'        => 'font-weight: bold;',
+                'header_style' => 'font-weight: bold;',
+                'cell_style'   => '',
+                'footer_style' => 'font-weight: 900;'
+            ],
+            [
+                'key'          => 'mt_remise',
+                'label'        => 'Mt Remise',
+                'width'        => 40,
+                'style'        => 'font-weight: bold;',
+                'header_style' => 'font-weight: bold;',
+                'cell_style'   => 'text-align: right;',
+                'footer_style' => 'font-weight: 900;',
+                'type'         => 'number'
+            ],
+            [
+                'key'          => 'pv_net_remise',
+                'label'        => 'PV Net remisé',
+                'width'        => 40,
+                'style'        => 'font-weight: bold;',
+                'header_style' => 'font-weight: bold;',
+                'cell_style'   => 'text-align: right;',
+                'footer_style' => 'font-weight: 900;',
+                'type'         => 'number'
+            ],
+            [
+                'key'          => 'mb',
+                'label'        => 'MB',
+                'width'        => 40,
+                'style'        => 'font-weight: bold;',
+                'header_style' => 'font-weight: bold;',
+                'cell_style'   => 'text-align: right;',
+                'footer_style' => 'font-weight: 900;',
+                'type'         => 'number'
+            ],
+            [
+                'key'          => 'mb_p',
+                'label'        => '%MB',
+                'width'        => 40,
+                'style'        => 'font-weight: bold;',
+                'header_style' => 'font-weight: bold;',
+                'cell_style'   => 'text-align: right;',
+                'footer_style' => 'font-weight: 900;',
+                'type'         => 'number'
+            ],
+            [
+                'key'          => 'max_mb',
+                'label'        => 'MB+',
+                'width'        => 40,
+                'style'        => 'font-weight: bold;',
+                'header_style' => 'font-weight: bold;',
+                'cell_style'   => 'text-align: right;',
+                'footer_style' => 'font-weight: 900;',
+                'type'         => 'number'
+            ],
+            [
+                'key'          => 'max_mb_p',
+                'label'        => '%MB+',
+                'width'        => 40,
+                'style'        => 'font-weight: bold;',
+                'header_style' => 'font-weight: bold;',
+                'cell_style'   => 'text-align: right;',
+                'footer_style' => 'font-weight: 900;',
+                'type'         => 'number'
+            ],
+            [
+                'key'          => 'min_mb',
+                'label'        => 'MB-',
+                'width'        => 40,
+                'style'        => 'font-weight: bold;',
+                'header_style' => 'font-weight: bold;',
+                'cell_style'   => 'text-align: right;',
+                'footer_style' => 'font-weight: 900;',
+                'type'         => 'number'
+            ],
+            [
+                'key'          => 'min_mb_p',
+                'label'        => '%MB-',
+                'width'        => 40,
+                'style'        => 'font-weight: bold;',
+                'header_style' => 'font-weight: bold;',
+                'cell_style'   => 'text-align: right;',
+                'footer_style' => 'font-weight: 900;',
+                'type'         => 'number'
+            ],
+
         ];
     }
 }
