@@ -170,51 +170,55 @@ class GenererPdfOrSoumisAValidation extends GeneratePdf
             $pdf->writeHTML($html, true, false, true, false, '');
         }
 
-        //==========================================================================================================
-        //Titre: Tableau de marge CAT
-        $pdf->SetTextColor(255, 0, 0);
-        $this->addTitle($pdf, empty($tableauMarge['tableauMargeCat']) ? '' : "Tableau de marge pour pièce 'CAT' .", 'helvetica', 'B', 10, 'L', 1);
+        if(!empty($tableauMarge)) 
+        {
 
-        $pdf->SetTextColor(0, 0, 0);
-        if (!empty($tableauMarge['tableauMargeCat'])) {
-            $pdf->setFont('helvetica', '', 12);
-            $html = $tableGenerator->generateTable(
-                $this->headerTableauMarge(),
-                $tableauMarge['tableauMargeCat'],
-                []
-            );
-
-            $pdf->writeHTML($html, true, false, true, false, '');
-        }
-        //==========================================================================================================
-        //Titre: Tableau de marge MFN
-        $pdf->SetTextColor(255, 0, 0);
-        $this->addTitle($pdf, empty($tableauMarge['tableauMargeMfn']) ? '' : "Tableau de marge pour pièce 'MFN' .", 'helvetica', 'B', 10, 'L', 1);
-
-        $pdf->SetTextColor(0, 0, 0);
-        if (!empty($tableauMarge['tableauMargeMfn'])) {
-            $pdf->setFont('helvetica', '', 12);
-            $html = $tableGenerator->generateTable(
-                $this->headerTableauMarge(),
-                $tableauMarge['tableauMargeMfn'],
-                []
-            );
-
-            $pdf->writeHTML($html, true, false, true, false, '');
-        }
-        //==========================================================================================================
-        //Titre: Tableau de marge Autres
-        $pdf->SetTextColor(255, 0, 0);
-        $this->addTitle($pdf, empty($tableauMarge['tableauMargeAutres']) ? '' : "Tableau de marge pour pièce 'Autres' .", 'helvetica', 'B', 10, 'L', 1);
-
-        $pdf->SetTextColor(0, 0, 0);
-        if (!empty($tableauMarge['tableauMargeAutres'])) {
-            $pdf->setFont('helvetica', '', 12);
-            $html = $tableGenerator->generateTable(
-                $this->headerTableauMarge(),
-                $tableauMarge['tableauMargeAutres'],
-                []
-            );
+            //==========================================================================================================
+            //Titre: Tableau de marge CAT
+            $pdf->SetTextColor(255, 0, 0);
+            $this->addTitle($pdf, empty($tableauMarge['tableauMargeCat']) ? '' : "Tableau de marge pour pièce 'CAT' .", 'helvetica', 'B', 10, 'L', 1);
+            
+            $pdf->SetTextColor(0, 0, 0);
+            if (!empty($tableauMarge['tableauMargeCat'])) {
+                $pdf->setFont('helvetica', '', 12);
+                $html = $tableGenerator->generateTable(
+                    $this->headerTableauMarge(),
+                    $tableauMarge['tableauMargeCat'],
+                    []
+                    );
+                    
+                    $pdf->writeHTML($html, true, false, true, false, '');
+                    }
+                    //==========================================================================================================
+                    //Titre: Tableau de marge MFN
+                    $pdf->SetTextColor(255, 0, 0);
+                    $this->addTitle($pdf, empty($tableauMarge['tableauMargeMfn']) ? '' : "Tableau de marge pour pièce 'MFN' .", 'helvetica', 'B', 10, 'L', 1);
+                    
+                    $pdf->SetTextColor(0, 0, 0);
+                    if (!empty($tableauMarge['tableauMargeMfn'])) {
+                        $pdf->setFont('helvetica', '', 12);
+                        $html = $tableGenerator->generateTable(
+                            $this->headerTableauMarge(),
+                            $tableauMarge['tableauMargeMfn'],
+                            []
+                            );
+                            
+                            $pdf->writeHTML($html, true, false, true, false, '');
+                            }
+                            //==========================================================================================================
+                            //Titre: Tableau de marge Autres
+                            $pdf->SetTextColor(255, 0, 0);
+                            $this->addTitle($pdf, empty($tableauMarge['tableauMargeAutres']) ? '' : "Tableau de marge pour pièce 'Autres' .", 'helvetica', 'B', 10, 'L', 1);
+                            
+                            $pdf->SetTextColor(0, 0, 0);
+                            if (!empty($tableauMarge['tableauMargeAutres'])) {
+                                $pdf->setFont('helvetica', '', 12);
+                                $html = $tableGenerator->generateTable(
+                                    $this->headerTableauMarge(),
+                                    $tableauMarge['tableauMargeAutres'],
+                                    []
+                                    );
+                                    }
 
             $pdf->writeHTML($html, true, false, true, false, '');
         }

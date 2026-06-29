@@ -138,7 +138,8 @@ class TraitementFichierService
         $pieceFaibleAchat = $this->preparationDesPiecesFaibleAchat($numeroOr, $codeSociete);
 
         // tableau de marge
-        $tableauMarge = $this->tableauMarge($numeroOr, $codeSociete);
+        // $tableauMarge = $this->tableauMarge($numeroOr, $codeSociete);
+        $tableauMarge = [];
 
         $genererPdfOrSoumisAValidation->GenererPdf($dto, $montantPdf, $quelqueaffichage, $email, $pieceFaibleAchat, $tableauMarge, $nomAvecCheminFichier);
     }
