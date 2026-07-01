@@ -370,7 +370,7 @@ function limitInputCharacters(inputElement, maxLength) {
     }
   });
 }
-limitInputCharacters(numTelInput, 10);
+limitInputCharacters(numTelInput, 16);
 
 /** LES CARACTES CHIFFRE SEULEMENT */
 allowOnlyNumbers(numTelInput);
