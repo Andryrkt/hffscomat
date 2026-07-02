@@ -10,6 +10,7 @@ use App\Command\cache\CacheWarmupAgServCommand;
 use App\Command\cache\CacheWarmupAllCommand;
 use App\Command\cache\CacheWarmupSecurityCommand;
 use App\Command\cache\CacheWarmupMenuCommand;
+use App\Command\informix\TransferTableCommand;
 use Symfony\Component\Console\Application;
 use App\Service\navigation\MenuService;
 use App\Service\UserData\UserDataService;
@@ -27,6 +28,8 @@ $menuService = new MenuService($userDataService, $cacheMenu);
 $application->add(new CacheWarmupMenuCommand($entityManager, $menuService));
 
 $application->add(new CacheWarmupAllCommand($entityManager, $userDataService, $menuService));
+
+$application->add(new TransferTableCommand());
 
 // Exécuter la commande
 $application->run();
