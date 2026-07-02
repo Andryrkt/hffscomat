@@ -44,6 +44,7 @@ class DitType extends AbstractType
         "WS AGRI TRUCK" => "WS AGRI TRUCK",
         "WS MACHINE" => "WS MACHINE",
         "WS PSSR" => "WS PSSR",
+        "WS UPS" => "WS UPS",
     ];
 
     const INTERNE_EXTERNE = [
