@@ -50,11 +50,11 @@ class FiltreService
         $this->addCondition($conditions, $selectWhereCondition->between('d0_.date_demande', $ditSearchdto->dateDebut, $ditSearchdto->dateFin));
         $this->addCondition($conditions, $selectWhereCondition->like('d0_.etat_facturation', substr($ditSearchdto->etatFacture, 0, 4)));
         $this->addCondition($conditions, $selectWhereCondition->null('d0_.numero_or', $ditSearchdto->ditSansOr));
-       
 
         // Si aucune condition, ajouter la condition par défaut (qui s'applique s'il n'y a pas de filtre ajouter par l'utilisateur)
         if (empty($conditions)) {
-            $conditions[] =  $selectWhereCondition->nlike('statut_or', 'Refus', ['position' => 'starts', 'tableAlias' => 'd0_', 'not' => true]);
+            $conditionOrNonRefuse = $selectWhereCondition->nlike('statut_or', 'Refus', ['position' => 'starts', 'tableAlias' => 'd0_', 'not' => true]);
+            $conditions[] = " AND d0_.statut_or is NULL OR (d0_.statut_or is NOT NULL $conditionOrNonRefuse)";
             $conditions[] =  ' OR d0_.numero_or IS NULL';
             $conditions[] = $selectWhereCondition->in('d0_.id_statut_demande', StatutDitConstant::DEFAULT_STATUT_ID);
         }
