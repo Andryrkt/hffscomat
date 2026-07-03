@@ -27,7 +27,7 @@ class PointageRelanceModel extends Model
         $donnees = $this->convertirVersInformix($donnees);
 
         // Construire la requête d'insertion et l'exécuter
-        $builder = new InsertQueryBuilder("{$this->dbIrium}:Informix.pointage_relance");
+        $builder = new InsertQueryBuilder("{$this->dbIrium}.pointage_relance");
         $builder->setData($donnees);
         $result = $builder->build();
 
@@ -56,7 +56,7 @@ class PointageRelanceModel extends Model
         // Convertir vers l'encodage Informix (ISO-8859-1)
         $donnees = $this->convertirVersInformix($donnees);
 
-        $updateBuilder = new UpdateQueryBuilder("{$this->dbIrium}:Informix.devis_soumis_a_validation_neg");
+        $updateBuilder = new UpdateQueryBuilder("{$this->dbIrium}.devis_soumis_a_validation_neg");
 
         // Définir les données à mettre à jour
         $updateBuilder->setData($donnees);
@@ -94,7 +94,7 @@ class PointageRelanceModel extends Model
     public function getNumeroVersionPointageRelance(string $numeroDevis, string $codeSociete): int
     {
         $statement = "SELECT FIRST 1 MAX(numero_version) as version 
-        FROM {$this->dbIrium}:Informix.pointage_relance pr 
+        FROM {$this->dbIrium}.pointage_relance pr 
         WHERE pr.numero_devis = '$numeroDevis'
         ";
 
@@ -115,7 +115,7 @@ class PointageRelanceModel extends Model
     public function getNumeroVersionDevis(string $numeroDevis, string $codeSociete): int
     {
         $statement = "SELECT FIRST 1 MAX(numero_version) as version 
-        FROM {$this->dbIrium}:Informix.devis_soumis_a_validation_neg dneg 
+        FROM {$this->dbIrium}.devis_soumis_a_validation_neg dneg 
         WHERE dneg.numero_devis = '$numeroDevis'
         ";
 
@@ -140,9 +140,9 @@ class PointageRelanceModel extends Model
 
         try {
             $statement = "SELECT statut_dw, statut_bc, stop_progression_global, motif_stop_global
-                    FROM {$this->dbIrium}:Informix.devis_soumis_a_validation_neg dneg
+                    FROM {$this->dbIrium}.devis_soumis_a_validation_neg dneg
                     WHERE dneg.numero_devis = '$numeroDevis' 
-                    AND dneg.numero_version = (SELECT MAX(numero_version) FROM {$this->dbIrium}:Informix.devis_soumis_a_validation_neg WHERE numero_devis = '$numeroDevis')
+                    AND dneg.numero_version = (SELECT MAX(numero_version) FROM {$this->dbIrium}.devis_soumis_a_validation_neg WHERE numero_devis = '$numeroDevis')
             ";
 
             $result = $this->connect->executeQuery($statement);
@@ -164,7 +164,7 @@ class PointageRelanceModel extends Model
     public function getDernierNumeroRelance(string $numeroDevis, string $codeSociete): int
     {
         $statement = "SELECT FIRST 1 pr.numero_relance as numeroRelance 
-        FROM {$this->dbIrium}:Informix.pointage_relance pr 
+        FROM {$this->dbIrium}.pointage_relance pr 
         WHERE pr.numero_devis = '$numeroDevis'
         AND pr.code_societe = '$codeSociete'
         ORDER BY pr.numero_relance DESC

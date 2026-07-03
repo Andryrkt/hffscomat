@@ -86,22 +86,22 @@ class OrLivrerModel extends Model
             
             
             
-            FROM {$this->dbIps}:Informix.sav_lor as OR
-            inner join {$this->dbIps}:Informix.sav_eor as U on U.seor_numor = slor_numor and U.seor_soc = slor_soc and U.seor_succ = slor_succ
-            inner join {$this->dbIps}:Informix.mat_mat on mmat_nummat =  seor_nummat
-            inner join {$this->dbIps}:Informix.agr_usr on ausr_num = seor_usr
-            inner join {$this->dbIps}:Informix.agr_tab on atab_nom = 'OPE' and atab_code = ausr_ope
-            inner join {$this->dbIps}:Informix.sav_itv as I
+            FROM {$this->dbIps}.sav_lor as OR
+            inner join {$this->dbIps}.sav_eor as U on U.seor_numor = slor_numor and U.seor_soc = slor_soc and U.seor_succ = slor_succ
+            inner join {$this->dbIps}.mat_mat on mmat_nummat =  seor_nummat
+            inner join {$this->dbIps}.agr_usr on ausr_num = seor_usr
+            inner join {$this->dbIps}.agr_tab on atab_nom = 'OPE' and atab_code = ausr_ope
+            inner join {$this->dbIps}.sav_itv as I
 	            on I.sitv_soc = slor_soc
 	            and I.sitv_succ = slor_succ
 	            and I.sitv_numor = slor_numor
 	            and I.sitv_interv = slor_nogrp /100
 	            and sitv_numor || '-' || sitv_interv in (    SELECT DISTINCT osv.numeroor || '-' || osv.numeroitv
-    FROM {$this->dbIrium}:informix.ors_soumis_a_validation osv
+    FROM {$this->dbIrium}.ors_soumis_a_validation osv
     WHERE osv.statut LIKE 'Valid%'
     AND osv.numeroversion = (
         SELECT MAX(osv2.numeroversion)
-        FROM {$this->dbIrium}:informix.ors_soumis_a_validation osv2
+        FROM {$this->dbIrium}.ors_soumis_a_validation osv2
         WHERE osv2.id = osv.id
     )
     )
@@ -127,24 +127,24 @@ class OrLivrerModel extends Model
 			            FROM sav_lor situ
 			            WHERE
 			            situ.slor_numor in (    SELECT DISTINCT osv.numeroor
-    FROM {$this->dbIrium}:informix.ors_soumis_a_validation osv
+    FROM {$this->dbIrium}.ors_soumis_a_validation osv
     WHERE osv.statut LIKE 'Valid%'
     AND osv.numeroversion = (
         SELECT MAX(osv2.numeroversion)
-        FROM {$this->dbIrium}:informix.ors_soumis_a_validation osv2
+        FROM {$this->dbIrium}.ors_soumis_a_validation osv2
         WHERE osv2.id = osv.id
     )
     )
 			             AND situ.slor_constp in (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST') AND (slor_refp not like '%-L' and slor_refp not like '%-CTRL')
 			            group by 2 ) as F
             		) as T ON T.numero_or = OR.slor_numor
-            left join {$this->dbIrium}:Informix.demande_intervention di on di.numero_or = seor_numor
-            LEFT JOIN {$this->dbIrium}:informix.wor_niveau_urgence w ON di.id_niveau_urgence = w.id
-            inner JOIN {$this->dbIrium}:informix.ors_soumis_a_validation osv_or 
+            left join {$this->dbIrium}.demande_intervention di on di.numero_or = seor_numor
+            LEFT JOIN {$this->dbIrium}.wor_niveau_urgence w ON di.id_niveau_urgence = w.id
+            inner JOIN {$this->dbIrium}.ors_soumis_a_validation osv_or 
                 ON osv_or.numeroor = seor_numor
                 AND osv_or.numeroversion = (
                     SELECT MAX(osv2.numeroversion)
-                    FROM {$this->dbIrium}:informix.ors_soumis_a_validation osv2
+                    FROM {$this->dbIrium}.ors_soumis_a_validation osv2
                     WHERE osv2.id = osv_or.id
                 )
                 AND osv_or.statut LIKE 'Valid%'
@@ -152,11 +152,11 @@ class OrLivrerModel extends Model
             (
 	            select slor_numor from sav_lor l
 	            where l.slor_numor  in (    SELECT DISTINCT osv.numeroor
-    FROM {$this->dbIrium}:informix.ors_soumis_a_validation osv
+    FROM {$this->dbIrium}.ors_soumis_a_validation osv
     WHERE osv.statut LIKE 'Valid%'
     AND osv.numeroversion = (
         SELECT MAX(osv2.numeroversion)
-        FROM {$this->dbIrium}:informix.ors_soumis_a_validation osv2
+        FROM {$this->dbIrium}.ors_soumis_a_validation osv2
         WHERE osv2.id = osv.id
     )
     )
@@ -183,7 +183,7 @@ class OrLivrerModel extends Model
     {
         $statement = "  SELECT DISTINCT
                             slor_succdeb||'-'||(select trim(asuc_lib) from agr_succ where asuc_numsoc = slor_soc and asuc_num = slor_succdeb) as agence
-                        FROM {$this->dbIps}:Informix.sav_lor
+                        FROM {$this->dbIps}.sav_lor
                         WHERE slor_succdeb||'-'||(select trim(asuc_lib) from agr_succ where asuc_numsoc = slor_soc and asuc_num = slor_succdeb) <> ''
                         AND slor_soc = '$codeSociete'
                     ";
@@ -230,7 +230,7 @@ class OrLivrerModel extends Model
     {
         $statement = "  SELECT DISTINCT
                             slor_succdeb||'-'||(select trim(asuc_lib) from informix.agr_succ where asuc_numsoc = slor_soc and asuc_num = slor_succdeb) as agence
-                        FROM {$this->dbIps}:Informix.sav_lor
+                        FROM {$this->dbIps}.sav_lor
                         WHERE slor_succdeb||'-'||(select trim(asuc_lib) from informix.agr_succ where asuc_numsoc = slor_soc and asuc_num = slor_succdeb) <> ''
                         AND slor_soc = '$codeSociete'
                     ";

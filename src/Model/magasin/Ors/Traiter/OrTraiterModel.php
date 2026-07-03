@@ -62,12 +62,12 @@ class OrTraiterModel extends Model
             ,CASE WHEN slor_typlig = 'P' THEN (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) WHEN slor_typlig IN ('F','M','U','C') THEN slor_qterea END AS quantiteDemander
             , trim(atab_lib) as nomPrenom
 
-            from {$this->dbIps}:Informix.sav_lor 
-            inner join {$this->dbIps}:Informix.sav_eor on seor_soc = slor_soc and seor_succ = slor_succ and seor_numor = slor_numor and seor_soc = '{$dtoSearch->codeSociete}'
-            inner join {$this->dbIps}:Informix.mat_mat on mmat_nummat =  seor_nummat
-            inner join {$this->dbIps}:Informix.agr_usr on ausr_num = seor_usr
-            inner join {$this->dbIps}:Informix.agr_tab on atab_nom = 'OPE' and atab_code = ausr_ope
-            inner join {$this->dbIps}:Informix.sav_itv 
+            from {$this->dbIps}.sav_lor 
+            inner join {$this->dbIps}.sav_eor on seor_soc = slor_soc and seor_succ = slor_succ and seor_numor = slor_numor and seor_soc = '{$dtoSearch->codeSociete}'
+            inner join {$this->dbIps}.mat_mat on mmat_nummat =  seor_nummat
+            inner join {$this->dbIps}.agr_usr on ausr_num = seor_usr
+            inner join {$this->dbIps}.agr_tab on atab_nom = 'OPE' and atab_code = ausr_ope
+            inner join {$this->dbIps}.sav_itv 
                 on sitv_soc = slor_soc 
                 and sitv_succ = slor_succ 
                 and sitv_numor = slor_numor 
@@ -75,13 +75,13 @@ class OrTraiterModel extends Model
                 and sitv_soc = '{$dtoSearch->codeSociete}'
                 and seor_succ = slor_succ 
                 and seor_numor = slor_numor
-            left join {$this->dbIrium}:Informix.demande_intervention di on di.numero_or = seor_numor
-            LEFT JOIN {$this->dbIrium}:informix.wor_niveau_urgence w ON di.id_niveau_urgence = w.id
-            inner JOIN {$this->dbIrium}:informix.ors_soumis_a_validation osv_or 
+            left join {$this->dbIrium}.demande_intervention di on di.numero_or = seor_numor
+            LEFT JOIN {$this->dbIrium}.wor_niveau_urgence w ON di.id_niveau_urgence = w.id
+            inner JOIN {$this->dbIrium}.ors_soumis_a_validation osv_or 
                 ON osv_or.numeroor = seor_numor
                 AND osv_or.numeroversion = (
                     SELECT MAX(osv2.numeroversion)
-                    FROM {$this->dbIrium}:informix.ors_soumis_a_validation osv2
+                    FROM {$this->dbIrium}.ors_soumis_a_validation osv2
                     WHERE osv2.id = osv_or.id
                 )
                 AND osv_or.statut LIKE 'Valid%'
@@ -114,7 +114,7 @@ class OrTraiterModel extends Model
           trim(mmat_typmat) as modele,
           trim(mmat_numparc) as casier
 
-          from {$this->dbIps}:Informix.mat_mat
+          from {$this->dbIps}.mat_mat
           where mmat_nummat ='$matricule'
           and MMAT_ETSTOCK in ('ST','AT', '--')
           and trim(MMAT_AFFECT) in ('IMM','LCD', 'SDO', 'VTE')
@@ -130,7 +130,7 @@ class OrTraiterModel extends Model
     public function getIdMaterielDitSelonNumOr(string $numeroOr): ?string
     {
         $statement = " SELECT id_materiel  
-        from {$this->dbIrium}:Informix.demande_intervention 
+        from {$this->dbIrium}.demande_intervention 
         where numero_or ='$numeroOr' ";
 
         $result = $this->connect->executeQuery($statement);
@@ -144,7 +144,7 @@ class OrTraiterModel extends Model
     {
         $statement = "  SELECT DISTINCT
                             slor_succdeb||'-'||(select trim(asuc_lib) from agr_succ where asuc_numsoc = slor_soc and asuc_num = slor_succdeb) as agence
-                        FROM {$this->dbIps}:Informix.sav_lor
+                        FROM {$this->dbIps}.sav_lor
                         WHERE slor_succdeb||'-'||(select trim(asuc_lib) from agr_succ where asuc_numsoc = slor_soc and asuc_num = slor_succdeb) <> ''
                         AND slor_soc = '$codeSociete'
                     ";
@@ -191,7 +191,7 @@ class OrTraiterModel extends Model
     {
         $statement = "  SELECT DISTINCT
                             slor_succdeb||'-'||(select trim(asuc_lib) from informix.agr_succ where asuc_numsoc = slor_soc and asuc_num = slor_succdeb) as agence
-                        FROM {$this->dbIps}:Informix.sav_lor
+                        FROM {$this->dbIps}.sav_lor
                         WHERE slor_succdeb||'-'||(select trim(asuc_lib) from informix.agr_succ where asuc_numsoc = slor_soc and asuc_num = slor_succdeb) <> ''
                         AND slor_soc = '$codeSociete'
                     ";

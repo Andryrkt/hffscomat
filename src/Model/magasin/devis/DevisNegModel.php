@@ -69,30 +69,30 @@ class DevisNegModel extends Model
                 ,TRIM(ausr.ausr_nom)                                        AS utilisateur_createur_devis
                 ,dneg.utilisateur                                           AS soumis_par
                 ,nent.nent_devise                                           AS devise
-                ,(SELECT MAX(nlig_constp) FROM {$this->dbIps}:informix.neg_lig WHERE nlig_numcde = nent.nent_numcde AND nlig_codg='ST') AS constructeur
+                ,(SELECT MAX(nlig_constp) FROM {$this->dbIps}.neg_lig WHERE nlig_numcde = nent.nent_numcde AND nlig_codg='ST') AS constructeur
                 , (SELECT numero_bcc_neg 
-                    FROM {$this->dbIrium}:informix.DW_BC_Client_Negoce 
+                    FROM {$this->dbIrium}.DW_BC_Client_Negoce 
                     WHERE numero_devis = nent.nent_numcde 
                         AND id_bcc_neg = (SELECT MAX(id_bcc_neg) 
-                                        FROM {$this->dbIrium}:informix.DW_BC_Client_Negoce 
+                                        FROM {$this->dbIrium}.DW_BC_Client_Negoce 
                                         WHERE numero_devis = nent.nent_numcde)
                 ) AS numero_po
                 , (SELECT path
-                    FROM {$this->dbIrium}:informix.DW_BC_Client_Negoce 
+                    FROM {$this->dbIrium}.DW_BC_Client_Negoce 
                     WHERE numero_devis = nent.nent_numcde 
                         AND id_bcc_neg = (SELECT MAX(id_bcc_neg) 
-                                        FROM {$this->dbIrium}:informix.DW_BC_Client_Negoce 
+                                        FROM {$this->dbIrium}.DW_BC_Client_Negoce 
                                         WHERE numero_devis = nent.nent_numcde)
                 ) AS path
-            FROM {$this->dbIps}:informix.neg_ent nent
+            FROM {$this->dbIps}.neg_ent nent
 
-            LEFT JOIN {$this->dbIps}:informix.agr_usr ausr
+            LEFT JOIN {$this->dbIps}.agr_usr ausr
                 ON ausr.ausr_num = nent.nent_usr
                 AND ausr.ausr_soc = nent.nent_soc
 
-            LEFT JOIN {$this->dbIrium}:Informix.devis_soumis_a_validation_neg dneg
+            LEFT JOIN {$this->dbIrium}.devis_soumis_a_validation_neg dneg
                 ON dneg.numero_devis = nent.nent_numcde
-                AND dneg.numero_version = (SELECT MAX(numero_version) FROM {$this->dbIrium}:Informix.devis_soumis_a_validation_neg WHERE numero_devis = nent.nent_numcde)
+                AND dneg.numero_version = (SELECT MAX(numero_version) FROM {$this->dbIrium}.devis_soumis_a_validation_neg WHERE numero_devis = nent.nent_numcde)
 
             LEFT JOIN (
                 SELECT
@@ -103,7 +103,7 @@ class DevisNegModel extends Model
                     ,COUNT(*) AS nb_relances
                     ,MAX(date_de_relance) AS derniere_relance
                     ,(TODAY - DATE(MAX(date_de_relance))) AS delai_jours
-                FROM {$this->dbIrium}:Informix.pointage_relance
+                FROM {$this->dbIrium}.pointage_relance
                 GROUP BY 1
             ) rl ON rl.num_dev = nent.nent_numcde
 
@@ -116,7 +116,7 @@ class DevisNegModel extends Model
                 AND nent.nent_succ = '$sucNeg'
                 AND nent.nent_soc = '$codeSociete'
                 AND EXISTS (
-                                SELECT 1 FROM {$this->dbIps}:informix.neg_lig nl
+                                SELECT 1 FROM {$this->dbIps}.neg_lig nl
                                 WHERE nl.nlig_numcde = nent.nent_numcde
                                 AND   nl.nlig_codg='ST'
 )
@@ -150,7 +150,7 @@ class DevisNegModel extends Model
                 $statement .= " AND " . implode(" AND ", $whereClauses);
             }
 
-            $statement .= " AND nent.nent_numcde not in (select nent2.nent_numcde from {$this->dbIps}:informix.neg_ent nent2 where nent2.nent_posl ='TR' and nent2.nent_numcde not in (select dneg2.numero_devis from {$this->dbIrium}:Informix.devis_soumis_a_validation_neg dneg2))";
+            $statement .= " AND nent.nent_numcde not in (select nent2.nent_numcde from {$this->dbIps}.neg_ent nent2 where nent2.nent_posl ='TR' and nent2.nent_numcde not in (select dneg2.numero_devis from {$this->dbIrium}.devis_soumis_a_validation_neg dneg2))";
 
             $statement .= " ORDER BY date_cde_brute DESC";
 
@@ -234,24 +234,24 @@ class DevisNegModel extends Model
                 ,TRIM(ausr.ausr_nom)                                        AS utilisateur_createur_devis
                 ,dneg.utilisateur                                           AS soumis_par
                 ,nent.nent_devise                                           AS devise
-                ,(SELECT MAX(nlig_constp) FROM {$this->dbIps}:informix.neg_lig WHERE nlig_numcde = nent.nent_numcde AND nlig_codg='ST') AS constructeur
+                ,(SELECT MAX(nlig_constp) FROM {$this->dbIps}.neg_lig WHERE nlig_numcde = nent.nent_numcde AND nlig_codg='ST') AS constructeur
 , (SELECT numero_bcc_neg 
-                    FROM {$this->dbIrium}:informix.DW_BC_Client_Negoce 
+                    FROM {$this->dbIrium}.DW_BC_Client_Negoce 
                     WHERE numero_devis = nent.nent_numcde 
                         AND id_bcc_neg = (SELECT MAX(id_bcc_neg) 
-                                        FROM {$this->dbIrium}:informix.DW_BC_Client_Negoce 
+                                        FROM {$this->dbIrium}.DW_BC_Client_Negoce 
                                         WHERE numero_devis = nent.nent_numcde)
                 ) AS numero_po
-            FROM {$this->dbIps}:informix.neg_ent nent
+            FROM {$this->dbIps}.neg_ent nent
 
-            LEFT JOIN {$this->dbIps}:informix.agr_usr ausr
+            LEFT JOIN {$this->dbIps}.agr_usr ausr
                 ON ausr.ausr_num = nent.nent_usr
                 AND ausr.ausr_soc = nent.nent_soc
 
-            LEFT JOIN {$this->dbIrium}:Informix.devis_soumis_a_validation_neg dneg
+            LEFT JOIN {$this->dbIrium}.devis_soumis_a_validation_neg dneg
                 ON dneg.numero_devis = nent.nent_numcde
                 AND dneg.code_societe = nent.nent_soc
-                AND dneg.numero_version = (SELECT MAX(numero_version) FROM {$this->dbIrium}:Informix.devis_soumis_a_validation_neg WHERE numero_devis = nent.nent_numcde AND code_societe = nent.nent_soc)
+                AND dneg.numero_version = (SELECT MAX(numero_version) FROM {$this->dbIrium}.devis_soumis_a_validation_neg WHERE numero_devis = nent.nent_numcde AND code_societe = nent.nent_soc)
 
             LEFT JOIN (
                 SELECT
@@ -262,7 +262,7 @@ class DevisNegModel extends Model
                     ,COUNT(*) AS nb_relances
                     ,MAX(date_de_relance) AS derniere_relance
                     ,(TODAY - DATE(MAX(date_de_relance))) AS delai_jours
-                FROM {$this->dbIrium}:Informix.pointage_relance
+                FROM {$this->dbIrium}.pointage_relance
                 GROUP BY 1
             ) rl ON rl.num_dev = nent.nent_numcde
             WHERE nent.nent_natop    = 'DEV'
@@ -274,7 +274,7 @@ class DevisNegModel extends Model
                 AND nent.nent_succ = '$sucNeg'
                 AND nent.nent_soc = '$codeSociete'
                 AND EXISTS (
-                                SELECT 1 FROM {$this->dbIps}:informix.neg_lig nl
+                                SELECT 1 FROM {$this->dbIps}.neg_lig nl
                                 WHERE nl.nlig_numcde = nent.nent_numcde
                                 AND   nl.nlig_codg = 'ST'
                             )
@@ -461,10 +461,10 @@ class DevisNegModel extends Model
         if(!empty($criteria['numeroPO'])) {
             $numeroPO = $criteria['numeroPO'];
             $whereClauses[] = " (SELECT numero_bcc_neg 
-                    FROM {$this->dbIrium}:informix.DW_BC_Client_Negoce 
+                    FROM {$this->dbIrium}.DW_BC_Client_Negoce 
                     WHERE numero_devis = nent.nent_numcde 
                         AND id_bcc_neg = (SELECT MAX(id_bcc_neg) 
-                                        FROM {$this->dbIrium}:informix.DW_BC_Client_Negoce 
+                                        FROM {$this->dbIrium}.DW_BC_Client_Negoce 
                                         WHERE numero_devis = nent.nent_numcde)
                 ) LIKE '%$numeroPO%'";
         }
@@ -477,7 +477,7 @@ class DevisNegModel extends Model
         try {
             // On récupère l'état actuel pour savoir si on stoppe ou si on réactive
             $sqlCheck = "SELECT FIRST 1 stop_progression_global 
-                        FROM {$this->dbIrium}:Informix.devis_soumis_a_validation_neg dneg
+                        FROM {$this->dbIrium}.devis_soumis_a_validation_neg dneg
                         WHERE dneg.numero_devis = :numeroDevis 
                         ORDER BY dneg.numero_version DESC";
 
@@ -489,7 +489,7 @@ class DevisNegModel extends Model
 
             if ($newState === 1) {
                 // On stoppe
-                $sql = "UPDATE {$this->dbIrium}:Informix.devis_soumis_a_validation_neg
+                $sql = "UPDATE {$this->dbIrium}.devis_soumis_a_validation_neg
                         SET stop_progression_global = 1, 
                             date_stop_global = CURRENT,
                             motif_stop_global = :motif,
@@ -497,7 +497,7 @@ class DevisNegModel extends Model
                             date_reprise_manuel = NULL,
                             utilisateur_reprise = NULL
                         WHERE numero_devis = :numeroDevis 
-                        AND numero_version = (SELECT MAX(numero_version) FROM {$this->dbIrium}:Informix.devis_soumis_a_validation_neg WHERE numero_devis = :numeroDevis2)";
+                        AND numero_version = (SELECT MAX(numero_version) FROM {$this->dbIrium}.devis_soumis_a_validation_neg WHERE numero_devis = :numeroDevis2)";
                 
                 $params = [
                     'motif' => $motif ?: "",
@@ -507,13 +507,13 @@ class DevisNegModel extends Model
                 ];
             } else {
                 // On réactive : on efface le motif et on note l'utilisateur qui réactive
-                $sql = "UPDATE {$this->dbIrium}:Informix.devis_soumis_a_validation_neg
+                $sql = "UPDATE {$this->dbIrium}.devis_soumis_a_validation_neg
                         SET stop_progression_global = 0, 
                             motif_stop_global = NULL,
                             date_reprise_manuel = CURRENT,
                             utilisateur_reprise = :utilisateur
                         WHERE numero_devis = :numeroDevis 
-                        AND numero_version = (SELECT MAX(numero_version) FROM {$this->dbIrium}:Informix.devis_soumis_a_validation_neg WHERE numero_devis = :numeroDevis2)";
+                        AND numero_version = (SELECT MAX(numero_version) FROM {$this->dbIrium}.devis_soumis_a_validation_neg WHERE numero_devis = :numeroDevis2)";
                 
                 $params = [
                     'utilisateur' => $utilisateur,
@@ -575,9 +575,9 @@ class DevisNegModel extends Model
                                 WHEN COUNT(pr.numero_devis) = 0 THEN (TODAY - DATE(NVL(dneg.date_envoye_devis_client, nent.nent_datecde)))
                                 ELSE (TODAY - DATE(MAX(pr.date_de_relance)))
                             END AS delai_jours
-                        FROM {$this->dbIps}:informix.neg_ent nent
-                        LEFT JOIN {$this->dbIrium}:Informix.devis_soumis_a_validation_neg dneg ON dneg.numero_devis = nent.nent_numcde
-                        LEFT JOIN {$this->dbIrium}:Informix.pointage_relance pr ON pr.numero_devis = nent.nent_numcde
+                        FROM {$this->dbIps}.neg_ent nent
+                        LEFT JOIN {$this->dbIrium}.devis_soumis_a_validation_neg dneg ON dneg.numero_devis = nent.nent_numcde
+                        LEFT JOIN {$this->dbIrium}.pointage_relance pr ON pr.numero_devis = nent.nent_numcde
                         WHERE nent.nent_numcde = :numeroDevis AND nent.nent_soc = :codeSociete
                         GROUP BY 1, 2, 3, 4, 5, nent.nent_datecde
                     ) rs
@@ -620,7 +620,7 @@ class DevisNegModel extends Model
         $this->connect->connect();
         try {
             $statement = "SELECT TO_CHAR(date_envoye_devis_client, '%d/%m/%Y') as date_envoye_devis_client
-                        FROM {$this->dbIrium}:Informix.devis_soumis_a_validation_neg
+                        FROM {$this->dbIrium}.devis_soumis_a_validation_neg
                         WHERE numero_devis = :numeroDevis 
                         AND code_societe = :codeSociete
                         ORDER BY numero_version DESC

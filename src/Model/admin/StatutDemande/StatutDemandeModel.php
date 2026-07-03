@@ -9,7 +9,7 @@ class StatutDemandeModel extends Model
     public function getAllDescriptionStatutDit()
     {
         $statement = " SELECT description as description
-                from {$this->dbIrium}:informix.statut_demande 
+                from {$this->dbIrium}.statut_demande 
                 where code_application ='DIT' 
                 order by id_statut_demande  asc
         ";
@@ -23,7 +23,7 @@ class StatutDemandeModel extends Model
     public function getIdSelonDescription(string $description): int
     {
         $statement = " SELECT id_statut_demande as id
-                from {$this->dbIrium}:informix.statut_demande 
+                from {$this->dbIrium}.statut_demande 
                 where code_application ='DIT' 
                 AND description = '$description'
         ";
@@ -37,7 +37,7 @@ class StatutDemandeModel extends Model
     public function getDescriptionById(int $id): string
     {
         $statement = " SELECT description as description
-                from {$this->dbIrium}:informix.statut_demande 
+                from {$this->dbIrium}.statut_demande 
                 where id_statut_demande ='$id'
         ";
 

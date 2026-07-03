@@ -18,7 +18,7 @@ class DitDevisSoumisAValidationModel extends Model
     public function findStatutDevis(string $numDit, string $codeSociete): array
     {
         $statement = "SELECT FIRST 1 d.statut AS statut
-                        FROM {$this->dbIrium}:Informix.devis_soumis_a_validation d
+                        FROM {$this->dbIrium}.devis_soumis_a_validation d
                         WHERE d.numerodit = '$numDit'
                         AND d.code_societe = '$codeSociete'
                         ORDER BY d.numeroversion DESC
@@ -34,7 +34,7 @@ class DitDevisSoumisAValidationModel extends Model
     public function findStatutDevisSelonNumDevis(string $numDevis, string $codeSociete): ?string
     {
         $statement = "SELECT FIRST 1 d.statut AS statut
-                        FROM {$this->dbIrium}:Informix.devis_soumis_a_validation d
+                        FROM {$this->dbIrium}.devis_soumis_a_validation d
                         WHERE d.numerodevis = '$numDevis'
                         AND d.code_societe = '$codeSociete'
                         ORDER BY d.numeroversion DESC
@@ -50,7 +50,7 @@ class DitDevisSoumisAValidationModel extends Model
     public function recupNumeroDevis(string $numDit, string $codeSociete): ?string
     {
         $statement = "SELECT  seor_numor  as numDevis
-                    from {$this->dbIps}:Informix.sav_eor
+                    from {$this->dbIps}.sav_eor
                     where seor_serv = 'DEV'
                     AND seor_soc = '$codeSociete'
                     AND seor_refdem = '$numDit'
@@ -69,7 +69,7 @@ class DitDevisSoumisAValidationModel extends Model
 
         $statement = " SELECT
                     COUNT(slor.slor_constp) AS nbr_sortie_magasin
-                FROM {$this->dbIps}:Informix.sav_lor slor
+                FROM {$this->dbIps}.sav_lor slor
                 INNER JOIN sav_eor seor ON slor.slor_numor = seor.seor_numor
                 WHERE seor.seor_numor = '$numDevis'
                 AND slor.slor_typlig = 'P'
@@ -88,7 +88,7 @@ class DitDevisSoumisAValidationModel extends Model
     public function recupNbPieceMagasinDejaSoumi(string $numDevis, string $codeSociete): int
     {
         $statement = " SELECT first 1 nombrelignepiece as nbr_ligne_piece 
-                        from {$this->dbIrium}:Informix.devis_soumis_a_validation 
+                        from {$this->dbIrium}.devis_soumis_a_validation 
                         where numerodevis ='$numDevis' 
                         and code_societe ='$codeSociete'
                         order by numeroversion desc
@@ -106,7 +106,7 @@ class DitDevisSoumisAValidationModel extends Model
         if ($numDevis === null) return 0;
 
         $statement = " SELECT COUNT(numerodevis) as nbr_devis_valide  
-            from {$this->dbIrium}:Informix.devis_soumis_a_validation 
+            from {$this->dbIrium}.devis_soumis_a_validation 
             where numerodevis ='$numDevis' 
             and code_societe ='$codeSociete'
             and statut like 'Valid%' 
@@ -133,7 +133,7 @@ class DitDevisSoumisAValidationModel extends Model
                             WHEN slor_typlig IN ('F', 'M', 'U', 'C') THEN slor_pxnreel
                         END
                     ) as montant_itv
-                FROM {$this->dbIps}:Informix.sav_eor, {$this->dbIps}:Informix.sav_lor, {$this->dbIps}:Informix.sav_itv
+                FROM {$this->dbIps}.sav_eor, {$this->dbIps}.sav_lor, {$this->dbIps}.sav_itv
                 WHERE seor_numor = slor_numor
                 AND seor_serv = 'DEV'
                 AND sitv_numor = slor_numor
@@ -155,7 +155,7 @@ class DitDevisSoumisAValidationModel extends Model
     public function recupMontantItvIrium(string $numDevis, string $codeSociete): float
     {
         $statement = " SELECT first 1 montantitv as montant_irium 
-                        from {$this->dbIrium}:Informix.devis_soumis_a_validation 
+                        from {$this->dbIrium}.devis_soumis_a_validation 
                         where numerodevis ='$numDevis' 
                         and code_societe ='$codeSociete'
                         order by numeroversion desc
@@ -171,7 +171,7 @@ class DitDevisSoumisAValidationModel extends Model
     public function estPremierSoumission(string $numDevis, string $codeSociete): bool
     {
         $statement = " SELECT Count(numeroversion) as numero_version 
-                        from {$this->dbIrium}:Informix.devis_soumis_a_validation 
+                        from {$this->dbIrium}.devis_soumis_a_validation 
                         where numerodevis ='$numDevis' 
                         and code_societe ='$codeSociete'
             ";
@@ -187,7 +187,7 @@ class DitDevisSoumisAValidationModel extends Model
     public function recupInfoDit(string $numDit, string $numDevis, string $codeSociete): ?array
     {
         $statement = " SELECT  *
-                        from {$this->dbIrium}:Informix.demande_intervention 
+                        from {$this->dbIrium}.demande_intervention 
                         where numero_demande_dit ='$numDit'
                         --and numero_devis_rattache = '$numDevis'
                         and code_societe ='$codeSociete'
@@ -203,7 +203,7 @@ class DitDevisSoumisAValidationModel extends Model
     public function recupNumeroClientIps(string $numDevis, string $codeSociete): ?string
     {
         $statement = " SELECT seor_numcli as numero_client
-                        FROM {$this->dbIps}:Informix.sav_eor
+                        FROM {$this->dbIps}.sav_eor
                         WHERE seor_serv = 'DEV'
                         AND seor_soc = '$codeSociete'
                         AND seor_numor = '$numDevis'
@@ -219,7 +219,7 @@ class DitDevisSoumisAValidationModel extends Model
     public function recupNumDitIps(string $numDevis, string $codeSociete): ?string
     {
         $statement = " SELECT trim(seor_refdem) as num_dit
-                    FROM {$this->dbIps}:Informix.sav_eor 
+                    FROM {$this->dbIps}.sav_eor 
                     where seor_serv='DEV'
                     AND seor_soc = '$codeSociete'
                     AND seor_numor = '$numDevis' 
@@ -235,8 +235,8 @@ class DitDevisSoumisAValidationModel extends Model
     public function recupServDebiteur(string $numDevis, string $codeSociete): ?string
     {
         $statement = " SELECT sitv_succdeb as serv_debiteur
-                        FROM {$this->dbIps}:Informix.sav_itv sitv 
-                        inner join {$this->dbIps}:Informix.sav_eor seor on sitv.sitv_numor = seor.seor_numor and seor.seor_serv ='DEV'
+                        FROM {$this->dbIps}.sav_itv sitv 
+                        inner join {$this->dbIps}.sav_eor seor on sitv.sitv_numor = seor.seor_numor and seor.seor_serv ='DEV'
                         WHERE seor.seor_numor = '$numDevis'
                         AND seor.seor_soc = '$codeSociete'
         ";
@@ -364,7 +364,7 @@ class DitDevisSoumisAValidationModel extends Model
                 END
             ) as montant_revient
             
-                FROM {$this->dbIps}:informix.sav_eor, {$this->dbIps}:informix.sav_lor, {$this->dbIps}:informix.sav_itv
+                FROM {$this->dbIps}.sav_eor, {$this->dbIps}.sav_lor, {$this->dbIps}.sav_itv
                 WHERE seor_numor = slor_numor
                 AND seor_serv = 'DEV'
                 AND sitv_numor = slor_numor
@@ -389,7 +389,7 @@ class DitDevisSoumisAValidationModel extends Model
     public function recupConstRefPremDev(string $numDevis, string $codeSociete): array
     {
         $statement = " SELECT   TRIM(slor_constp||'-'|| slor_refp) as contructeur
-                        FROM {$this->dbIps}:Informix.sav_lor
+                        FROM {$this->dbIps}.sav_lor
                         WHERE  slor_numor = '{$numDevis}' 
                         AND slor_nogrp = 100 
                         AND slor_soc = '$codeSociete'
@@ -407,7 +407,7 @@ class DitDevisSoumisAValidationModel extends Model
     public function recupNbrItvDev(string $numDevis, string $codeSociete): array
     {
         $statement = " SELECT DISTINCT COUNT( slor_nogrp) as itv
-                        FROM {$this->dbIps}:informix.sav_lor 
+                        FROM {$this->dbIps}.sav_lor 
                         WHERE slor_numor= '{$numDevis}' 
                         AND slor_nogrp != 100 
                         AND slor_soc = '$codeSociete'
@@ -423,7 +423,7 @@ class DitDevisSoumisAValidationModel extends Model
     public function recupNumeroVersion(string $numDevis, string $codeSociete): int
     {
         $statement = " SELECT COALESCE(MAX(numeroversion)+1, 1) as numero_version 
-                from {$this->dbIrium}:Informix.devis_soumis_a_validation 
+                from {$this->dbIrium}.devis_soumis_a_validation 
                 where numerodevis ='$numDevis'
                 AND code_societe = '$codeSociete'
         ";
@@ -443,7 +443,7 @@ class DitDevisSoumisAValidationModel extends Model
         try {
             foreach ($data as $donnees) {
                 // Construire la requête d'insertion et l'exécuter
-                $builder = new InsertQueryBuilder("{$this->dbIrium}:Informix.devis_soumis_a_validation");
+                $builder = new InsertQueryBuilder("{$this->dbIrium}.devis_soumis_a_validation");
                 $builder->setData($donnees);
                 $result = $builder->build();
 
@@ -458,7 +458,7 @@ class DitDevisSoumisAValidationModel extends Model
     public function updateNumeroEtStatuDevis(string $numDit, string $codeSociete, array $data)
     {
 
-        $updateBuilder = new UpdateQueryBuilder("{$this->dbIrium}:Informix.demande_intervention");
+        $updateBuilder = new UpdateQueryBuilder("{$this->dbIrium}.demande_intervention");
 
         /// Définir les données à mettre à jour
         $updateBuilder->setData($data);
@@ -504,7 +504,7 @@ class DitDevisSoumisAValidationModel extends Model
                         AND COUNT(CASE WHEN slor_constp IN (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST') THEN 1 END) > 0
                         THEN TRIM('P')
                     END AS retour
-                FROM {$this->dbIps}:Informix.sav_lor
+                FROM {$this->dbIps}.sav_lor
                 WHERE slor_numor = '$numDevis'
                 AND slor_soc = '$codeSociete'
             ";
@@ -518,13 +518,13 @@ class DitDevisSoumisAValidationModel extends Model
 
     public function findDevisSoumiAvantForfait(string $numDevis, string $codeSociete): array
     {
-        $statement = " SELECT * from {$this->dbIrium}:Informix.devis_soumis_a_validation 
+        $statement = " SELECT * from {$this->dbIrium}.devis_soumis_a_validation 
             where numerodevis ='$numDevis' 
             and code_societe = '$codeSociete'
             and montantforfait is not null
             and numeroversion = (
                     select MAX(dsv2.numeroversion ) 
-                    from {$this->dbIrium}:Informix.devis_soumis_a_validation dsv2 
+                    from {$this->dbIrium}.devis_soumis_a_validation dsv2 
                     where dsv2.numerodevis ='$numDevis' 
                     and dsv2.code_societe ='$codeSociete'
                     and dsv2.montantforfait is not null 
@@ -540,13 +540,13 @@ class DitDevisSoumisAValidationModel extends Model
 
     public function findDevisSoumiAvantMaxForfait(string $numDevis, string $codeSociete): array
     {
-        $statement = " SELECT * from {$this->dbIrium}:Informix.devis_soumis_a_validation 
+        $statement = " SELECT * from {$this->dbIrium}.devis_soumis_a_validation 
             where numerodevis ='$numDevis' 
             and code_societe = '$codeSociete'
             and montantforfait is not null
             and numeroversion = (
                     (select MAX(dsv2.numeroversion ) 
-                    from {$this->dbIrium}:Informix.devis_soumis_a_validation dsv2 
+                    from {$this->dbIrium}.devis_soumis_a_validation dsv2 
                     where dsv2.numerodevis ='$numDevis' 
                     and dsv2.code_societe ='$codeSociete'
                     and dsv2.montantforfait is not null ) - 1
@@ -562,13 +562,13 @@ class DitDevisSoumisAValidationModel extends Model
 
     public function findDevisSoumiAvant(string $numDevis, string $codeSociete): array
     {
-        $statement = " SELECT * from {$this->dbIrium}:Informix.devis_soumis_a_validation 
+        $statement = " SELECT * from {$this->dbIrium}.devis_soumis_a_validation 
             where numerodevis ='$numDevis' 
             and code_societe = '$codeSociete'
             and montantitv  <> 0.0
             and numeroversion = (
                     (select MAX(dsv2.numeroversion ) 
-                    from {$this->dbIrium}:Informix.devis_soumis_a_validation dsv2 
+                    from {$this->dbIrium}.devis_soumis_a_validation dsv2 
                     where dsv2.numerodevis ='$numDevis' 
                     and dsv2.code_societe ='$codeSociete'
                     and montantitv  <> 0.0 )
@@ -584,13 +584,13 @@ class DitDevisSoumisAValidationModel extends Model
 
     public function findDevisSoumiAvantMax(string $numDevis, string $codeSociete): array
     {
-        $statement = " SELECT * from {$this->dbIrium}:Informix.devis_soumis_a_validation 
+        $statement = " SELECT * from {$this->dbIrium}.devis_soumis_a_validation 
             where numerodevis ='$numDevis' 
             and code_societe = '$codeSociete'
             and montantitv  <> 0.0
             and numeroversion = (
                     (select MAX(dsv2.numeroversion ) 
-                    from {$this->dbIrium}:Informix.devis_soumis_a_validation dsv2 
+                    from {$this->dbIrium}.devis_soumis_a_validation dsv2 
                     where dsv2.numerodevis ='$numDevis' 
                     and dsv2.code_societe ='$codeSociete'
                     and montantitv  <> 0.0 ) - 1

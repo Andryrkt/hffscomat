@@ -81,8 +81,8 @@ class AcBcSoumisModel extends Model
                     dit.nom_client,
                     dit.mail_client,
                     COALESCE(b.version, 0) AS version_bcs
-                FROM {$this->dbIrium}:Informix.devis_soumis_a_validation d
-                JOIN {$this->dbIrium}:Informix.demande_intervention dit
+                FROM {$this->dbIrium}.devis_soumis_a_validation d
+                JOIN {$this->dbIrium}.demande_intervention dit
                     ON dit.numero_demande_dit = d.numeroDit
                     AND dit.code_societe = d.code_societe
                 JOIN (
@@ -90,7 +90,7 @@ class AcBcSoumisModel extends Model
                         numeroDit,
                         code_societe,
                         MAX(numeroVersion) AS maxVersion
-                    FROM {$this->dbIrium}:Informix.devis_soumis_a_validation
+                    FROM {$this->dbIrium}.devis_soumis_a_validation
                     WHERE numeroDit = '$numDit'
                     AND code_societe = '$codeSociete'
                     GROUP BY numeroDit, code_societe
@@ -103,7 +103,7 @@ class AcBcSoumisModel extends Model
                         numerodit,
                         code_societe,
                         MAX(numeroversion) AS version
-                    FROM {$this->dbIrium}:Informix.bc_soumis
+                    FROM {$this->dbIrium}.bc_soumis
                     GROUP BY numerodit, code_societe
                 ) b
                     ON b.numerodit = d.numeroDit
@@ -115,7 +115,7 @@ class AcBcSoumisModel extends Model
     {
         return "SELECT 
                     COUNT(DISTINCT l.slor_nogrp) AS nb
-                FROM {$this->dbIps}:Informix.sav_lor l
+                FROM {$this->dbIps}.sav_lor l
                 JOIN (
                     SELECT DISTINCT numeroDevis
                     FROM $aliasDevisSoumisValide
@@ -129,7 +129,7 @@ class AcBcSoumisModel extends Model
     {
         return "SELECT FIRST 1
                     TRIM(l.slor_constp||'-'||l.slor_refp) AS nom
-                FROM {$this->dbIps}:Informix.sav_lor l
+                FROM {$this->dbIps}.sav_lor l
                 JOIN (
                     SELECT DISTINCT numeroDevis
                     FROM $aliasDevisSoumisValide
@@ -151,7 +151,7 @@ class AcBcSoumisModel extends Model
     public function findNumeroVersionMaxBcSoumis(string $numeroBc, string $codeSociete): int
     {
         $statement = "SELECT FIRST 1 MAX(numeroversion) as version 
-        FROM {$this->dbIrium}:Informix.bc_soumis b 
+        FROM {$this->dbIrium}.bc_soumis b 
         WHERE b.numerobc = '$numeroBc' AND b.code_societe = '$codeSociete'";
 
         $result = $this->connect->executeQuery($statement);
@@ -174,7 +174,7 @@ class AcBcSoumisModel extends Model
         $this->connect->connect();
         try {
             // Construire la requête d'insertion et l'exécuter
-            $builder = new InsertQueryBuilder("{$this->dbIrium}:Informix.bc_soumis");
+            $builder = new InsertQueryBuilder("{$this->dbIrium}.bc_soumis");
             $builder->setData([
                 'numerodit'           => $bcSoumisDto->numeroDit,
                 'numerodevis'         => $bcSoumisDto->numeroDevis,

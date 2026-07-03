@@ -25,7 +25,7 @@ class DitFactureSoumisAValidationModel extends Model
     {
         $statement = " SELECT FIRST 1 
                 seor_numor as numOr
-                from {$this->dbIps}:Informix.sav_eor
+                from {$this->dbIps}.sav_eor
                 where seor_refdem like '%$numDit%'
                 AND seor_serv = 'SAV'
                 AND seor_soc = '$codeSociete'
@@ -50,7 +50,7 @@ class DitFactureSoumisAValidationModel extends Model
     public function recupNumeroSoumission(string $numOr, string $codeSociete): int
     {
         $statement = "SELECT COALESCE(MAX(numero_soumission)+1, 1) AS numSoumissionEncours
-                FROM {$this->dbIrium}:Informix.facture_soumis_a_validation
+                FROM {$this->dbIrium}.facture_soumis_a_validation
                 WHERE numero_or = '$numOr' and code_societe = '$codeSociete'";
 
         $result = $this->connect->executeQuery($statement);
@@ -72,7 +72,7 @@ class DitFactureSoumisAValidationModel extends Model
         $statement = " SELECT agence_service_debiteur as agServDeb,
                             internet_externe as int_ext,
                             migration as migration
-                    from {$this->dbIrium}:Informix.demande_intervention 
+                    from {$this->dbIrium}.demande_intervention 
                     Where numero_demande_dit = '$numDit'
                     and code_societe = '$codeSociete'
         ";
@@ -163,21 +163,21 @@ class DitFactureSoumisAValidationModel extends Model
                         slor_qrec         AS qrec,
                         sliv_qteliv       AS qteliv,
                         osv_or.montantitv  as montant
-                    FROM ips_test:Informix.sav_lor
-                    JOIN ips_test:Informix.sav_itv
+                    FROM {$this->dbIps}.sav_lor
+                    JOIN {$this->dbIps}.sav_itv
                         ON sitv_numor  = slor_numor
                         AND sitv_interv = slor_nogrp / 100
-                    LEFT JOIN ips_test:Informix.sav_liv
+                    LEFT JOIN {$this->dbIps}.sav_liv
                         ON sliv_soc   = slor_soc
                         AND sliv_succ  = slor_succ
                         AND sliv_numor = slor_numor
                         AND slor_nolign = sliv_nolign
-                    LEFT JOIN ir_prod108_test:informix.ors_soumis_a_validation osv_or
+                    LEFT JOIN {$this->dbIrium}.ors_soumis_a_validation osv_or
                         ON osv_or.numeroor     = slor_numor
                         AND osv_or.numeroitv    = slor_nogrp / 100
                         AND osv_or.numeroversion = (
                             SELECT MAX(osv2.numeroversion)
-                            FROM ir_prod108_test:informix.ors_soumis_a_validation osv2
+                            FROM {$this->dbIrium}.ors_soumis_a_validation osv2
                             WHERE osv2.id = osv_or.id
                         )
                         AND osv_or.statut LIKE 'Valid%'
@@ -209,7 +209,7 @@ class DitFactureSoumisAValidationModel extends Model
     public function recupNumeroItvDejaSoumi(string $numOr, string $codeSociete): array
     {
         $statement = " SELECT distinct numeroitv  
-                        from {$this->dbIrium}:Informix.ri_soumis_a_validation 
+                        from {$this->dbIrium}.ri_soumis_a_validation 
                         where numero_or ='$numOr' 
                         and code_societe ='$codeSociete'
         ";
@@ -298,7 +298,7 @@ class DitFactureSoumisAValidationModel extends Model
             END
         ) AS MONTANT_LUBRIFIANTS
 
-        from {$this->dbIps}:Informix.sav_eor, {$this->dbIps}:Informix.sav_lor, {$this->dbIps}:Informix.sav_itv
+        from {$this->dbIps}.sav_eor, {$this->dbIps}.sav_lor, {$this->dbIps}.sav_itv
         WHERE
             seor_numor = slor_numor
             AND slor_soc = '$codeSociete'
@@ -324,7 +324,7 @@ class DitFactureSoumisAValidationModel extends Model
     public function recupererNumdevis(string $numOr, string $codeSociete): string
     {
         $statement = "SELECT seor_numdev 
-                from {$this->dbIps}:Informix.sav_eor
+                from {$this->dbIps}.sav_eor
                 where seor_numor = '$numOr' and seor_soc = '$codeSociete'";
 
         $result = $this->connect->executeQuery($statement);
@@ -344,7 +344,7 @@ class DitFactureSoumisAValidationModel extends Model
     public function recupNbrItvDansOR(string $numOr, string $codeSociete): int
     {
         $statement = "SELECT count(numeroitv) as nbr_itv
-                    from {$this->dbIrium}:Informix.ors_soumis_a_validation 
+                    from {$this->dbIrium}.ors_soumis_a_validation 
                     where numeroor ='$numOr'
                     AND code_societe ='$codeSociete'
                     ";
@@ -359,7 +359,7 @@ class DitFactureSoumisAValidationModel extends Model
     public function recupStatutOr(string $numOr, int $numItv, string $codeSociete): ?string
     {
         $statement = " SELECT first 1  statut  as statut
-                    from {$this->dbIrium}:Informix.ors_soumis_a_validation 
+                    from {$this->dbIrium}.ors_soumis_a_validation 
                     where numeroor = '$numOr' 
                     and code_societe='$codeSociete' 
                     and numeroitv =$numItv 
@@ -377,7 +377,7 @@ class DitFactureSoumisAValidationModel extends Model
     public function recupInfoOrSelonNumeroOr(string $numOr, string $codeSociete): array
     {
         $statement = " SELECT * 
-                from {$this->dbIrium}:Informix.ors_soumis_a_validation 
+                from {$this->dbIrium}.ors_soumis_a_validation 
                 where numeroor = '$numOr' 
                     and code_societe='$codeSociete' 
                 ";
@@ -410,7 +410,7 @@ class DitFactureSoumisAValidationModel extends Model
     public function updateEtatFacture(string $numDit, string $codeSociete, array $data)
     {
 
-        $updateBuilder = new UpdateQueryBuilder("{$this->dbIrium}:Informix.demande_intervention");
+        $updateBuilder = new UpdateQueryBuilder("{$this->dbIrium}.demande_intervention");
 
         /// Définir les données à mettre à jour
         $updateBuilder->setData($data);
@@ -444,7 +444,7 @@ class DitFactureSoumisAValidationModel extends Model
         try {
             foreach ($data as $donnees) {
                 // Construire la requête d'insertion et l'exécuter
-                $builder = new InsertQueryBuilder("{$this->dbIrium}:Informix.facture_soumis_a_validation");
+                $builder = new InsertQueryBuilder("{$this->dbIrium}.facture_soumis_a_validation");
                 $builder->setData($donnees);
                 $result = $builder->build();
 
@@ -587,7 +587,7 @@ class DitFactureSoumisAValidationModel extends Model
     		numero_itv as numeroItv,
     		numero_fact as numeroFact,
     		statut as statut
-    		from {$this->dbIrium}:Informix.facture_soumis_a_validation
+    		from {$this->dbIrium}.facture_soumis_a_validation
     		where numero_or = '$numOr'
     	";
         $result = $this->connect->executeQuery($statement);

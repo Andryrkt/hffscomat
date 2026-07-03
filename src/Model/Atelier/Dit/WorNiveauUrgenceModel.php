@@ -15,7 +15,7 @@ class WorNiveauUrgenceModel extends Model
     public function getDescription(): array
     {
         $statement = " SELECT  description as description 
-                    FROM {$this->dbIrium}:Informix.wor_niveau_urgence
+                    FROM {$this->dbIrium}.wor_niveau_urgence
                     ORDER BY description DESC
                     ";
 
@@ -34,7 +34,7 @@ class WorNiveauUrgenceModel extends Model
     public function getDescriptionById(int $id): string
     {
         $statement = " SELECT  description as description
-                    FROM {$this->dbIrium}:Informix.wor_niveau_urgence
+                    FROM {$this->dbIrium}.wor_niveau_urgence
                     WHERE id  = '$id'
                     ";
 
@@ -52,7 +52,7 @@ class WorNiveauUrgenceModel extends Model
     public function getP2Description(): ?string
     {
         $statement = " SELECT  description as description
-                    FROM {$this->dbIrium}:Informix.wor_niveau_urgence
+                    FROM {$this->dbIrium}.wor_niveau_urgence
                     WHERE description  = 'P2'
                     ";
 
@@ -71,7 +71,7 @@ class WorNiveauUrgenceModel extends Model
     public function getIdSelonDescription(string $description): int
     {
         $statement = " SELECT  id as id
-                    FROM {$this->dbIrium}:Informix.wor_niveau_urgence
+                    FROM {$this->dbIrium}.wor_niveau_urgence
                     WHERE description  = '$description'
                     ";
 
