@@ -3,6 +3,13 @@
 namespace App\Model;
 
 use App\Contract\DatabaseConnectionInterface;
+use function odbc_connect;
+use function odbc_exec;
+use function odbc_prepare;
+use function odbc_execute;
+use function odbc_fetch_array;
+use function odbc_errormsg;
+use function odbc_close;
 
 class DatabaseInformix implements DatabaseConnectionInterface
 {

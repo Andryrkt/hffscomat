@@ -219,12 +219,12 @@ class PlanningModel extends Model
                 osv.numeroOR                                as num_or,
                 osv.numeroItv                               as num_itv,
                 osv.numeroOR || '-' || osv.numeroItv        as num_or_itv
-            from {$this->dbIrium}:Informix.ors_soumis_a_validation    osv
+            from {$this->dbIrium}.ors_soumis_a_validation    osv
             inner join (
                 select
                     numeroOR,
                     max(numeroversion)  as max_version
-                from {$this->dbIrium}:Informix.ors_soumis_a_validation
+                from {$this->dbIrium}.ors_soumis_a_validation
                 group by numeroOR
             ) latest
                 on latest.numeroOR = osv.numeroOR
@@ -232,7 +232,7 @@ class PlanningModel extends Model
             where osv.statut like 'Valid%'
                 and exists (
                     select 1
-                    from {$this->dbIrium}:Informix.demande_intervention di
+                    from {$this->dbIrium}.demande_intervention di
                     where di.numero_or = osv.numeroOR
                         {$this->selectCond->eq('type_document', $searchDto->typeDocument)}
                         {$this->selectCond->eq('reparation_realise', $searchDto->reparationRealise)}
@@ -293,7 +293,7 @@ class PlanningModel extends Model
             numeroor                        as num_or,
             numeroitv                       as num_itv,
             numeroor || '-' || numeroitv    as num_or_itv
-            from {$this->dbIrium}:Informix.ors_soumis_a_validation
+            from {$this->dbIrium}.ors_soumis_a_validation
         ";
 
         $result = $this->connect->executeQuery($statement);

@@ -10,7 +10,7 @@ class WorTypeDocumentModel extends Model
     public function getDescription(): array
     {
         $statement = " SELECT  description as description 
-                    FROM {$this->dbIrium}:Informix.wor_type_document 
+                    FROM {$this->dbIrium}.wor_type_document 
                     ";
 
         $result = $this->connect->executeQuery($statement);
@@ -22,7 +22,7 @@ class WorTypeDocumentModel extends Model
     public function getIdSelonDescription(string $description): int
     {
         $statement = " SELECT  id as id
-                    FROM {$this->dbIrium}:Informix.wor_type_document 
+                    FROM {$this->dbIrium}.wor_type_document 
                     where description = '$description'
                     ";
 
@@ -34,7 +34,7 @@ class WorTypeDocumentModel extends Model
     public function getDescriptionById($id): string
     {
         $statement = " SELECT  description as description 
-                    FROM {$this->dbIrium}:Informix.wor_type_document  
+                    FROM {$this->dbIrium}.wor_type_document  
                     WHERE id ='$id'
                     ";
         $result = $this->connect->executeQuery($statement);

@@ -57,8 +57,8 @@ class DitModel extends Model
         (select nvl(sum(mofi_mt),0) from mat_ofi where mofi_classe = 40 and mofi_ssclasse in (100,110) and mofi_numbil = mbil_numbil and mofi_typmt = 'R') as ChargeLocative,
         (select nvl(sum(mofi_mt),0) from mat_ofi where mofi_classe = 40 and mofi_ssclasse in (21,22,23) and mofi_numbil = mbil_numbil and mofi_typmt = 'R') as ChargeEntretien
 
-      FROM {$this->dbIps}:Informix.MAT_MAT
-      LEFT JOIN {$this->dbIps}:Informix.mat_bil on mbil_nummat = mmat_nummat 
+      FROM {$this->dbIps}.MAT_MAT
+      LEFT JOIN {$this->dbIps}.mat_bil on mbil_nummat = mmat_nummat 
       --and mbil_dateclot <= '01/01/1900' 
       --and mbil_dateclot = '12/31/1899'
       WHERE MMAT_ETSTOCK in ('ST','AT', '--')
@@ -80,7 +80,7 @@ class DitModel extends Model
     {
         $statement = "SELECT DISTINCT
                 numero_demande_dit
-            FROM {$this->dbIrium}:Informix.demande_intervention
+            FROM {$this->dbIrium}.demande_intervention
             WHERE numero_or = '$numOr' 
             AND code_societe = '$codeSociete'";
 
@@ -129,7 +129,7 @@ class DitModel extends Model
         $donnees = DitMapper::toArrayDit($dto, $ors);
 
         // Construire la requête d'insertion et l'exécuter
-        $builder = new InsertQueryBuilder("{$this->dbIrium}:Informix.demande_intervention");
+        $builder = new InsertQueryBuilder("{$this->dbIrium}.demande_intervention");
         $builder->setData($donnees);
         $result = $builder->build();
 
@@ -163,7 +163,7 @@ class DitModel extends Model
     {
         $donnees = DitMapper::toArrayUpdateDit($statut);
 
-        $updateBuilder = new UpdateQueryBuilder("{$this->dbIrium}:Informix.demande_intervention");
+        $updateBuilder = new UpdateQueryBuilder("{$this->dbIrium}.demande_intervention");
 
         // Définir les données à mettre à jour
         $updateBuilder->setData($donnees);
@@ -198,7 +198,7 @@ class DitModel extends Model
     {
         $donnees = DitMapper::toArrayUpdateDitForAnnuler();
 
-        $updateBuilder = new UpdateQueryBuilder("{$this->dbIrium}:Informix.demande_intervention");
+        $updateBuilder = new UpdateQueryBuilder("{$this->dbIrium}.demande_intervention");
 
         // // Définir les données à mettre à jour
         $updateBuilder->setData($donnees);
@@ -228,7 +228,7 @@ class DitModel extends Model
     {
         $donnees = DitMapper::toArrayUpdateDitNumeroOr($statut, $dto->numeroOr);
 
-        $updateBuilder = new UpdateQueryBuilder("{$this->dbIrium}:Informix.demande_intervention");
+        $updateBuilder = new UpdateQueryBuilder("{$this->dbIrium}.demande_intervention");
 
         // // Définir les données à mettre à jour
         $updateBuilder->setData($donnees);
@@ -274,8 +274,8 @@ class DitModel extends Model
           TRIM(m.mmat_recalph) AS numero_parc,
         TRIM(m.mmat_numserie) AS numero_serie,
         TRIM(m.mmat_numparc) AS casier
-    FROM {$this->dbIrium}:Informix.demande_intervention d0_
-    LEFT JOIN {$this->dbIps}:informix.mat_mat m
+    FROM {$this->dbIrium}.demande_intervention d0_
+    LEFT JOIN {$this->dbIps}.mat_mat m
         ON d0_.id_materiel = m.mmat_nummat
     WHERE d0_.numero_demande_dit = '$numDit'
       AND d0_.code_societe = '$codeSociete'
@@ -311,8 +311,8 @@ class DitModel extends Model
         $statement = "SELECT d0_.internet_externe as client , 
                             s2_.description as statut,
                             d0_.numero_or as numero_or
-                from {$this->dbIrium}:Informix.demande_intervention d0_
-                LEFT JOIN {$this->dbIrium}:informix.statut_demande s2_
+                from {$this->dbIrium}.demande_intervention d0_
+                LEFT JOIN {$this->dbIrium}.statut_demande s2_
                     ON d0_.id_statut_demande = s2_.ID_Statut_Demande
                 AND s2_.code_application = 'DIT'
                 where d0_.code_societe  = '$codeSociete'
@@ -338,7 +338,7 @@ class DitModel extends Model
     public function findIdCategorieByNumeroDit(string $numDit, string $codeSociete): ?string
     {
         $statement = " SELECT FIRST 1 categorie_demande
-            FROM {$this->dbIrium}:Informix.demande_intervention
+            FROM {$this->dbIrium}.demande_intervention
             WHERE numero_demande_dit = '$numDit'
             AND code_societe = '$codeSociete'
     ";
@@ -368,14 +368,14 @@ class DitModel extends Model
                     THEN slor_qterea 
                 END)
               ) AS somme
-            FROM {$this->dbIps}:Informix.sav_eor, 
-                    {$this->dbIps}:Informix.sav_lor, 
-                    {$this->dbIps}:Informix.sav_itv, 
-                    {$this->dbIps}:Informix.agr_succ, 
-                    {$this->dbIps}:Informix.agr_tab ser, 
-                    {$this->dbIps}:Informix.mat_mat, 
-                    {$this->dbIps}:Informix.agr_tab ope, 
-                    OUTER {$this->dbIps}:Informix.agr_tab sec
+            FROM {$this->dbIps}.sav_eor, 
+                    {$this->dbIps}.sav_lor, 
+                    {$this->dbIps}.sav_itv, 
+                    {$this->dbIps}.agr_succ, 
+                    {$this->dbIps}.agr_tab ser, 
+                    {$this->dbIps}.mat_mat, 
+                    {$this->dbIps}.agr_tab ope, 
+                    OUTER {$this->dbIps}.agr_tab sec
             WHERE seor_numor = slor_numor
               AND seor_serv <> 'DEV'
               AND sitv_numor = slor_numor
@@ -425,7 +425,7 @@ class DitModel extends Model
     public function enregistrementDit(array $data)
     {
         // Construire la requête d'insertion et l'exécuter
-        $builder = new InsertQueryBuilder("{$this->dbIrium}:Informix.demande_intervention");
+        $builder = new InsertQueryBuilder("{$this->dbIrium}.demande_intervention");
         $builder->setData($data);
         $result = $builder->build();
 
@@ -442,7 +442,7 @@ class DitModel extends Model
 
     public function updateDitDW(array $data, DitDto $dto)
     {
-        $updateBuilder = new UpdateQueryBuilder("{$this->dbIrium}:Informix.demande_intervention");
+        $updateBuilder = new UpdateQueryBuilder("{$this->dbIrium}.demande_intervention");
 
         // Définir les données à mettre à jour
         $updateBuilder->setData($data);
@@ -524,7 +524,7 @@ class DitModel extends Model
         $yesterday = (new DateTime('-1 day'))->format('Y-m-d H:i:s');
 
         $statement = " SELECT numero_demande_dit,a_annuler
-                FROM {$this->dbIrium}:Informix.demande_intervention
+                FROM {$this->dbIrium}.demande_intervention
                 WHERE a_annuler = '1' 
                    AND date_annulation BETWEEN '$yesterday' AND '$now'
         ";
@@ -547,10 +547,10 @@ class DitModel extends Model
             sum(sliv_qteliv) as quantiteLivree,
             sum(slor_qterel) as quantiteReliquat,
             sum(slor_qterea) as qteLiv
-            from {$this->dbIps}:informix.sav_lor 
-            inner join {$this->dbIps}:informix.sav_eor on seor_soc = slor_soc and seor_succ = slor_succ 
+            from {$this->dbIps}.sav_lor 
+            inner join {$this->dbIps}.sav_eor on seor_soc = slor_soc and seor_succ = slor_succ 
             and seor_numor = slor_numor
-            left join {$this->dbIps}:informix.sav_liv on sliv_soc = slor_soc and sliv_succ = slor_succ and sliv_numor = seor_numor and slor_nolign = sliv_nolign
+            left join {$this->dbIps}.sav_liv on sliv_soc = slor_soc and sliv_succ = slor_succ and sliv_numor = seor_numor and slor_nolign = sliv_nolign
             
             where 
             slor_soc = '$codeSociete'

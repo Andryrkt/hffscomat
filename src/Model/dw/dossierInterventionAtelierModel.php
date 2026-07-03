@@ -21,12 +21,12 @@ class dossierInterventionAtelierModel extends Model
     private function getCountQueryWithDit(string $table, ?string $colonne = null): string
     {
         $colonnes = $colonne ? "numero_dit, $colonne" : "numero_dit";
-        return "SELECT $colonnes, COUNT(*) as n from {$this->dbIrium}:Informix.$table GROUP BY $colonnes";
+        return "SELECT $colonnes, COUNT(*) as n from {$this->dbIrium}.$table GROUP BY $colonnes";
     }
 
     private function getCountQueryWithOr(string $table): string
     {
-        return "SELECT numero_or, COUNT(*) as n from {$this->dbIrium}:Informix.$table GROUP BY numero_or";
+        return "SELECT numero_or, COUNT(*) as n from {$this->dbIrium}.$table GROUP BY numero_or";
     }
 
     /** 
@@ -73,7 +73,7 @@ class dossierInterventionAtelierModel extends Model
                 + COALESCE(cnt_ri.n, 0)
                 + COALESCE(cnt_fac.n, 0)
                 AS nb_docs
-            FROM {$this->dbIrium}:Informix.dw_demande_intervention dit
+            FROM {$this->dbIrium}.dw_demande_intervention dit
                 LEFT JOIN cnt_or  ON cnt_or.numero_dit  = dit.numero_dit
                 LEFT JOIN cnt_dd  ON cnt_dd.numero_dit  = dit.numero_dit
                 LEFT JOIN cnt_bcc ON cnt_bcc.numero_dit = dit.numero_dit
@@ -123,8 +123,8 @@ class dossierInterventionAtelierModel extends Model
     private function getQueryRef(string $numDit): string
     {
         return "SELECT dit.numero_dit, ord.numero_or
-            FROM {$this->dbIrium}:Informix.dw_demande_intervention dit
-            LEFT JOIN {$this->dbIrium}:Informix.dw_ordre_de_reparation ord
+            FROM {$this->dbIrium}.dw_demande_intervention dit
+            LEFT JOIN {$this->dbIrium}.dw_ordre_de_reparation ord
                 ON ord.numero_dit = dit.numero_dit
             WHERE dit.numero_dit = '$numDit'";
     }
@@ -145,7 +145,7 @@ class dossierInterventionAtelierModel extends Model
             {$alias}.taille_fichier,
             {$alias}.extension_fichier,
             {$alias}.path AS chemin
-        FROM {$this->dbIrium}:Informix.$table {$alias}
+        FROM {$this->dbIrium}.$table {$alias}
         ";
     }
 

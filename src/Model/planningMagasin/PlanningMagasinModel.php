@@ -85,7 +85,7 @@ class PlanningMagasinModel extends Model
 
     public function getNumeroDevisValideBcClient()
     {
-        $statement = " SELECT DISTINCT bcsn.numero_devis from {$this->dbIrium}:informix.bc_client_soumis_neg bcsn where bcsn.statut_bc like 'Valid%'";
+        $statement = " SELECT DISTINCT bcsn.numero_devis from {$this->dbIrium}.bc_client_soumis_neg bcsn where bcsn.statut_bc like 'Valid%'";
         $result = $this->connect->executeQuery($statement);
         $data = $this->connect->fetchResults($result);
         $resultat = $this->convertirEnUtf8($data);
@@ -163,7 +163,7 @@ class PlanningMagasinModel extends Model
                         nent_numcde                              AS orIntv,
                         TRIM((
                             SELECT atab_lib 
-                            FROM {$this->dbIps}:informix.agr_tab 
+                            FROM {$this->dbIps}.agr_tab 
                             WHERE atab_code = nent_codope 
                             AND atab_nom  = 'OPE'
                         ))                                       AS commercial,
@@ -217,16 +217,16 @@ class PlanningMagasinModel extends Model
                         END                                      AS QteALL
 
                     FROM 
-                        {$this->dbIps}:informix.neg_ent
-                        INNER JOIN {$this->dbIps}:informix.neg_lig      ON  nlig_soc      = nent_soc
+                        {$this->dbIps}.neg_ent
+                        INNER JOIN {$this->dbIps}.neg_lig      ON  nlig_soc      = nent_soc
                                                                         AND nlig_numcde   = nent_numcde
-                        INNER JOIN {$this->dbIps}:informix.agr_succ     ON  asuc_numsoc   = nent_soc
+                        INNER JOIN {$this->dbIps}.agr_succ     ON  asuc_numsoc   = nent_soc
                                                                         AND asuc_num      = nent_succ
-                        INNER JOIN {$this->dbIps}:informix.agr_tab ser  ON  nent_servcrt  = ser.atab_code
+                        INNER JOIN {$this->dbIps}.agr_tab ser  ON  nent_servcrt  = ser.atab_code
                                                                         AND ser.atab_nom  = 'SER'
-                        INNER JOIN {$this->dbIps}:informix.agr_usr ope  ON  ope.ausr_num  = nent_usr  
-                        INNER JOIN {$this->dbIps}:informix.cli_bse      ON  cbse_numcli   = nent_numcli
-                        INNER JOIN {$this->dbIps}:informix.cli_soc      ON  csoc_soc      = nent_soc
+                        INNER JOIN {$this->dbIps}.agr_usr ope  ON  ope.ausr_num  = nent_usr  
+                        INNER JOIN {$this->dbIps}.cli_bse      ON  cbse_numcli   = nent_numcli
+                        INNER JOIN {$this->dbIps}.cli_soc      ON  csoc_soc      = nent_soc
                                                                         AND csoc_numcli   = cbse_numcli
 
                     WHERE 

@@ -10,7 +10,7 @@ class CategorieAteAppModel extends Model
     public function getDescription(): array
     {
         $statement = " SELECT  libelle_categorie_ate_app as description 
-                    FROM {$this->dbIrium}:Informix.categorie_ate_app 
+                    FROM {$this->dbIrium}.categorie_ate_app 
                     ";
 
         $result = $this->connect->executeQuery($statement);
@@ -22,7 +22,7 @@ class CategorieAteAppModel extends Model
     public function getIdSelonLibelle(string $libelle): int
     {
         $statement = " SELECT  id as id
-                    FROM {$this->dbIrium}:Informix.categorie_ate_app 
+                    FROM {$this->dbIrium}.categorie_ate_app 
                     where libelle_categorie_ate_app = '$libelle'
                     ";
 
@@ -35,7 +35,7 @@ class CategorieAteAppModel extends Model
     public function getDescriptionById($id): string
     {
         $statement = " SELECT libelle_categorie_ate_app as libelle
-                from {$this->dbIrium}:Informix.categorie_ate_app
+                from {$this->dbIrium}.categorie_ate_app
                 WHERE id ='$id'        
         ";
         $result = $this->connect->executeQuery($statement);

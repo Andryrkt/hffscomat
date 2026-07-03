@@ -137,7 +137,7 @@ class DitOrSoumisAValidationModel extends Model
     {
         $statement = " SELECT FIRST 1 
         seor_numor as numOr
-        from {$this->dbIps}:Informix.sav_eor
+        from {$this->dbIps}.sav_eor
         where seor_refdem = '$numDit'
         AND seor_serv = 'SAV'
         AND seor_soc = '$codeSociete'
@@ -152,7 +152,7 @@ class DitOrSoumisAValidationModel extends Model
     {
         $statement = " SELECT 
             seor_nummat as numMatricule
-            from {$this->dbIps}:Informix.sav_eor
+            from {$this->dbIps}.sav_eor
             where seor_refdem = '$numDit'
             AND seor_numor = '$numOr'
             AND seor_serv = 'SAV'
@@ -183,7 +183,7 @@ class DitOrSoumisAValidationModel extends Model
     public function recupPositonOr(string $numor, string $codeSociete)
     {
         $statement = " SELECT seor_pos as position 
-                    from {$this->dbIps}:Informix.sav_eor 
+                    from {$this->dbIps}.sav_eor 
                     where seor_numor = '$numor' 
                     and seor_soc = '$codeSociete'
         ";
@@ -264,7 +264,7 @@ class DitOrSoumisAValidationModel extends Model
     public function recupRefClient(string $numOr, string $codeSociete)
     {
         $statement = " SELECT seor_lib  
-                    from {$this->dbIps}:Informix.sav_eor 
+                    from {$this->dbIps}.sav_eor 
                     where seor_numor='$numOr' AND seor_soc='$codeSociete'
                     ";
         $result = $this->connect->executeQuery($statement);
@@ -339,7 +339,7 @@ class DitOrSoumisAValidationModel extends Model
     public function getNumcli(string $numOr, string $codeSociete): ?string
     {
         $statement = " SELECT seor_numcli as numcli
-                    FROM {$this->dbIps}:Informix.sav_eor
+                    FROM {$this->dbIps}.sav_eor
                     WHERE seor_numor = '$numOr'
                     AND seor_soc = '$codeSociete'
         ";
@@ -376,7 +376,7 @@ class DitOrSoumisAValidationModel extends Model
                     TRIM(isl.slor_refp) as reference, 
                     isl.slor_pxnreel as montant,
                     TRIM(isl.slor_desi) as designation
-                    from  {$this->dbIps}:Informix.sav_lor isl 
+                    from  {$this->dbIps}.sav_lor isl 
                     where slor_constp ='ZST' 
                     and slor_soc ='$codeSociete' 
                     --and isl.slor_refp != 'ST'
@@ -431,7 +431,7 @@ class DitOrSoumisAValidationModel extends Model
 
         $statement = "  SELECT 
                 MAX(slor_nolign) as numero_ligne
-                from  {$this->dbIps}:Informix.sav_lor
+                from  {$this->dbIps}.sav_lor
                 WHERE slor_constp = 'ZST' 
                 and slor_typlig = 'P'
                 and slor_refp not like ('PREST%')
@@ -486,9 +486,9 @@ class DitOrSoumisAValidationModel extends Model
                 ffac_datef
                 , TODAY - ffac_datef as nombre_jour
                 , fllf_numfac,*
-                from {$this->dbIps}:informix.frn_llf 
-                inner join {$this->dbIps}:informix.frn_fac on ffac_soc = fllf_soc and ffac_succ = fllf_succ and ffac_numfac = fllf_numfac
-                inner join {$this->dbIps}:informix.frn_cde on fcde_soc = fllf_soc and fcde_succ = fllf_succ and fcde_numcde = fllf_numcde
+                from {$this->dbIps}.frn_llf 
+                inner join {$this->dbIps}.frn_fac on ffac_soc = fllf_soc and ffac_succ = fllf_succ and ffac_numfac = fllf_numfac
+                inner join {$this->dbIps}.frn_cde on fcde_soc = fllf_soc and fcde_succ = fllf_succ and fcde_numcde = fllf_numcde
                 --inner join art_hpm on ahpm_soc = fllf_soc and ahpm_succfac = fllf_succ and ahpm_numfac = fllf_numfac and ahpm_constp = fllf_constp and ahpm_refp = fllf_refp
                 where fllf_constp = '$constructeur'
                 and fllf_refp = '$reference'
@@ -520,7 +520,7 @@ class DitOrSoumisAValidationModel extends Model
         trim(slor_desi) as designation,
         slor_succ as code_agence, 
         slor_servcrt as code_service
-        from {$this->dbIps}:Informix.sav_eor, {$this->dbIps}:Informix.sav_lor, {$this->dbIps}:Informix.sav_itv
+        from {$this->dbIps}.sav_eor, {$this->dbIps}.sav_lor, {$this->dbIps}.sav_itv
         WHERE seor_numor = slor_numor
             AND seor_serv <> 'DEV'
             AND sitv_numor = slor_numor
@@ -543,7 +543,7 @@ class DitOrSoumisAValidationModel extends Model
     {
         $statement = "
         SELECT FIRST 1 *
-        FROM {$this->dbIrium}:Informix.demande_intervention
+        FROM {$this->dbIrium}.demande_intervention
         WHERE numero_demande_dit = '$numDit' AND code_societe = '$codeSociete'
     ";
 
@@ -558,7 +558,7 @@ class DitOrSoumisAValidationModel extends Model
     {
         $statement = "
         SELECT MAX(numeroVersion) AS numero_version_max
-        FROM {$this->dbIrium}:Informix.ors_soumis_a_validation
+        FROM {$this->dbIrium}.ors_soumis_a_validation
         WHERE numeroor = '$numOr'
           AND code_societe = '$codeSociete'
     ";
@@ -574,7 +574,7 @@ class DitOrSoumisAValidationModel extends Model
     {
         $statement = "
         SELECT COUNT(o.id) AS total
-        FROM {$this->dbIrium}:Informix.ors_soumis_a_validation o
+        FROM {$this->dbIrium}.ors_soumis_a_validation o
         WHERE o.numeroor = '$numOr'
         AND o.numeroVersion = '$maxVersion'
         AND o.code_societe = '$codeSociete'
@@ -600,7 +600,7 @@ class DitOrSoumisAValidationModel extends Model
     {
         $statement = "
         SELECT COUNT(o.id) AS total
-        FROM {$this->dbIrium}:Informix.ors_soumis_a_validation o
+        FROM {$this->dbIrium}.ors_soumis_a_validation o
         WHERE o.numeroor = '$numOr'
         AND o.code_societe = '$codeSociete'
     ";
@@ -621,12 +621,12 @@ class DitOrSoumisAValidationModel extends Model
     public function findOrSoumiAvant(string $numOr, string $codeSociete): array
     {
         $statement = " SELECT *
-        FROM {$this->dbIrium}:Informix.ors_soumis_a_validation o
+        FROM {$this->dbIrium}.ors_soumis_a_validation o
         WHERE o.numeroor = '$numOr'
         AND o.code_societe = '$codeSociete'
         AND o.numeroVersion = (
             SELECT MAX(o1.numeroVersion)
-            FROM {$this->dbIrium}:Informix.ors_soumis_a_validation o1
+            FROM {$this->dbIrium}.ors_soumis_a_validation o1
             WHERE o1.numeroor = '$numOr'
             AND o1.code_societe = '$codeSociete'
         )
@@ -648,12 +648,12 @@ class DitOrSoumisAValidationModel extends Model
     public function findOrSoumiAvantMax(string $numOr, string $codeSociete): array
     {
         $statement = "SELECT *
-        FROM {$this->dbIrium}:Informix.ors_soumis_a_validation o
+        FROM {$this->dbIrium}.ors_soumis_a_validation o
         WHERE o.numeroor = '$numOr'
         AND o.code_societe = '$codeSociete'
         AND o.numeroVersion = (
             select MAX(o1.numeroversion)-1 
-            from {$this->dbIrium}:Informix.ors_soumis_a_validation o1 
+            from {$this->dbIrium}.ors_soumis_a_validation o1 
             WHERE o1.numeroor = '$numOr'
             AND o1.code_societe = '$codeSociete'
             )
@@ -713,7 +713,7 @@ class DitOrSoumisAValidationModel extends Model
     {
         $donnees = OrSoumissionMapper::toArrayUpdateDit($dto);
 
-        $updateBuilder = new UpdateQueryBuilder("{$this->dbIrium}:Informix.demande_intervention");
+        $updateBuilder = new UpdateQueryBuilder("{$this->dbIrium}.demande_intervention");
 
         // Définir les données à mettre à jour
         $updateBuilder->setData($donnees);
@@ -758,7 +758,7 @@ class DitOrSoumisAValidationModel extends Model
         $this->connect->connect();
         try {
             foreach ($lignes as $donnees) {
-                $builder = new InsertQueryBuilder("{$this->dbIrium}:Informix.ors_soumis_a_validation");
+                $builder = new InsertQueryBuilder("{$this->dbIrium}.ors_soumis_a_validation");
                 $builder->setData($donnees);
                 $result = $builder->build();
                 $this->connect->executeQuery($result['sql'], $result['params']);
@@ -779,7 +779,7 @@ class DitOrSoumisAValidationModel extends Model
     {
         $statement = "
         SELECT COUNT(*) AS total
-        FROM {$this->dbIrium}:Informix.ors_soumis_a_validation
+        FROM {$this->dbIrium}.ors_soumis_a_validation
         WHERE numeroor = '$numOr'
         AND numerodit = '$numDit'
     ";

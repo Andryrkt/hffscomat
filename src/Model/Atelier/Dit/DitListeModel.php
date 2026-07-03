@@ -74,41 +74,41 @@ class DitListeModel extends Model
                     END AS est_a_soumis,
                     d0_.code_societe as code_societe
 
-                FROM {$this->dbIrium}:informix.demande_intervention d0_
+                FROM {$this->dbIrium}.demande_intervention d0_
 
-                LEFT JOIN {$this->dbIrium}:informix.wor_type_document w1_
+                LEFT JOIN {$this->dbIrium}.wor_type_document w1_
                     ON d0_.type_document = w1_.id
 
-                LEFT JOIN {$this->dbIrium}:informix.wor_niveau_urgence w2_
+                LEFT JOIN {$this->dbIrium}.wor_niveau_urgence w2_
                     ON d0_.id_niveau_urgence = w2_.id
 
-                LEFT JOIN {$this->dbIrium}:informix.categorie_ate_app c4_
+                LEFT JOIN {$this->dbIrium}.categorie_ate_app c4_
                     ON d0_.categorie_demande = c4_.id
 
-                LEFT JOIN {$this->dbIrium}:informix.statut_demande s3_
+                LEFT JOIN {$this->dbIrium}.statut_demande s3_
                     ON d0_.id_statut_demande = s3_.ID_Statut_Demande
                 AND s3_.code_application = 'DIT'
                 AND s3_.ID_Statut_Demande IN (50,51,52,53,54,57,78)
 
-                LEFT JOIN {$this->dbIps}:informix.mat_mat m
+                LEFT JOIN {$this->dbIps}.mat_mat m
                     ON d0_.id_materiel = m.mmat_nummat
 
                 LEFT JOIN (
                     SELECT osv.numeroor, osv.numerodit, osv.montantitv, osv.datesoumission
-                    FROM {$this->dbIrium}:informix.ors_soumis_a_validation osv
+                    FROM {$this->dbIrium}.ors_soumis_a_validation osv
                     INNER JOIN (
                         SELECT id, MAX(numeroversion) AS max_version
-                        FROM {$this->dbIrium}:informix.ors_soumis_a_validation
+                        FROM {$this->dbIrium}.ors_soumis_a_validation
                         GROUP BY id
                     ) mv ON osv.id = mv.id AND osv.numeroversion = mv.max_version
                 ) osv_or ON d0_.numero_or = osv_or.numeroor
 
                 LEFT JOIN (
                     SELECT osv.numeroor, osv.numerodit, osv.montantitv, osv.datesoumission
-                    FROM {$this->dbIrium}:informix.ors_soumis_a_validation osv
+                    FROM {$this->dbIrium}.ors_soumis_a_validation osv
                     INNER JOIN (
                         SELECT id, MAX(numeroversion) AS max_version
-                        FROM {$this->dbIrium}:informix.ors_soumis_a_validation
+                        FROM {$this->dbIrium}.ors_soumis_a_validation
                         GROUP BY id
                     ) mv ON osv.id = mv.id AND osv.numeroversion = mv.max_version
                 ) osv_dit
@@ -198,41 +198,41 @@ class DitListeModel extends Model
                         THEN 1 ELSE 0
                     END AS est_a_soumis
 
-                FROM {$this->dbIrium}:informix.demande_intervention d0_
+                FROM {$this->dbIrium}.demande_intervention d0_
 
-                LEFT JOIN {$this->dbIrium}:informix.wor_type_document w1_
+                LEFT JOIN {$this->dbIrium}.wor_type_document w1_
                     ON d0_.type_document = w1_.id
 
-                LEFT JOIN {$this->dbIrium}:informix.wor_niveau_urgence w2_
+                LEFT JOIN {$this->dbIrium}.wor_niveau_urgence w2_
                     ON d0_.id_niveau_urgence = w2_.id
 
-                LEFT JOIN {$this->dbIrium}:informix.categorie_ate_app c4_
+                LEFT JOIN {$this->dbIrium}.categorie_ate_app c4_
                     ON d0_.categorie_demande = c4_.id
 
-                LEFT JOIN {$this->dbIrium}:informix.statut_demande s3_
+                LEFT JOIN {$this->dbIrium}.statut_demande s3_
                     ON d0_.id_statut_demande = s3_.ID_Statut_Demande
                 AND s3_.code_application = 'DIT'
                 AND s3_.ID_Statut_Demande IN (50,51,52,53,54,57,78)
 
-                LEFT JOIN {$this->dbIps}:informix.mat_mat m
+                LEFT JOIN {$this->dbIps}.mat_mat m
                     ON d0_.id_materiel = m.mmat_nummat
 
                 LEFT JOIN (
                     SELECT osv.numeroor, osv.numerodit, osv.montantitv, osv.datesoumission
-                    FROM {$this->dbIrium}:informix.ors_soumis_a_validation osv
+                    FROM {$this->dbIrium}.ors_soumis_a_validation osv
                     INNER JOIN (
                         SELECT id, MAX(numeroversion) AS max_version
-                        FROM {$this->dbIrium}:informix.ors_soumis_a_validation
+                        FROM {$this->dbIrium}.ors_soumis_a_validation
                         GROUP BY id
                     ) mv ON osv.id = mv.id AND osv.numeroversion = mv.max_version
                 ) osv_or ON d0_.numero_or = osv_or.numeroor
 
                 LEFT JOIN (
                     SELECT osv.numeroor, osv.numerodit, osv.montantitv, osv.datesoumission
-                    FROM {$this->dbIrium}:informix.ors_soumis_a_validation osv
+                    FROM {$this->dbIrium}.ors_soumis_a_validation osv
                     INNER JOIN (
                         SELECT id, MAX(numeroversion) AS max_version
-                        FROM {$this->dbIrium}:informix.ors_soumis_a_validation
+                        FROM {$this->dbIrium}.ors_soumis_a_validation
                         GROUP BY id
                     ) mv ON osv.id = mv.id AND osv.numeroversion = mv.max_version
                 ) osv_dit
@@ -264,40 +264,40 @@ class DitListeModel extends Model
     private function compteNombreItem(string $codeSociete, string $conditions, string $conditionsMultisucursal): int
     {
         $countStatement = "SELECT COUNT(*) as total
-                FROM {$this->dbIrium}:informix.demande_intervention d0_
-                LEFT JOIN {$this->dbIrium}:informix.wor_type_document w1_
+                FROM {$this->dbIrium}.demande_intervention d0_
+                LEFT JOIN {$this->dbIrium}.wor_type_document w1_
                     ON d0_.type_document = w1_.id
 
-                LEFT JOIN {$this->dbIrium}:informix.wor_niveau_urgence w2_
+                LEFT JOIN {$this->dbIrium}.wor_niveau_urgence w2_
                     ON d0_.id_niveau_urgence = w2_.id
 
-                LEFT JOIN {$this->dbIrium}:informix.categorie_ate_app c4_
+                LEFT JOIN {$this->dbIrium}.categorie_ate_app c4_
                     ON d0_.categorie_demande = c4_.id
 
-                LEFT JOIN {$this->dbIrium}:informix.statut_demande s3_
+                LEFT JOIN {$this->dbIrium}.statut_demande s3_
                     ON d0_.id_statut_demande = s3_.ID_Statut_Demande
                 AND s3_.code_application = 'DIT'
                 AND s3_.ID_Statut_Demande IN (50,51,52,53,54,57,78)
 
-                LEFT JOIN {$this->dbIps}:informix.mat_mat m
+                LEFT JOIN {$this->dbIps}.mat_mat m
                     ON d0_.id_materiel = m.mmat_nummat
 
                 LEFT JOIN (
                     SELECT osv.numeroor, osv.numerodit, osv.montantitv, osv.datesoumission
-                    FROM {$this->dbIrium}:informix.ors_soumis_a_validation osv
+                    FROM {$this->dbIrium}.ors_soumis_a_validation osv
                     INNER JOIN (
                         SELECT id, MAX(numeroversion) AS max_version
-                        FROM {$this->dbIrium}:informix.ors_soumis_a_validation
+                        FROM {$this->dbIrium}.ors_soumis_a_validation
                         GROUP BY id
                     ) mv ON osv.id = mv.id AND osv.numeroversion = mv.max_version
                 ) osv_or ON d0_.numero_or = osv_or.numeroor
 
                 LEFT JOIN (
                     SELECT osv.numeroor, osv.numerodit, osv.montantitv, osv.datesoumission
-                    FROM {$this->dbIrium}:informix.ors_soumis_a_validation osv
+                    FROM {$this->dbIrium}.ors_soumis_a_validation osv
                     INNER JOIN (
                         SELECT id, MAX(numeroversion) AS max_version
-                        FROM {$this->dbIrium}:informix.ors_soumis_a_validation
+                        FROM {$this->dbIrium}.ors_soumis_a_validation
                         GROUP BY id
                     ) mv ON osv.id = mv.id AND osv.numeroversion = mv.max_version
                 ) osv_dit
@@ -324,40 +324,40 @@ class DitListeModel extends Model
     {
 
         $statusStatement = "SELECT s3_.description, COUNT(*) as count
-                FROM {$this->dbIrium}:informix.demande_intervention d0_
-                LEFT JOIN {$this->dbIrium}:informix.wor_type_document w1_
+                FROM {$this->dbIrium}.demande_intervention d0_
+                LEFT JOIN {$this->dbIrium}.wor_type_document w1_
                     ON d0_.type_document = w1_.id
 
-                LEFT JOIN {$this->dbIrium}:informix.wor_niveau_urgence w2_
+                LEFT JOIN {$this->dbIrium}.wor_niveau_urgence w2_
                     ON d0_.id_niveau_urgence = w2_.id
 
-                LEFT JOIN {$this->dbIrium}:informix.categorie_ate_app c4_
+                LEFT JOIN {$this->dbIrium}.categorie_ate_app c4_
                     ON d0_.categorie_demande = c4_.id
 
-                LEFT JOIN {$this->dbIrium}:informix.statut_demande s3_
+                LEFT JOIN {$this->dbIrium}.statut_demande s3_
                     ON d0_.id_statut_demande = s3_.ID_Statut_Demande
                 AND s3_.code_application = 'DIT'
                 AND s3_.ID_Statut_Demande IN (50,51,52,53,54,57,78)
 
-                LEFT JOIN {$this->dbIps}:informix.mat_mat m
+                LEFT JOIN {$this->dbIps}.mat_mat m
                     ON d0_.id_materiel = m.mmat_nummat
 
                 LEFT JOIN (
                     SELECT osv.numeroor, osv.numerodit, osv.montantitv, osv.datesoumission
-                    FROM {$this->dbIrium}:informix.ors_soumis_a_validation osv
+                    FROM {$this->dbIrium}.ors_soumis_a_validation osv
                     INNER JOIN (
                         SELECT id, MAX(numeroversion) AS max_version
-                        FROM {$this->dbIrium}:informix.ors_soumis_a_validation
+                        FROM {$this->dbIrium}.ors_soumis_a_validation
                         GROUP BY id
                     ) mv ON osv.id = mv.id AND osv.numeroversion = mv.max_version
                 ) osv_or ON d0_.numero_or = osv_or.numeroor
 
                 LEFT JOIN (
                     SELECT osv.numeroor, osv.numerodit, osv.montantitv, osv.datesoumission
-                    FROM {$this->dbIrium}:informix.ors_soumis_a_validation osv
+                    FROM {$this->dbIrium}.ors_soumis_a_validation osv
                     INNER JOIN (
                         SELECT id, MAX(numeroversion) AS max_version
-                        FROM {$this->dbIrium}:informix.ors_soumis_a_validation
+                        FROM {$this->dbIrium}.ors_soumis_a_validation
                         GROUP BY id
                     ) mv ON osv.id = mv.id AND osv.numeroversion = mv.max_version
                 ) osv_dit
@@ -388,7 +388,7 @@ class DitListeModel extends Model
     public function findSectionAffectee()
     {
         $statement = " SELECT distinct section_affectee  as sectionAffectee
-                    from {$this->dbIrium}:Informix.demande_intervention 
+                    from {$this->dbIrium}.demande_intervention 
                     where section_affectee is not null 
                     and section_affectee <> ' ' 
                     and section_affectee <> 'Autres'
@@ -409,7 +409,7 @@ class DitListeModel extends Model
             section_support_1 AS sectionSupport1,
             section_support_2 AS sectionSupport2,
             section_support_3 AS sectionSupport3
-        FROM {$this->dbIrium}:Informix.demande_intervention
+        FROM {$this->dbIrium}.demande_intervention
         WHERE id = $id
     ";
 
@@ -421,7 +421,7 @@ class DitListeModel extends Model
     public function findSectionSupport1()
     {
         $statement = " SELECT distinct section_support_1  as sectionSupport1
-                    from {$this->dbIrium}:Informix.demande_intervention 
+                    from {$this->dbIrium}.demande_intervention 
                     where section_support_1 is not null 
                     and section_support_1 <> ' ' 
                     and section_support_1 <> 'Autres'
@@ -436,7 +436,7 @@ class DitListeModel extends Model
     public function findSectionSupport2()
     {
         $statement = " SELECT distinct section_support_2  as sectionSupport2
-                    from {$this->dbIrium}:Informix.demande_intervention 
+                    from {$this->dbIrium}.demande_intervention 
                     where section_support_2 is not null 
                     and section_support_2 <> ' ' 
                     and section_support_2 <> 'Autres'
@@ -451,7 +451,7 @@ class DitListeModel extends Model
     public function findSectionSupport3()
     {
         $statement = " SELECT distinct section_support_3  as sectionSupport3
-                    from {$this->dbIrium}:Informix.demande_intervention 
+                    from {$this->dbIrium}.demande_intervention 
                     where section_support_3 is not null 
                     and section_support_3 <> ' ' 
                     and section_support_3 <> 'Autres'
@@ -474,7 +474,7 @@ class DitListeModel extends Model
             (CASE WHEN piece_joint2 IS NOT NULL AND piece_joint2 <> '' AND piece_joint2 <> ' ' THEN 1 ELSE 0 END) + 
             (CASE WHEN piece_joint IS NOT NULL AND piece_joint <> '' AND piece_joint <> ' ' THEN 1 ELSE 0 END)
         ) AS nombrePiecesJointes
-    FROM {$this->dbIrium}:Informix.demande_intervention
+    FROM {$this->dbIrium}.demande_intervention
     WHERE numero_demande_dit = '$numDit'
         ";
 

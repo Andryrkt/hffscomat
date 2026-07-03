@@ -24,8 +24,8 @@ class TransferTableCommand extends Command
 
     protected function configure(): void
     {
-        $dbIrium = $_ENV['DB_NAME_IRIUM'] ?? 'magix_frm3300';
-        $dbIps = $_ENV['DB_NAME_IPS'] ?? 'ips_scomat';
+        $dbIrium = $_ENV['DB_NAME_IRIUM'] ?? 'magix_frm3300:informix';
+        $dbIps = $_ENV['DB_NAME_IPS'] ?? 'ips_scomat:informix';
 
         $this
             ->setDescription("Transfère les données d'une table d'une base vers une autre sur le même serveur Informix (crée la table cible si elle n'existe pas).")
@@ -39,8 +39,9 @@ class TransferTableCommand extends Command
                 "sur le même serveur (même DSN ODBC). Si la table n'existe pas dans la base cible,\n" .
                 "elle est créée automatiquement avec la même structure que la table source\n" .
                 "(via CREATE TABLE ... (LIKE ...)).\n\n" .
+                "Les options --source et --target attendent le format \"base:schema\" (ex: ir_prod108_test:informix).\n\n" .
                 "Exemples :\n" .
-                "  php bin/console app:informix:transfer-table demande_intervention --source=ir_prod108_test --target=ips_test\n" .
+                "  php bin/console app:informix:transfer-table demande_intervention --source=ir_prod108_test:informix --target=ips_test:informix\n" .
                 "  php bin/console app:informix:transfer-table demande_intervention --where=\"code_societe = 'HF'\" --truncate"
             );
     }
@@ -84,9 +85,9 @@ class TransferTableCommand extends Command
 
                 // CREATE TABLE cible toujours la base "courante" de la connexion,
                 // il faut donc basculer dessus avant de créer la table.
-                $this->connect->executeQuery(sprintf('DATABASE %s', $target));
+                $this->connect->executeQuery(sprintf('DATABASE %s', $this->databaseName($target)));
                 $this->connect->executeQuery(sprintf(
-                    'CREATE TABLE Informix.%s (LIKE %s:Informix.%s)',
+                    'CREATE TABLE Informix.%s (LIKE %s.%s)',
                     $table,
                     $source,
                     $table
@@ -103,12 +104,12 @@ class TransferTableCommand extends Command
 
             if ($truncate) {
                 $io->text('Vidage de la table cible...');
-                $this->connect->executeQuery(sprintf('DELETE FROM %s:Informix.%s', $target, $table));
+                $this->connect->executeQuery(sprintf('DELETE FROM %s.%s', $target, $table));
             }
 
             $whereClause = $where ? ' WHERE ' . $where : '';
             $sql = sprintf(
-                'INSERT INTO %s:Informix.%s SELECT * FROM %s:Informix.%s%s',
+                'INSERT INTO %s.%s SELECT * FROM %s.%s%s',
                 $target,
                 $table,
                 $source,
@@ -136,7 +137,7 @@ class TransferTableCommand extends Command
 
     private function tableExists(string $database, string $table): bool
     {
-        $sql = sprintf('SELECT tabid FROM %s:systables WHERE tabname = :tabname', $database);
+        $sql = sprintf('SELECT tabid FROM %s:systables WHERE tabname = :tabname', $this->databaseName($database));
         $result = $this->connect->executeQuery($sql, ['tabname' => strtolower($table)]);
         $row = $this->connect->fetchScalarResults($result);
 
@@ -145,10 +146,19 @@ class TransferTableCommand extends Command
 
     private function countRows(string $database, string $table): int
     {
-        $sql = sprintf('SELECT COUNT(*) AS nb FROM %s:Informix.%s', $database, $table);
+        $sql = sprintf('SELECT COUNT(*) AS nb FROM %s.%s', $database, $table);
         $result = $this->connect->executeQuery($sql);
         $row = $this->connect->fetchScalarResults($result);
 
         return (int) ($row['nb'] ?? 0);
+    }
+
+    /**
+     * Extrait le nom de base "brut" d'une valeur au format "base:schema"
+     * (nécessaire pour les instructions DATABASE et systables, qui ne prennent pas de schéma).
+     */
+    private function databaseName(string $database): string
+    {
+        return strstr($database, ':', true) ?: $database;
     }
 }

@@ -23,8 +23,8 @@ class Model
         $this->connexion = new Connexion();
         $this->connect = new DatabaseInformix();
 
-        $this->dbIrium = $_ENV['DB_NAME_IRIUM'] ?? 'magix_frm3300';
-        $this->dbIps = $_ENV['DB_NAME_IPS'] ?? 'ips_scomat';
+        $this->dbIrium = $_ENV['DB_NAME_IRIUM'] ?? 'magix_frm3300:informix';
+        $this->dbIps = $_ENV['DB_NAME_IPS'] ?? 'ips_scomat:informix';
 
         // On force la connexion pour ne pas casser les modèles enfants existants
         try {

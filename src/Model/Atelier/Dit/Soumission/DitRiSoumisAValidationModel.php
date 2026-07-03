@@ -22,7 +22,7 @@ class DitRiSoumisAValidationModel extends Model
     {
         $statement = " SELECT FIRST 1 
                 seor_numor as numOr
-                from {$this->dbIps}:Informix.sav_eor
+                from {$this->dbIps}.sav_eor
                 where seor_refdem like '%$numDit%'
                 AND seor_serv = 'SAV'
                 AND seor_soc = '$codeSociete'
@@ -49,7 +49,7 @@ class DitRiSoumisAValidationModel extends Model
         if (!$numOr) return [];
 
         $statement = "SELECT DISTINCT numeroitv AS numeroItv
-            FROM {$this->dbIrium}:Informix.ri_soumis_a_validation
+            FROM {$this->dbIrium}.ri_soumis_a_validation
             WHERE numero_oR = '$numOr' AND code_societe = '$codeSociete'
             ";
 
@@ -80,7 +80,7 @@ class DitRiSoumisAValidationModel extends Model
         $statement = "SELECT 
                     sitv_interv as numeroItv, 
                     trim(sitv_comment) as commentaire
-            from {$this->dbIps}:Informix.sav_itv
+            from {$this->dbIps}.sav_itv
             where sitv_numor = '$numOr' 
             and sitv_soc = '$codeSociete'
             $condition
@@ -108,7 +108,7 @@ class DitRiSoumisAValidationModel extends Model
     public function recupNumeroSoumission(string $numOr, string $codeSociete): int
     {
         $statement = "SELECT COALESCE(MAX(numero_soumission)+1, 1) AS numSoumissionEncours
-                FROM {$this->dbIrium}:Informix.ri_soumis_a_validation
+                FROM {$this->dbIrium}.ri_soumis_a_validation
                 WHERE numero_or = '$numOr' and code_societe = '$codeSociete'";
 
         $result = $this->connect->executeQuery($statement);
@@ -129,7 +129,7 @@ class DitRiSoumisAValidationModel extends Model
         $this->connect->connect();
         try {
             foreach ($datas as $donnees) {
-                $builder = new InsertQueryBuilder("{$this->dbIrium}:Informix.ri_soumis_a_validation");
+                $builder = new InsertQueryBuilder("{$this->dbIrium}.ri_soumis_a_validation");
                 $builder->setData($donnees);
                 $result = $builder->build();
                 $this->connect->executeQuery($result['sql'], $result['params']);
@@ -151,12 +151,12 @@ class DitRiSoumisAValidationModel extends Model
     public function recupToutNumeroItv(string $numOr, string $codeSociete): array
     {
         $statement = "SELECT numeroItv 
-        from {$this->dbIrium}:Informix.ors_soumis_a_validation
+        from {$this->dbIrium}.ors_soumis_a_validation
         where numeroOR = '$numOr'
         and code_societe = '$codeSociete'
         and numeroVersion in (
                 select max(numeroVersion) 
-                from {$this->dbIrium}:Informix.ors_soumis_a_validation 
+                from {$this->dbIrium}.ors_soumis_a_validation 
                 where numeroOR = '$numOr' and code_societe = '$codeSociete'
                 )
         ";
@@ -179,7 +179,7 @@ class DitRiSoumisAValidationModel extends Model
     {
         $statement = "
         SELECT MAX(numero_soumission) AS numero_version_max
-        FROM {$this->dbIrium}:Informix.ri_soumis_a_validation
+        FROM {$this->dbIrium}.ri_soumis_a_validation
         WHERE numero_or = '$numOr'
           AND code_societe = '$codeSociete'
     ";
@@ -200,7 +200,7 @@ class DitRiSoumisAValidationModel extends Model
         // Étape 2 : Utiliser le numeroVersionMax pour récupérer le numero d'intervention
         $statement = "
         SELECT numeroitv AS numeroitv
-        FROM {$this->dbIrium}:Informix.ri_soumis_a_validation
+        FROM {$this->dbIrium}.ri_soumis_a_validation
         WHERE numero_or = '$numOr' 
         AND numero_soumission = '$numeroVersionMax' 
           AND code_societe = '$codeSociete'

@@ -292,7 +292,7 @@ ORDER BY 6,2, A.NLIG_NOLIGN
   {
 
     $statement = " SELECT etat_pays, eta_magasin, milestone , statut_date 
-            FROM {$this->dbIrium}:informix.Ces_magasin
+            FROM {$this->dbIrium}.Ces_magasin
         WHERE po_number = '$numeroContremarque'
         ";
 
