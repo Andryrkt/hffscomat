@@ -46,15 +46,13 @@ class PlanningSearchType extends AbstractType
         'LUBRIFIANTS'    => 'LUBRIFIANTS',
         'PNEUMATIQUES'   => 'PNEUMATIQUES',
     ];
+    
     const REPARATION_REALISE = [
-        'ATE TANA'     => 'ATE TANA',
-        'ATE POL TANA' => 'ATE POL TANA',
-        'ATE STAR'     => 'ATE STAR',
-        'ATE MAS'      => 'ATE MAS',
-        'ATE TMV'      => 'ATE TMV',
-        'ATE FTU'      => 'ATE FTU',
-        'ATE ABV'      => 'ATE ABV',
-        'ATE LEV'      => 'ATE LEV',
+        "WS SCOMAT" => "WS SCOMAT",
+        "WS AGRI TRUCK" => "WS AGRI TRUCK",
+        "WS MACHINE" => "WS MACHINE",
+        "WS PSSR" => "WS PSSR",
+        "WS UPS" => "WS UPS",
     ];
 
     public function __construct()

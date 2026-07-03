@@ -57,7 +57,7 @@ class AcBcSoumisModel extends Model
                 CROSS JOIN cst
                 CROSS JOIN first_itv
                 CROSS JOIN all_itv";
-
+// dd($statement);
         $result = $this->connect->executeQuery($statement);
 
         $data = $this->convertirEnUtf8($this->connect->fetchScalarResults($result));

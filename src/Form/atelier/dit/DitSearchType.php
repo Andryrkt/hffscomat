@@ -37,15 +37,11 @@ class DitSearchType extends AbstractType
     ];
 
     const REPARATION_REALISE = [
-        'ATE TANA'     => 'ATE TANA',
-        'ATE POL TANA' => 'ATE POL TANA',
-        'ATE STAR'     => 'ATE STAR',
-        'ATE MAS'      => 'ATE MAS',
-        'ATE TMV'      => 'ATE TMV',
-        'ATE FTU'      => 'ATE FTU',
-        'ATE ABV'      => 'ATE ABV',
-        'ATE LEV'      => 'ATE LEV',
-        'ENERGIE MAN'  => 'ENERGIE MAN'
+        "WS SCOMAT" => "WS SCOMAT",
+        "WS AGRI TRUCK" => "WS AGRI TRUCK",
+        "WS MACHINE" => "WS MACHINE",
+        "WS PSSR" => "WS PSSR",
+        "WS UPS" => "WS UPS",
     ];
 
     private DitListeModel $ditListeModel;
