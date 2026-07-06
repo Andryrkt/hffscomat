@@ -101,7 +101,7 @@ class DitModel extends Model
     {
         $statement = "SELECT DISTINCT cbse_numcli as num_client, 
                             cbse_nomcli as nom_client
-                        from {$this->dbIps}:Informix.cli_bse
+                        from {$this->dbIps}.cli_bse
         ";
 
         $result = $this->connect->executeQuery($statement);
