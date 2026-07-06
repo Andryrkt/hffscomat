@@ -13,6 +13,7 @@ use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\Callback;
 use Symfony\Component\Validator\Constraints\File;
+use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
@@ -153,6 +154,13 @@ class VerificationPrixType extends AbstractType
                     'required' => false,
                     'attr' => [
                         'rows' => 5,
+                        'maxlength' => 5000,
+                    ],
+                    'constraints' => [
+                        new Length([
+                            'max' => 5000,
+                            'maxMessage' => 'L\'observation ne doit pas dépasser {{ limit }} caractères.',
+                        ]),
                     ],
                 ]
             )

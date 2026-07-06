@@ -23,6 +23,23 @@ document.addEventListener("DOMContentLoaded", function () {
   );
   if (fileInput3) initializeFileHandlersExcel("3", fileInput3);
 
+  // Compteur de caractères restants pour l'observation
+  const observationInput = document.querySelector(
+    "#verification_prix_observation",
+  );
+  const observationCharCount = document.querySelector(
+    "#observation-char-count",
+  );
+  if (observationInput && observationCharCount) {
+    const maxLength = Number(observationInput.getAttribute("maxlength"));
+    const updateObservationCharCount = () => {
+      const remaining = maxLength - observationInput.value.length;
+      observationCharCount.textContent = `${remaining} caractère(s) restant(s) sur ${maxLength}`;
+    };
+    observationInput.addEventListener("input", updateObservationCharCount);
+    updateObservationCharCount();
+  }
+
   // Gestion de la validation du formulaire
   const form = document.querySelector("#upload-form");
   if (form) {
