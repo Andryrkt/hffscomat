@@ -18,7 +18,7 @@ class AutocompleteApi extends Controller
 
         $ditModel = new DitModel();
         // Recherchez les clients par nom dans votre base de données
-        $clients = $ditModel->recupAllClientExterne();
+        $clients = $ditModel->getAllClients();
 
         $results = array_map(function ($client) {
             return [

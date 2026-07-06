@@ -43,10 +43,10 @@ class LoginController extends Controller
 
                 if (!$user) throw new \Exception('Utilisateur non trouvé avec le nom d\'utilisateur : ' . $username);
 
-                //if (!$this->ldapModel->userConnect($username, $password)) {
-                    //$this->logUserVisit('security_signin');
-                    //$error_msg = "Vérifier les informations de connexion, veuillez saisir le nom d'utilisateur et le mot de passe de votre session Windows";
-                //} else {
+                // if (!$this->ldapModel->userConnect($username, $password)) {
+                //     $this->logUserVisit('security_signin');
+                //     $error_msg = "Vérifier les informations de connexion, veuillez saisir le nom d'utilisateur et le mot de passe de votre session Windows";
+                // } else {
                     $profils = $user->getProfils();
 
                     if ($profils->isEmpty()) throw new \Exception('Aucun profil trouvé pour l\'utilisateur : ' . $username . '. Veuillez contacter le support informatique.');
@@ -87,10 +87,10 @@ class LoginController extends Controller
                     $this->getSessionService()->set('user_info', $userInfo);
 
                     $this->redirectToRoute('profil_acceuil');
-                //}
+                // }
             } catch (Exception $e) {
                 die($e->getMessage());
-				//$this->logUserVisit('security_signin');
+				// $this->logUserVisit('security_signin');
                 //$error_msg = $e->getMessage();
             }
         }

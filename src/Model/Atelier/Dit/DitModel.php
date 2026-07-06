@@ -99,9 +99,9 @@ class DitModel extends Model
      */
     public function getAllClients(): array
     {
-        $statement = "SELECT DISTINCT nent_numcli as num_client, 
-                            nent_nomcli as nom_client
-                        from {$this->dbIps}.neg_ent
+        $statement = "SELECT DISTINCT cbse_numcli as num_client, 
+                            cbse_nomcli as nom_client
+                        from {$this->dbIps}.cli_bse
         ";
 
         $result = $this->connect->executeQuery($statement);
@@ -111,18 +111,7 @@ class DitModel extends Model
         return $this->convertirEnUtf8($data);
     }
 
-    public function recupAllClientExterne()
-    {
-        $statement = " SELECT cbse_nomcli, cbse_numcli FROM cli_bse 
-        --cli_soc WHERE cbse_numcli = csoc_numcli and csoc_soc ='HF'
-        ";
-
-        $result = $this->connect->executeQuery($statement);
-
-        $data = $this->connect->fetchResults($result);
-
-        return $this->convertirEnUtf8($data);
-    }
+    
 
     /**
      * Methode pour enregistrer les données du formulaire Dit
