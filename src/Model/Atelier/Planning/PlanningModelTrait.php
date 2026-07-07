@@ -134,9 +134,9 @@ trait PlanningModelTrait
             $monthDateNonPlanifier =  "  DATE(sitv_datdeb)  ";
             switch ($dto->planning) {
                 case "PLANIFIE":
-                    return " AND " . $monthDatePlanifier . " >= '" . $dto->dateDebut->format("m/d/Y") . "'";
+                    return " AND " . $monthDatePlanifier . " >= '" . $dto->dateDebut->format("d/m/Y") . "'";
                 case "NON_PLANIFIE":
-                    return " AND " . $monthDateNonPlanifier . " >= '" . $dto->dateDebut->format("m/d/Y") . "'";
+                    return " AND " . $monthDateNonPlanifier . " >= '" . $dto->dateDebut->format("d/m/Y") . "'";
             }
         }
         return '';
@@ -156,10 +156,10 @@ trait PlanningModelTrait
             $monthDateNonPlanifier =  " DATE(sitv_datdeb)  ";
             switch ($dto->planning) {
                 case "PLANIFIE":
-                    return " AND " . $monthDatePlanifier . " <= '" . $dto->dateFin->format("m/d/Y") . "'";
+                    return " AND " . $monthDatePlanifier . " <= '" . $dto->dateFin->format("d/m/Y") . "'";
                     break;
                 case "NON_PLANIFIE":
-                    return " AND " . $monthDateNonPlanifier . " <= '" . $dto->dateFin->format("m/d/Y") . "'";
+                    return " AND " . $monthDateNonPlanifier . " <= '" . $dto->dateFin->format("d/m/Y") . "'";
             }
         }
         return '';
