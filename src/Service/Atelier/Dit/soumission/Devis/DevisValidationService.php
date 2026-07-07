@@ -75,21 +75,19 @@ class DevisValidationService
         $servDebiteurIps = $ditDevisSoumisAValidationModel->recupServDebiteur($dto->numeroDevis, $dto->codeSociete);
 
         // verifie si l'information du demande d'intervention rattacher au devis est bien recupérer
-        if(empty($infoDit)) {
+        if (empty($infoDit)) {
             $message = " Nous n'avons pas pu récupérer les informations de la demande d'intervention rattachée au devis n° {$dto->numeroDevis}.";
-                    $this->sendNotificationOR($message, $dto->numeroDevis, false);
-                    return true;
+            $this->sendNotificationOR($message, $dto->numeroDevis, false);
+            return true;
         }
 
         // verifier si n° dit ips <> n° dit intranet
         if ($numDitIps !== $infoDit['numero_demande_dit']) {
-            if ($numClientIps !== $infoDit['numero_client']) {
-                $message = "Erreur lors de la soumission, Impossible de soumettre le devis . . . le numero DIT dans IPS ne correspond pas à la DIT ";
-                $this->sendNotificationOR($message, $dto->numeroDevis, false);
-                return true;
-            }
+            $message = "Erreur lors de la soumission, Impossible de soumettre le devis . . . le numero DIT dans IPS ne correspond pas à la DIT ";
+            $this->sendNotificationOR($message, $dto->numeroDevis, false);
+            return true;
         }
-        
+
         // verifie si le n° client dans IPS est different du n° client dans intranet
         if ($numClientIps !== $infoDit['numero_client']) {
             $message = "Erreur lors de la soumission, Impossible de soumettre le devis . . . Veuillez vérifier le client car le client sur la DIT est différent de celui du devis ";
@@ -140,8 +138,6 @@ class DevisValidationService
                 $this->sendNotificationOR($message, $dto->numeroDevis, false);
                 return true;
             }
-
-            
         } else {
             $estPremierSoumission = $ditDevisSoumisAValidationModel->estPremierSoumission($dto->numeroDevis, $dto->codeSociete);
 
@@ -186,7 +182,7 @@ class DevisValidationService
 
     public function validateApresSoumission(FormInterface $form, DitDevisSoumisAValidationDto $dto): bool
     {
-         // Vérifie si un fichier a été soumis
+        // Vérifie si un fichier a été soumis
         if (!$this->isFileSubmitted($form, self::FILE_FIELD_NAME)) {
             $message = "Aucun fichier n'a été soumis.";
             $this->sendNotificationOR($message, $dto->numeroDevis, false);
@@ -212,7 +208,7 @@ class DevisValidationService
         return false;
     }
 
-     /**
+    /**
      * Vérifie si un fichier a été soumis dans un champ de formulaire donné
      * 
      * @param FormInterface $form Le formulaire à vérifier
