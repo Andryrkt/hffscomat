@@ -216,38 +216,17 @@ class PlanningModel extends Model
     public function getNumeroOrValider(PlanningSearchDto $searchDto): array
     {
         $statement = "SELECT distinct
-                osv.numeroOR                                as num_or,
-                osv.numeroItv                               as num_itv,
-                osv.numeroOR || '-' || osv.numeroItv        as num_or_itv
-            from {$this->dbIrium}.ors_soumis_a_validation    osv
-            inner join (
-                select
-                    numeroOR,
-                    max(numeroversion)  as max_version
-                from {$this->dbIrium}.ors_soumis_a_validation
-                group by numeroOR
-            ) latest
-                on latest.numeroOR = osv.numeroOR
-                and latest.max_version = osv.numeroversion
-            where osv.statut like 'Valid%'
-                and exists (
-                    select 1
+                di.numero_or                               as num_or
                     from {$this->dbIrium}.demande_intervention di
-                    where di.numero_or = osv.numeroOR
+                    where di.statut_or LIKE 'Valid%'
                         {$this->selectCond->eq('type_document', $searchDto->typeDocument)}
                         {$this->selectCond->eq('reparation_realise', $searchDto->reparationRealise)}
                         {$this->selectCond->eq('numero_or', $searchDto->numOr)}
                         {$this->selectCond->eq('id_niveau_urgence', $searchDto->niveauUrgence)}
-                )
-            order by osv.numeroOR asc
         ";
         $results = $this->connect->executeQuery($statement);
         $data = $this->connect->fetchResults($results);
-        return [
-            "num_ors" => array_column($data, 'num_or'),
-            "num_itvs" => array_column($data, 'num_itv'),
-            "num_or_itvs" => array_column($data, 'num_or_itv')
-        ];
+        return  array_column($data, 'num_or');
     }
 
     public function getEtaMagasin(string $numeroCmd, string $refP, string $cst): array
@@ -290,20 +269,14 @@ class PlanningModel extends Model
     public function getOrsSoumis(): array
     {
         $statement = "SELECT distinct
-            numeroor                        as num_or,
-            numeroitv                       as num_itv,
-            numeroor || '-' || numeroitv    as num_or_itv
+            numeroor                        as num_or
             from {$this->dbIrium}.ors_soumis_a_validation
         ";
 
         $result = $this->connect->executeQuery($statement);
         $data = $this->connect->fetchResults($result);
 
-        return [
-            'num_ors' => array_column($data, 'num_or'),
-            'num_itvs' => array_column($data, 'num_itv'),
-            'num_or_itvs' => array_column($data, 'num_or_itv')
-        ];
+        return  array_column($data, 'num_or');
     }
 
     public function getTechnicientIntervenantSkw(string $numOr, string $numItv)

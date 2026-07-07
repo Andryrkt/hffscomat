@@ -29,8 +29,8 @@ class PlanningService
      */
     public function getPlanningMaterielData(PlanningSearchDto $dto, string $codeSociete): array
     {
-        ['num_ors' => $orsValides] = $this->planningModel->getNumeroOrValider($dto);
-        ['num_ors' => $orsSoumis] = $this->planningModel->getOrsSoumis();
+        $orsValides= $this->planningModel->getNumeroOrValider($dto);
+        $orsSoumis = $this->planningModel->getOrsSoumis();
 
         $rawData = $this->planningMaterielModel->getMaterielPlanifier(
             $orsValides,
