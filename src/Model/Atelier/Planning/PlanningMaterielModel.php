@@ -24,6 +24,7 @@ class PlanningMaterielModel extends Model
 
     public function getMaterielPlanifier(array $numOrs, array $orSoumis, array $orItvBack, PlanningSearchDto $searchDto, string $codeSoc = 'HF'): array
     {
+        if(empty($numOrs)) return [];
         $statement = "SELECT
                 trim(seor_succ)                                           as code_suc, 
                 trim(asuc_lib)                                            as lib_suc, 
