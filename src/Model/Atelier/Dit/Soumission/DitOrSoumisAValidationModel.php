@@ -530,6 +530,7 @@ class DitOrSoumisAValidationModel extends Model
             AND slor_constp in (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST')
         order by slor_numor, sitv_interv
         ";
+       
         $result = $this->connect->executeQuery($statement);
 
         $data = $this->connect->fetchResults($result);
@@ -794,7 +795,7 @@ class DitOrSoumisAValidationModel extends Model
         string $codeSociete,
         string $numeroOr,
         string $ref,
-        string $codeSuccursale = '01'
+        string $codeSuccursale = '1'
     ) {
         $statement = "WITH stats AS (
             SELECT 
@@ -816,7 +817,7 @@ class DitOrSoumisAValidationModel extends Model
         SELECT 
             slor_constp as constructeur,
             -- Stock
-            CASE WHEN astp_stock IS NULL THEN 0 ELSE astp_stock END AS nb_ref,
+            ROUND(CASE WHEN astp_stock IS NULL THEN 0 ELSE astp_stock END) AS nb_ref,
             
             -- Prix et remises
             ROUND(slor_pmp, 2) AS pmp,
@@ -866,6 +867,7 @@ class DitOrSoumisAValidationModel extends Model
             AND slor_succ = '$codeSuccursale'
             AND slor_soc = '$codeSociete'
             AND slor_refp = '$ref'
+            --AND slor_pos = 'CP'
             AND YEAR(slor_datec) = YEAR(TODAY)
             --AND slor_qterel > 0
             --AND seor_devise = 'AR'

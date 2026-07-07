@@ -175,8 +175,8 @@ class GenererPdfOrSoumisAValidation extends GeneratePdf
 
             //==========================================================================================================
             //Titre: Tableau de marge CAT
-            $pdf->SetTextColor(255, 0, 0);
-            $this->addTitle($pdf, empty($tableauMarge['tableauMargeCat']) ? '' : "Tableau de marge pour pièce 'CAT' .", 'helvetica', 'B', 10, 'L', 1);
+            $pdf->SetTextColor(0, 0, 0);
+            $this->addTitle($pdf, empty($tableauMarge['tableauMargeCat']) ? '' : "Tableau de marge pour pièce 'CAT' .", 'helvetica', 'B', 10, 'L', 0);
             
             $pdf->SetTextColor(0, 0, 0);
             if (!empty($tableauMarge['tableauMargeCat'])) {
@@ -191,7 +191,7 @@ class GenererPdfOrSoumisAValidation extends GeneratePdf
                     }
                     //==========================================================================================================
                     //Titre: Tableau de marge MFN
-                    $pdf->SetTextColor(255, 0, 0);
+                    $pdf->SetTextColor(0, 0, 0);
                     $this->addTitle($pdf, empty($tableauMarge['tableauMargeMfn']) ? '' : "Tableau de marge pour pièce 'MFN' .", 'helvetica', 'B', 10, 'L', 1);
                     
                     $pdf->SetTextColor(0, 0, 0);
@@ -207,7 +207,7 @@ class GenererPdfOrSoumisAValidation extends GeneratePdf
                             }
                             //==========================================================================================================
                             //Titre: Tableau de marge Autres
-                            $pdf->SetTextColor(255, 0, 0);
+                            $pdf->SetTextColor(0, 0, 0);
                             $this->addTitle($pdf, empty($tableauMarge['tableauMargeAutres']) ? '' : "Tableau de marge pour pièce 'Autres' .", 'helvetica', 'B', 10, 'L', 1);
                             
                             $pdf->SetTextColor(0, 0, 0);
@@ -538,6 +538,10 @@ class GenererPdfOrSoumisAValidation extends GeneratePdf
 
     private function headerTableauMarge(): array
     {
+        $formatterPourcentage = function ($value) {
+            return  round($value) . '%';
+        };
+
         return [
             [
                 'key'          => '',
@@ -614,7 +618,8 @@ class GenererPdfOrSoumisAValidation extends GeneratePdf
                 'header_style' => 'font-weight: bold;',
                 'cell_style'   => 'text-align: right;',
                 'footer_style' => 'font-weight: 900;',
-                'type'         => 'number'
+                'type'         => 'number',
+                'formatter' => $formatterPourcentage,
             ],
             [
                 'key'          => 'max_mb',
@@ -634,7 +639,8 @@ class GenererPdfOrSoumisAValidation extends GeneratePdf
                 'header_style' => 'font-weight: bold;',
                 'cell_style'   => 'text-align: right;',
                 'footer_style' => 'font-weight: 900;',
-                'type'         => 'number'
+                'type'         => 'number',
+                'formatter' => $formatterPourcentage,
             ],
             [
                 'key'          => 'min_mb',
@@ -654,7 +660,8 @@ class GenererPdfOrSoumisAValidation extends GeneratePdf
                 'header_style' => 'font-weight: bold;',
                 'cell_style'   => 'text-align: right;',
                 'footer_style' => 'font-weight: 900;',
-                'type'         => 'number'
+                'type'         => 'number',
+                'formatter' => $formatterPourcentage,
             ],
 
         ];

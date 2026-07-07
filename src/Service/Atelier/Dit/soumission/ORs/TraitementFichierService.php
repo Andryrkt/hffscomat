@@ -138,8 +138,9 @@ class TraitementFichierService
         $pieceFaibleAchat = $this->preparationDesPiecesFaibleAchat($numeroOr, $codeSociete);
 
         // tableau de marge
-        // $tableauMarge = $this->tableauMarge($numeroOr, $codeSociete);
-        $tableauMarge = [];
+        $tableauMarge = $this->tableauMarge($numeroOr, $codeSociete);
+
+        // $tableauMarge = [];
 
         $genererPdfOrSoumisAValidation->GenererPdf($dto, $montantPdf, $quelqueaffichage, $email, $pieceFaibleAchat, $tableauMarge, $nomAvecCheminFichier);
     }
@@ -430,7 +431,7 @@ class TraitementFichierService
 
         if (!empty($infoOrs)) {
             foreach ($infoOrs as $infoOr) {
-                $afficher = $ditOrsoumisAValidationModel->tableauDeMarge($codeSociete, $numOr, $infoOr['reference']);
+                $afficher = $ditOrsoumisAValidationModel->tableauDeMarge($codeSociete, $numOr, $infoOr['reference'], $infoOr['code_agence']);
 
                 foreach ($afficher as $value) {
                     if ($value['constructeur'] == 'CAT') {
