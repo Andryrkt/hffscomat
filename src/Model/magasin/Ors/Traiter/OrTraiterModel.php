@@ -11,7 +11,7 @@ class OrTraiterModel extends Model
 {
     use ConditionModelTrait;
 
-    public function recupereListeMaterielValider(OrATraiterSearchDto $dtoSearch, $lesOrSelonCondition = [])
+    public function recupereListeMaterielValider(OrATraiterSearchDto $dtoSearch)
     {
         $selectWhereCondition = new SelectWhereCondition();
 
@@ -196,7 +196,7 @@ class OrTraiterModel extends Model
                         AND slor_soc = '$codeSociete'
                     ";
 
-        if ($codeAgence <> "''") {
+        if (!empty($codeAgence) && $codeAgence <> "''") {
             $statement .= " AND slor_succdeb IN ($codeAgence) ";
         }
 

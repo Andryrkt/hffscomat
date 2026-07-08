@@ -165,7 +165,7 @@ class DitOrSoumisAValidationModel extends Model
         return (int) ($data[0]['nummatricule'] ?? 0);;
     }
 
-    public function recupNbDatePlanningVide($numOr, string $codeSociete)
+    public function recupNbDatePlanningVide(string $numOr, string $codeSociete)
     {
         $statement = "SELECT count(*) as nbPlanning
         from sav_itv 
@@ -208,7 +208,7 @@ class DitOrSoumisAValidationModel extends Model
         return  $data[0]['type_or'] ?? 0;
     }
 
-    public function recupNbPieceMagasin($numOr, string $codeSociete)
+    public function recupNbPieceMagasin(string $numOr, string $codeSociete)
     {
         $statement = " SELECT
             count(slor_constp) as nbr_sortie_magasin 
@@ -530,7 +530,7 @@ class DitOrSoumisAValidationModel extends Model
             AND slor_constp in (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST')
         order by slor_numor, sitv_interv
         ";
-       
+
         $result = $this->connect->executeQuery($statement);
 
         $data = $this->connect->fetchResults($result);
