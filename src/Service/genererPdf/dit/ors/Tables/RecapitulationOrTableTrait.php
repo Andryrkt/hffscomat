@@ -2,11 +2,32 @@
 
 namespace App\Service\genererPdf\dit\ors\Tables;
 
+use TCPDF;
+use App\Service\genererPdf\PdfTableGeneratorFlexible;
+
 /**===============================================================
  * -------- Pour le tableau Recapitulation de l'OR ------------------
  *================================================================*/
 trait RecapitulationOrTableTrait
 {
+    /**
+     * Affiche le titre et le tableau de récapitulation de l'OR.
+     */
+    private function renderRecapitulationOr(TCPDF $pdf, PdfTableGeneratorFlexible $tableGenerator, array $montantPdf): void
+    {
+        $this->addTitle($pdf, "Récapitulation de l'OR", 'helvetica', 'B', 10, 'L', 5);
+
+        $pdf->setFont('helvetica', '', 12);
+        $html = $tableGenerator->generateTable(
+            $this->headerRecapitulationOR(),
+            $montantPdf['recapOr'],
+            $this->footerRecapitulationOR($montantPdf)
+        );
+
+        $pdf->writeHTML($html, true, false, true, false, '');
+        $pdf->Ln(10, true);
+    }
+
     private function headerRecapitulationOR(): array
     {
         return [

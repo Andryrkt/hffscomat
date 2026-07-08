@@ -2,11 +2,28 @@
 
 namespace App\Service\genererPdf\dit\ors\Tables;
 
+use TCPDF;
+use App\Service\genererPdf\PdfTableGeneratorFlexible;
+
 /**===============================================================
  * -------- Pour le tableau Situation de l'OR ------------------
  *================================================================*/
 trait SituationOrTableTrait
 {
+    /**
+     * Affiche le tableau de situation de l'OR (avant/après).
+     */
+    private function renderSituationOr(TCPDF $pdf, PdfTableGeneratorFlexible $tableGenerator, array $montantPdf): void
+    {
+        $html = $tableGenerator->generateTable(
+            $this->headerSituationOr(),
+            $montantPdf['avantApres'],
+            $this->footerSituationOr($montantPdf)
+        );
+
+        $pdf->writeHTML($html, true, false, true, false, '');
+    }
+
     private function headerSituationOr(): array
     {
         return  [

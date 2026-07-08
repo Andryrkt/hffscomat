@@ -2,15 +2,53 @@
 
 namespace App\Service\genererPdf\dit\ors\Tables;
 
+use TCPDF;
+use App\Service\genererPdf\PdfTableGeneratorFlexible;
+
 /**============================================================================
  * -------- Pour le tableau de marge ------------------
  *=============================================================================*/
 trait TableauMargeTableTrait
 {
+    /**
+     * Affiche les tableaux de marge (CAT, MFN, Autres) s'ils contiennent des lignes.
+     */
+    private function renderTableauxMarge(TCPDF $pdf, PdfTableGeneratorFlexible $tableGenerator, array $tableauMarge): void
+    {
+        if (empty($tableauMarge)) {
+            return;
+        }
+
+        $sections = [
+            'tableauMargeCat'    => 'CAT',
+            'tableauMargeMfn'    => 'MFN',
+            'tableauMargeAutres' => 'Autres',
+        ];
+
+        $lineBreak = 0;
+        foreach ($sections as $key => $label) {
+            $lignes = $tableauMarge[$key] ?? [];
+
+            $pdf->SetTextColor(0, 0, 0);
+            $this->addTitle($pdf, empty($lignes) ? '' : "Tableau de marge pour pièce '$label' .", 'helvetica', 'B', 10, 'L', $lineBreak);
+            $lineBreak = 1;
+
+            if (!empty($lignes)) {
+                $pdf->setFont('helvetica', '', 12);
+                $html = $tableGenerator->generateTable($this->headerTableauMarge($label), $lignes, []);
+                $pdf->writeHTML($html, true, false, true, false, '');
+            }
+        }
+    }
+
     private function headerTableauMarge(string $label = 'CAT'): array
     {
         $formatterPourcentage = function ($value) {
             return  round($value) . '%';
+        };
+
+        $formatterDispoStock = function ($value, $row) {
+            return (int) ($row['nb_ref'] ?? 0) === 0 ? 'Non dispo stock' : 'Dispo stock';
         };
 
         return [
@@ -22,7 +60,7 @@ trait TableauMargeTableTrait
                 'header_style' => 'font-weight: bold;',
                 'cell_style'   => 'text-align: center;',
                 'footer_style' => 'font-weight: 900;',
-                'default_value' => 'Dispo Stock'
+                'formatter'    => $formatterDispoStock
             ],
             [
                 'key'          => 'nb_ref',

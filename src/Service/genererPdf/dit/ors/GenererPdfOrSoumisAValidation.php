@@ -116,13 +116,7 @@ class GenererPdfOrSoumisAValidation extends GeneratePdf
         // ================================================================================================
         // Tableau pour la situation de l'OR
 
-        $html = $tableGenerator->generateTable(
-            $this->headerSituationOr(),
-            $montantPdf['avantApres'],
-            $this->footerSituationOr($montantPdf)
-        );
-
-        $pdf->writeHTML($html, true, false, true, false, '');
+        $this->renderSituationOr($pdf, $tableGenerator, $montantPdf);
 
         //$pdf->Ln(10, true);
         //===========================================================================================
@@ -156,87 +150,13 @@ class GenererPdfOrSoumisAValidation extends GeneratePdf
 
         //==========================================================================================================
         //Titre: Récapitulation de l'OR
-        $this->addTitle($pdf, "Récapitulation de l'OR", 'helvetica',  'B', 10, 'L',  5);
-
-
-        $pdf->setFont('helvetica', '', 12);
-        $html = $tableGenerator->generateTable(
-            $this->headerRecapitulationOR(),
-            $montantPdf['recapOr'],
-            $this->footerRecapitulationOR($montantPdf)
-        );
-
-        $pdf->writeHTML($html, true, false, true, false, '');
-        $pdf->Ln(10, true);
+        $this->renderRecapitulationOr($pdf, $tableGenerator, $montantPdf);
         //==========================================================================================================
         //Titre: Pièce(s) à faible activité d'achat
-        $pdf->SetTextColor(255, 0, 0);
-        $this->addTitle($pdf, empty($pieceFaibleAchat) ? '' : "Attention : les prix des pièces ci-dessous sont susceptibles d’augmenter. Merci de les confirmer auprès du service Magasin.", 'helvetica', 'B', 10, 'L', 1);
-
-        $pdf->SetTextColor(0, 0, 0);
-        if (!empty($pieceFaibleAchat)) {
-            $pdf->setFont('helvetica', '', 12);
-            $html = $tableGenerator->generateTable(
-                $this->headerPieceFaibleActivite(),
-                $pieceFaibleAchat,
-                []
-            );
-
-            $pdf->writeHTML($html, true, false, true, false, '');
-        }
-
-        if(!empty($tableauMarge)) 
-        {
-
-            //==========================================================================================================
-            //Titre: Tableau de marge CAT
-            $pdf->SetTextColor(0, 0, 0);
-            $this->addTitle($pdf, empty($tableauMarge['tableauMargeCat']) ? '' : "Tableau de marge pour pièce 'CAT' .", 'helvetica', 'B', 10, 'L', 0);
-            
-            $pdf->SetTextColor(0, 0, 0);
-            if (!empty($tableauMarge['tableauMargeCat'])) {
-                $pdf->setFont('helvetica', '', 12);
-                $html = $tableGenerator->generateTable(
-                    $this->headerTableauMarge('CAT'),
-                    $tableauMarge['tableauMargeCat'],
-                    []
-                    );
-                    
-                    $pdf->writeHTML($html, true, false, true, false, '');
-                    }
-                    //==========================================================================================================
-                    //Titre: Tableau de marge MFN
-                    $pdf->SetTextColor(0, 0, 0);
-                    $this->addTitle($pdf, empty($tableauMarge['tableauMargeMfn']) ? '' : "Tableau de marge pour pièce 'MFN' .", 'helvetica', 'B', 10, 'L', 1);
-                    
-                    $pdf->SetTextColor(0, 0, 0);
-                    if (!empty($tableauMarge['tableauMargeMfn'])) {
-                        $pdf->setFont('helvetica', '', 12);
-                        $html = $tableGenerator->generateTable(
-                            $this->headerTableauMarge('MFN'),
-                            $tableauMarge['tableauMargeMfn'],
-                            []
-                            );
-                            
-                            $pdf->writeHTML($html, true, false, true, false, '');
-                            }
-                            //==========================================================================================================
-                            //Titre: Tableau de marge Autres
-                            $pdf->SetTextColor(0, 0, 0);
-                            $this->addTitle($pdf, empty($tableauMarge['tableauMargeAutres']) ? '' : "Tableau de marge pour pièce 'Autres' .", 'helvetica', 'B', 10, 'L', 1);
-                            
-                            $pdf->SetTextColor(0, 0, 0);
-                            if (!empty($tableauMarge['tableauMargeAutres'])) {
-                                $pdf->setFont('helvetica', '', 12);
-                                $html = $tableGenerator->generateTable(
-                                    $this->headerTableauMarge('Autres'),
-                                    $tableauMarge['tableauMargeAutres'],
-                                    []
-                                    );
-                                    }
-
-            $pdf->writeHTML($html, true, false, true, false, '');
-        }
+        $this->renderPieceFaibleActivite($pdf, $tableGenerator, $pieceFaibleAchat);
+        //==========================================================================================================
+        //Titre: Tableaux de marge (CAT, MFN, Autres)
+        $this->renderTableauxMarge($pdf, $tableGenerator, $tableauMarge);
         //==========================================================================================================
         //Titre: Observation
         $pdf->setFont('helvetica', 'B', 12);
