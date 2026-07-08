@@ -7,10 +7,18 @@ use App\Service\genererPdf\GeneratePdf;
 use App\Controller\Traits\FormatageTrait;
 use App\Dto\atelier\dit\soumission\OrSoumissionDto;
 use App\Service\genererPdf\PdfTableGeneratorFlexible;
+use App\Service\genererPdf\dit\ors\Tables\SituationOrTableTrait;
+use App\Service\genererPdf\dit\ors\Tables\RecapitulationOrTableTrait;
+use App\Service\genererPdf\dit\ors\Tables\PieceFaibleActiviteTableTrait;
+use App\Service\genererPdf\dit\ors\Tables\TableauMargeTableTrait;
 
 class GenererPdfOrSoumisAValidation extends GeneratePdf
 {
     use FormatageTrait;
+    use SituationOrTableTrait;
+    use RecapitulationOrTableTrait;
+    use PieceFaibleActiviteTableTrait;
+    use TableauMargeTableTrait;
 
     // ORDRE DE REPARATION (OR)
     public function copyToDw(string $filename, string $numDit)
@@ -23,7 +31,14 @@ class GenererPdfOrSoumisAValidation extends GeneratePdf
     /**
      * generer pdf pour la soumission OR
      */
-    function GenererPdf(OrSoumissionDto $dto, array $montantPdf, array $quelqueaffichage, string $email, array $pieceFaibleAchat = [], array $tableauMarge, string $nomAvecCheminFichier)
+    function GenererPdf(
+        OrSoumissionDto $dto, 
+        array $montantPdf, 
+        array $quelqueaffichage, 
+        string $email, 
+        array $pieceFaibleAchat = [], 
+        array $tableauMarge, 
+        string $nomAvecCheminFichier)
     {
         $pdf = new HeaderPdf($email);
         $tableGenerator = new PdfTableGeneratorFlexible();
@@ -182,7 +197,7 @@ class GenererPdfOrSoumisAValidation extends GeneratePdf
             if (!empty($tableauMarge['tableauMargeCat'])) {
                 $pdf->setFont('helvetica', '', 12);
                 $html = $tableGenerator->generateTable(
-                    $this->headerTableauMarge(),
+                    $this->headerTableauMarge('CAT'),
                     $tableauMarge['tableauMargeCat'],
                     []
                     );
@@ -198,7 +213,7 @@ class GenererPdfOrSoumisAValidation extends GeneratePdf
                     if (!empty($tableauMarge['tableauMargeMfn'])) {
                         $pdf->setFont('helvetica', '', 12);
                         $html = $tableGenerator->generateTable(
-                            $this->headerTableauMarge(),
+                            $this->headerTableauMarge('MFN'),
                             $tableauMarge['tableauMargeMfn'],
                             []
                             );
@@ -214,7 +229,7 @@ class GenererPdfOrSoumisAValidation extends GeneratePdf
                             if (!empty($tableauMarge['tableauMargeAutres'])) {
                                 $pdf->setFont('helvetica', '', 12);
                                 $html = $tableGenerator->generateTable(
-                                    $this->headerTableauMarge(),
+                                    $this->headerTableauMarge('Autres'),
                                     $tableauMarge['tableauMargeAutres'],
                                     []
                                     );
@@ -233,437 +248,5 @@ class GenererPdfOrSoumisAValidation extends GeneratePdf
 
 
         $pdf->Output($nomAvecCheminFichier, 'F');
-    }
-
-    /**===============================================================
-     * -------- Pour le tableau Situation de l'OR ------------------
-     *================================================================*/
-
-    private function headerSituationOr(): array
-    {
-        return  [
-            [
-                'key'          => 'itv',
-                'label'        => 'ITV',
-                'width'        => 40,
-                'style'        => 'font-weight: 900;',
-                'header_style' => 'font-weight: 900;',
-                'cell_style'   => '',
-                'footer_style' => 'font-weight: 900;'
-            ],
-            [
-                'key'          => 'libelleItv',
-                'label'        => 'Libellé ITV',
-                'width'        => 150,
-                'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold;',
-                'cell_style'   => 'text-align: left;',
-                'footer_style' => 'font-weight: 900;'
-            ],
-            [
-                'key'          => 'datePlanning',
-                'label'        => 'Date pla',
-                'width'        => 50,
-                'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold;',
-                'cell_style'   => 'text-align: left;',
-                'footer_style' => 'font-weight: bold;',
-                'type'         => 'date'
-            ],
-            [
-                'key'          => 'nbLigAv',
-                'label'        => 'Nb Lig av',
-                'width'        => 50,
-                'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold;',
-                'cell_style'   => '',
-                'footer_style' => 'font-weight: bold;'
-            ],
-            [
-                'key'          => 'nbLigAp',
-                'label'        => 'Nb Lig ap',
-                'width'        => 50,
-                'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold;',
-                'cell_style'   => '',
-                'footer_style' => 'font-weight: bold;'
-            ],
-            [
-                'key'          => 'mttTotalAv',
-                'label'        => 'Mtt Total av',
-                'width'        => 80,
-                'style'        => 'font-weight: bold; text-align: center;',
-                'header_style' => 'font-weight: bold; text-align: center;',
-                'cell_style'   => 'text-align: right;',
-                'footer_style' => 'font-weight: bold; text-align: right;',
-                'type'         => 'number'
-            ],
-            [
-                'key'          => 'mttTotalAp',
-                'label'        => 'Mtt total ap',
-                'width'        => 80,
-                'style'        => 'font-weight: bold; text-align: center;',
-                'header_style' => 'font-weight: bold; text-align: center;',
-                'cell_style'   => 'text-align: right;',
-                'footer_style' => 'font-weight: bold; text-align: right;',
-                'type'         => 'number'
-            ],
-            [
-                'key'          => 'statut',
-                'label'        => 'Statut',
-                'width'        => 40,
-                'style'        => 'font-weight: bold; text-align: center;',
-                'header_style' => 'font-weight: bold; text-align: center;',
-                'cell_style'   => 'text-align: left;',
-                'footer_style' => 'font-weight: bold; text-align: center;',
-                'styler'       => function ($value, $row) {
-                    switch ($value) {
-                        case 'Supp':
-                            return 'background-color: #FF0000;';
-                        case 'Modif':
-                            return 'background-color: #FFFF00;';
-                        case 'Nouv':
-                            return 'background-color: #00FF00;';
-                        default:
-                            return '';
-                    }
-                }
-            ]
-        ];
-    }
-
-    private function footerSituationOr(array $montantPdf): array
-    {
-        return [
-            'itv'              => '',
-            'libelleItv'       => '',
-            'datePlanning'     => 'TOTAL',
-            'nbLigAv'          => $montantPdf['totalAvantApres']['totalNbLigAv'] ?? '',
-            'nbLigAp'          => $montantPdf['totalAvantApres']['totalNbLigAp'] ?? '',
-            'mttTotalAv'       => $montantPdf['totalAvantApres']['totalMttTotalAv'] ?? '',
-            'mttTotalAp'       => $montantPdf['totalAvantApres']['totalMttTotalAp'] ?? '',
-            'statut'           => ''
-        ];
-    }
-
-    private function getDynamicStyle($key, $value)
-    {
-        $styles = '';
-        if ($key === 'statut') {
-            switch ($value) {
-                case 'Supp':
-                    $styles .= 'background-color: #FF0000;';
-                    break;
-                case 'Modif':
-                    $styles .= 'background-color: #FFFF00;';
-                    break;
-                case 'Nouv':
-                    $styles .= 'background-color: #00FF00;';
-                    break;
-            }
-        }
-        return $styles;
-    }
-
-    /**===============================================================
-     * -------- Pour le tableau Recapitulation de l'OR ------------------
-     *================================================================*/
-
-    private function headerRecapitulationOR(): array
-    {
-        return [
-            [
-                'key'          => 'itv',
-                'label'        => 'ITV',
-                'width'        => 40,
-                'style'        => 'font-weight: 900;',
-                'header_style' => 'font-weight: 900;',
-                'cell_style'   => '',
-                'footer_style' => 'font-weight: 900;'
-            ],
-            [
-                'key'          => 'mttTotal',
-                'label'        => 'Mtt Total',
-                'width'        => 70,
-                'style'        => 'font-weight: bold; text-align: center;',
-                'header_style' => 'font-weight: bold; text-align: center;',
-                'cell_style'   => 'text-align: right;',
-                'footer_style' => 'font-weight: bold; text-align: right;',
-                'type'         => 'number'
-            ],
-            [
-                'key'          => 'mttPieces',
-                'label'        => 'Mtt Pièces',
-                'width'        => 60,
-                'style'        => 'font-weight: bold; text-align: center;',
-                'header_style' => 'font-weight: bold; text-align: center;',
-                'cell_style'   => 'text-align: right;',
-                'footer_style' => 'font-weight: bold; text-align: right;',
-                'type'         => 'number'
-            ],
-            [
-                'key'          => 'mttMo',
-                'label'        => 'Mtt MO',
-                'width'        => 60,
-                'style'        => 'font-weight: bold; text-align: center;',
-                'header_style' => 'font-weight: bold; text-align: center;',
-                'cell_style'   => 'text-align: right;',
-                'footer_style' => 'font-weight: bold; text-align: right;',
-                'type'         => 'number'
-            ],
-            [
-                'key'          => 'mttSt',
-                'label'        => 'Mtt ST',
-                'width'        => 80,
-                'style'        => 'font-weight: bold; text-align: center;',
-                'header_style' => 'font-weight: bold; text-align: center;',
-                'cell_style'   => 'text-align: right;',
-                'footer_style' => 'font-weight: bold; text-align: right;',
-                'type'         => 'number'
-            ],
-            [
-                'key'          => 'mttLub',
-                'label'        => 'Mtt LUB',
-                'width'        => 80,
-                'style'        => 'font-weight: bold; text-align: center;',
-                'header_style' => 'font-weight: bold; text-align: center;',
-                'cell_style'   => 'text-align: right;',
-                'footer_style' => 'font-weight: bold; text-align: right;',
-                'type'         => 'number'
-            ],
-            [
-                'key'          => 'mttAutres',
-                'label'        => 'Mtt Autres',
-                'width'        => 80,
-                'style'        => 'font-weight: bold; text-align: center;',
-                'header_style' => 'font-weight: bold; text-align: center;',
-                'cell_style'   => 'text-align: right;',
-                'footer_style' => 'font-weight: bold; text-align: right;',
-                'type'         => 'number'
-            ]
-        ];
-    }
-
-    private function footerRecapitulationOR(array $montantPdf): array
-    {
-        return [
-            'itv'              => 'TOTAL',
-            'mttTotal'         => $montantPdf['totalRecapOr']['montant_itv'] ?? '',
-            'mttPieces'        => $montantPdf['totalRecapOr']['montant_piece'] ?? '',
-            'mttMo'            => $montantPdf['totalRecapOr']['montant_mo'] ?? '',
-            'mttSt'            => $montantPdf['totalRecapOr']['montant_achats_locaux'] ?? '',
-            'mttLub'           => $montantPdf['totalRecapOr']['montant_lubrifiants'] ?? '',
-            'mttAutres'        => $montantPdf['totalRecapOr']['montant_frais_divers'] ?? ''
-        ];
-    }
-
-    /**============================================================================
-     * -------- Pour le tableau pièces à faible activité d'achat ------------------
-     *=============================================================================*/
-    private function headerPieceFaibleActivite()
-    {
-        return [
-            [
-                'key'          => 'numero_itv',
-                'label'        => 'ITV',
-                'width'        => 40,
-                'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold;',
-                'cell_style'   => '',
-                'footer_style' => 'font-weight: 900;'
-            ],
-            [
-                'key'          => 'libelle_itv',
-                'label'        => 'Libellé ITV',
-                'width'        => 150,
-                'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold;',
-                'cell_style'   => 'text-align: left;',
-                'footer_style' => 'font-weight: 900;'
-            ],
-            [
-                'key'          => 'constructeur',
-                'label'        => 'Const',
-                'width'        => 40,
-                'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold;',
-                'cell_style'   => '',
-                'footer_style' => 'font-weight: 900;'
-            ],
-            [
-                'key'          => 'reference',
-                'label'        => 'Réfp.',
-                'width'        => 40,
-                'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold;',
-                'cell_style'   => '',
-                'footer_style' => 'font-weight: 900;'
-            ],
-            [
-                'key'          => 'designation',
-                'label'        => 'Designation',
-                'width'        => 150,
-                'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold;',
-                'cell_style'   => 'text-align: left;',
-                'footer_style' => 'font-weight: 900;'
-            ],
-            [
-                'key'          => 'pmp',
-                'label'        => 'Pmp',
-                'width'        => 80,
-                'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold;',
-                'cell_style'   => 'text-align: right;',
-                'footer_style' => 'font-weight: 900;',
-                'type'         => 'number'
-            ],
-            [
-                'key'          => 'date_derniere_cde',
-                'label'        => 'Date dern cmd',
-                'width'        => 50,
-                'style'        => 'font-weight: bold; text-align: center;',
-                'header_style' => 'font-weight: bold;',
-                'cell_style'   => 'text-align: center;',
-                'footer_style' => 'font-weight: bold;',
-                'default_value' => 'jamais commandé',
-                'type'         => 'date'
-            ],
-        ];
-    }
-
-    /**============================================================================
-     * -------- Pour le tableau de marge ------------------
-     *=============================================================================*/
-
-    private function headerTableauMarge(): array
-    {
-        $formatterPourcentage = function ($value) {
-            return  round($value) . '%';
-        };
-
-        return [
-            [
-                'key'          => '',
-                'label'        => 'CAT',
-                'width'        => 40,
-                'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold;',
-                'cell_style'   => 'text-align: center;',
-                'footer_style' => 'font-weight: 900;',
-                'default_value' => 'Dispo Stock'
-            ],
-            [
-                'key'          => 'nb_ref',
-                'label'        => 'Nb refs',
-                'width'        => 40,
-                'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold;',
-                'cell_style'   => 'text-align: center;',
-                'footer_style' => 'font-weight: 900;'
-            ],
-            [
-                'key'          => 'pmp',
-                'label'        => 'PMP',
-                'width'        => 40,
-                'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold;',
-                'cell_style'   => '',
-                'footer_style' => 'font-weight: 900;'
-            ],
-            [
-                'key'          => 'pv_brut',
-                'label'        => 'PV Brut',
-                'width'        => 40,
-                'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold;',
-                'cell_style'   => '',
-                'footer_style' => 'font-weight: 900;'
-            ],
-            [
-                'key'          => 'mt_remise',
-                'label'        => 'Mt Remise',
-                'width'        => 40,
-                'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold;',
-                'cell_style'   => 'text-align: right;',
-                'footer_style' => 'font-weight: 900;',
-                'type'         => 'number'
-            ],
-            [
-                'key'          => 'pv_net_remise',
-                'label'        => 'PV Net remisé',
-                'width'        => 40,
-                'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold;',
-                'cell_style'   => 'text-align: right;',
-                'footer_style' => 'font-weight: 900;',
-                'type'         => 'number'
-            ],
-            [
-                'key'          => 'mb',
-                'label'        => 'MB',
-                'width'        => 40,
-                'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold;',
-                'cell_style'   => 'text-align: right;',
-                'footer_style' => 'font-weight: 900;',
-                'type'         => 'number'
-            ],
-            [
-                'key'          => 'mb_p',
-                'label'        => '%MB',
-                'width'        => 40,
-                'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold;',
-                'cell_style'   => 'text-align: right;',
-                'footer_style' => 'font-weight: 900;',
-                'type'         => 'number',
-                'formatter' => $formatterPourcentage,
-            ],
-            [
-                'key'          => 'max_mb',
-                'label'        => 'MB+',
-                'width'        => 40,
-                'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold;',
-                'cell_style'   => 'text-align: right;',
-                'footer_style' => 'font-weight: 900;',
-                'type'         => 'number'
-            ],
-            [
-                'key'          => 'max_mb_p',
-                'label'        => '%MB+',
-                'width'        => 40,
-                'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold;',
-                'cell_style'   => 'text-align: right;',
-                'footer_style' => 'font-weight: 900;',
-                'type'         => 'number',
-                'formatter' => $formatterPourcentage,
-            ],
-            [
-                'key'          => 'min_mb',
-                'label'        => 'MB-',
-                'width'        => 40,
-                'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold;',
-                'cell_style'   => 'text-align: right;',
-                'footer_style' => 'font-weight: 900;',
-                'type'         => 'number'
-            ],
-            [
-                'key'          => 'min_mb_p',
-                'label'        => '%MB-',
-                'width'        => 40,
-                'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold;',
-                'cell_style'   => 'text-align: right;',
-                'footer_style' => 'font-weight: 900;',
-                'type'         => 'number',
-                'formatter' => $formatterPourcentage,
-            ],
-
-        ];
     }
 }
