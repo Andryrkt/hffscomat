@@ -4,13 +4,16 @@ namespace App\Service\genererPdf\dit\devis;
 
 use App\Controller\Traits\FormatageTrait;
 use App\Dto\Atelier\Dit\soumission\Devis\DitDevisSoumisAValidationDto;
+use App\Service\genererPdf\dit\ors\Tables\TableauMargeTableTrait;
 use App\Service\genererPdf\GeneratePdf;
 use App\Service\genererPdf\HeaderPdf;
 use App\Service\genererPdf\PdfTableGenerator;
+use App\Service\genererPdf\PdfTableGeneratorFlexible;
 
 class GenererPdfDevisSoumisAValidation extends GeneratePdf
 {
     use FormatageTrait;
+    use TableauMargeTableTrait;
 
     public function copyToDWDevisSoumis(string $fileName)
     {
@@ -36,8 +39,14 @@ class GenererPdfDevisSoumisAValidation extends GeneratePdf
     /**
      * GENERATION PDF POUR DEVIS VENTE
      */
-    function GenererPdfDevisVente(DitDevisSoumisAValidationDto $dto, array $montantPdf, array $quelqueaffichage, array $variationPrixRefPiece, string $email, string $nomFichierCtrl): void
-    {
+    function GenererPdfDevisVente(
+        DitDevisSoumisAValidationDto $dto,
+        array $montantPdf,
+        array $quelqueaffichage,
+        array $variationPrixRefPiece,
+        string $email,
+        string $nomFichierCtrl
+    ): void {
         $pdf = new HeaderPdf($email);
         $generator = new PdfTableGenerator();
 
@@ -243,6 +252,26 @@ class GenererPdfDevisSoumisAValidation extends GeneratePdf
         $Dossier = $_ENV['BASE_PATH_FICHIER'] . '/dit/dev/';
 
         $filePath = $Dossier . $nomFichierCtrl;
+
+        $pdf->Output($filePath, 'F');
+    }
+
+    public function genererPdfVerificationPrix(array $tableauMarge, string $filePath)
+    {
+        $pdf = new HeaderPdf(null);
+        $tableGenerator = new PdfTableGeneratorFlexible();
+        $tableGenerator->setOptions([
+            'table_attributes' => 'border="0" cellpadding="0" cellspacing="0" align="center" style="font-size: 8px;"',
+            'header_row_style' => 'background-color: #D3D3D3;',
+            'footer_row_style' => 'background-color: #D3D3D3;'
+        ]);
+
+        $pdf->AddPage();
+
+        //==========================================================================================================
+        //Titre: Tableaux de marge (CAT, MFN, Autres)
+        $this->renderTableauxMarge($pdf, $tableGenerator, $tableauMarge);
+        //==========================================================================================================
 
         $pdf->Output($filePath, 'F');
     }

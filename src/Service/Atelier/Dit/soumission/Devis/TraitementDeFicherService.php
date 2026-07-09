@@ -2,9 +2,11 @@
 
 namespace App\Service\atelier\dit\soumission\Devis;
 
+use App\Controller\Traits\PdfConversionTrait;
 use App\Dto\Atelier\Dit\soumission\Devis\DitDevisSoumisAValidationDto;
 use App\Mapper\Atelier\Dit\Soumission\Devis\DitDevisSoumisAValidationMapper;
 use App\Model\Atelier\Dit\Soumission\Devis\DitDevisSoumisAValidationModel;
+use App\Model\Atelier\Dit\Soumission\DitOrSoumisAValidationModel;
 use App\Service\autres\MontantPdfService;
 use App\Service\fichier\FileUploaderService;
 use App\Service\genererPdf\dit\devis\GenererPdfDevisSoumisAValidation;
@@ -13,6 +15,8 @@ use Symfony\Component\Form\FormInterface;
 
 class TraitementDeFicherService
 {
+    use PdfConversionTrait;
+
     private DitDevisSoumisAValidationModel $ditDevisSoumisAValidationModel;
     private SecurityService $securityService;
 
@@ -36,11 +40,22 @@ class TraitementDeFicherService
         if ($dto->type == 'VP') {
             //generer le nom du fichier
             $nomFichierGenerer = "sctverificationprix_{$dto->numeroDevis}-{$dto->numeroVersion}#{$suffix}~{$dto->tacheValidateur}.pdf";
+            $nomFichierGenererSansTache = "sctverificationprix_{$dto->numeroDevis}-{$dto->numeroVersion}#{$suffix}.pdf";
+            $nomFichierCtrl = "sctdevisctrl_{$dto->numeroDevis}-{$dto->numeroVersion}#{$suffix}.pdf";
 
             // telecharger le fichier en copiant sur son repertoire
             $fileUploader->uploadFileSansName($file, $nomFichierGenerer);
 
-            //envoye des fichier dans le DW pour les types "Vente" et "Forfait"
+            // creation du pdf de verification de prix
+            $tableauMarge = $this->tableauMarge($dto->numeroDevis, $dto->codeSociete);
+            $generePdfDevis->genererPdfVerificationPrix($tableauMarge, $chemin . $nomFichierCtrl);
+            // fusion du pdf de verification de prix avec le fichier ajouter par l'utilisateur en le mettant à la dernière position
+            $fichierConvertis = $this->ConvertirLesPdf([$chemin . $nomFichierGenererSansTache, $chemin . $nomFichierCtrl]);
+            $fileUploaderService = new FileUploaderService($chemin);
+            $fusionPdf           = $fileUploaderService->getFusionPdf();
+            $fusionPdf->mergePdfs($fichierConvertis, $nomFichierGenerer);
+
+            //envoye des fichier fusionner dans le DW pour les types "Vente" et "Forfait"
             $generePdfDevis->copyToDWFichierDevisSoumisVp($nomFichierGenerer); // copier le fichier de devis dans docuware
         } else {
             $nomFichierCtrl = "sctdevisctrl_{$dto->numeroDevis}-{$dto->numeroVersion}#{$suffix}.pdf";
@@ -66,8 +81,12 @@ class TraitementDeFicherService
      * @param GenererPdfDevisSoumisAValidation $generePdfDevis
      * @return void
      */
-    private function creationPdf(DitDevisSoumisAValidationDto $dto, GenererPdfDevisSoumisAValidation $generePdfDevis, string $nomFichierCtrl, string $codeSociete)
-    {
+    private function creationPdf(
+        DitDevisSoumisAValidationDto $dto,
+        GenererPdfDevisSoumisAValidation $generePdfDevis,
+        string $nomFichierCtrl,
+        string $codeSociete
+    ) {
         $numDevis = $dto->numeroDevis;
 
         $devisSoumisAvant = $this->donnerDevisSoumisAvant($numDevis, $codeSociete);
@@ -165,5 +184,38 @@ class TraitementDeFicherService
         }
 
         return $infoPrix;
+    }
+
+    public function tableauMarge(string $numOr, string $codeSociete): array
+    {
+        $ditOrsoumisAValidationModel = new DitOrSoumisAValidationModel();
+
+        $infoOrs = $ditOrsoumisAValidationModel->getInformationOr($numOr, $codeSociete);
+
+        $tableauMargeCat = [];
+        $tableauMargeMfn = [];
+        $tableauMargeAutres = [];
+
+        if (!empty($infoOrs)) {
+            foreach ($infoOrs as $infoOr) {
+                $afficher = $ditOrsoumisAValidationModel->tableauDeMarge($codeSociete, $numOr, $infoOr['reference'], $infoOr['code_agence']);
+
+                foreach ($afficher as $value) {
+                    if ($value['constructeur'] == 'CAT') {
+                        $tableauMargeCat[] = $value;
+                    } elseif ($value['constructeur'] == 'MFN') {
+                        $tableauMargeMfn[] = $value;
+                    } else {
+                        $tableauMargeAutres[] = $value;
+                    }
+                }
+            }
+        }
+        // dd($tableauMargeCat, $tableauMargeMfn, $tableauMargeAutres);
+        return [
+            'tableauMargeCat' => $tableauMargeCat,
+            'tableauMargeMfn' => $tableauMargeMfn,
+            'tableauMargeAutres' => $tableauMargeAutres
+        ];
     }
 }
