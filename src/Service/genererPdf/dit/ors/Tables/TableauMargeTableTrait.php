@@ -72,13 +72,23 @@ trait TableauMargeTableTrait
                 'footer_style' => 'font-weight: 900;'
             ],
             [
+                'key'          => 'reference',
+                'label'        => 'Ref',
+                'width'        => 40,
+                'style'        => 'font-weight: bold;',
+                'header_style' => 'font-weight: bold;',
+                'cell_style'   => '',
+                'footer_style' => 'font-weight: 900;'
+            ],
+            [
                 'key'          => 'pmp',
                 'label'        => 'PMP',
                 'width'        => 40,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold;',
                 'cell_style'   => '',
-                'footer_style' => 'font-weight: 900;'
+                'footer_style' => 'font-weight: 900;',
+                'type'         => 'number'
             ],
             [
                 'key'          => 'pv_brut',
@@ -87,7 +97,8 @@ trait TableauMargeTableTrait
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold;',
                 'cell_style'   => '',
-                'footer_style' => 'font-weight: 900;'
+                'footer_style' => 'font-weight: 900;',
+                'type'         => 'number'
             ],
             [
                 'key'          => 'mt_remise',

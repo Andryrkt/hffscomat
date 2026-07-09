@@ -818,7 +818,8 @@ class DitOrSoumisAValidationModel extends Model
             slor_constp as constructeur,
             -- Stock
             ROUND(CASE WHEN astp_stock IS NULL THEN 0 ELSE astp_stock END) AS nb_ref,
-            
+            slor_refp AS reference,
+
             -- Prix et remises
             ROUND(slor_pmp, 2) AS pmp,
             slor_pxvteht AS pv_brut,
@@ -867,6 +868,7 @@ class DitOrSoumisAValidationModel extends Model
             AND slor_succ = '$codeSuccursale'
             AND slor_soc = '$codeSociete'
             AND slor_refp = '$ref'
+            AND slor_typelig = 'P'
             --AND slor_pos = 'CP'
             AND YEAR(slor_datec) = YEAR(TODAY)
             --AND slor_qterel > 0

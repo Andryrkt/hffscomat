@@ -13,7 +13,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 class DevisValidationService
 {
     private const FILE_FIELD_NAME = 'pieceJoint01';
-    private const FILENAME_PATTERN = '/^(QUOTATION)_(\d+)_(\d+)_(\d+)\\.pdf$/';
+    private const FILENAME_PATTERN = '/^(DEVIS MAGASIN|QUOTATION)_(\d+)_(\d+)_(\d+)\\.pdf$/';
 
     private function getSessionService()
     {
