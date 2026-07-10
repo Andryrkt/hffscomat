@@ -256,7 +256,7 @@ class GenererPdfDevisSoumisAValidation extends GeneratePdf
         $pdf->Output($filePath, 'F');
     }
 
-    public function genererPdfVerificationPrix(array $tableauMarge, string $filePath)
+    public function genererPdfVerificationPrix(array $tableauMarge, string $nomFichierCtrl)
     {
         $pdf = new HeaderPdf(null);
         $tableGenerator = new PdfTableGeneratorFlexible();
@@ -272,6 +272,15 @@ class GenererPdfDevisSoumisAValidation extends GeneratePdf
         //Titre: Tableaux de marge (CAT, MFN, Autres)
         $this->renderTableauxMarge($pdf, $tableGenerator, $tableauMarge);
         //==========================================================================================================
+
+        $Dossier = $_ENV['BASE_PATH_FICHIER'] . '/dit/dev/';
+
+        // Vérifier et créer le dossier si nécessaire
+        if (!is_dir($Dossier)) {
+            mkdir($Dossier, 0777, true); // true pour créer récursivement
+        }
+
+        $filePath = $Dossier . $nomFichierCtrl;
 
         $pdf->Output($filePath, 'F');
     }
