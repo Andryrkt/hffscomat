@@ -275,10 +275,10 @@ class GenererPdfDevisSoumisAValidation extends GeneratePdf
 
         $Dossier = $_ENV['BASE_PATH_FICHIER'] . '/dit/dev/';
 
-// Vérifier et créer le dossier si nécessaire
-    if (!is_dir($Dossier)) {
-        mkdir($Dossier, 0777, true); // true pour créer récursivement
-    }
+        // Vérifier et créer le dossier si nécessaire
+        if (!is_dir($Dossier)) {
+            mkdir($Dossier, 0777, true); // true pour créer récursivement
+        }
 
         $filePath = $Dossier . $nomFichierCtrl;
 

@@ -26,7 +26,8 @@ class DitListeModel extends Model
 
         $conditions = $this->filtreService->filtre($ditSearchdto);
 
-        $conditionsMultisucursal = $this->filtreService->conditionAgenceService();
+        // $conditionsMultisucursal = $this->filtreService->conditionAgenceService();
+        $conditionsMultisucursal = '';
 
         $statement = " SELECT SKIP $skip FIRST $perPage
                     d0_.id AS id,
@@ -145,7 +146,8 @@ class DitListeModel extends Model
     public function DonnerAAjouterExcel(DitSearchDto $ditSearchdto, string $codeSociete)
     {
         $conditions = $this->filtreService->filtre($ditSearchdto);
-        $conditionsMultisucursal = $this->filtreService->conditionAgenceService();
+        // $conditionsMultisucursal = $this->filtreService->conditionAgenceService();
+        $conditionsMultisucursal = '';
 
         $statement = " SELECT 
                     s3_.description AS statut,

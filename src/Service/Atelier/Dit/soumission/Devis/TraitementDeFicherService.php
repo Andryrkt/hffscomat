@@ -40,21 +40,21 @@ class TraitementDeFicherService
         if ($dto->type == 'VP') {
             //generer le nom du fichier
             $nomFichierGenerer = "sctverificationprix_{$dto->numeroDevis}-{$dto->numeroVersion}#{$suffix}~{$dto->tacheValidateur}.pdf";
-            //$nomFichierGenererSansTache = "sctverificationprix_{$dto->numeroDevis}-{$dto->numeroVersion}#{$suffix}.pdf";
+            $nomFichierGenererSansTache = "sctverificationprix_{$dto->numeroDevis}-{$dto->numeroVersion}#{$suffix}.pdf";
             $nomFichierCtrl = "sctdevisctrlvp_{$dto->numeroDevis}-{$dto->numeroVersion}#{$suffix}.pdf";
 
             // telecharger le fichier en copiant sur son repertoire
-            $fileUploader->uploadFileSansName($file, $nomFichierGenerer);
+            $fileUploader->uploadFileSansName($file, $nomFichierGenererSansTache);
 
             // creation du pdf de verification de prix
             $tableauMarge = $this->tableauMarge($dto->numeroDevis, $dto->codeSociete);
             $generePdfDevis->genererPdfVerificationPrix($tableauMarge, $nomFichierCtrl);
 
             // fusion du pdf de verification de prix avec le fichier ajouter par l'utilisateur en le mettant à la dernière position
-            $fichierConvertis = $this->ConvertirLesPdf([$chemin . $nomFichierGenerer, $chemin . $nomFichierCtrl]);
+            $fichierConvertis = $this->ConvertirLesPdf([$chemin . 'fichiers/'.$nomFichierGenererSansTache, $chemin . $nomFichierCtrl]);
             $fileUploaderService = new FileUploaderService($chemin);
             $fusionPdf           = $fileUploaderService->getFusionPdf();
-            $fusionPdf->mergePdfs($fichierConvertis, $nomFichierGenerer);
+            $fusionPdf->mergePdfs($fichierConvertis, $chemin . $nomFichierGenerer);
 
             //envoye des fichier fusionner dans le DW pour les types "Vente" et "Forfait"
             $generePdfDevis->copyToDWFichierDevisSoumisVp($nomFichierGenerer); // copier le fichier de devis dans docuware
