@@ -1,0 +1,93 @@
+{% extends "baseTemplate.html.twig" %}
+
+{% block title %}
+    Magasin - Liste des commandes à livrer
+{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ App.base_path }}/Views/css/list.css?v=2025.10.22.08.00">
+    <link rel="stylesheet" href="{{ App.base_path }}/Views/css/magasin/magasin.css?v=2025.10.22.08.00">
+    <link rel="stylesheet" href="{{ App.base_path }}/Views/css/utils/autocomplete.css?v=2025.10.22.08.00">
+{% endblock %}
+
+
+{% block content %}
+    <div id="conteneur" data-page-type="commande_a_livrer" class="mt-6">
+        <div class="container">
+            <h3 class="perso-titre">
+                Liste des commandes à livrer
+            </h3>
+            {% include "/magasin/commande/shared/_formulaireRechercheListeCommande.html.twig" %}
+        </div>
+        <div class="container">
+            <div class="d-flex justify-content-between">
+                <div>
+                    {# Bouton EXCEL#}
+                    {# <a href="{{path("export_liste_or_livrer")}}" class="btn btn bg-success text-white my-3 fw-bold">
+                    <i class="fas fa-table"></i>
+                    Excel</a> #}
+                </div>
+            </div>
+        </div>
+
+        <div class="container-fluid">
+            <div class="table-responsive" style="max-height: 70vh; overflow-y: auto;">
+                <table class="table rounded table-plein-ecran">
+                    <thead class="table-dark sticky-top">
+                        <tr>
+
+                            <th class="text-center">N° Commande</th>
+                            <th class="text-center">Libelle</th>
+                            <th>Date creation</th>
+                            <th>Date commande</th>
+                            <th class="text-center">Date fin commande</th>
+                            <th class="text-center">Nbr Jour disponible</th>
+                            <th class="text-center">Service</th>
+                            <th class="text-center">Client</th>
+                            <th class="text-center">Ligne</th>
+                            <th class="text-center">CST</th>
+                            <th class="text-center">Refp</th>
+
+                            <th>Désignation</th>
+
+                            <th class="text-center">Qté alloué</th>
+                            <th class="text-center">Qté dispo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        {% for item in data %}
+                            {% set textColor = "" %}
+                            {% if item.quantitedemander > (item.qtealivrer + item.quantitelivree) %}
+                                {% set textColor = "textColor" %}
+                            {% endif %}
+
+                            <tr>
+
+                                <td class="fw-bold ">{{item.commande}}</td>
+                                <td class="fw-bold ">{{item.libelle}}</td>
+                                <td class="">{{ item.datecreation | date("d/m/Y")}}</td>
+                                <td>{{ item.date == null ? '--' : item.date| date("d/m/Y")}}</td>
+                                <td class="">{{item.datefin  == null ? '--' : item.datefin | date("d/m/Y")}}</td>
+                                <td class="text-center">{{ item.nbr_jour_dispo}}</td>
+                                <td class="text-center">{{ item.servicecrediteur ?? "Service"}}</td>
+                                <td class="text-center">{{ item.client}}</td>
+                                <td class="text-center {{textColor}}">{{ item.ligne}}</td>
+                                <td class="{{textColor}}">{{item.constructeur}}</td>
+                                <td class="{{textColor}}">{{item.referencepiece}}</td>
+                                <td class="{{textColor}}">{{item.designation}}</td>
+                                <td class="text-center {{textColor}}">{{item.quantite == 0 ? '-': item.quantite | number_format(0)}}</td>
+                                <td class="text-center">{{item.quantitedispo == 0 ? '-' : item.quantitedispo | number_format(0)}}</td>
+
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <!-- FIN tableau -->
+    </div>
+{% endblock %}
+{% block javascript %}
+    <script src="{{ App.base_path }}/Views/js/magasin/main.js?v=2025.10.22.08.00" type="module"></script>
+    <script type="module" src="{{ App.base_path }}/Views/js/magasin/commande/listeCommande.js"></script>
+{% endblock %}
