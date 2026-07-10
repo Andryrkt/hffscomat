@@ -7,6 +7,12 @@ class OrATraiterSearchDto
     public ?string $niveauUrgence = null;
     public ?string $numDit = null;
     public ?string $numOr = null;
+
+    public ?string $constructeur = null;
+    public ?string $numCommande = null;
+    public ?string $numDevis = null;
+    public ?string $codeClient = null;
+
     public ?string $referencePiece = null;
     public ?string $designation = null;
     public ?\DateTime $dateDebut = null;

@@ -83,6 +83,8 @@ class OrLivrerModel extends Model
             , trim(mmat_recalph) as num_parc 
             , trim(mmat_marqmat) as marque
             , trim(mmat_numparc) as casie
+            ,mmat_numcdec as numCommande
+
             
             
             
@@ -171,7 +173,6 @@ class OrLivrerModel extends Model
             group by 1,2,3,4, 5, 6, 7, 8, 9, 10, 11, 12, 13,14,18, 19, 20, 21,22,23,24,25,26
             order by seor_numor asc, sitv_interv asc, slor_nolign asc;
         ";
-
         $result = $this->connect->executeQuery($statement);
 
         $data = $this->connect->fetchResults($result);

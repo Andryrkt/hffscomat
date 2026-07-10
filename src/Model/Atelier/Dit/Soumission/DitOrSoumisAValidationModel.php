@@ -165,7 +165,7 @@ class DitOrSoumisAValidationModel extends Model
         return (int) ($data[0]['nummatricule'] ?? 0);;
     }
 
-    public function recupNbDatePlanningVide($numOr, string $codeSociete)
+    public function recupNbDatePlanningVide(string $numOr, string $codeSociete)
     {
         $statement = "SELECT count(*) as nbPlanning
         from sav_itv 
@@ -208,7 +208,7 @@ class DitOrSoumisAValidationModel extends Model
         return  $data[0]['type_or'] ?? 0;
     }
 
-    public function recupNbPieceMagasin($numOr, string $codeSociete)
+    public function recupNbPieceMagasin(string $numOr, string $codeSociete)
     {
         $statement = " SELECT
             count(slor_constp) as nbr_sortie_magasin 
@@ -530,7 +530,7 @@ class DitOrSoumisAValidationModel extends Model
             AND slor_constp in (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST')
         order by slor_numor, sitv_interv
         ";
-       
+
         $result = $this->connect->executeQuery($statement);
 
         $data = $this->connect->fetchResults($result);
@@ -538,6 +538,34 @@ class DitOrSoumisAValidationModel extends Model
         return $this->convertirEnUtf8($data);
     }
 
+    public function getInformationDevis(string $numOr, string $codeSociete): array
+    {
+        $statement = " SELECT
+        slor_numor as numero_or,
+        trim(seor_refdem) as numero_dit,
+        sitv_interv as numero_itv,
+        trim(sitv_comment) as libelle_itv,
+        slor_constp as constructeur,
+        trim(slor_refp) as reference,
+        trim(slor_desi) as designation,
+        slor_succ as code_agence, 
+        slor_servcrt as code_service
+        from {$this->dbIps}.sav_eor, {$this->dbIps}.sav_lor, {$this->dbIps}.sav_itv
+        WHERE seor_numor = slor_numor
+            AND sitv_numor = slor_numor
+            AND sitv_interv = slor_nogrp / 100
+            AND seor_soc = '$codeSociete'
+            AND seor_numor = '$numOr'
+            AND slor_constp in (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST')
+        order by slor_numor, sitv_interv
+        ";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->connect->fetchResults($result);
+
+        return $this->convertirEnUtf8($data);
+    }
 
 
     public function findByNumeroDitAndSociete(string $numDit, string $codeSociete): array
@@ -818,7 +846,8 @@ class DitOrSoumisAValidationModel extends Model
             slor_constp as constructeur,
             -- Stock
             ROUND(CASE WHEN astp_stock IS NULL THEN 0 ELSE astp_stock END) AS nb_ref,
-            
+            TRIM(slor_refp) AS reference,
+
             -- Prix et remises
             ROUND(slor_pmp, 2) AS pmp,
             slor_pxvteht AS pv_brut,
@@ -867,6 +896,7 @@ class DitOrSoumisAValidationModel extends Model
             AND slor_succ = '$codeSuccursale'
             AND slor_soc = '$codeSociete'
             AND slor_refp = '$ref'
+            AND slor_typlig = 'P'
             --AND slor_pos = 'CP'
             AND YEAR(slor_datec) = YEAR(TODAY)
             --AND slor_qterel > 0

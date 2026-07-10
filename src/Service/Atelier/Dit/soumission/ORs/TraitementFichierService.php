@@ -47,11 +47,7 @@ class TraitementFichierService
         $nomEtCheminFichierConvertie = $this->ConvertirLesPdf($nomEtCheminFichiersEnregistrer);
         $traitementDeFichier->fusionFichers($nomEtCheminFichierConvertie, $nomAvecCheminFichier);
 
-
-        // 5. fusion de pdf Demande appro avec le pdf OR fusionner
-        // $this->fusionPdfDaAvecORfusionner($numDit, $mainPdf, $daAfficherRepository);
-
-        // 6.  envoyer le pdf fusionner dans DW
+        // 5.  envoyer le pdf fusionner dans DW
         $genererPdfOrSoumisAValidation->copyToDw($nomFichier, $numeroDit);
     }
 
@@ -139,8 +135,6 @@ class TraitementFichierService
 
         // tableau de marge
         $tableauMarge = $this->tableauMarge($numeroOr, $codeSociete);
-
-        // $tableauMarge = [];
 
         $genererPdfOrSoumisAValidation->GenererPdf($dto, $montantPdf, $quelqueaffichage, $email, $pieceFaibleAchat, $tableauMarge, $nomAvecCheminFichier);
     }
