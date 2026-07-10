@@ -71,7 +71,7 @@ class PlanningMaterielModel extends Model
                 sav_itv as D,
                 agr_succ,
                 agr_tab ser,
-                mat_mat,
+                outer mat_mat,
                 agr_tab ope,
                 outer agr_tab sec
             WHERE seor_numor = slor_numor
@@ -103,7 +103,7 @@ class PlanningMaterielModel extends Model
             group by 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17
             order by 10
         ";
-
+// dd($statement);
         $results = $this->connect->executeQuery($statement);
         return $this->connect->fetchResults($results);
     }
