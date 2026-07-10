@@ -92,6 +92,8 @@ class MenuGroupe
                 'subitems' => [
                     ['label' => 'Devis',                        'icon' => 'file-invoice', 'route' => 'liste_devis_neg'],
                     ['label' => 'Planning de commande Magasin', 'icon' => 'calendar-alt', 'route' => 'interface_planningMag'],
+                    // ['label' => 'Liste des commandes à livrer', 'icon' => 'file-invoice', 'route' => 'magasinListe_commande_livrer'],
+                    ['label' => 'Liste des commandes à traiter', 'icon' => 'file-invoice', 'route' => 'magasinListe_commande_traiter'],
                 ],
             ],
 
