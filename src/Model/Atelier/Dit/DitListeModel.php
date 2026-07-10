@@ -49,7 +49,7 @@ class DitListeModel extends Model
                     d0_.numero_devis_rattache AS numero_devis,
                     d0_.statut_devis AS statut_devis,
                     d0_.numero_or AS numero_or,
-                    d0_.statut_or AS statut_or,
+                    osv_or.statut AS statut_or,
                     COALESCE(osv_or.montantitv, osv_dit.montantitv) AS montantitv,
                     COALESCE(osv_or.datesoumission, osv_dit.datesoumission) AS datesoumission,
                     d0_.etat_facturation AS statut_facture,
@@ -94,20 +94,43 @@ class DitListeModel extends Model
                 LEFT JOIN {$this->dbIps}.mat_mat m
                     ON d0_.id_materiel = m.mmat_nummat
 
-                LEFT JOIN (
-                    SELECT osv.numeroor, osv.numerodit, osv.montantitv, osv.datesoumission
+                --LEFT JOIN (
+                  --  SELECT osv.numeroor, osv.numerodit, osv.montantitv, osv.datesoumission
+                    --FROM {$this->dbIrium}.ors_soumis_a_validation osv
+                    --LEFT JOIN (
+                        --SELECT id, MAX(numeroversion) AS max_version
+                        --FROM {$this->dbIrium}.ors_soumis_a_validation
+                        --GROUP BY id
+                    --) mv ON osv.id = mv.id AND osv.numeroversion = mv.max_version
+                --) osv_or ON d0_.numero_or = osv_or.numeroor
+
+                 LEFT JOIN (
+                    SELECT
+                        osv.numeroor,
+                        osv.numerodit,
+                        SUM(osv.montantitv) AS montantitv,
+                        osv.datesoumission,
+                        osv.statut
                     FROM {$this->dbIrium}.ors_soumis_a_validation osv
-                    INNER JOIN (
-                        SELECT id, MAX(numeroversion) AS max_version
-                        FROM {$this->dbIrium}.ors_soumis_a_validation
-                        GROUP BY id
-                    ) mv ON osv.id = mv.id AND osv.numeroversion = mv.max_version
-                ) osv_or ON d0_.numero_or = osv_or.numeroor
+                    WHERE osv.numeroversion = (
+                        SELECT MAX(osvm.numeroversion)
+                        FROM {$this->dbIrium}.ors_soumis_a_validation osvm
+                        WHERE osvm.numeroor = osv.numeroor
+                    )
+                    GROUP BY
+                        osv.numeroor,
+                        osv.numerodit,
+                        osv.datesoumission,
+                        osv.statut
+                ) osv_or
+                ON d0_.numero_or = osv_or.numeroor
+                    
+                    
 
                 LEFT JOIN (
                     SELECT osv.numeroor, osv.numerodit, osv.montantitv, osv.datesoumission
                     FROM {$this->dbIrium}.ors_soumis_a_validation osv
-                    INNER JOIN (
+                    LEFT JOIN (
                         SELECT id, MAX(numeroversion) AS max_version
                         FROM {$this->dbIrium}.ors_soumis_a_validation
                         GROUP BY id
@@ -121,7 +144,7 @@ class DitListeModel extends Model
                 $conditionsMultisucursal
                 ORDER BY d0_.date_demande DESC, d0_.numero_demande_dit ASC              
         ";
-
+// dd($statement);
         $result = $this->connect->executeQuery($statement);
         $data = $this->connect->fetchResults($result);
 
