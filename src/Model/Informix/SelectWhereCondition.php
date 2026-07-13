@@ -148,6 +148,34 @@ class SelectWhereCondition
     }
 
     /**
+     * Génère plusieurs conditions LIKE (ou NOT LIKE) reliées par OR.
+     */
+    public function likeAny(string $column, ?array $values, array $options = []): string
+    {
+        if (empty($values)) {
+            return '';
+        }
+
+        $conditions = [];
+
+        foreach ($values as $value) {
+            $condition = trim($this->nlike($column, $value, $options));
+
+            if ($condition !== '') {
+                // Enlève le "AND " ajouté par nlike()
+                $conditions[] = preg_replace('/^AND\s+/i', '', $condition);
+            }
+        }
+
+        if (empty($conditions)) {
+            return '';
+        }
+
+        return 'AND (' . implode(' OR ', $conditions) . ')';
+    }
+
+
+    /**
      * Calcul de la condition BETWEEN pour les dates
      *
      * @param string $column

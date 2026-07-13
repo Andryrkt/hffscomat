@@ -44,7 +44,7 @@
                             <th class="text-center">Client</th>
                             <th class="text-center">Ligne</th>
                             <th class="text-center">CST</th>
-                            <th class="text-center">Refp</th>
+                            <th class="">Refp</th>
                             <th>Désignation</th>
                             <th class="text-center">Qté</th>
                             <th class="text-center">Qté dispo</th>
@@ -64,7 +64,7 @@
                                 <td>{{ item.date == null ? '--' : item.date| date("d/m/Y")}}</td>
                                 <td class="">{{item.datefin  == null ? '--' : item.datefin | date("d/m/Y")}}</td>
                                 <td class="text-center">{{ item.nbr_jour_dispo}}</td>
-                                <td class="text-center"> {{ item.agencedebiteur|default('') ~ ' ' ~ item.service|default('') }}</td>
+                                <td class="text-center"> {{ item.service|default('') }}</td>
                                 <td class="text-center">{{ item.client}}</td>
                                 <td class="text-center {{textColor}}">{{ item.ligne}}</td>
                                 <td class="{{textColor}}">{{item.constructeur}}</td>
