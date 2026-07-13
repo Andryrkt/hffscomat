@@ -209,6 +209,7 @@ class PlanningSearchType extends AbstractType
                     'expanded' => true,
                 ]);
             })
+        
             ->add('months', ChoiceType::class, [
                 'choices' => [
                     '3 mois suivant'    => 3,

@@ -25,7 +25,14 @@ class OrTraiterModel extends Model
             {$selectWhereCondition->eq('slor_succdeb', trim(explode('-',$dtoSearch->agence)[0]))}
             {$selectWhereCondition->eq('slor_servdeb', trim(explode('-',$dtoSearch->service)[0]))}
             {$selectWhereCondition->eq('slor_succ', trim(explode('-',$dtoSearch->agenceUser)[0]))}
-        "; // 10-ANTALAHA => 10
+            
+            {$selectWhereCondition->eq('mmat_numCli',$dtoSearch->codeClient)}
+            {$selectWhereCondition->like('slor_constp',$dtoSearch->constructeur)}
+            {$selectWhereCondition->like('mmat_numcdec',$dtoSearch->numCommande)}
+            
+            ";
+        // {$selectWhereCondition->like('?',$dtoSearch->numDevis)}
+        // 10-ANTALAHA => 10
 
 
         // $agenceUser = $this->conditionAgenceUser('agenceUser', $criteria);
@@ -41,7 +48,13 @@ class OrTraiterModel extends Model
             ,trim(mmat_typmat) as modele
             ,trim(mmat_numparc) as casier
 
+            ,mmat_numCli as numClient
+            ,nom_client as nomClient
+            ,mmat_numcdec as numCommande
             
+            -- Restant :  N° devis 
+            -- ,? as numDevis
+        
             ,CASE 
                     WHEN 
                         (SELECT DATE(Min(ska_d_start)) FROM informix.ska, informix.skw WHERE ofh_id = sitv_numor AND ofs_id=sitv_interv AND skw.skw_id = ska.skw_id )  is Null THEN DATE(sitv_datepla)  

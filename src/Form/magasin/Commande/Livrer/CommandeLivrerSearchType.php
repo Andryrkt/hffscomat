@@ -1,85 +1,51 @@
 <?php
 
-namespace App\Form\magasin\Ors\Traiter;
+namespace App\Form\magasin\Commande\Livrer;
 
-
-use App\Dto\Magasin\Ors\Traiter\OrATraiterSearchDto;
-use App\Model\Atelier\Dit\WorNiveauUrgenceModel;
-use App\Model\magasin\Ors\Traiter\OrTraiterModel;
+use App\Dto\Magasin\Commande\Livrer\CommandeLivrerSearchDto;
+use App\Model\magasin\Ors\Livrer\OrLivrerModel;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
-use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class OrATraiterSearchType extends AbstractType
+class CommandeLivrerSearchType extends AbstractType
 {
-    private OrTraiterModel $OrTraiterModel;
+
+    private OrLivrerModel $OrLivrerModel;
 
     public function __construct()
     {
-        $this->OrTraiterModel = new OrTraiterModel();
+        $this->OrLivrerModel = new OrLivrerModel();
     }
+
 
     private function agence(string $codeSociete)
     {
-        return array_combine($this->OrTraiterModel->agence($codeSociete), $this->OrTraiterModel->agence($codeSociete));
+        // return array_combine($this->OrLivrerModel->agence($codeSociete), $this->OrLivrerModel->agence($codeSociete));
     }
 
     private function agenceAutoriserUser(string $codeAgence, string $codeSociete)
     {
-        return array_combine($this->OrTraiterModel->agenceUser($codeAgence, $codeSociete), $this->OrTraiterModel->agenceUser($codeAgence, $codeSociete));
+        // return array_combine($this->OrLivrerModel->agenceUser($codeAgence, $codeSociete), $this->OrLivrerModel->agenceUser($codeAgence, $codeSociete));
     }
 
-    public function getDescriptionWorNiveauUrgence()
-    {
-        $worNiveauUrgenceModel = new WorNiveauUrgenceModel();
-        $descriptions = $worNiveauUrgenceModel->getDescription();
-        return array_combine($descriptions, $descriptions);
-    }
-    public function getClient()
-    {
-        // $clientModel = new Client();
-        // $descriptions = $worNiveauUrgenceModel->getDescription();
-        // return array_combine($descriptions, $descriptions);
-    }
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
 
         $builder
-            ->add(
-                'niveauUrgence',
-                ChoiceType::class,
-                [
-                    'label' => 'Niveau d\'urgence',
-                    'label_html' => true,
-                    'placeholder' => "-- Niveau d'urgence --",
-                    'choices' => $this->getDescriptionWorNiveauUrgence(),
-                    'required' => false,
-                ]
-            )
-            ->add('numDit', TextType::class, [
-                'label' => 'n° DIT',
-                'required' => false
-            ])
-            ->add('numOr', NumberType::class, [
-                'label' => 'n° OR',
-                'required' => false
-            ])
+
             ->add('referencePiece', TextType::class, [
                 'label' => 'Référence pièce',
                 'required' => false
             ])
-            ->add('designation', TextType::class, [
-                'label' => 'Désignation',
-                'required' => false
-            ])
+
 
             ->add('dateDebut', DateType::class, [
                 'widget' => 'single_text',
@@ -91,6 +57,7 @@ class OrATraiterSearchType extends AbstractType
                 'label' => 'Date de création OR (fin)',
                 'required' => false,
             ])
+
             ->add(
                 'agence',
                 ChoiceType::class,
@@ -101,8 +68,6 @@ class OrATraiterSearchType extends AbstractType
                     'placeholder' => ' -- Choisir une agence --'
                 ]
             )
-
-            // Case à coché
             ->addEventListener(FormEvents::PRE_SET_DATA, function (FormEvent $event) {
                 $form = $event->getForm();
                 $data = $event->getData();
@@ -123,13 +88,11 @@ class OrATraiterSearchType extends AbstractType
 
                 $service = [];
                 if ($data['agence'] !== "") {
-                    $services = $this->OrTraiterModel->service($data['agence']);
+                    $services = $this->OrLivrerModel->service($data['agence']);
 
                     foreach ($services as $value) {
                         $service[$value['text']] = $value['text'];
                     }
-                } else {
-                    $service = [];
                 }
 
 
@@ -156,10 +119,6 @@ class OrATraiterSearchType extends AbstractType
                 'data' => $options['data']->agenceUser ?? null,
             ])
 
-            // Client 
-            //Constructeur 
-            //Numero commande
-            // Numero devis 
             ->add('constructeur', TextType::class, [
                 'label' => 'Constructeur',
                 'required' => false
@@ -180,17 +139,16 @@ class OrATraiterSearchType extends AbstractType
                 'required' => false,
             ])
 
-            ->addEventListener(FormEvents::PRE_SUBMIT, function (FormEvent $event) {
+            ->addEventListener(FormEvents::PRE_SUBMIT, function (FormEvent $event) use ($options) {
                 $data = $event->getData();
                 $event->setData($data);
             });
     }
 
-
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'data_class' => OrATraiterSearchDto::class
+            'data_class' => CommandeLivrerSearchDto::class
         ]);
     }
 }

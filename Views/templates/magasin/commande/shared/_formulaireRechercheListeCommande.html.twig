@@ -8,31 +8,26 @@
         </h2>
         <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
             <div class="accordion-body">
-                {{ form_start(form , {'method': 'GET'})}}
+                {{ form_start(form)}}
                 <div class="row">
                     <div class="col-12 col-md-2">
-                        {{form_row(form.agenceUser)}}
-                        {{ form_label(form.niveauUrgence, '<a href="#" data-bs-toggle="modal" data-bs-target="#niveauUrgence" >Niveau d\'urgence</a>', { 'label_html': true }) }}
-                        {{ form_widget(form.niveauUrgence) }}
+                        {{form_row(form.numCommande)}}
+                    </div>
+                    <div class="col-12 col-md-2">
+                        {{form_row(form.numDevis)}}
+                    </div>
+                    <div class="col-12 col-md-2">
                         {{form_row(form.codeClient)}}
                         <div id="suggestion-code-client" class="suggestions-container"></div>
                         <div id="loader-code-client" class="spinner" style="display: none;">Chargement...</div>
-
                     </div>
                     <div class="col-12 col-md-2">
-                        {{ macroForm.agence_service_change(form.agence, form.service, 'spinner-service', 'service-container')}}
+                        {# {{form_row(form.agence)}} #}
+                        {{form_row(form.service)}}
                     </div>
-                    <div class="col-12 col-md-2">
-                        {{form_row(form.numOr)}}
-                        {{form_row(form.numDit)}}
-                        {{form_row(form.numCommande)}}
-                        {{form_row(form.numDevis)}}
 
-                    </div>
                     <div class="col-12 col-md-2">
                         {{form_row(form.constructeur)}}
-                        {{form_row(form.designation)}}
-                        <ul id="suggestions" class="list-group position-absolute"></ul>
                         {{form_row(form.referencePiece)}}
                     </div>
                     <div class="col-12 col-md-2">
