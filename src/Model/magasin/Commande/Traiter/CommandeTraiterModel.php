@@ -40,7 +40,7 @@ class CommandeTraiterModel extends Model
     nlig_qtewait as quantite,
     nlig_qtedisp as quantiteDispo
 FROM
-    neg_ent
+    {$this->dbIps}.neg_ent
     inner join neg_lig on nlig_soc = nent_soc
     and nlig_succ = nent_succ
     and nlig_numcde = nent_numcde
@@ -79,7 +79,7 @@ WHERE
     {
         $statement = "  SELECT DISTINCT
                             nent_succdeb||'-'||(select trim(asuc_lib) from agr_succ where asuc_numsoc = nent_soc and asuc_num = nent_succdeb) as agence
-                        FROM neg_ent
+                        FROM {$this->dbIps}.neg_ent
                         WHERE nent_succdeb||'-'||(select trim(asuc_lib) from agr_succ where asuc_numsoc = nent_soc and asuc_num = nent_succdeb) <> ''
                         AND nent_soc = '$codeSociete'
                     ";
@@ -97,7 +97,7 @@ WHERE
         // Reverted to string concatenation as executeQuery might not support parameters
         $statement = " SELECT DISTINCT
                             nent_servcrt ||'-'||(select trim(atab_lib) from agr_tab where atab_nom = 'SER' and atab_code = nent_servdeb) as service
-                        FROM neg_ent
+                        FROM {$this->dbIps}.neg_ent
                         WHERE nent_servdeb ||'-'||(select trim(atab_lib) from agr_tab where atab_nom = 'SER' and atab_code = nent_servdeb) <> ''
                         AND  nent_soc = '$codeSociete'
             ";
