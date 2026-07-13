@@ -53,7 +53,7 @@ class DitDevisSoumisAValidationModel extends Model
                     from {$this->dbIps}.sav_eor
                     where seor_serv = 'DEV'
                     AND seor_soc = '$codeSociete'
-                    AND seor_refdem = '$numDit'
+                    AND seor_refdem like '%$numDit%'
                 ";
 
         $result = $this->connect->executeQuery($statement);
