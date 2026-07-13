@@ -39,14 +39,17 @@ class CommandeTraiterModel extends Model
     nlig_qtedisp as quantiteDispo
 FROM
     {$this->dbIps}.neg_ent
-    inner join neg_lig on nlig_soc = nent_soc
-    and nlig_succ = nent_succ
-    and nlig_numcde = nent_numcde
+    INNER JOIN neg_lig ON nlig_soc = nent_soc
+        AND nlig_succ = nent_succ
+        AND nlig_numcde = nent_numcde
+    INNER JOIN art_bse ON abse_constp = nlig_constp 
+        AND abse_refp = nlig_refp
 WHERE
     nent_natop = 'DIR'
-    and nlig_qtewait > 0
-    and nlig_datealloc is NULL
-    
+    --and nlig_qtewait > 0
+    AND nlig_datealloc is NULL
+    --and nlig_typlig  = 'P'
+
     $conditions
     ;
  ";
