@@ -26,7 +26,7 @@ trait TableauMargeTableTrait
         ];
 
         $pdf->SetTextColor(0, 0, 0);
-        $this->addTitle($pdf, empty($lignes) ? '' : "Tableau de marge", 'helvetica', 'B', 10, 'L', 0);
+        $this->addTitle($pdf, "Tableau de marge", 'helvetica', 'B', 10, 'L', 0);
 
         foreach ($sections as $key => $label) {
             $lignes = $tableauMarge[$key] ?? [];
@@ -84,7 +84,7 @@ trait TableauMargeTableTrait
                 'width'        => 40,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center;',
-                'cell_style'   => 'font-size: 6px;',
+                'cell_style'   => 'text-align: right; font-size: 6px; padding-right:6px;',
                 'footer_style' => 'font-weight: 900;',
                 'type'         => 'number'
             ],
@@ -94,7 +94,7 @@ trait TableauMargeTableTrait
                 'width'        => 40,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center;',
-                'cell_style'   => 'font-size: 6px;',
+                'cell_style'   => 'text-align: right; font-size: 6px; margin-right:2px;',
                 'footer_style' => 'font-weight: 900;',
                 'type'         => 'number'
             ],
@@ -104,7 +104,7 @@ trait TableauMargeTableTrait
                 'width'        => 40,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center;',
-                'cell_style'   => 'text-align: right; font-size: 6px;',
+                'cell_style'   => 'text-align: right; font-size: 6px; margin-right:2px;',
                 'footer_style' => 'font-weight: 900;',
                 'type'         => 'number'
             ],
@@ -114,7 +114,7 @@ trait TableauMargeTableTrait
                 'width'        => 40,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center;',
-                'cell_style'   => 'text-align: right; font-size: 6px;',
+                'cell_style'   => 'text-align: right; font-size: 6px; margin-right:2px;',
                 'footer_style' => 'font-weight: 900;',
                 'type'         => 'number'
             ],
@@ -124,7 +124,7 @@ trait TableauMargeTableTrait
                 'width'        => 40,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center;',
-                'cell_style'   => 'text-align: right; font-size: 6px;',
+                'cell_style'   => 'text-align: right; font-size: 6px; margin-right:2px;',
                 'footer_style' => 'font-weight: 900;',
                 'type'         => 'number'
             ],
@@ -134,7 +134,7 @@ trait TableauMargeTableTrait
                 'width'        => 40,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center;',
-                'cell_style'   => 'text-align: right; font-size: 6px;',
+                'cell_style'   => 'text-align: right; font-size: 6px; margin-right:2px;',
                 'footer_style' => 'font-weight: 900;',
                 'type'         => 'number',
                 'formatter' => $formatterPourcentage,
@@ -145,7 +145,7 @@ trait TableauMargeTableTrait
                 'width'        => 40,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center;',
-                'cell_style'   => 'text-align: right; font-size: 6px;',
+                'cell_style'   => 'text-align: right; font-size: 6px; margin-right:2px;',
                 'footer_style' => 'font-weight: 900;',
                 'type'         => 'number'
             ],
@@ -155,7 +155,7 @@ trait TableauMargeTableTrait
                 'width'        => 40,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center;',
-                'cell_style'   => 'text-align: right; font-size: 6px;',
+                'cell_style'   => 'text-align: right; font-size: 6px; margin-right:2px;',
                 'footer_style' => 'font-weight: 900;',
                 'type'         => 'number',
                 'formatter' => $formatterPourcentage,
@@ -166,7 +166,7 @@ trait TableauMargeTableTrait
                 'width'        => 40,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center;',
-                'cell_style'   => 'text-align: right; font-size: 6px;',
+                'cell_style'   => 'text-align: right; font-size: 6px; margin-right:2px;',
                 'footer_style' => 'font-weight: 900;',
                 'type'         => 'number'
             ],
@@ -176,7 +176,7 @@ trait TableauMargeTableTrait
                 'width'        => 40,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center;',
-                'cell_style'   => 'text-align: right; font-size: 6px;',
+                'cell_style'   => 'text-align: right; font-size: 6px; margin-right:2px;',
                 'footer_style' => 'font-weight: 900;',
                 'type'         => 'number',
                 'formatter' => $formatterPourcentage,
