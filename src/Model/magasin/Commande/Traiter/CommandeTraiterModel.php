@@ -95,13 +95,10 @@ WHERE
     {
 
         // Reverted to string concatenation as executeQuery might not support parameters
-        $statement = " SELECT DISTINCT
-                            nent_servcrt ||'-'||(select trim(atab_lib) from agr_tab where atab_nom = 'SER' and atab_code = nent_servdeb) as service
-                        FROM {$this->dbIps}.neg_ent
-                        WHERE nent_servdeb ||'-'||(select trim(atab_lib) from agr_tab where atab_nom = 'SER' and atab_code = nent_servdeb) <> ''
-                        AND  nent_soc = '$codeSociete'
-            ";
-
+        $statement = "  SELECT DISTINCT nent_servcrt as service, atab_lib as description 
+                         FROM {$this->dbIps}.neg_ent
+                         INNER JOIN agr_tab ON atab_code = nent_servcrt AND atab_nom = 'SER'
+                        WHERE nent_soc = '$codeSociete' ";
 
         $result = $this->connect->executeQuery($statement);
 
@@ -112,8 +109,8 @@ WHERE
 
         return array_map(function ($item) {
             return [
-                "value" => explode('-', $item['service'])[0],
-                "text"  =>  explode('-', $item['service'])[0]
+                "value" => $item["service"],
+                "text"  =>  $item["service"] . "- " . $item["description"]
             ];
         }, $dataUtf8);
     }
