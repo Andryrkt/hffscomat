@@ -1,0 +1,70 @@
+{% extends "baseTemplate.html.twig" %}
+
+{% block title %}
+    Magasin - Soumission commandes fournisseur à génerer
+{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ App.base_path }}/Views/css/list.css?v=2025.10.22.08.00">
+    <link rel="stylesheet" href="{{ App.base_path }}/Views/css/magasin/magasin.css?v=2025.10.22.08.00">
+    <link rel="stylesheet" href="{{ App.base_path }}/Views/css/utils/autocomplete.css?v=2025.10.22.08.00">
+{% endblock %}
+
+
+{% block content %}
+    <div class=" container mt-6 mb-4">
+        <div class="">
+            <div class="">
+
+
+                {{ form_start(form) }}
+                {{ form_errors(form)}}
+                <div class="row">
+
+                    <div class="row g-4 align-items-start">
+
+                        <div class="col-12 col-md-4">
+                            <div class="row align-items-center">
+                                <div class="col-8">
+                                    {{ form_row(form.numCmde) }}
+                                </div>
+                                <div class="col-4">
+                                    <button type="submit" class="btn bouton  border">
+                                        <i class="fas fa-save"></i>
+                                        Générer PDF
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        {# File viewer section #}
+                        <div class="col-12 col-md-8">
+                            <div class=" h-100">
+                                <div class="">
+                                    <div id="file-viewer" style="border: 1px solid #ccc; padding: 10px; min-height: 400px;">
+                                        <div id="spinners" style="display: none;">
+                                            Loading...
+                                        </div>
+
+                                        <!-- Le fichier sélectionné sera affiché ici -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                {{ form_end(form) }}
+                <div class="d-flex justify-content-end">
+                    <div class="" id="soumettre-validation"> <button type="submit" class="btn bouton mt-2">
+                        <i class="fas fa-save"></i>
+                        Soumettre validation
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block javascript %}
+    <script src="{{ App.base_path }}/Views/js/magasin/main.js?v=2025.10.22.08.00" type="module"></script>
+{% endblock %}
