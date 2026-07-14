@@ -3,7 +3,9 @@ import { FetchManager } from "../../api/FetchManager";
 const fetchManager = new FetchManager();
 
 async function generatePdf(numCde) {
-  return await fetchManager.get(`api/commmande/generate-pdf?numCde=${numCde}`);
+  return await fetchManager.get(
+    `generer-pdf-cmde-fournisseur?numCde=${numCde}`,
+  );
 }
 
 document.addEventListener("DOMContentLoaded", function () {
