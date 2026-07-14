@@ -37,7 +37,6 @@ class CommandeTraiterSearchType extends AbstractType
     {
         $services = [];
         $services = $this->transformEnSeulTableauAvecKeyService($this->commandeTraiterModel->service($options['data']->codeSociete));
-
         $builder
 
             ->add('referencePiece', TextType::class, [
@@ -77,7 +76,7 @@ class CommandeTraiterSearchType extends AbstractType
                 'choices' => $services,
                 'placeholder' => " -- choisir service--",
                 'expanded' => true,
-                'data' => array_keys($services),
+                'data' => array_values($services),
             ])
 
 
