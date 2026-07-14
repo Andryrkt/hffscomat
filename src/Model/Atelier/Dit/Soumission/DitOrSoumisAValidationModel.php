@@ -825,82 +825,90 @@ class DitOrSoumisAValidationModel extends Model
         string $ref,
         string $codeSuccursale = '1'
     ) {
-        $statement = "WITH stats AS (
-            SELECT 
-                MAX(slor_pxnreel - ROUND(slor_pmp, 2)) AS max_mb,
-                MIN(slor_pxnreel - ROUND(slor_pmp, 2)) AS min_mb
+        $statement = "WITH stats_max AS (
+                SELECT FIRST 1
+                    MAX(slor_pxnreel - slor_pmp) AS max_mb,
+                    ROUND(((slor_pxnreel - slor_pmp) / slor_pxnreel) * 100, 2) AS max_mb_p
+                FROM Informix.sav_lor slor
+                INNER JOIN Informix.sav_eor 
+                    ON seor_soc = slor_soc 
+                    AND seor_succ = slor_succ 
+                    AND seor_numor = slor_numor
+                WHERE slor_refp = '$ref'
+                    AND seor_serv = 'SAV'
+                    AND slor_soc = '$codeSociete'
+                    AND slor_succ = '$codeSuccursale'
+                    --AND YEAR(slor_datec) = YEAR(TODAY)
+                    AND slor_pos IN ('FC','CP')
+                GROUP BY 2
+                ORDER BY MAX(slor_pxnreel - slor_pmp) DESC
+            ),
+            stats_min AS (
+                SELECT FIRST 1
+                    MIN(slor_pxnreel - slor_pmp) AS min_mb,
+                    ROUND(((slor_pxnreel - slor_pmp) / slor_pxnreel) * 100, 2) AS min_mb_p
+                FROM Informix.sav_lor slor
+                INNER JOIN Informix.sav_eor 
+                    ON seor_soc = slor_soc 
+                    AND seor_succ = slor_succ 
+                    AND seor_numor = slor_numor
+                WHERE slor_refp = '$ref'
+                    AND seor_serv = 'SAV'
+                    AND slor_soc = '$codeSociete'
+                    AND slor_succ = '$codeSuccursale'
+                    --AND YEAR(slor_datec) = YEAR(TODAY)
+                    AND slor_pos IN ('FC','CP')
+                GROUP BY 2
+                ORDER BY MIN(slor_pxnreel - slor_pmp) ASC
+            )
+            SELECT
+                slor_constp AS constructeur,
+                -- Stock
+                ROUND(CASE WHEN astp_stock IS NULL THEN 0 ELSE astp_stock END) AS nb_ref,
+                TRIM(slor_refp) AS reference,
+                ROUND(slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) AS quantite_demander,
+
+                -- Prix et remises
+                ROUND(slor_pmp, 2) AS pmp,
+                slor_pxvteht AS pv_brut,
+                (slor_pxvteht - slor_pxnreel) AS mt_remise,
+                slor_pxnreel AS pv_net_remise,
+
+                -- Marge brute
+                ROUND(slor_pxnreel - ROUND(slor_pmp, 2), 2) AS mb,
+
+                -- Marge brute en pourcentage
+                CASE 
+                    WHEN slor_pxnreel = 0 THEN 0 
+                    ELSE ROUND(((slor_pxnreel - ROUND(slor_pmp, 2)) / slor_pxnreel) * 100, 2) 
+                END AS mb_p,
+
+                -- Maximum MB (issu de la ligne réelle correspondante)
+                COALESCE(stats_max.max_mb, 0) AS max_mb,
+                COALESCE(stats_max.max_mb_p, 0) AS max_mb_p,
+
+                -- Minimum MB (issu de la ligne réelle correspondante)
+                COALESCE(stats_min.min_mb, 0) AS min_mb,
+                COALESCE(stats_min.min_mb_p, 0) AS min_mb_p
+
             FROM Informix.sav_lor
+            INNER JOIN Informix.art_stp 
+                ON astp_refp = slor_refp 
+                AND astp_soc = slor_soc 
+                AND astp_succ = slor_succ
+                AND astp_constp = slor_constp 
             INNER JOIN Informix.sav_eor 
-            ON seor_numor = slor_numor 
-            AND seor_soc = slor_soc 
-            AND seor_succ = slor_succ
-            where slor_numor = '$numeroOr'
-                AND slor_soc = '$codeSociete'
+                ON seor_numor = slor_numor 
+                AND seor_soc = slor_soc 
+                AND seor_succ = slor_succ
+            CROSS JOIN stats_max
+            CROSS JOIN stats_min
+            WHERE slor_numor = '$numeroOr' 
                 AND slor_succ = '$codeSuccursale'
+                AND slor_soc = '$codeSociete'
                 AND slor_refp = '$ref'
-                AND YEAR(slor_datec) = YEAR(TODAY)
-                --AND slor_qterel > 0
-                --AND seor_devise = 'AR'
-        )
-        SELECT 
-            slor_constp as constructeur,
-            -- Stock
-            ROUND(CASE WHEN astp_stock IS NULL THEN 0 ELSE astp_stock END) AS nb_ref,
-            TRIM(slor_refp) AS reference,
-
-            -- Prix et remises
-            ROUND(slor_pmp, 2) AS pmp,
-            slor_pxvteht AS pv_brut,
-            (slor_pxvteht - slor_pxnreel) AS mt_remise,
-            slor_pxnreel AS pv_net_remise,
-            
-            -- Marge brute
-            ROUND(slor_pxnreel - ROUND(slor_pmp, 2), 2) AS mb,
-            
-            -- Marge brute en pourcentage
-            CASE 
-                WHEN slor_pxnreel = 0 THEN 0 
-                ELSE ROUND(((slor_pxnreel - ROUND(slor_pmp, 2)) / slor_pxnreel) * 100, 2) 
-            END AS mb_p,
-            
-            -- Maximum MB
-            COALESCE(stats.max_mb, 0) AS max_mb,
-            
-            -- Maximum MB en pourcentage
-            CASE 
-                WHEN slor_pxnreel = 0 THEN 0
-                ELSE ROUND((COALESCE(stats.max_mb, 0) / slor_pxnreel) * 100, 2)
-            END AS max_mb_p,
-            
-            -- Minimum MB
-            COALESCE(stats.min_mb, 0) AS min_mb,
-            
-            -- Minimum MB en pourcentage
-            CASE 
-                WHEN slor_pxnreel = 0 THEN 0
-                ELSE ROUND((COALESCE(stats.min_mb, 0) / slor_pxnreel) * 100, 2)
-            END AS min_mb_p
-
-        FROM Informix.sav_lor
-        LEFT JOIN Informix.art_stp 
-            ON astp_refp = slor_refp 
-            AND astp_soc = slor_soc 
-            AND astp_succ = slor_succ 
-        INNER JOIN Informix.sav_eor 
-            ON seor_numor = slor_numor 
-            AND seor_soc = slor_soc 
-            AND seor_succ = slor_succ
-        CROSS JOIN stats
-
-        WHERE slor_numor = '$numeroOr' 
-            AND slor_succ = '$codeSuccursale'
-            AND slor_soc = '$codeSociete'
-            AND slor_refp = '$ref'
-            AND slor_typlig = 'P'
-            --AND slor_pos = 'CP'
-            AND YEAR(slor_datec) = YEAR(TODAY)
-            --AND slor_qterel > 0
-            --AND seor_devise = 'AR'
+                AND slor_typlig = 'P'
+                AND YEAR(slor_datec) = YEAR(TODAY);
         ";
 
         $result = $this->connect->executeQuery($statement);
