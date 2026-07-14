@@ -21,9 +21,9 @@
                 {{ form_errors(form)}}
                 <div class="row">
 
-                    <div class="row g-4 align-items-start">
+                    <div class=" g-4 align-items-start">
 
-                        <div class="col-12 col-md-4">
+                        <div class=" col-md-4">
                             <div class="row align-items-center">
                                 <div class="col-8">
                                     {{ form_row(form.numCmde) }}
@@ -35,16 +35,17 @@
                                 </div>
                             </div>
                         </div>
-                        {# File viewer section #}
-                        <div class="col-12 col-md-8" id="viewer-container" style="display: none;">
-                            <div id="file-viewer" style="position: relative;  height: 70vh;; overflow: hidden;">
-                                {# Iframe occupe tout le conteneur #}
-                                <iframe id="pdf-iframe" src="" name="pdf-iframe" style="width:100%; height:100%; border:none;"></iframe>
+                        <div class="" id="viewer-container" style="display: none;">
+                            {# Conteneur qui maintient le ratio A4 paysage (largeur 100%, hauteur = largeur * 0.707) #}
+                            <div id="file-viewer" style="position: relative; width: 100%; padding-bottom: 70.7%; height: 0; overflow: hidden; border: 1px solid #ccc;">
+
+                                {# Iframe – prend toute la zone définie par le padding-bottom #}
+                                <iframe id="pdf-iframe" src="" name="pdf-iframe" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;"></iframe>
 
                                 {# Spinner – centré absolument #}
                                 <div id="spinners" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; background: rgba(255,255,255,0.8);">
                                     <div style="display: flex; align-items: center; justify-content: center; flex-direction: column; height: 100%;">
-                                        <i class="fas fa-spinner fa-spin "></i>
+                                        <i class="fas fa-spinner fa-spin"></i>
                                         <div class="mt-2">Génération du PDF en cours...</div>
                                     </div>
                                 </div>

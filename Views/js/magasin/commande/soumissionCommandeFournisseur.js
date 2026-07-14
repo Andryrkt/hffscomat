@@ -29,32 +29,37 @@ document.addEventListener("DOMContentLoaded", function () {
       });
       return;
     }
+    loader.style.display = "block";
+    viewerContainer.style.display = "block";
+    const pdfUrl = "/Upload/dit/DIT26059999/oRValidation_51305647-2%23N.pdf";
 
-    try {
-      loader.style.display = "block";
-      viewerContainer.style.display = "block";
+    iframe.src = pdfUrl + "#toolbar=0";
 
-      const response = await generatePdf(numCde);
-      const data = await response.json();
-      const pdfUrl = data.url || data;
-      if (!pdfUrl) {
-        throw new Error("Aucune URL de PDF reçue");
-      }
-      iframe.src = pdfUrl;
-      validationBtn.style.display = "block";
-    } catch (error) {
-      console.error(error);
-      loader.style.display = "none";
-      Swal.fire({
-        icon: "error",
-        title: "Erreur",
-        text: "Impossible de générer le PDF : " + error.message,
-        timer: 3000,
-        showConfirmButton: false,
-      });
-      viewerContainer.style.display = "none";
-      loader.style.display = "none";
-    }
+    // try {
+    //   loader.style.display = "block";
+    //   viewerContainer.style.display = "block";
+
+    //   const response = await generatePdf(numCde);
+    //   const data = await response.json();
+    //   const pdfUrl = data.url || data;
+    //   if (!pdfUrl) {
+    //     throw new Error("Aucune URL de PDF reçue");
+    //   }
+    //   iframe.src = pdfUrl;
+    //   validationBtn.style.display = "block";
+    // } catch (error) {
+    //   console.error(error);
+    //   loader.style.display = "none";
+    //   Swal.fire({
+    //     icon: "error",
+    //     title: "Erreur",
+    //     text: "Impossible de générer le PDF : " + error.message,
+    //     timer: 3000,
+    //     showConfirmButton: false,
+    //   });
+    //   viewerContainer.style.display = "none";
+    //   loader.style.display = "none";
+    // }
   });
 
   // ─── Hide loader when iframe loads ───
