@@ -29,24 +29,23 @@ class SoumissionCommandeController extends Controller
         $form->handleRequest($request);
 
         $this->logUserVisit('generer_commande_fournisseur');
+        if ($form->isSubmitted()) {
+            $this->soumettreAValider($form);
+        }
 
-        $this->traitementDonnee($form);
 
         return $this->render('magasin/commande/soumission/soumissionCommandeFournisseur.html.twig', [
             'form' => $form->createView()
         ]);
     }
 
-    public function traitementDonnee(FormInterface $form)
+
+    public function soumettreAValider(FormInterface $form)
     {
+        // Test
+        dump("Soummettre a validation");
+        die();
 
-        if ($form->isSubmitted()) {
-            $numCmde = $form->get('numCmde')->getData();
-
-            // Test
-            dump($numCmde);
-            die();
-        }
         // Model model = new Model();
 
         // Check if it not null 
