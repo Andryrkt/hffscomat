@@ -847,6 +847,7 @@ class DitOrSoumisAValidationModel extends Model
             -- Stock
             ROUND(CASE WHEN astp_stock IS NULL THEN 0 ELSE astp_stock END) AS nb_ref,
             TRIM(slor_refp) AS reference,
+            ROUND(slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) AS quantite_demander,
 
             -- Prix et remises
             ROUND(slor_pmp, 2) AS pmp,
@@ -885,7 +886,8 @@ class DitOrSoumisAValidationModel extends Model
         LEFT JOIN Informix.art_stp 
             ON astp_refp = slor_refp 
             AND astp_soc = slor_soc 
-            AND astp_succ = slor_succ 
+            AND astp_succ = slor_succ
+            AND astp_constp = slor_constp 
         INNER JOIN Informix.sav_eor 
             ON seor_numor = slor_numor 
             AND seor_soc = slor_soc 
