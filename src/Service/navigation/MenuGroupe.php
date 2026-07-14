@@ -94,7 +94,7 @@ class MenuGroupe
                     ['label' => 'Planning de commande Magasin', 'icon' => 'calendar-alt', 'route' => 'interface_planningMag'],
                     // ['label' => 'Liste des commandes à livrer', 'icon' => 'file-invoice', 'route' => 'magasinListe_commande_livrer'],
                     ['label' => 'Liste des commandes à traiter', 'icon' => 'file-invoice', 'route' => 'magasinListe_commande_traiter'],
-                    ['label' => 'Générer commandes fournisseur', 'icon' => 'plus-circle', 'route' => 'generer_commande_fournisseur'],
+                    ['label' => 'Soumission commandes fournisseur', 'icon' => 'plus-circle', 'route' => 'generer_commande_fournisseur'],
                 ],
             ],
 
