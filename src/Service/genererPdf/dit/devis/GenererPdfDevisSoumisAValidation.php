@@ -32,7 +32,7 @@ class GenererPdfDevisSoumisAValidation extends GeneratePdf
     public function copyToDWFichierDevisSoumisVp(string $fileName)
     {
         $cheminFichierDistant = $this->baseCheminDocuware . 'VERIFICATION_PRIX/' . $fileName;
-        $cheminDestinationLocal = $this->baseCheminDuFichier . 'dit/dev/fichiers/' . $fileName;
+        $cheminDestinationLocal = $this->baseCheminDuFichier . 'dit/dev/' . $fileName;
         $this->copyFile($cheminDestinationLocal, $cheminFichierDistant);
     }
 

@@ -140,7 +140,8 @@ class ValidationService
             return true;
         }
         // Verifie si id_materiel_Ips correspond id_materiel_Irium 
-        if ($dto->estIdMaterielDifferent) {
+        $typeOr =[230, 252, 253];
+        if ($dto->estIdMaterielDifferent && !in_array($dto->typeOr, $typeOr)) {
             $message = "Echec de la soumission car le materiel de l'OR ne correspond pas au materiel de la DIT";
             $this->sendNotificationOR($message, $dto->numeroOr, false);
             return true;
@@ -163,11 +164,11 @@ class ValidationService
         }
 
         // Vérifie si le nom du fichier correspond au pattern attendu (S'assurer que c'est bien un OR qui soit soumis)
-        // if (!$this->matchPattern($fileName, self::FILENAME_PATTERN)) {
-        //     $message = "Le nom du fichier soumis n'est pas conforme au format attendu. Reçu: " . $fileName;
-        //     $this->sendNotificationOR($message, $dto->numeroOr, false);
-        //     return true;
-        // }
+        if (!$this->matchPattern($fileName, self::FILENAME_PATTERN)) {
+            $message = "Le nom du fichier soumis n'est pas conforme au format attendu. Reçu: " . $fileName;
+            $this->sendNotificationOR($message, $dto->numeroOr, false);
+            return true;
+        }
 
         // Vérifie si le numéro de OR dans le nom du fichier correspond au numéro de dit attendu (S'assurer que le OR envoyé corresponde à la ligne de OR utilisé pour la soumission dans l'intranet)
         if (!$this->matchNumberAfterUnderscore($fileName, $dto->numeroOr)) {
