@@ -58,10 +58,24 @@ class PlanningApi extends Controller
             $numDit = $this->ditModel->getNumDitByNumOr($numOr, $codeSociete);
             $detailSize = count($details);
 
-            $magasins = [];
             $parts = [];
             for ($i = 0; $i < $detailSize; $i++) {
                 $parts[] = [];
+                if ($details[$i]['num_cmd'] != "")
+                {
+                    $magasin = $this->planningModel->getEtaMagasin($details[$i]['num_cmd']);
+                    if (!empty($magasin) && !empty($magasin[0]))
+                    {
+                        $details[$i]['eta_magasin'] = $magasin[0]['eta_magasin'];
+                        $details[$i]['etat_pays'] = $magasin[0]['etat_pays'];
+                    }
+                }
+
+                if (!isset($details[$i]['eta_magasin']))
+                    $details[$i]['eta_magasin'] = "";
+                if (!isset($details[$i]['etat_pays']))
+                    $details[$i]['etat_pays'] = "";
+                
 
                 if ($parts[$i])
                 {
