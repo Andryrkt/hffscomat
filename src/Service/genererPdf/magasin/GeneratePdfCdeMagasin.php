@@ -165,8 +165,8 @@ class GeneratePdfCdeMagasin extends GeneratePdf
             $this->renderMainRow($ligne, $fill);
 
             // 5. Dessiner les sous-lignes (même fill que la ligne parente, pour cohérence visuelle)
-            foreach ($ligne->details as $sousLigne) {
-                $this->renderSubRow($sousLigne, $fill);
+            foreach ($ligne->details as $detail) {
+                $this->renderSubRow($detail, $fill);
             }
 
             $rowIndex++;
@@ -175,7 +175,7 @@ class GeneratePdfCdeMagasin extends GeneratePdf
 
     private function renderTableHeader(): void
     {
-        $this->pdf->SetFont($this->font, "B", $this->textSize - 1);
+        $this->pdf->SetFont($this->font, "B", $this->textSize);
         $this->pdf->SetFillColor(60, 60, 60);
         $this->pdf->SetTextColor(255, 255, 255);
         $this->pdf->SetDrawColor(60, 60, 60);
@@ -273,9 +273,9 @@ class GeneratePdfCdeMagasin extends GeneratePdf
         $this->pdf->Cell(self::COL_WIDTHS['poids'],       $this->textHeight, $ligne->poids,          0, 1, 'R', $fill);
     }
 
-    private function renderSubRow(CommandeSoumissionDetailDTO $sousLigne, bool $fill): void
+    private function renderSubRow(CommandeSoumissionDetailDTO $detail, bool $fill): void
     {
-        $this->pdf->SetFont($this->font, "", $this->textSize - 1);
+        $this->pdf->SetFont($this->font, "", $this->textSize);
         $this->pdf->SetFillColor(240, 240, 240);
 
         // Largeur vide = somme des colonnes de "N° Ligne" jusqu'à "Désignation" incluse
@@ -292,8 +292,17 @@ class GeneratePdfCdeMagasin extends GeneratePdf
         // Cellule vide (avec bordure normale, comme le reste du tableau)
         $this->pdf->Cell($emptyWidth, $this->textHeight, '', 0, 0, 'L', $fill);
 
+        $this->pdf->SetFont($this->font, "I", $this->textSize);
+        $this->cellUnderline(25, $this->textHeight, "Référence client:", 0, 0, 'L', $fill);
+
+        $this->pdf->SetFont($this->font, "", $this->textSize);
         // Texte du détail, "bout à bout" sur le reste de la largeur
-        $this->pdf->Cell(0, $this->textHeight, "Texte lava be", 0, 1, 'L', $fill);
+        $this->pdf->Cell(20, $this->textHeight, $detail->numDoc,                  0, 0, 'L', $fill);
+        $this->pdf->Cell(25, $this->textHeight, $detail->refClient,               0, 0, 'L', $fill);
+        $this->pdf->Cell(20, $this->textHeight, $detail->numClient,               0, 0, 'L', $fill);
+        $this->pdf->Cell(35, $this->textHeight, $detail->nomClient,               0, 0, 'L', $fill);
+        $this->pdf->Cell(35, $this->textHeight, $detail->rmqClient,               0, 0, 'L', $fill);
+        $this->pdf->Cell(0,  $this->textHeight, $detail->getDatePlanningFormatted(), 0, 1, 'L', $fill);
 
         // Ligne pointillée séparant ce détail du suivant (sous la cellule texte)
         $this->drawDottedSeparator(
@@ -309,8 +318,8 @@ class GeneratePdfCdeMagasin extends GeneratePdf
     private function drawDottedSeparator(float $xStart, float $y, float $xEnd): void
     {
         $this->pdf->SetLineStyle([
-            'width' => 0.1,
-            'dash'  => '1,1',
+            'width' => 0.5,
+            'dash'  => '3',
             'color' => [150, 150, 150],
         ]);
 

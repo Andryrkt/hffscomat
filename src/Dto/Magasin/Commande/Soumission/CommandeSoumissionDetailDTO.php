@@ -10,4 +10,11 @@ class CommandeSoumissionDetailDTO
     public ?string    $nomClient    = null;
     public ?string    $rmqClient    = null;
     public ?\DateTime $datePlanning = null;
+
+    public function getDatePlanningFormatted(): string
+    {
+        if (!$this->datePlanning) return "";
+
+        return $this->datePlanning->format("d/m/Y");
+    }
 }
