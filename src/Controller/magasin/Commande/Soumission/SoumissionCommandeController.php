@@ -7,6 +7,7 @@ use App\Dto\Magasin\Commande\Soumission\BcSoumisMagasinDTO;
 use App\Dto\Magasin\Commande\Soumission\CommandeSoumissionDTO;
 use App\Form\magasin\Commande\SoumissionCommande\SoumissionCommandeType;
 use App\Model\magasin\CommANDe\Soumission\CdeSoumissionModel;
+use App\Service\genererPdf\magasin\GeneratePdfCdeMagasin;
 use App\Service\historiqueOperation\Atelier\Dit\HistoriqueOperationDITService;
 use Override;
 use Symfony\Component\Form\FormInterface;
@@ -21,12 +22,15 @@ class SoumissionCommandeController extends Controller
 {
     private HistoriqueOperationDITService $historiqueOperation;
     private CdeSoumissionModel $cdeSoumissionModel;
+    private GeneratePdfCdeMagasin $generatePdfCdeMagasin;
+
 
     public function __construct()
     {
         parent::__construct();
         $this->historiqueOperation = new HistoriqueOperationDITService($this->getEntityManager());
         $this->cdeSoumissionModel = new CdeSoumissionModel();
+        $this->generatePdfCdeMagasin = new GeneratePdfCdeMagasin();
     }
 
 
@@ -59,9 +63,9 @@ class SoumissionCommandeController extends Controller
 
     public function soumettreAValider(FormInterface $form)
     {
+
         $numCommande = $form->get('numCmde')->getData();
-
-
+        $fileName = "Commande_Fournisseur_{$numCommande}.pdf";
         $bcSoumisMagasinDto = new  BcSoumisMagasinDTO();
 
 
@@ -71,19 +75,24 @@ class SoumissionCommandeController extends Controller
         $bcSoumisMagasinDto->statut = "Soumis à validation";
         $bcSoumisMagasinDto->dateHeureSoumission = new \DateTime();
 
-        $isCopiedToDWFilePath = true; //change to logic 
-        $isNumCmdExist = true; // change to logic
 
-        // if ($isCopiedToDWFilePath) {
-        //     $bcSoumisMagasinDto->deposerDw = true;
-        // };
 
-        // if ($isNumCmdExist) {
-        //     $this->cdeSoumissionModel->enregistrerBcSoumisMagasin($bcSoumisMagasinDto);
-        // } else {
-        //     return;
-        // }
+        $isNumCmdExist = true; // Change logic on Model ->isExist($numCommande)
 
-        $this->historiqueOperation->sendNotificationCreation('Votre demande a été enregistrée', $bcSoumisMagasinDto->numeroCommande, 'generer_commande_fournisseur', true);
+        if (!$isNumCmdExist) {
+            return;
+        }
+
+        $isCopiedToDWFilePath = $this->generatePdfCdeMagasin->copyToDOCUWARE(
+            $fileName,
+            $numCommande
+        );
+
+        if ($isCopiedToDWFilePath) {
+            $bcSoumisMagasinDto->deposerDw = true;
+        };
+
+        $this->cdeSoumissionModel->enregistrerBcSoumisMagasin($bcSoumisMagasinDto);
+        $this->historiqueOperation->sendNotificationCreation('Votre demande a été enregistrée', $bcSoumisMagasinDto->numeroCommande, 'profil_acceuil', true);
     }
 }
