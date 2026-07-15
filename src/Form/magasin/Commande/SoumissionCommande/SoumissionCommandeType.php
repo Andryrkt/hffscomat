@@ -14,7 +14,7 @@ class SoumissionCommandeType extends AbstractType
     {
         $builder->add('numCmde', TextType::class, [
             'label' => 'Veuillez rentrer un numero de commande * :',
-            'required' => true,
+            'required' => false,
         ]);
     }
 }

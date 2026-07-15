@@ -15,10 +15,17 @@ document.addEventListener("DOMContentLoaded", function () {
   const iframe = document.getElementById("pdf-iframe");
   const loader = document.getElementById("spinners");
   const viewerContainer = document.getElementById("viewer-container");
-  const numCmdeInput = document.getElementById("soumission_commande_numCmde");
+  const numCdeInput = document.getElementById("soumission_commande_numCmde");
+
+  numCdeInput.addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      pdfBtn.click();
+    }
+  });
 
   pdfBtn.addEventListener("click", async function (e) {
-    const numCde = numCmdeInput.value.trim();
+    const numCde = numCdeInput.value.trim();
     if (!numCde) {
       Swal.fire({
         icon: "warning",
@@ -42,7 +49,7 @@ document.addEventListener("DOMContentLoaded", function () {
       loader.classList.remove("d-none");
 
       const response = await generatePdf(numCde);
-      const data = await response.json();
+      const data = await response;
       const pdfUrl = data.url || data;
 
       if (!pdfUrl) {
