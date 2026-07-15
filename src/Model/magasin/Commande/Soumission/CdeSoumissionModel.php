@@ -156,11 +156,11 @@ class CdeSoumissionModel extends Model
             // Construire la requête d'insertion et l'exécuter
             $builder = new InsertQueryBuilder("{$this->dbIrium}.bc_soumis_magasin");
             $builder->setData([
-                'numeroCo'                  => $bcSoumisMagasinDto->numeroCommande,
+                'numero_cde'                  => $bcSoumisMagasinDto->numeroCommande,
                 'statut'                    => $bcSoumisMagasinDto->statut,
                 'operateur'                 => $bcSoumisMagasinDto->operateur,
-                'dateHeureSoumission'       => $bcSoumisMagasinDto->dateHeureSoumission,
-                'deposerDw'                 => $bcSoumisMagasinDto->deposerDw,
+                'date_heure_soumission'       => $bcSoumisMagasinDto->dateHeureSoumission,
+                'deposer_dw'                 => $bcSoumisMagasinDto->deposerDw,
             ]);
 
             $result = $builder->build();

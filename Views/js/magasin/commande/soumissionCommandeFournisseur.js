@@ -44,8 +44,7 @@ document.addEventListener("DOMContentLoaded", function () {
       iframe.src = "";
 
       const response = await generatePdf(numCde);
-      const data = await response;
-      const pdfUrl = data.url || data;
+      const pdfUrl = response.url || response;
 
       if (!pdfUrl) {
         throw new Error("Aucune URL de PDF reçue");
@@ -62,8 +61,8 @@ document.addEventListener("DOMContentLoaded", function () {
         timer: 3000,
         showConfirmButton: false,
       });
-      viewerContainer.style.display = "none";
       loader.classList.add("d-none");
+      viewerContainer.style.display = "none";
     }
   });
 

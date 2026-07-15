@@ -78,7 +78,7 @@ class SoumissionCommandeController extends Controller
         //     $bcSoumisMagasinDto->deposerDw = true;
         // };
 
-        // if (!$isNumCmdExist) {
+        // if ($isNumCmdExist) {
         //     $this->cdeSoumissionModel->enregistrerBcSoumisMagasin($bcSoumisMagasinDto);
         // } else {
         //     return;
