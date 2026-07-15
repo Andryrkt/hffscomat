@@ -4,7 +4,7 @@ const fetchManager = new FetchManager();
 
 async function generatePdf(numCde) {
   return await fetchManager.get(
-    `generer-pdf-cmde-fournisseur?numCde=${numCde}`,
+    `api/generer-pdf-cmde-fournisseur?numCde=${numCde}`,
   );
 }
 
@@ -29,37 +29,40 @@ document.addEventListener("DOMContentLoaded", function () {
       });
       return;
     }
-    loader.style.display = "block";
-    viewerContainer.style.display = "block";
-    const pdfUrl = "/Upload/dit/DIT26059999/oRValidation_51305647-2%23N.pdf";
+    // viewerContainer.style.display = "block";
+    // loader.classList.remove("d-none");
+    // validationBtn.style.display = "block";
 
-    iframe.src = pdfUrl + "#toolbar=0";
+    // const pdfUrl = "/Upload/dit/DIT26059999/oRValidation_51305647-2%23N.pdf";
 
-    // try {
-    //   loader.style.display = "block";
-    //   viewerContainer.style.display = "block";
+    // iframe.src = pdfUrl + "#toolbar=0";
 
-    //   const response = await generatePdf(numCde);
-    //   const data = await response.json();
-    //   const pdfUrl = data.url || data;
-    //   if (!pdfUrl) {
-    //     throw new Error("Aucune URL de PDF reçue");
-    //   }
-    //   iframe.src = pdfUrl;
-    //   validationBtn.style.display = "block";
-    // } catch (error) {
-    //   console.error(error);
-    //   loader.style.display = "none";
-    //   Swal.fire({
-    //     icon: "error",
-    //     title: "Erreur",
-    //     text: "Impossible de générer le PDF : " + error.message,
-    //     timer: 3000,
-    //     showConfirmButton: false,
-    //   });
-    //   viewerContainer.style.display = "none";
-    //   loader.style.display = "none";
-    // }
+    try {
+      viewerContainer.style.display = "block";
+      loader.classList.remove("d-none");
+
+      const response = await generatePdf(numCde);
+      const data = await response.json();
+      const pdfUrl = data.url || data;
+
+      if (!pdfUrl) {
+        throw new Error("Aucune URL de PDF reçue");
+      }
+
+      iframe.src = pdfUrl + "#toolbar=0";
+      validationBtn.style.display = "block";
+    } catch (error) {
+      console.error(error);
+      Swal.fire({
+        icon: "error",
+        title: "Erreur",
+        text: "Impossible de générer le PDF : " + error.message,
+        timer: 3000,
+        showConfirmButton: false,
+      });
+      viewerContainer.style.display = "none";
+      loader.classList.add("d-none");
+    }
   });
 
   // ─── Hide loader when iframe loads ───
