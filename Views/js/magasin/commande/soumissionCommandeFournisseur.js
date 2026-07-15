@@ -36,12 +36,10 @@ document.addEventListener("DOMContentLoaded", function () {
       });
       return;
     }
- 
 
     try {
       loader.classList.remove("d-none");
       viewerContainer.style.display = "block";
-      iframe.src = "";
 
       const response = await generatePdf(numCde);
       const pdfUrl = response.url || response;
@@ -51,6 +49,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       iframe.src = pdfUrl + "#toolbar=0";
+      loader.classList.add("d-none");
       validationBtn.style.display = "block";
     } catch (error) {
       console.error(error);

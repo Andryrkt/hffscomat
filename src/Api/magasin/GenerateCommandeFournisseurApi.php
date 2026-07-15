@@ -24,7 +24,6 @@ class GenerateCommandeFournisseurApi extends Controller
                 'message' => 'Numéro de commande requis'
             ], JsonResponse::HTTP_BAD_REQUEST);
         }
-
         $fileName = "Commande_Fournisseur_{$numCde}.pdf";
 
         $basePath = rtrim($_ENV['BASE_PATH_FICHIER'], '/\\');
