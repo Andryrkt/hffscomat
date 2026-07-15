@@ -59,37 +59,67 @@ class GeneratePdfCdeMagasin extends GeneratePdf
 
         $wLbl = 23;
         $this->pdf->setFont($this->font, "I", $this->textSize);
-        $this->pdf->Cell($wLbl, $this->textHeight, "No Commande:", 0, 0);
+        $this->cellUnderline($wLbl, $this->textHeight, "No Commande:", 0, 0);
 
         $this->pdf->setFont($this->font, "B", $this->textSize);
         $this->pdf->Cell($wLbl, $this->textHeight, $dto->numeroCommande, 0, 0);
         $this->pdf->Cell(0, $this->textHeight, "du {$dto->getDateJourFormatted()}", 0, 1);
 
         $this->pdf->setFont($this->font, "I", $this->textSize);
-        $this->pdf->Cell($wLbl, $this->textHeight, "Type Commande:", 0, 0);
+        $this->cellUnderline($wLbl, $this->textHeight, "Type Commande:", 0, 0);
 
         $this->pdf->setFont($this->font, "", $this->textSize);
         $this->pdf->Cell($wLbl, $this->textHeight, $dto->typeCde, 0, 0);
 
         $this->pdf->setFont($this->font, "I", $this->textSize);
-        $this->pdf->Cell($wLbl, $this->textHeight, "Délai d'expédition:", 0, 0);
+        $this->cellUnderline($wLbl, $this->textHeight, "Délai d'expédition:", 0, 0);
 
         $this->pdf->setFont($this->font, "", $this->textSize);
         $this->pdf->Cell(0, $this->textHeight, "{$dto->delaiExpedition} jours", 0, 1);
 
         $this->pdf->setFont($this->font, "I", $this->textSize);
-        $this->pdf->Cell($wLbl, $this->textHeight, "Fournisseur:", 0, 0);
+        $this->cellUnderline($wLbl, $this->textHeight, "Fournisseur:", 0, 0);
 
         $this->pdf->setFont($this->font, "B", $this->textSize);
         $this->pdf->Cell(0, $this->textHeight, "{$dto->numFrn}   {$dto->nomFrn}", 0, 1);
 
         $this->pdf->setFont($this->font, "I", $this->textSize);
-        $this->pdf->Cell($wLbl, $this->textHeight, "Responsable:", 0, 0);
+        $this->cellUnderline($wLbl, $this->textHeight, "Responsable:", 0, 0);
 
         $this->pdf->setFont($this->font, "", $this->textSize);
         $this->pdf->Cell(0, $this->textHeight, $dto->responsable, 0, 0);
 
         $this->pdf->setFont($this->font, "B", $this->textSize);
         $this->pdf->Cell(0, $this->textHeight, "{$dto->libelleAgence} - {$dto->libelleService}", 0, 1, 'R');
+    }
+
+    /**
+     * Affiche une Cell classique et dessine un trait fin en dessous du texte,
+     * pour simuler un soulignement (non supporté nativement par TCPDF sur Cell()).
+     */
+    private function cellUnderline(float $w, float $h, string $txt, $border = 0, int $ln = 0, string $align = '', bool $fill = false): void
+    {
+        $x = $this->pdf->GetX() + 1; // + décalage
+        $y = $this->pdf->GetY();
+
+        $this->pdf->Cell($w, $h, $txt, $border, 0, $align, $fill);
+
+        // Largeur réelle du texte pour ne souligner que le texte, pas toute la cellule
+        $textWidth = $this->pdf->GetStringWidth($txt);
+
+        $lineY = $y + $h - 1; // légèrement au-dessus du bas de la cellule
+        $lineXStart = $x;
+        $lineXEnd = $x + $textWidth;
+
+        $this->pdf->Line($lineXStart, $lineY, $lineXEnd, $lineY);
+
+        // Repositionner le curseur comme le ferait Cell() avec $ln=0
+        if ($ln == 0) {
+            $this->pdf->SetXY($x + $w, $y);
+        } elseif ($ln == 1) {
+            $this->pdf->SetXY(3, $y + $h);
+        } elseif ($ln == 2) {
+            $this->pdf->SetXY($x, $y + $h);
+        }
     }
 }
