@@ -36,17 +36,12 @@ document.addEventListener("DOMContentLoaded", function () {
       });
       return;
     }
-    // viewerContainer.style.display = "block";
-    // loader.classList.remove("d-none");
-    // validationBtn.style.display = "block";
-
-    // const pdfUrl = "/Upload/dit/DIT26059999/oRValidation_51305647-2%23N.pdf";
-
-    // iframe.src = pdfUrl + "#toolbar=0";
+ 
 
     try {
-      viewerContainer.style.display = "block";
       loader.classList.remove("d-none");
+      viewerContainer.style.display = "block";
+      iframe.src = "";
 
       const response = await generatePdf(numCde);
       const data = await response;
@@ -74,7 +69,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // ─── Hide loader when iframe loads ───
   iframe.addEventListener("load", function () {
-    loader.style.display = "none";
+    viewerContainer.style.display = "block";
+    loader.classList.add("d-none");
   });
 
   // ─── Validation (submission) ───

@@ -2,6 +2,8 @@
 
 namespace App\Model\magasin\CommANDe\Soumission;
 
+use App\Dto\Magasin\Commande\Soumission\BcSoumisMagasinDTO;
+use App\Model\Informix\InsertQueryBuilder;
 use App\Model\Model;
 use DateTime;
 
@@ -137,5 +139,36 @@ class CdeSoumissionModel extends Model
         $data = $this->connect->fetchResults($result);
 
         return $this->convertirEnUtf8($data);
+    }
+
+    /** 
+     * Enregistrer du Bc soumis Magasin dans BD
+     * 
+     * @param BcSoumisMagasinDTO $bcSoumisMagasinDto
+     * 
+     * @return void
+     */
+    public function enregistrerBcSoumisMagasin(BcSoumisMagasinDTO $bcSoumisMagasinDto): void
+    {
+        // S'assurer que la connexion est ouverte
+        $this->connect->connect();
+        try {
+            // Construire la requête d'insertion et l'exécuter
+            $builder = new InsertQueryBuilder("{$this->dbIrium}.bc_soumis_magasin");
+            $builder->setData([
+                'numeroCo'                  => $bcSoumisMagasinDto->numeroCommande,
+                'statut'                    => $bcSoumisMagasinDto->statut,
+                'operateur'                 => $bcSoumisMagasinDto->operateur,
+                'dateHeureSoumission'       => $bcSoumisMagasinDto->dateHeureSoumission,
+                'deposerDw'                 => $bcSoumisMagasinDto->deposerDw,
+            ]);
+
+            $result = $builder->build();
+
+            $this->connect->executeQuery($result['sql'], $result['params']);
+        } finally {
+            // ne fermez ici que si vous êtes sûr que c'est la dernière opération
+            $this->connect->close();
+        }
     }
 }
