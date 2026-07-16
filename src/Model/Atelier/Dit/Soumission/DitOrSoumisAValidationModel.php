@@ -325,7 +325,7 @@ class DitOrSoumisAValidationModel extends Model
     public function countAgServDebit($numOr, $codeSociete)
     {
         $statement = " SELECT count(distinct sitv_servdeb) as retour
-                    from sav_itv 
+                    from sav_itv
                     where sitv_numor = '$numOr' AND sitv_soc = '$codeSociete'
         ";
 
@@ -334,6 +334,26 @@ class DitOrSoumisAValidationModel extends Model
         $data = $this->connect->fetchResults($result);
 
         return (int) ($data[0]['retour'] ?? 0);
+    }
+
+    /**
+     * Compte les lignes de l'OR correspondant à un article de stock (abse_codg = 'ST')
+     * Sert à determiner si l'option DEVIS-VP (vérification de prix) doit être proposée
+     */
+    public function countArticleVerificationPrix(string $numOr, string $codeSociete): int
+    {
+        $statement = " SELECT count(slor_refp) as nombre
+                    from sav_lor
+                    inner join art_bse on abse_constp = slor_constp and abse_refp = slor_refp
+                    where abse_codg = 'ST'
+                    and slor_numor = '$numOr'
+                    and slor_soc = '$codeSociete'
+        ";
+
+        $result = $this->connect->executeQuery($statement);
+        $data = $this->connect->fetchResults($result);
+
+        return (int) ($data[0]['nombre'] ?? 0);
     }
 
     public function getNumcli(string $numOr, string $codeSociete): ?string

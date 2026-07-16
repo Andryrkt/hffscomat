@@ -489,19 +489,19 @@ class DitDevisSoumisAValidationModel extends Model
         $statement = " SELECT
                     CASE
                         WHEN COUNT(CASE WHEN slor_constp = 'CAT' THEN 1 END) > 0
-                        AND COUNT(CASE WHEN slor_constp IN (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST') THEN 1 END) > 0
+                            AND COUNT(CASE WHEN slor_constp IN (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST') THEN 1 END) > 0
                         THEN TRIM('CP')
                     
                         WHEN COUNT(CASE WHEN slor_constp = 'CAT' THEN 1 END) > 0
-                        AND COUNT(CASE WHEN slor_constp IN (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST') THEN 1 END) = 0
+                            AND COUNT(CASE WHEN slor_constp IN (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST') THEN 1 END) = 0
                         THEN TRIM('C')
 
                         WHEN COUNT(CASE WHEN slor_constp = 'CAT' THEN 1 END) = 0
-                        AND COUNT(CASE WHEN slor_constp IN (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST') THEN 1 END) = 0
+                            AND COUNT(CASE WHEN slor_constp IN (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST') THEN 1 END) = 0
                         THEN TRIM('N')
 
                         WHEN COUNT(CASE WHEN slor_constp = 'CAT' THEN 1 END) = 0
-                        AND COUNT(CASE WHEN slor_constp IN (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST') THEN 1 END) > 0
+                            AND COUNT(CASE WHEN slor_constp IN (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST') THEN 1 END) > 0
                         THEN TRIM('P')
                     END AS retour
                 FROM {$this->dbIps}.sav_lor
