@@ -7,9 +7,17 @@ use App\Model\Informix\InsertQueryBuilder;
 use App\Model\Model;
 use App\Dto\Magasin\Commande\Soumission\CommandeSoumissionDTO;
 use App\Factory\magasin\Commande\Soumission\CommandeSoumissionFactory;
+use App\Model\Informix\SelectWhereCondition;
 
 class CdeSoumissionModel extends Model
 {
+    private SelectWhereCondition $selectCond;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->selectCond = new SelectWhereCondition();
+    }
 
     /** 
      * Méthode pour retourner les infos sur la commande avec $numCde
@@ -52,7 +60,7 @@ class CdeSoumissionModel extends Model
                 FROM {$this->dbIps}.agr_tab
                 WHERE atab_nom  = 'SER' AND atab_code = fcde_serv
             ) AS service_lib,
-            fcdl_constp AS cst,
+            TRIM(fcdl_constp) AS cst,
             CASE TRIM(abse_libre1)
                 WHEN 'A' THEN '(A)'
                 ELSE '(B)'
@@ -142,10 +150,117 @@ class CdeSoumissionModel extends Model
         ORDER BY fcdl_ref";
 
         $result = $this->connect->executeQuery($statement);
-
         $data = $this->connect->fetchResults($result);
 
-        dd((new CommandeSoumissionFactory)->hydrate($data, $userMail));
+        if (empty($data)) return null;
+
+        // --- Extraction des couples (cst, refp) distincts ---
+        $pairs = [];
+        foreach ($data as $row) {
+            $cst  = trim($row['cst']);
+            $refp = trim($row['refp']);
+            $pairs["$cst|$refp"] = ['cst' => $cst, 'refp' => $refp];
+        }
+
+        // --- Requête 2 en une seule fois (batch) ---
+        $detailsData = $this->findDetailsForPairs($numCde, $pairs);
+
+        return (new CommandeSoumissionFactory)->hydrate($data, $detailsData, $userMail);
+    }
+
+    /** 
+     * Méthode pour retourner en une seule requête tous les détails (SAV + VTE NEG) pour l'ensemble des couples (cst, refp) trouvés dans la requête de `findInfoCommande`.
+     * 
+     * @param string $numCde
+     * @param array<string,array{cst:string,refp:string}> $pairs
+     * 
+     * @return array<string,array>
+     */
+    private function findDetailsForPairs(string $numCde, array $pairs): array
+    {
+        if (empty($pairs)) return [];
+
+        // Regroupement des refp par cst (plus sargable qu'une concaténation)
+        $byCst = [];
+        foreach ($pairs as ['cst' => $cst, 'refp' => $refp]) {
+            $byCst[$cst][] = $refp;
+        }
+
+        $conditionsOR = []; // conditions pour l'OR
+        foreach ($byCst as $cst => $refps) {
+            $conditionsOR[] = "(slor_constp = '$cst' {$this->selectCond->in('slor_refp',$refps)})";
+        }
+        $whereOr = implode(' OR ', $conditionsOR);
+
+        $conditionsNeg = []; // conditiosn pour la vente NEG
+        foreach ($byCst as $cst => $refps) {
+            $conditionsNeg[] = "(nlig_constp = '$cst' {$this->selectCond->in('nlig_refp',$refps)})";
+        }
+        $whereOrNeg = implode(' OR ', $conditionsNeg);
+
+        $statement = "SELECT 
+            TRIM(slor_constp) AS cst, 
+            TRIM(slor_refp)   AS refp,
+            TRIM(seor_lib)    AS lib, 
+            seor_numor        AS num_doc, 
+            seor_numcli       AS num_cli, 
+            TRIM(seor_nomcli) AS nom_cli,
+            TRIM('OR')        AS rmq,
+            CASE
+                WHEN plan.min_start IS NULL 
+                THEN TO_CHAR(sitv_datepla, '%Y-%m-%d')
+                ELSE TO_CHAR(plan.min_start, '%Y-%m-%d')
+            END AS datepla
+        FROM {$this->dbIps}.sav_eor
+        JOIN {$this->dbIps}.sav_lor
+            ON seor_numor = slor_numor 
+            AND slor_soc = seor_soc 
+            AND slor_succ = seor_succ
+        JOIN {$this->dbIps}.sav_itv
+            ON sitv_numor = slor_numor
+            AND sitv_interv = slor_nogrp / 100
+            AND sitv_soc = seor_soc 
+            AND sitv_succ = seor_succ
+        LEFT JOIN (
+            SELECT ofh_id, ofs_id, MIN(ska_d_start) AS min_start
+            FROM {$this->dbIps}.ska
+                JOIN {$this->dbIps}.skw 
+                ON skw.skw_id = ska.skw_id
+            GROUP BY ofh_id, ofs_id
+        ) plan ON plan.ofh_id = seor_numor AND plan.ofs_id = sitv_interv
+        WHERE   slor_numcf  = '$numCde'
+            AND slor_natcm  = 'C'
+            AND seor_serv   = 'SAV'
+            AND ({$whereOr})
+
+        UNION
+
+        SELECT
+            TRIM(nlig_constp) AS cst, 
+            TRIM(nlig_refp)   AS refp,
+            TRIM(nent_refcde) AS lib,
+            nent_numcde       AS num_doc, 
+            nent_numcli       AS num_cli, 
+            TRIM(nent_nomcli) AS nom_cli,
+            TRIM('VTE NEG')   AS rmq, 
+            ''                AS datepla
+        FROM {$this->dbIps}.neg_ent
+        JOIN {$this->dbIps}.neg_lig 
+            ON nent_numcde = nlig_numcde
+        WHERE nlig_numcf  = '$numCde'
+            AND ({$whereOrNeg})";
+
+        $result = $this->connect->executeQuery($statement);
+        $rows   = $this->connect->fetchResults($result);
+
+        $grouped = [];
+        foreach ($rows as $row) {
+            $cst  = trim($row['cst']);
+            $refp = trim($row['refp']);
+            $grouped["$cst|$refp"][] = $row;
+        }
+
+        return $grouped;
     }
 
     /** 
