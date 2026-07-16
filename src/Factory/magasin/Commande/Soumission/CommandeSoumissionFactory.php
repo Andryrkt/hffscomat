@@ -4,17 +4,19 @@ namespace App\Factory\magasin\Commande\Soumission;
 
 use App\Dto\Magasin\Commande\Soumission\CommandeSoumissionDTO;
 use App\Dto\Magasin\Commande\Soumission\CommandeSoumissionLigneDTO;
+use App\Dto\Magasin\Commande\Soumission\CommandeSoumissionDetailDTO;
 
 class CommandeSoumissionFactory
 {
 
     /**
      * @param array<int,array{num_cde:string,date_cde:string,type_cde:string,num_frn:string,nom_frn:string,agence_lib:string,service_lib:string,cst:string,refp:string,desi:string,qte_cde:string,package_qty:string,prix_unit:string,montant:string,poids_total:string,av_bt:string,fms:string,vte_der_mois:string,nbr_vente:string,stock_dispo:string,stock_min:string,stock_max:string,npr:string}> $data
+     * @param array<string,array{cst:string,refp:string,lib:string,num_doc:string,num_cli:string,nom_cli:string,rmq:string,datepla:string}> $detailsData
      * @param string $email
      * 
      * @return CommandeSoumissionDTO|null
      */
-    public function hydrate(array $data, string $email): ?CommandeSoumissionDTO
+    public function hydrate(array $data, array $detailsData, string $email): ?CommandeSoumissionDTO
     {
         if (empty($data)) return null;
 
@@ -31,27 +33,31 @@ class CommandeSoumissionFactory
         $dto->responsable     = $email;
         $dto->libelleAgence   = $headerInfo['agence_lib'];
         $dto->libelleService  = $headerInfo['service_lib'];
-        $dto->lignes          = $this->hydrateLignes($data);
+        $dto->lignes          = $this->hydrateLignes($data, $detailsData);
 
         return $dto;
     }
 
     /**
      * @param array<int,array{num_cde:string,date_cde:string,type_cde:string,num_frn:string,nom_frn:string,agence_lib:string,service_lib:string,cst:string,refp:string,desi:string,qte_cde:string,package_qty:string,prix_unit:string,montant:string,poids_total:string,av_bt:string,fms:string,vte_der_mois:string,nbr_vente:string,stock_dispo:string,stock_min:string,stock_max:string,npr:string}> $data
+     * @param array<string,array{cst:string,refp:string,lib:string,num_doc:string,num_cli:string,nom_cli:string,rmq:string,datepla:string}> $detailsData
      * 
      * @return list<CommandeSoumissionLigneDTO>
      */
-    public function hydrateLignes(array $data): array
+    public function hydrateLignes(array $data, array $detailsData): array
     {
         $lignes = [];
 
         foreach ($data as $key => $ligne) {
             $dtoLigne = new CommandeSoumissionLigneDTO;
 
+            $cst  = trim($ligne['cst']);
+            $refp = trim($ligne['refp']);
+
             $dtoLigne->numLine        = $key + 1;
-            $dtoLigne->const          = $ligne['cst'];
+            $dtoLigne->const          = $cst;
             $dtoLigne->avBat          = $ligne['av_bt'];
-            $dtoLigne->ref            = $ligne['refp'];
+            $dtoLigne->ref            = $refp;
             $dtoLigne->packQty        = $ligne['package_qty'];
             $dtoLigne->designation    = $ligne['desi'];
             $dtoLigne->npr            = $ligne['npr'];
@@ -67,9 +73,41 @@ class CommandeSoumissionFactory
             $dtoLigne->prixTotal      = (float) $ligne['montant'];
             $dtoLigne->poids          = (float) $ligne['poids_total'];
 
+            $dtoLigne->details        = $this->hydrateDetails($detailsData["$cst|$refp"] ?? []);
+
             $lignes[] = $dtoLigne;
         }
 
         return $lignes;
+    }
+
+    /**
+     * @param list<array{cst:string,refp:string,lib:string,num_doc:string,num_cli:string,nom_cli:string,rmq:string,datepla:string}> $details
+     *
+     * @return list<CommandeSoumissionDetailDTO>
+     */
+    private function hydrateDetails(array $details): array
+    {
+        $result = [];
+
+        foreach ($details as $detail) {
+            $dtoDetail = new CommandeSoumissionDetailDTO;
+
+            $isVteNeg = $detail['rmq'] === 'VTE NEG';
+            $datePla  = null;
+
+            if (!$isVteNeg && !empty($detail['datepla'])) $datePla = new \DateTime($detail['datepla']);
+
+            $dtoDetail->numDoc       = $detail['num_doc'];
+            $dtoDetail->refClient    = $detail['lib'];
+            $dtoDetail->numClient    = $detail['num_cli'];
+            $dtoDetail->nomClient    = $detail['nom_cli'];
+            $dtoDetail->rmqClient    = $detail['rmq'];
+            $dtoDetail->datePlanning = $datePla;
+
+            $result[] = $dtoDetail;
+        }
+
+        return $result;
     }
 }
