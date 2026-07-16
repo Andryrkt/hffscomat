@@ -64,8 +64,9 @@ class SoumissionCommandeController extends Controller
     public function soumettreAValider(FormInterface $form)
     {
 
-        $numCommande = $form->get('numCmde')->getData();
-        $fileName = "Commande_Fournisseur_{$numCommande}.pdf";
+        $numCommande = $form->get('numCmdeAValider')->getData();
+        $generatedFilePath = $form->get('generatedFilePath')->getData();
+
         $bcSoumisMagasinDto = new  BcSoumisMagasinDTO();
 
 
@@ -75,16 +76,15 @@ class SoumissionCommandeController extends Controller
         $bcSoumisMagasinDto->statut = "Soumis à validation";
         $bcSoumisMagasinDto->dateHeureSoumission = new \DateTime();
 
+        $cheminDuFichier = $_ENV["BASE_PATH_FICHIER"] . str_replace('/Upload', '', $generatedFilePath);
 
 
-        $isNumCmdExist = true; // Change logic on Model ->isExist($numCommande)
-
-        if (!$isNumCmdExist) {
-            return;
+        if (!file_exists($cheminDuFichier)) {
+            throw new \Exception("Le fichier PDF n'existe pas : " . $generatedFilePath);
         }
 
         $isCopiedToDWFilePath = $this->generatePdfCdeMagasin->copyToDOCUWARE(
-            $fileName,
+            $cheminDuFichier,
             $numCommande
         );
 

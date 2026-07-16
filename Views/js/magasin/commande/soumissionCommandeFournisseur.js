@@ -16,6 +16,12 @@ document.addEventListener("DOMContentLoaded", function () {
   const loader = document.getElementById("spinners");
   const viewerContainer = document.getElementById("viewer-container");
   const numCdeInput = document.getElementById("soumission_commande_numCmde");
+  const hiddenNumCdeAValiderInput = document.getElementById(
+    "soumission_commande_numCmdeAValider",
+  );
+  const hiddenGeneratedFilePath = document.getElementById(
+    "soumission_commande_generatedFilePath",
+  );
 
   numCdeInput.addEventListener("keydown", function (e) {
     if (e.key === "Enter") {
@@ -47,6 +53,11 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!pdfUrl) {
         throw new Error("Aucune URL de PDF reçue");
       }
+
+      hiddenNumCdeAValiderInput.value = numCde;
+      hiddenGeneratedFilePath.value = pdfUrl;
+
+      console.log(hiddenGeneratedFilePath, hiddenNumCdeAValiderInput);
 
       iframe.src = pdfUrl + "#toolbar=0";
       loader.classList.add("d-none");
