@@ -241,24 +241,24 @@ class GeneratePdfCdeMagasin extends GeneratePdf
         $this->pdf->SetFont($this->font, "B", $this->textSize);
         $this->pdf->SetFillColor(240, 240, 240);
 
-        $this->pdf->Cell($this->mainRowWidths['noLigne'],     $this->textHeight, $ligne->numLine,        0, 0, 'C', $fill);
-        $this->pdf->Cell($this->mainRowWidths['cst'],         $this->textHeight, $ligne->const,          0, 0, 'C', $fill);
-        $this->pdf->Cell($this->mainRowWidths['avBat'],       $this->textHeight, $ligne->avBat,          0, 0, 'C', $fill);
-        $this->pdf->Cell($this->mainRowWidths['ref'],         $this->textHeight, $ligne->ref,            0, 0, 'L', $fill);
-        $this->pdf->Cell($this->mainRowWidths['packQty'],     $this->textHeight, $ligne->packQty,        0, 0, 'C', $fill);
-        $this->pdf->Cell($this->mainRowWidths['designation'], $this->textHeight, $ligne->designation,    0, 0, 'L', $fill);
-        $this->pdf->Cell($this->mainRowWidths['npr'],         $this->textHeight, $ligne->npr,            0, 0, 'C', $fill);
-        $this->pdf->Cell($this->mainRowWidths['fms'],         $this->textHeight, $ligne->fms,            0, 0, 'C', $fill);
-        $this->pdf->Cell($this->mainRowWidths['ret'],         $this->textHeight, $ligne->ret,            0, 0, 'C', $fill);
-        $this->pdf->Cell($this->mainRowWidths['qteCdee'],     $this->textHeight, $ligne->qteDem,         0, 0, 'C', $fill);
-        $this->pdf->Cell($this->mainRowWidths['qteDispo'],    $this->textHeight, $ligne->qteDispo,       0, 0, 'C', $fill);
-        $this->pdf->Cell($this->mainRowWidths['qteDispoMin'], $this->textHeight, $ligne->qteDispoMin,    0, 0, 'C', $fill);
-        $this->pdf->Cell($this->mainRowWidths['qteDispoMax'], $this->textHeight, $ligne->qteDispoMax,    0, 0, 'C', $fill);
-        $this->pdf->Cell($this->mainRowWidths['qteVte6M'],    $this->textHeight, $ligne->qteVteDer6Mois, 0, 0, 'C', $fill);
-        $this->pdf->Cell($this->mainRowWidths['nbrVte6M'],    $this->textHeight, $ligne->nbrVteDer6Mois, 0, 0, 'C', $fill);
-        $this->pdf->Cell($this->mainRowWidths['coutUnit'],    $this->textHeight, $ligne->prixUnitaire,   0, 0, 'R', $fill);
-        $this->pdf->Cell($this->mainRowWidths['coutTotal'],   $this->textHeight, $ligne->prixTotal,      0, 0, 'R', $fill);
-        $this->pdf->Cell($this->mainRowWidths['poids'],       $this->textHeight, $ligne->poids,          0, 1, 'C', $fill);
+        $this->pdf->Cell($this->mainRowWidths['noLigne'],     $this->textHeight, $ligne->numLine,           0, 0, 'C', $fill);
+        $this->pdf->Cell($this->mainRowWidths['cst'],         $this->textHeight, $ligne->const,             0, 0, 'C', $fill);
+        $this->pdf->Cell($this->mainRowWidths['avBat'],       $this->textHeight, $ligne->avBat,             0, 0, 'C', $fill);
+        $this->pdf->Cell($this->mainRowWidths['ref'],         $this->textHeight, $ligne->ref,               0, 0, 'L', $fill);
+        $this->pdf->Cell($this->mainRowWidths['packQty'],     $this->textHeight, $ligne->packQty,           0, 0, 'C', $fill);
+        $this->pdf->Cell($this->mainRowWidths['designation'], $this->textHeight, $ligne->designation,       0, 0, 'L', $fill);
+        $this->pdf->Cell($this->mainRowWidths['npr'],         $this->textHeight, $ligne->npr,               0, 0, 'C', $fill);
+        $this->pdf->Cell($this->mainRowWidths['fms'],         $this->textHeight, $ligne->fms,               0, 0, 'C', $fill);
+        $this->pdf->Cell($this->mainRowWidths['ret'],         $this->textHeight, $ligne->ret,               0, 0, 'C', $fill);
+        $this->pdf->Cell($this->mainRowWidths['qteCdee'],     $this->textHeight, $ligne->qteDem,            0, 0, 'C', $fill);
+        $this->pdf->Cell($this->mainRowWidths['qteDispo'],    $this->textHeight, $ligne->qteDispo,          0, 0, 'C', $fill);
+        $this->pdf->Cell($this->mainRowWidths['qteDispoMin'], $this->textHeight, $ligne->qteDispoMin,       0, 0, 'C', $fill);
+        $this->pdf->Cell($this->mainRowWidths['qteDispoMax'], $this->textHeight, $ligne->qteDispoMax,       0, 0, 'C', $fill);
+        $this->pdf->Cell($this->mainRowWidths['qteVte6M'],    $this->textHeight, $ligne->qteVteDer6Mois,    0, 0, 'C', $fill);
+        $this->pdf->Cell($this->mainRowWidths['nbrVte6M'],    $this->textHeight, $ligne->nbrVteDer6Mois,    0, 0, 'C', $fill);
+        $this->pdf->Cell($this->mainRowWidths['coutUnit'],    $this->textHeight, $ligne->getPrixUnitaire(), 0, 0, 'R', $fill);
+        $this->pdf->Cell($this->mainRowWidths['coutTotal'],   $this->textHeight, $ligne->getPrixTotal(),    0, 0, 'R', $fill);
+        $this->pdf->Cell($this->mainRowWidths['poids'],       $this->textHeight, $ligne->getPoids(),        0, 1, 'C', $fill);
     }
 
     private function renderSubRow(CommandeSoumissionDetailDTO $detail, bool $fill): void

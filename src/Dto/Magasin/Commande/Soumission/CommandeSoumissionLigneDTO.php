@@ -25,4 +25,25 @@ class CommandeSoumissionLigneDTO
 
     /** @var list<CommandeSoumissionDetailDTO> */
     public array   $details        = [];
+
+    public function getPrixUnitaire(): string
+    {
+        if ($this->prixUnitaire === null) return "";
+
+        return number_format($this->prixUnitaire, 2, ',', ' ') . " Ar";
+    }
+
+    public function getPrixTotal(): string
+    {
+        if ($this->prixTotal === null) return "";
+
+        return number_format($this->prixTotal, 2, ',', ' ') . " Ar";
+    }
+
+    public function getPoids(): string
+    {
+        if ($this->poids === null) return "";
+
+        return number_format($this->poids, 2, ',', ' ');
+    }
 }
