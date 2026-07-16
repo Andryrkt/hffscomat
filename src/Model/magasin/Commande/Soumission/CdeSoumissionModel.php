@@ -14,12 +14,13 @@ class CdeSoumissionModel extends Model
      * Méthode pour retourner les infos sur la commande avec $numCde
      * 
      * @param string $numCde       numéro de la commande
+     * @param string $userMail     email de l'utilisateur
      * @param string $succursale   succursale
      * @param string $codeSociete  code société
      * 
      * @return ?CommandeSoumissionDTO
      */
-    public function findInfoCommande(string $numCde, string $succursale = '1', string $codeSociete = 'CO'): ?CommandeSoumissionDTO
+    public function findInfoCommande(string $numCde, string $userMail, string $succursale = '1', string $codeSociete = 'CO'): ?CommandeSoumissionDTO
     {
         $startDate = (new DateTime('first day of -6 months'))->format("Ym");
         $endDate   = (new DateTime('last day of last month'))->format("Ym");
@@ -51,9 +52,11 @@ class CdeSoumissionModel extends Model
                 WHERE atab_nom  = 'SER' AND atab_code = fcde_serv
             ) AS service_lib,
             fcdl_constp AS cst,
+            CASE TRIM(abse_libre1)
+                WHEN 'A' THEN '(A)'
+                ELSE '(B)'
+            END AS av_bt,
             TRIM(fcdl_refp) AS refp,
-            TRIM(fcdl_desi) AS desi,
-            fcdl_qte AS qte_cde,
             (
                 SELECT afrn_cond
                 FROM {$this->dbIps}.art_frn
@@ -68,30 +71,25 @@ class CdeSoumissionModel extends Model
                     AND   afrn_refp   = fcdl_refp
                 )
             ) AS package_qty,
-            fcdl_pxach * (1 - (fcdl_txrem / 100))                AS prix_unit,
-            fcdl_qte * fcdl_pxach * (1 - (fcdl_txrem / 100))     AS montant,
-            fcdl_qte * abse_poids                                AS poids_total,
-            CASE TRIM(abse_libre1)
-                WHEN 'A' THEN '(A)'
-                ELSE '(B)'
-            END AS av_bt,
+            TRIM(fcdl_desi) AS desi,
+            CASE NVL(
+                (
+                    SELECT SUM(astp_stock - astp_reserv)
+                    FROM {$this->dbIps}.art_stp
+                    WHERE astp_constp = fcdl_constp
+                    AND astp_refp IN (
+                        SELECT armp_ref
+                        FROM {$this->dbIps}.art_rmp
+                        WHERE armp_nivr   = 2
+                        AND armp_constp = fcdl_constp
+                        AND armp_refp   = fcdl_refp
+                    )
+                ), 0
+            )   WHEN 0 THEN ''
+                ELSE '(*)'
+            END AS npr,
             TRIM(abse_libre2) AS fms,
-            (
-                SELECT NVL(SUM(asta_qtesor), 0)
-                FROM {$this->dbIps}.art_sta
-                WHERE asta_constp = fcdl_constp
-                AND asta_refp   = fcdl_refp
-                AND asta_per >= '$startDate'
-                AND asta_per <= '$endDate'
-            ) AS vte_der_mois,
-            (
-                SELECT NVL(SUM(asta_nblign), 0)
-                FROM {$this->dbIps}.art_sta
-                WHERE asta_constp = fcdl_constp
-                AND asta_refp   = fcdl_refp
-                AND asta_per >= '$startDate'
-                AND asta_per <= '$endDate'
-            ) AS nbr_vente,
+            fcdl_qte AS qte_cde,
             (
                 SELECT NVL(astp_stock - astp_reserv, 0)
                 FROM {$this->dbIps}.art_stp
@@ -113,22 +111,25 @@ class CdeSoumissionModel extends Model
                 AND astp_refp   = fcdl_refp
                 AND astp_succ   = '$succursale'
             ) AS stock_max,
-            CASE NVL(
-                (
-                    SELECT SUM(astp_stock - astp_reserv)
-                    FROM {$this->dbIps}.art_stp
-                    WHERE astp_constp = fcdl_constp
-                    AND astp_refp IN (
-                        SELECT armp_ref
-                        FROM {$this->dbIps}.art_rmp
-                        WHERE armp_nivr   = 2
-                        AND armp_constp = fcdl_constp
-                        AND armp_refp   = fcdl_refp
-                    )
-                ), 0
-            )   WHEN 0 THEN ''
-                ELSE '(*)'
-            END AS npr
+            (
+                SELECT NVL(SUM(asta_qtesor), 0)
+                FROM {$this->dbIps}.art_sta
+                WHERE asta_constp = fcdl_constp
+                AND asta_refp   = fcdl_refp
+                AND asta_per >= '$startDate'
+                AND asta_per <= '$endDate'
+            ) AS vte_der_mois,
+            (
+                SELECT NVL(SUM(asta_nblign), 0)
+                FROM {$this->dbIps}.art_sta
+                WHERE asta_constp = fcdl_constp
+                AND asta_refp   = fcdl_refp
+                AND asta_per >= '$startDate'
+                AND asta_per <= '$endDate'
+            ) AS nbr_vente,
+            fcdl_pxach * (1 - (fcdl_txrem / 100)) AS prix_unit,
+            fcdl_qte * fcdl_pxach * (1 - (fcdl_txrem / 100)) AS montant,
+            fcdl_qte * abse_poids AS poids_total
         FROM {$this->dbIps}.frn_cdl, {$this->dbIps}.frn_cde, {$this->dbIps}.art_bse
         WHERE fcdl_numcde = fcde_numcde
             AND fcde_numcde = '$numCde'
@@ -143,6 +144,6 @@ class CdeSoumissionModel extends Model
 
         $data = $this->connect->fetchResults($result);
 
-        return (new CommandeSoumissionFactory)->hydrate($data);
+        dd((new CommandeSoumissionFactory)->hydrate($data, $userMail));
     }
 }
