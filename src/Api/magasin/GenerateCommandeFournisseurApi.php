@@ -41,6 +41,8 @@ class GenerateCommandeFournisseurApi extends Controller
         }
 
         $generatePdfCdeMagasin = new GeneratePdfCdeMagasin();
+
+        //Change later with real values 
         $generatePdfCdeMagasin->generate($filePath);
 
         $url = rtrim($basePathCourt, '/\\')

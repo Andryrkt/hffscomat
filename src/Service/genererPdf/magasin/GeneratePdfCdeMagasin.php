@@ -363,15 +363,9 @@ class GeneratePdfCdeMagasin extends GeneratePdf
         }
     }
 
-    public function copyToDOCUWARE(string $fileName, string $numCmde): bool
+    public function copyToDOCUWARE(string $cheminDuFichier, string $numCmde): bool
     {
-        $cheminDW = rtrim($this->baseCheminDocuware, '/\\') . '/cmde/' . $fileName;
-        $cheminDuFichier = rtrim($this->baseCheminDuFichier, '/\\') . '/cmde/' . $numCmde . '/' . $fileName;
-
-        if (!file_exists($cheminDuFichier)) {
-            return false;
-        }
-
-        return   $this->copyFile($cheminDuFichier, $cheminDW);
+        $cheminDW = rtrim($this->baseCheminDocuware, '/\\') . '/cmde/' . $numCmde . '.pdf';
+        return $this->copyFile($cheminDuFichier, $cheminDW);
     }
 }
