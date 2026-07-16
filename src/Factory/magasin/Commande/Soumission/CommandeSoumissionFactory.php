@@ -93,10 +93,9 @@ class CommandeSoumissionFactory
         foreach ($details as $detail) {
             $dtoDetail = new CommandeSoumissionDetailDTO;
 
-            $isVteNeg = $detail['rmq'] === 'VTE NEG';
             $datePla  = null;
 
-            if (!$isVteNeg && !empty($detail['datepla'])) $datePla = new \DateTime($detail['datepla']);
+            if (!empty($detail['datepla'])) $datePla = new \DateTime($detail['datepla']);
 
             $dtoDetail->numDoc       = $detail['num_doc'];
             $dtoDetail->refClient    = $detail['lib'];

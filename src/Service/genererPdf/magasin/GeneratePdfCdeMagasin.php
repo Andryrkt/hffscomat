@@ -282,7 +282,7 @@ class GeneratePdfCdeMagasin extends GeneratePdf
         $this->pdf->SetFont($this->font, "I", $this->textSize - 0.6);
         $this->cellUnderline(20, $this->textHeight, "Référence client:", 0, 0, 'L', $fill);
 
-        $this->pdf->Cell(10, $this->textHeight, "VTE NEG", 0, 0, 'R', $fill);
+        $this->pdf->Cell(10, $this->textHeight, $detail->rmqClient, 0, 0, 'R', $fill);
         $this->pdf->Cell(15, $this->textHeight, " - {$detail->numDoc}",    0, 0, 'L', $fill);
         $this->pdf->Cell(75, $this->textHeight, $detail->getRefSplitted(), 0, 0, 'C', $fill);
         $this->pdf->Cell(90, $this->textHeight, "{$detail->numClient} - {$detail->nomClient}", 0, 0, 'L', $fill);
