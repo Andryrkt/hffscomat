@@ -2,40 +2,24 @@
 
 namespace App\Service\genererPdf\magasin;
 
-use App\Dto\Magasin\Commande\Soumission\CommandeSoumissionDetailDTO;
 use TCPDF;
+use App\Service\genererPdf\GeneratePdf;
 use App\Dto\Magasin\Commande\Soumission\CommandeSoumissionDTO;
 use App\Dto\Magasin\Commande\Soumission\CommandeSoumissionLigneDTO;
-use App\Service\genererPdf\GeneratePdf;
+use App\Dto\Magasin\Commande\Soumission\CommandeSoumissionDetailDTO;
 
 class GeneratePdfCdeMagasin extends GeneratePdf
 {
     private TCPDF $pdf;
     private string $font;
-    private float $w100;
     private float $titleSize;
     private float $textSize;
     private float $textHeight;
-    private const COL_WIDTHS = [
-        'noLigne'      => 8,
-        'cst'          => 10,
-        'avBat'        => 12,
-        'ref'          => 18,
-        'packQty'      => 12,
-        'designation'  => 45,
-        'npr'          => 10,
-        'fms'          => 10,
-        'ret'          => 8,
-        'qteCdee'      => 14,
-        'qteDispo'     => 14,
-        'qteDispoMin'  => 14,
-        'qteDispoMax'  => 14,
-        'qteVte6M'     => 14,
-        'nbrVte6M'     => 14,
-        'coutUnit'     => 16,
-        'coutTotal'    => 16,
-        'poids'        => 14,
-    ];
+    private float $mR;
+    private float $mL;
+    private float $mT;
+    private float $mB;
+    private array $mainRowWidths = [];
     private const COL_LABELS = [
         'noLigne'      => "N°\nLine",
         'cst'          => "CST",
@@ -44,12 +28,12 @@ class GeneratePdfCdeMagasin extends GeneratePdf
         'packQty'      => "Pack.\nQty",
         'designation'  => "Désignation",
         'npr'          => "NPR\n(*)",
-        'fms'          => "FMS",
+        'fms'          => "F\nM\nS",
         'ret'          => "Ret",
         'qteCdee'      => "Qté\nCdée",
         'qteDispo'     => "Qté\nDispo",
-        'qteDispoMin'  => "Qté Dispo\nMin",
-        'qteDispoMax'  => "Qté Dispo\nMax",
+        'qteDispoMin'  => "Qté\nDispo\nMin",
+        'qteDispoMax'  => "Qté\nDispo\nMax",
         'qteVte6M'     => "Qté Vte\nDernier\n6 Mois",
         'nbrVte6M'     => "Nbr Vte\nDernier\n6 Mois",
         'coutUnit'     => "Coût\nUnit.",
@@ -60,11 +44,10 @@ class GeneratePdfCdeMagasin extends GeneratePdf
     public function __construct()
     {
         parent::__construct();
-        $this->font = "helvetica";
-        $this->pdf  = $this->initPDF();
-        $this->w100 = $this->getUsableWidth();
-        $this->titleSize = 10;
-        $this->textSize = 7;
+        $this->font       = "helvetica";
+        $this->pdf        = $this->initPDF();
+        $this->titleSize  = 10;
+        $this->textSize   = 7;
         $this->textHeight = 5;
     }
 
@@ -82,7 +65,11 @@ class GeneratePdfCdeMagasin extends GeneratePdf
         $pdf = new TCPDF("L");
         $pdf->setPrintHeader(false);
         $pdf->setPrintFooter(false);
-        $pdf->setMargins(3, 3, 3, true);
+
+        // Définir les marges
+        $this->mL = $this->mR = $this->mT = $this->mB = 5;
+        $pdf->setMargins($this->mL, $this->mT, $this->mR, true);
+
         $pdf->AddPage();
 
         return $pdf;
@@ -91,9 +78,7 @@ class GeneratePdfCdeMagasin extends GeneratePdf
     private function getUsableWidth(): float
     {
         $w_total = $this->pdf->getPageWidth();
-        $margins = $this->pdf->GetMargins();
-
-        return $w_total - ($margins['top'] * 2);
+        return $w_total - ($this->mT + $this->mB);
     }
 
     private function renderHeader(CommandeSoumissionDTO $dto): void
@@ -107,7 +92,7 @@ class GeneratePdfCdeMagasin extends GeneratePdf
 
         $this->pdf->setFont($this->font, "B", $this->textSize);
         $this->pdf->Cell($wLbl, $this->textHeight, $dto->numeroCommande, 0, 0);
-        $this->pdf->Cell(0, $this->textHeight, "du {$dto->getDateCdeFormatted()}", 0, 1);
+        $this->pdf->Cell(0, $this->textHeight, $dto->getDateCdeFormatted(), 0, 1);
 
         $this->pdf->setFont($this->font, "I", $this->textSize);
         $this->cellUnderline($wLbl, $this->textHeight, "Type Commande:", 0, 0);
@@ -119,13 +104,13 @@ class GeneratePdfCdeMagasin extends GeneratePdf
         $this->cellUnderline($wLbl, $this->textHeight, "Délai d'expédition:", 0, 0);
 
         $this->pdf->setFont($this->font, "", $this->textSize);
-        $this->pdf->Cell(0, $this->textHeight, "{$dto->delaiExpedition} jours", 0, 1);
+        $this->pdf->Cell(0, $this->textHeight, $dto->getDelaiExpedition(), 0, 1);
 
         $this->pdf->setFont($this->font, "I", $this->textSize);
         $this->cellUnderline($wLbl, $this->textHeight, "Fournisseur:", 0, 0);
 
         $this->pdf->setFont($this->font, "B", $this->textSize);
-        $this->pdf->Cell(0, $this->textHeight, "{$dto->numFrn}   {$dto->nomFrn}", 0, 1);
+        $this->pdf->Cell(0, $this->textHeight, $dto->getFournisseur(), 0, 1);
 
         $this->pdf->setFont($this->font, "I", $this->textSize);
         $this->cellUnderline($wLbl, $this->textHeight, "Responsable:", 0, 0);
@@ -134,7 +119,7 @@ class GeneratePdfCdeMagasin extends GeneratePdf
         $this->pdf->Cell(0, $this->textHeight, $dto->responsable, 0, 0);
 
         $this->pdf->setFont($this->font, "B", $this->textSize);
-        $this->pdf->Cell(0, $this->textHeight, "{$dto->libelleAgence} - {$dto->libelleService}", 0, 1, 'R');
+        $this->pdf->Cell(0, $this->textHeight, $dto->getAgenceService(), 0, 1, 'R');
     }
 
     /** 
@@ -146,6 +131,11 @@ class GeneratePdfCdeMagasin extends GeneratePdf
      */
     private function renderTable(array $lignes): void
     {
+        $this->pdf->Ln(5);
+
+        // Définir la largeur du colonne principale avant utilisation
+        $this->defineMainRowWidths();
+
         $this->renderTableHeader();
 
         $rowIndex = 0;
@@ -173,6 +163,21 @@ class GeneratePdfCdeMagasin extends GeneratePdf
         }
     }
 
+    private function defineMainRowWidths(): void
+    {
+        $w100 = $this->getUsableWidth();
+        $this->mainRowWidths = array_fill_keys(array_keys(self::COL_LABELS), 0);
+
+        $this->mainRowWidths['noLigne'] = $this->mainRowWidths['cst'] = $this->mainRowWidths['avBat'] = $this->mainRowWidths['npr'] = $this->mainRowWidths['ret'] = $this->mainRowWidths['fms'] = 10;
+        $this->mainRowWidths['coutUnit'] = $this->mainRowWidths['coutTotal'] = $this->mainRowWidths['ref'] = 20;
+        $this->mainRowWidths['designation'] = 50;
+
+        $wUsed = array_sum(array_values($this->mainRowWidths));
+        $wRemaining = $w100 - $wUsed;
+
+        $this->mainRowWidths['packQty'] = $this->mainRowWidths['qteCdee'] = $this->mainRowWidths['qteDispo'] = $this->mainRowWidths['qteDispoMin'] = $this->mainRowWidths['qteDispoMax'] = $this->mainRowWidths['poids'] = $this->mainRowWidths['qteVte6M'] = $this->mainRowWidths['nbrVte6M'] = $wRemaining / 8;
+    }
+
     private function renderTableHeader(): void
     {
         $this->pdf->SetFont($this->font, "B", $this->textSize);
@@ -184,33 +189,17 @@ class GeneratePdfCdeMagasin extends GeneratePdf
         $x = $this->pdf->GetX();
         $y = $this->pdf->GetY();
 
-        foreach (self::COL_WIDTHS as $key => $width) {
+        foreach ($this->mainRowWidths as $key => $width) {
             $label = self::COL_LABELS[$key];
 
             // MultiCell avec fond, mais sans avancer X automatiquement
-            $this->pdf->MultiCell(
-                $width,
-                $headerHeight,
-                $label,
-                1,
-                'C',
-                true,
-                0,       // ln=0 : ne pas descendre à la ligne
-                null,
-                null,
-                true,
-                0,
-                false,
-                true,
-                $headerHeight,
-                'M'      // alignement vertical centré
-            );
+            $this->pdf->MultiCell($width, $headerHeight, $label, 1, 'C', true, 0, null, null, true, 0, false, true, $headerHeight, 'M');
 
             $x += $width;
             $this->pdf->SetXY($x, $y);
         }
 
-        $this->pdf->SetXY(3, $y + $headerHeight);
+        $this->pdf->SetXY($this->mL, $y + $headerHeight);
 
         // Reset couleurs pour les lignes de données
         $this->pdf->SetTextColor(0, 0, 0);
@@ -228,15 +217,14 @@ class GeneratePdfCdeMagasin extends GeneratePdf
     private function calculateHeaderHeight(): float
     {
         $maxLines = 1;
-        $lineHeight = $this->textHeight - 1;
 
         foreach (self::COL_LABELS as $key => $label) {
-            $width = self::COL_WIDTHS[$key];
+            $width = $this->mainRowWidths[$key];
             $nbLines = $this->pdf->getNumLines($label, $width);
             $maxLines = max($maxLines, $nbLines);
         }
 
-        return $maxLines * $lineHeight + 2; // +2 pour un peu de padding
+        return $maxLines * ($this->textHeight - 1); // maxLines = 3
     }
 
     private function checkPageBreak(float $neededHeight): void
@@ -250,41 +238,40 @@ class GeneratePdfCdeMagasin extends GeneratePdf
 
     private function renderMainRow(CommandeSoumissionLigneDTO $ligne, bool $fill): void
     {
-        $this->pdf->SetFont($this->font, "", $this->textSize);
+        $this->pdf->SetFont($this->font, "B", $this->textSize);
         $this->pdf->SetFillColor(240, 240, 240);
 
-        $this->pdf->Cell(self::COL_WIDTHS['noLigne'],     $this->textHeight, $ligne->numLine,        0, 0, 'C', $fill);
-        $this->pdf->Cell(self::COL_WIDTHS['cst'],         $this->textHeight, $ligne->const,          0, 0, 'C', $fill);
-        $this->pdf->Cell(self::COL_WIDTHS['avBat'],       $this->textHeight, $ligne->avBat,          0, 0, 'C', $fill);
-        $this->pdf->Cell(self::COL_WIDTHS['ref'],         $this->textHeight, $ligne->ref,            0, 0, 'L', $fill);
-        $this->pdf->Cell(self::COL_WIDTHS['packQty'],     $this->textHeight, $ligne->packQty,        0, 0, 'R', $fill);
-        $this->pdf->Cell(self::COL_WIDTHS['designation'], $this->textHeight, $ligne->designation,    0, 0, 'L', $fill);
-        $this->pdf->Cell(self::COL_WIDTHS['npr'],         $this->textHeight, $ligne->npr,            0, 0, 'C', $fill);
-        $this->pdf->Cell(self::COL_WIDTHS['fms'],         $this->textHeight, $ligne->fms,            0, 0, 'C', $fill);
-        $this->pdf->Cell(self::COL_WIDTHS['ret'],         $this->textHeight, $ligne->ret,            0, 0, 'C', $fill);
-        $this->pdf->Cell(self::COL_WIDTHS['qteCdee'],     $this->textHeight, $ligne->qteDem,         0, 0, 'R', $fill);
-        $this->pdf->Cell(self::COL_WIDTHS['qteDispo'],    $this->textHeight, $ligne->qteDispo,       0, 0, 'R', $fill);
-        $this->pdf->Cell(self::COL_WIDTHS['qteDispoMin'], $this->textHeight, $ligne->qteDispoMin,    0, 0, 'R', $fill);
-        $this->pdf->Cell(self::COL_WIDTHS['qteDispoMax'], $this->textHeight, $ligne->qteDispoMax,    0, 0, 'R', $fill);
-        $this->pdf->Cell(self::COL_WIDTHS['qteVte6M'],    $this->textHeight, $ligne->qteVteDer6Mois, 0, 0, 'R', $fill);
-        $this->pdf->Cell(self::COL_WIDTHS['nbrVte6M'],    $this->textHeight, $ligne->nbrVteDer6Mois, 0, 0, 'R', $fill);
-        $this->pdf->Cell(self::COL_WIDTHS['coutUnit'],    $this->textHeight, $ligne->prixUnitaire,   0, 0, 'R', $fill);
-        $this->pdf->Cell(self::COL_WIDTHS['coutTotal'],   $this->textHeight, $ligne->prixTotal,      0, 0, 'R', $fill);
-        $this->pdf->Cell(self::COL_WIDTHS['poids'],       $this->textHeight, $ligne->poids,          0, 1, 'R', $fill);
+        $this->pdf->Cell($this->mainRowWidths['noLigne'],     $this->textHeight, $ligne->numLine,        0, 0, 'C', $fill);
+        $this->pdf->Cell($this->mainRowWidths['cst'],         $this->textHeight, $ligne->const,          0, 0, 'C', $fill);
+        $this->pdf->Cell($this->mainRowWidths['avBat'],       $this->textHeight, $ligne->avBat,          0, 0, 'C', $fill);
+        $this->pdf->Cell($this->mainRowWidths['ref'],         $this->textHeight, $ligne->ref,            0, 0, 'L', $fill);
+        $this->pdf->Cell($this->mainRowWidths['packQty'],     $this->textHeight, $ligne->packQty,        0, 0, 'C', $fill);
+        $this->pdf->Cell($this->mainRowWidths['designation'], $this->textHeight, $ligne->designation,    0, 0, 'L', $fill);
+        $this->pdf->Cell($this->mainRowWidths['npr'],         $this->textHeight, $ligne->npr,            0, 0, 'C', $fill);
+        $this->pdf->Cell($this->mainRowWidths['fms'],         $this->textHeight, $ligne->fms,            0, 0, 'C', $fill);
+        $this->pdf->Cell($this->mainRowWidths['ret'],         $this->textHeight, $ligne->ret,            0, 0, 'C', $fill);
+        $this->pdf->Cell($this->mainRowWidths['qteCdee'],     $this->textHeight, $ligne->qteDem,         0, 0, 'C', $fill);
+        $this->pdf->Cell($this->mainRowWidths['qteDispo'],    $this->textHeight, $ligne->qteDispo,       0, 0, 'C', $fill);
+        $this->pdf->Cell($this->mainRowWidths['qteDispoMin'], $this->textHeight, $ligne->qteDispoMin,    0, 0, 'C', $fill);
+        $this->pdf->Cell($this->mainRowWidths['qteDispoMax'], $this->textHeight, $ligne->qteDispoMax,    0, 0, 'C', $fill);
+        $this->pdf->Cell($this->mainRowWidths['qteVte6M'],    $this->textHeight, $ligne->qteVteDer6Mois, 0, 0, 'C', $fill);
+        $this->pdf->Cell($this->mainRowWidths['nbrVte6M'],    $this->textHeight, $ligne->nbrVteDer6Mois, 0, 0, 'C', $fill);
+        $this->pdf->Cell($this->mainRowWidths['coutUnit'],    $this->textHeight, $ligne->prixUnitaire,   0, 0, 'R', $fill);
+        $this->pdf->Cell($this->mainRowWidths['coutTotal'],   $this->textHeight, $ligne->prixTotal,      0, 0, 'R', $fill);
+        $this->pdf->Cell($this->mainRowWidths['poids'],       $this->textHeight, $ligne->poids,          0, 1, 'C', $fill);
     }
 
     private function renderSubRow(CommandeSoumissionDetailDTO $detail, bool $fill): void
     {
-        $this->pdf->SetFont($this->font, "", $this->textSize);
+        $this->pdf->SetFont($this->font, "", $this->textSize - 0.6);
         $this->pdf->SetFillColor(240, 240, 240);
 
         // Largeur vide = somme des colonnes de "N° Ligne" jusqu'à "Désignation" incluse
-        $emptyWidth = self::COL_WIDTHS['noLigne']
-            + self::COL_WIDTHS['cst']
-            + self::COL_WIDTHS['avBat']
-            + self::COL_WIDTHS['ref']
-            + self::COL_WIDTHS['packQty']
-            + self::COL_WIDTHS['designation'];
+        $emptyWidth = $this->mainRowWidths['noLigne']
+            + $this->mainRowWidths['cst']
+            + $this->mainRowWidths['avBat']
+            + $this->mainRowWidths['ref']
+            - ($this->mainRowWidths['ref'] / 2);
 
         $x = $this->pdf->GetX();
         $y = $this->pdf->GetY();
@@ -292,23 +279,23 @@ class GeneratePdfCdeMagasin extends GeneratePdf
         // Cellule vide (avec bordure normale, comme le reste du tableau)
         $this->pdf->Cell($emptyWidth, $this->textHeight, '', 0, 0, 'L', $fill);
 
-        $this->pdf->SetFont($this->font, "I", $this->textSize);
-        $this->cellUnderline(25, $this->textHeight, "Référence client:", 0, 0, 'L', $fill);
+        $this->pdf->SetFont($this->font, "I", $this->textSize - 0.6);
+        $this->cellUnderline(20, $this->textHeight, "Référence client:", 0, 0, 'L', $fill);
 
-        $this->pdf->SetFont($this->font, "", $this->textSize);
-        // Texte du détail, "bout à bout" sur le reste de la largeur
-        $this->pdf->Cell(20, $this->textHeight, $detail->numDoc,                  0, 0, 'L', $fill);
-        $this->pdf->Cell(25, $this->textHeight, $detail->refClient,               0, 0, 'L', $fill);
-        $this->pdf->Cell(20, $this->textHeight, $detail->numClient,               0, 0, 'L', $fill);
-        $this->pdf->Cell(35, $this->textHeight, $detail->nomClient,               0, 0, 'L', $fill);
-        $this->pdf->Cell(35, $this->textHeight, $detail->rmqClient,               0, 0, 'L', $fill);
-        $this->pdf->Cell(0,  $this->textHeight, $detail->getDatePlanningFormatted(), 0, 1, 'L', $fill);
+        $this->pdf->Cell(10, $this->textHeight, "VTE NEG", 0, 0, 'R', $fill);
+        $this->pdf->Cell(15, $this->textHeight, " - {$detail->numDoc}",    0, 0, 'L', $fill);
+        $this->pdf->Cell(75, $this->textHeight, $detail->getRefSplitted(), 0, 0, 'C', $fill);
+        $this->pdf->Cell(90, $this->textHeight, "{$detail->numClient} - {$detail->nomClient}", 0, 0, 'L', $fill);
+        $w100 = $this->getUsableWidth();
+        $wUsed = $emptyWidth + 20 + 10 + 15 + 75 + 15 + 75;
+
+        $this->pdf->Cell($w100 - $wUsed,  $this->textHeight, $detail->getDatePlanningFormatted(), 0, 1, 'L', $fill);
 
         // Ligne pointillée séparant ce détail du suivant (sous la cellule texte)
         $this->drawDottedSeparator(
             $x + $emptyWidth,
             $y + $this->textHeight,
-            $this->pdf->getPageWidth() - 3
+            $this->pdf->getPageWidth() - $this->mL
         );
     }
 
@@ -354,13 +341,9 @@ class GeneratePdfCdeMagasin extends GeneratePdf
         $this->pdf->Line($lineXStart, $lineY, $lineXEnd, $lineY);
 
         // Repositionner le curseur comme le ferait Cell() avec $ln=0
-        if ($ln == 0) {
-            $this->pdf->SetXY($x + $w, $y);
-        } elseif ($ln == 1) {
-            $this->pdf->SetXY(3, $y + $h);
-        } elseif ($ln == 2) {
-            $this->pdf->SetXY($x, $y + $h);
-        }
+        if ($ln == 0)      $this->pdf->SetXY($x + $w - 1, $y);
+        elseif ($ln == 1)  $this->pdf->SetXY($this->mL, $y + $h);
+        elseif ($ln == 2)  $this->pdf->SetXY($x - 1, $y + $h);
     }
 
     public function copyToDOCUWARE(string $cheminDuFichier, string $numCmde): bool
