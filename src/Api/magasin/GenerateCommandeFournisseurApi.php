@@ -3,6 +3,8 @@
 namespace App\Api\magasin;
 
 use App\Controller\Controller;
+use App\Dto\Magasin\Commande\Soumission\CommandeSoumissionDTO;
+use App\Model\magasin\CommANDe\Soumission\CdeSoumissionModel;
 use App\Service\genererPdf\magasin\GeneratePdfCdeMagasin;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,12 +20,16 @@ class GenerateCommandeFournisseurApi extends Controller
     public function generatePdfCmdeFournisseur(Request $request): JsonResponse
     {
         $numCde = $request->query->get('numCde');
+        $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
+        $userMail = $this->getUserMail();
+
 
         if (!$numCde) {
             return new JsonResponse([
                 'message' => 'Numéro de commande requis'
             ], JsonResponse::HTTP_BAD_REQUEST);
         }
+
         $fileName = "Commande_Fournisseur_{$numCde}.pdf";
 
         $basePath = rtrim($_ENV['BASE_PATH_FICHIER'], '/\\');
@@ -40,19 +46,45 @@ class GenerateCommandeFournisseurApi extends Controller
             unlink($filePath);
         }
 
-        $generatePdfCdeMagasin = new GeneratePdfCdeMagasin();
 
-        //Change later with real values 
-        $generatePdfCdeMagasin->generate($filePath);
+        try {
+            $cdeSoumissionModel = new CdeSoumissionModel();
 
-        $url = rtrim($basePathCourt, '/\\')
-            . "/cmde/"
-            . $numCde
-            . "/"
-            . $fileName;
+            $commandeSoumissionDto = $cdeSoumissionModel->findInfoCommande(
+                $numCde,
+                $userMail,
+                "1",
+                $codeSociete
+            );
 
-        return new JsonResponse([
-            'url' => $url,
-        ]);
+            if ($commandeSoumissionDto === null) {
+                return new JsonResponse([
+                    'url' => null,
+                    'message' => "Aucune information trouvée pour la commande {$numCde}."
+                ], JsonResponse::HTTP_NOT_FOUND);
+            }
+
+            $generatePdfCdeMagasin = new GeneratePdfCdeMagasin();
+            $generatePdfCdeMagasin->generate(
+                $commandeSoumissionDto,
+                $filePath
+            );
+
+            $url = $basePathCourt
+                . "/cmde/"
+                . $numCde
+                . "/"
+                . $fileName;
+
+            return new JsonResponse([
+                'url' => $url,
+                'message' => "PDF généré avec succès."
+            ]);
+        } catch (\Throwable $e) {
+            return new JsonResponse([
+                'url' => null,
+                'message' => "Erreur lors de la génération du PDF : " . $e->getMessage()
+            ], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 }

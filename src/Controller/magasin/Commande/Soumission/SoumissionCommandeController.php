@@ -40,7 +40,6 @@ class SoumissionCommandeController extends Controller
      */
     public function soumissionCommande(Request $request)
     {
-        $codeSociette = $this->getSecurityService()->getCodeSocieteUser();
         $form = $this->getFormFactory()
             ->createBuilder(SoumissionCommandeType::class, null, [
                 'method' => 'POST',

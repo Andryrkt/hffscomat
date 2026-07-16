@@ -72,6 +72,7 @@ document.addEventListener("DOMContentLoaded", function () {
         showConfirmButton: false,
       });
       loader.classList.add("d-none");
+      validationBtn.style.display = "none";
       viewerContainer.style.display = "none";
     }
   });
