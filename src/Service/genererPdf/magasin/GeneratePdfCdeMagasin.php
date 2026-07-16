@@ -19,7 +19,13 @@ class GeneratePdfCdeMagasin extends GeneratePdf
     private float $mL;
     private float $mT;
     private float $mB;
+
+    /** @var array{noLigne:int|float,cst:int|float,avBat:int|float,ref:int|float,packQty:int|float,designation:int|float,npr:int|float,fms:int|float,ret:int|float,qteCdee:int|float,qteDispo:int|float,qteDispoMin:int|float,qteDispoMax:int|float,qteVte6M:int|float,nbrVte6M:int|float,coutUnit:int|float,coutTotal:int|float,poids:int|float} $mainRowWidths */
     private array $mainRowWidths = [];
+
+    /** @var array{empty:int|float,refClientLabel:int|float,rmqClient:int|float,numDoc:int|float,ref:int|float,client:int|float,datePlanning:int|float} $subRowWidths */
+    private array $subRowWidths = [];
+
     private const COL_LABELS = [
         'noLigne'      => "N°\nLine",
         'cst'          => "CST",
@@ -136,6 +142,9 @@ class GeneratePdfCdeMagasin extends GeneratePdf
         // Définir la largeur du colonne principale avant utilisation
         $this->defineMainRowWidths();
 
+        // Définir la largeur du colonne sous-ligne avant utilisation
+        $this->defineSubRowWidths();
+
         $this->renderTableHeader();
 
         $rowIndex = 0;
@@ -176,6 +185,31 @@ class GeneratePdfCdeMagasin extends GeneratePdf
         $wRemaining = $w100 - $wUsed;
 
         $this->mainRowWidths['packQty'] = $this->mainRowWidths['qteCdee'] = $this->mainRowWidths['qteDispo'] = $this->mainRowWidths['qteDispoMin'] = $this->mainRowWidths['qteDispoMax'] = $this->mainRowWidths['poids'] = $this->mainRowWidths['qteVte6M'] = $this->mainRowWidths['nbrVte6M'] = $wRemaining / 8;
+    }
+
+    private function defineSubRowWidths(): void
+    {
+        $w100 = $this->getUsableWidth();
+
+        // Largeur vide = somme des colonnes de "N° Ligne" jusqu'à "Réf" / 2 incluse
+        $emptyWidth = $this->mainRowWidths['noLigne']
+            + $this->mainRowWidths['cst']
+            + $this->mainRowWidths['avBat']
+            + ($this->mainRowWidths['ref'] / 2);
+
+        $this->subRowWidths = [
+            "empty"          => $emptyWidth,
+            "refClientLabel" => 20,
+            "rmqClient"      => 10,
+            "numDoc"         => 15,
+            "ref"            => 75,
+            "client"         => 90,
+            "datePlanning"   => 0,
+        ];
+
+        $wUsed = array_sum(array_values($this->subRowWidths));
+
+        $this->subRowWidths['datePlanning'] = $w100 - $wUsed;
     }
 
     private function renderTableHeader(): void
@@ -266,34 +300,24 @@ class GeneratePdfCdeMagasin extends GeneratePdf
         $this->pdf->SetFont($this->font, "", $this->textSize - 0.6);
         $this->pdf->SetFillColor(240, 240, 240);
 
-        // Largeur vide = somme des colonnes de "N° Ligne" jusqu'à "Désignation" incluse
-        $emptyWidth = $this->mainRowWidths['noLigne']
-            + $this->mainRowWidths['cst']
-            + $this->mainRowWidths['avBat']
-            + $this->mainRowWidths['ref']
-            - ($this->mainRowWidths['ref'] / 2);
-
         $x = $this->pdf->GetX();
         $y = $this->pdf->GetY();
 
         // Cellule vide (avec bordure normale, comme le reste du tableau)
-        $this->pdf->Cell($emptyWidth, $this->textHeight, '', 0, 0, 'L', $fill);
+        $this->pdf->Cell($this->subRowWidths['empty'], $this->textHeight, '', 0, 0, 'L', $fill);
 
         $this->pdf->SetFont($this->font, "I", $this->textSize - 0.6);
-        $this->cellUnderline(20, $this->textHeight, "Référence client:", 0, 0, 'L', $fill);
+        $this->cellUnderline($this->subRowWidths['refClientLabel'], $this->textHeight, "Référence client:", 0, 0, 'L', $fill);
 
-        $this->pdf->Cell(10, $this->textHeight, $detail->rmqClient, 0, 0, 'R', $fill);
-        $this->pdf->Cell(15, $this->textHeight, " - {$detail->numDoc}",    0, 0, 'L', $fill);
-        $this->pdf->Cell(75, $this->textHeight, $detail->getRefSplitted(), 0, 0, 'C', $fill);
-        $this->pdf->Cell(90, $this->textHeight, "{$detail->numClient} - {$detail->nomClient}", 0, 0, 'L', $fill);
-        $w100 = $this->getUsableWidth();
-        $wUsed = $emptyWidth + 20 + 10 + 15 + 75 + 15 + 75;
-
-        $this->pdf->Cell($w100 - $wUsed,  $this->textHeight, $detail->getDatePlanningFormatted(), 0, 1, 'L', $fill);
+        $this->pdf->Cell($this->subRowWidths['rmqClient'], $this->textHeight, $detail->rmqClient, 0, 0, 'R', $fill);
+        $this->pdf->Cell($this->subRowWidths['numDoc'], $this->textHeight, " - {$detail->numDoc}",    0, 0, 'L', $fill);
+        $this->pdf->Cell($this->subRowWidths['ref'], $this->textHeight, $detail->getRefSplitted(), 0, 0, 'C', $fill);
+        $this->pdf->Cell($this->subRowWidths['client'], $this->textHeight, "{$detail->numClient} - {$detail->nomClient}", 0, 0, 'L', $fill);
+        $this->pdf->Cell($this->subRowWidths['datePlanning'],  $this->textHeight, $detail->getDatePlanningFormatted(), 0, 1, 'L', $fill);
 
         // Ligne pointillée séparant ce détail du suivant (sous la cellule texte)
         $this->drawDottedSeparator(
-            $x + $emptyWidth,
+            $x + $this->subRowWidths['empty'],
             $y + $this->textHeight,
             $this->pdf->getPageWidth() - $this->mL
         );
