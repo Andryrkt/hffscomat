@@ -177,8 +177,17 @@ class GeneratePdfCdeMagasin extends GeneratePdf
         $w100 = $this->getUsableWidth();
         $this->mainRowWidths = array_fill_keys(array_keys(self::COL_LABELS), 0);
 
-        $this->mainRowWidths['noLigne'] = $this->mainRowWidths['cst'] = $this->mainRowWidths['avBat'] = $this->mainRowWidths['npr'] = $this->mainRowWidths['ret'] = $this->mainRowWidths['fms'] = 10;
-        $this->mainRowWidths['coutUnit'] = $this->mainRowWidths['coutTotal'] = $this->mainRowWidths['ref'] = 20;
+        $this->mainRowWidths['noLigne']   =
+            $this->mainRowWidths['cst']   =
+            $this->mainRowWidths['avBat'] =
+            $this->mainRowWidths['npr']   =
+            $this->mainRowWidths['ret']   =
+            $this->mainRowWidths['fms']   = 10;
+
+        $this->mainRowWidths['coutUnit']      =
+            $this->mainRowWidths['coutTotal'] =
+            $this->mainRowWidths['ref']       = 20;
+
         $this->mainRowWidths['designation'] = 50;
 
         $wUsed = array_sum(array_values($this->mainRowWidths));
@@ -309,11 +318,11 @@ class GeneratePdfCdeMagasin extends GeneratePdf
         $this->pdf->SetFont($this->font, "I", $this->textSize - 0.6);
         $this->cellUnderline($this->subRowWidths['refClientLabel'], $this->textHeight, "Référence client:", 0, 0, 'L', $fill);
 
-        $this->pdf->Cell($this->subRowWidths['rmqClient'], $this->textHeight, $detail->rmqClient, 0, 0, 'R', $fill);
-        $this->pdf->Cell($this->subRowWidths['numDoc'], $this->textHeight, " - {$detail->numDoc}",    0, 0, 'L', $fill);
-        $this->pdf->Cell($this->subRowWidths['ref'], $this->textHeight, $detail->getRefSplitted(), 0, 0, 'C', $fill);
-        $this->pdf->Cell($this->subRowWidths['client'], $this->textHeight, "{$detail->numClient} - {$detail->nomClient}", 0, 0, 'L', $fill);
-        $this->pdf->Cell($this->subRowWidths['datePlanning'],  $this->textHeight, $detail->getDatePlanningFormatted(), 0, 1, 'L', $fill);
+        $this->pdf->Cell($this->subRowWidths['rmqClient'],    $this->textHeight, $detail->rmqClient,                  0, 0, 'R', $fill);
+        $this->pdf->Cell($this->subRowWidths['numDoc'],       $this->textHeight, " - {$detail->numDoc}",              0, 0, 'L', $fill);
+        $this->pdf->Cell($this->subRowWidths['ref'],          $this->textHeight, $detail->getRefSplitted(),           0, 0, 'C', $fill);
+        $this->pdf->Cell($this->subRowWidths['client'],       $this->textHeight, $detail->getClient(),                0, 0, 'L', $fill);
+        $this->pdf->Cell($this->subRowWidths['datePlanning'], $this->textHeight, $detail->getDatePlanningFormatted(), 0, 1, 'L', $fill);
 
         // Ligne pointillée séparant ce détail du suivant (sous la cellule texte)
         $this->drawDottedSeparator(
