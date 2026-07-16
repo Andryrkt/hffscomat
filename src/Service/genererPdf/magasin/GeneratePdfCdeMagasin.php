@@ -107,7 +107,7 @@ class GeneratePdfCdeMagasin extends GeneratePdf
 
         $this->pdf->setFont($this->font, "B", $this->textSize);
         $this->pdf->Cell($wLbl, $this->textHeight, $dto->numeroCommande, 0, 0);
-        $this->pdf->Cell(0, $this->textHeight, "du {$dto->getDateJourFormatted()}", 0, 1);
+        $this->pdf->Cell(0, $this->textHeight, "du {$dto->getDateCdeFormatted()}", 0, 1);
 
         $this->pdf->setFont($this->font, "I", $this->textSize);
         $this->cellUnderline($wLbl, $this->textHeight, "Type Commande:", 0, 0);
@@ -361,5 +361,17 @@ class GeneratePdfCdeMagasin extends GeneratePdf
         } elseif ($ln == 2) {
             $this->pdf->SetXY($x, $y + $h);
         }
+    }
+
+    public function copyToDOCUWARE(string $fileName, string $numCmde): bool
+    {
+        $cheminDW = rtrim($this->baseCheminDocuware, '/\\') . '/cmde/' . $fileName;
+        $cheminDuFichier = rtrim($this->baseCheminDuFichier, '/\\') . '/cmde/' . $numCmde . '/' . $fileName;
+
+        if (!file_exists($cheminDuFichier)) {
+            return false;
+        }
+
+        return   $this->copyFile($cheminDuFichier, $cheminDW);
     }
 }

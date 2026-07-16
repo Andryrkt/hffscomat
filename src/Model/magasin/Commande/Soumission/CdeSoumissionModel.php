@@ -2,7 +2,8 @@
 
 namespace App\Model\magasin\CommANDe\Soumission;
 
-use DateTime;
+use App\Dto\Magasin\Commande\Soumission\BcSoumisMagasinDTO;
+use App\Model\Informix\InsertQueryBuilder;
 use App\Model\Model;
 use App\Dto\Magasin\Commande\Soumission\CommandeSoumissionDTO;
 use App\Factory\magasin\Commande\Soumission\CommandeSoumissionFactory;
@@ -22,8 +23,8 @@ class CdeSoumissionModel extends Model
      */
     public function findInfoCommande(string $numCde, string $userMail, string $succursale = '1', string $codeSociete = 'CO'): ?CommandeSoumissionDTO
     {
-        $startDate = (new DateTime('first day of -6 months'))->format("Ym");
-        $endDate   = (new DateTime('last day of last month'))->format("Ym");
+        $startDate = (new \DateTime('first day of -6 months'))->format("Ym");
+        $endDate   = (new \DateTime('last day of last month'))->format("Ym");
 
         $statement = "SELECT 
             fcde_numcde as num_cde,
@@ -145,5 +146,36 @@ class CdeSoumissionModel extends Model
         $data = $this->connect->fetchResults($result);
 
         dd((new CommandeSoumissionFactory)->hydrate($data, $userMail));
+    }
+
+    /** 
+     * Enregistrer du Bc soumis Magasin dans BD
+     * 
+     * @param BcSoumisMagasinDTO $bcSoumisMagasinDto
+     * 
+     * @return void
+     */
+    public function enregistrerBcSoumisMagasin(BcSoumisMagasinDTO $bcSoumisMagasinDto): void
+    {
+        // S'assurer que la connexion est ouverte
+        $this->connect->connect();
+        try {
+            // Construire la requête d'insertion et l'exécuter
+            $builder = new InsertQueryBuilder("{$this->dbIrium}.bc_soumis_magasin");
+            $builder->setData([
+                'numero_cde'                  => $bcSoumisMagasinDto->numeroCommande,
+                'statut'                    => $bcSoumisMagasinDto->statut,
+                'operateur'                 => $bcSoumisMagasinDto->operateur,
+                'date_heure_soumission'       => $bcSoumisMagasinDto->dateHeureSoumission,
+                'deposer_dw'                 => $bcSoumisMagasinDto->deposerDw,
+            ]);
+
+            $result = $builder->build();
+
+            $this->connect->executeQuery($result['sql'], $result['params']);
+        } finally {
+            // ne fermez ici que si vous êtes sûr que c'est la dernière opération
+            $this->connect->close();
+        }
     }
 }
