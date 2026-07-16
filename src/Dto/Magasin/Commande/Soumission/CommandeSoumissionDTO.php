@@ -30,6 +30,23 @@ class CommandeSoumissionDTO
             "EEEE dd MMMM yyyy"
         );
 
-        return $dateFormatter->format($this->dateCde);
+        return "du {$dateFormatter->format($this->dateCde)}";
+    }
+
+    public function getFournisseur(): string
+    {
+        return "{$this->numFrn} - {$this->nomFrn}";
+    }
+
+    public function getDelaiExpedition(): string
+    {
+        if (!$this->delaiExpedition) return "";
+
+        return "{$this->delaiExpedition} jour" . ($this->delaiExpedition > 1 ? "s" : "");
+    }
+
+    public function getAgenceService(): string
+    {
+        return "{$this->libelleAgence} - {$this->libelleService}";
     }
 }
