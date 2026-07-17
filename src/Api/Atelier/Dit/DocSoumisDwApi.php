@@ -36,6 +36,7 @@ class DocSoumisDwApi extends Controller
 
         $devisModel = new DitDevisSoumisAValidationModel();
         $statutDevis = $devisModel->findStatutDevis($numDit, $codeSociete);
+        $numDevis = $devisModel->recupNumeroDevis($numDit, $codeSociete);
 
         $ditOrsomisAValidationModel = new DitOrSoumisAValidationModel();
         $numOrBaseDonner = $ditOrsomisAValidationModel->recupNumeroOr($numDit, $codeSociete);
@@ -48,11 +49,11 @@ class DocSoumisDwApi extends Controller
             $statutDit = $constraitDevis[0]['statut'];
         }
 
-         // DEVIS-VP (vérification de prix) ne s'affiche que si l'OR contient
+        // DEVIS-VP (vérification de prix) ne s'affiche que si l'OR contient
         // au moins une ligne d'article de stock (abse_codg = 'ST')
         $afficherVerifPrix = true;
-        if ($numOrBaseDonner !== null) {
-            $nbrArticleVerifPrix = $ditOrsomisAValidationModel->countArticleVerificationPrix($numOrBaseDonner, $codeSociete);
+        if ($numDevis !== null) {
+            $nbrArticleVerifPrix = $ditOrsomisAValidationModel->countArticleVerificationPrix($numDevis, $codeSociete);
             $afficherVerifPrix = $nbrArticleVerifPrix > 0;
         }
 
