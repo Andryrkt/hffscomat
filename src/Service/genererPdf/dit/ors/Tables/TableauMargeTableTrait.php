@@ -34,10 +34,23 @@ trait TableauMargeTableTrait
 
             $tableGenerator->setOptions([
                 'table_attributes' => 'border="0" cellpadding="3" cellspacing="0" align="center" style="font-size: 9px; font-family:helvetica;"',
-                'header_row_style' => 'border-top: 1px solid #000000; border-bottom: 1px solid #000000; background-color: #ffffff;',
-                'footer_row_style' => 'border-top: 1px solid #000000; border-bottom: 1px solid #000000; background-color: #ffffff;',
+                'header_row_style' => 'background-color: #ffffff;',
+                'footer_row_style' => 'background-color: #ffffff;',
             ]);
-            $html = $tableGenerator->generateTable($this->headerTableauMarge($label), $this->normaliserLignesMarge($lignes), []);
+
+            $headerConfig = $this->headerTableauMarge($label);
+            foreach ($headerConfig as &$col) {
+                // Ajouter les bordures pour le header
+                $colHeaderStyle = $col['header_style'] ?? $col['style'] ?? '';
+                $col['header_style'] = rtrim($colHeaderStyle, '; ') . '; border-top: 0.5px solid #000000; border-bottom: 0.5px solid #000000;';
+
+                // Ajouter les bordures pour le footer
+                $colFooterStyle = $col['footer_style'] ?? $col['style'] ?? '';
+                $col['footer_style'] = rtrim($colFooterStyle, '; ') . '; border-top: 0.5px solid #000000; border-bottom: 0.5px solid #000000;';
+            }
+            unset($col);
+
+            $html = $tableGenerator->generateTable($headerConfig, $this->normaliserLignesMarge($lignes), []);
             $pdf->writeHTML($html, true, false, true, false, '');
         }
     }
