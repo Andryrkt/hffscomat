@@ -1,6 +1,7 @@
-import { FetchManager } from "../../api/FetchManager";
+import { API_ENDPOINTS } from "../../api/apiEndpoints";
+import { ApiRequestManager } from "../../api/ApiRequestManager";
 
-const fetchManager = new FetchManager();
+const apiManager = new ApiRequestManager();
 
 document.addEventListener("DOMContentLoaded", function () {
   const form = document.getElementById("myForm");
@@ -41,8 +42,8 @@ document.addEventListener("DOMContentLoaded", function () {
       loader.classList.remove("d-none");
       viewerContainer.style.display = "block";
 
-      const response = await fetchManager.get(
-        `api/generer-pdf-cmde-fournisseur?numCde=${numCde}`
+      const response = await apiManager.get(
+        API_ENDPOINTS.generatePdfCdeFrnMag(numCde)
       );
       const pdfUrl = response.url || response;
 
