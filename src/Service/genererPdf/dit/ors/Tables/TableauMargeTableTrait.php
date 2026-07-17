@@ -31,9 +31,8 @@ trait TableauMargeTableTrait
         foreach ($sections as $key => $label) {
             $lignes = $tableauMarge[$key] ?? [];
 
-            $pdf->setFont('helvetica', '', 12);
-            $this->addTitle($pdf, $label, 'helvetica', 'B', 9, 'L', 0);
-            $html = $tableGenerator->generateTable($this->headerTableauMarge(), $this->normaliserLignesMarge($lignes), []);
+            
+            $html = $tableGenerator->generateTable($this->headerTableauMarge($label), $this->normaliserLignesMarge($lignes), []);
             $pdf->writeHTML($html, true, false, true, false, '');
         }
     }
@@ -67,10 +66,10 @@ trait TableauMargeTableTrait
         ];
     }
 
-    private function headerTableauMarge(): array
+    private function headerTableauMarge(string $label): array
     {
         $formatterPourcentage = function ($value) {
-            return round((float) $value, 2) . '%';
+            return $value == 0 ?   '-' : round((float) $value, 2) . '%' ;
         };
 
         $formatterDispoStock = function ($value, $row) {
@@ -80,7 +79,7 @@ trait TableauMargeTableTrait
         return [
             [
                 'key'          => 'disponibilite',
-                'label'        => '',
+                'label'        => $label,
                 'width'        => 45,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center;',
@@ -95,90 +94,99 @@ trait TableauMargeTableTrait
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; font-size: 6px;',
                 'cell_style'   => 'text-align: center; font-size: 6px;',
-                'footer_style' => 'font-weight: 900;'
+                'footer_style' => 'font-weight: 900;',
+                'default_value' => '-'
             ],
             [
                 'key'          => 'somme_pmp',
                 'label'        => 'PMP',
                 'width'        => 45,
                 'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold; text-align: center; font-size: 6px;',
+                'header_style' => 'font-weight: bold; text-align: right; font-size: 6px;',
                 'cell_style'   => 'text-align: right; font-size: 6px; padding-right:6px;',
                 'footer_style' => 'font-weight: 900;',
-                'type'         => 'number'
+                'type'         => 'number',
+                'default_value' => '-'
             ],
             [
                 'key'          => 'somme_pxvteht',
                 'label'        => 'PV Brut',
                 'width'        => 45,
                 'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold; text-align: center; font-size: 6px;',
+                'header_style' => 'font-weight: bold; text-align: right; font-size: 6px;',
                 'cell_style'   => 'text-align: right; font-size: 6px; margin-right:2px;',
                 'footer_style' => 'font-weight: 900;',
-                'type'         => 'number'
+                'type'         => 'number',
+                'default_value' => '-'
             ],
             [
                 'key'          => 'somme_remise',
                 'label'        => 'Mt Remise',
                 'width'        => 45,
                 'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold; text-align: center; font-size: 6px;',
+                'header_style' => 'font-weight: bold; text-align: right; font-size: 6px;',
                 'cell_style'   => 'text-align: right; font-size: 6px; margin-right:2px;',
                 'footer_style' => 'font-weight: 900;',
-                'type'         => 'number'
+                'type'         => 'number',
+                'default_value' => '-'
             ],
             [
                 'key'          => 'somme_pxvte_remise',
                 'label'        => 'PV Net remisé',
                 'width'        => 50,
                 'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold; text-align: center; font-size: 6px;',
+                'header_style' => 'font-weight: bold; text-align: right; font-size: 6px;',
                 'cell_style'   => 'text-align: right; font-size: 6px; margin-right:2px;',
                 'footer_style' => 'font-weight: 900;',
-                'type'         => 'number'
+                'type'         => 'number',
+                'default_value' => '-'
             ],
             [
                 'key'          => 'somme_marge_brute',
                 'label'        => 'MB',
                 'width'        => 45,
                 'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold; text-align: center; font-size: 6px;',
+                'header_style' => 'font-weight: bold; text-align: right; font-size: 6px;',
                 'cell_style'   => 'text-align: right; font-size: 6px; margin-right:2px;',
                 'footer_style' => 'font-weight: 900;',
-                'type'         => 'number'
+                'type'         => 'number',
+                'default_value' => '-'
             ],
             [
                 'key'          => 'pct_marge_brute',
                 'label'        => '%MB',
                 'width'        => 30,
                 'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold; text-align: center; font-size: 6px;',
+                'header_style' => 'font-weight: bold; text-align: right; font-size: 6px;',
                 'cell_style'   => 'text-align: right; font-size: 6px; margin-right:2px;',
                 'footer_style' => 'font-weight: 900;',
                 'type'         => 'number',
                 'formatter'    => $formatterPourcentage,
+                'default_value' => '-'
             ],
             [
                 'key'          => 'pct_mb_max',
                 'label'        => '%MB+',
                 'width'        => 30,
                 'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold; text-align: center; font-size: 6px;',
+                'header_style' => 'font-weight: bold; text-align: right; font-size: 6px;',
                 'cell_style'   => 'text-align: right; font-size: 6px; margin-right:2px;',
                 'footer_style' => 'font-weight: 900;',
                 'type'         => 'number',
                 'formatter'    => $formatterPourcentage,
+                'default_value' => '-'
             ],
             [
                 'key'          => 'pct_mb_min',
                 'label'        => '%MB-',
                 'width'        => 30,
                 'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold; text-align: center; font-size: 6px;',
+                'header_style' => 'font-weight: bold; text-align: right; font-size: 6px;',
                 'cell_style'   => 'text-align: right; font-size: 6px; margin-right:2px;',
                 'footer_style' => 'font-weight: 900;',
                 'type'         => 'number',
                 'formatter'    => $formatterPourcentage,
+                'default_value' => '-'
             ],
         ];
     }

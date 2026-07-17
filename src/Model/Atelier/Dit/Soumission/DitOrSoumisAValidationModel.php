@@ -845,27 +845,27 @@ class DitOrSoumisAValidationModel extends Model
     ) {
         $statement = "SELECT
                 numero_or                                               As numero_or,
-                categorie_constp                                        As constructeur,
-                disponibilite                                           As disponibilite,
+                TRIM(categorie_constp)                                        As constructeur,
+                TRIM(disponibilite)                                           As disponibilite,
                 COUNT(*)                                                AS nb_ref,
                 SUM(slor_pmp)                                           AS somme_pmp,
                 SUM(slor_pxvteht)                                       AS somme_pxvteht,
                 SUM(slor_pxvteht * (slor_remise/100))                   AS somme_remise,
                 SUM(slor_pxvteht * (1 - slor_remise/100))               AS somme_pxvte_remise,
                 SUM((slor_pxvteht * (1 - slor_remise/100)) - slor_pmp)  AS somme_marge_brute,
-                CASE
+                ROUND(CASE
                     WHEN SUM(slor_pxvteht * (1 - slor_remise/100)) = 0 THEN NULL
                     ELSE SUM((slor_pxvteht * (1 - slor_remise/100)) - slor_pmp)
                         / SUM(slor_pxvteht * (1 - slor_remise/100)) * 100
-                END                                                      AS pct_marge_brute,
-                MAX(CASE
+                END)                                                      AS pct_marge_brute,
+                ROUND(MAX(CASE
                     WHEN (slor_pxvteht * (1 - slor_remise/100)) <> 0
                     THEN ((slor_pxvteht * (1 - slor_remise/100)) - slor_pmp) / (slor_pxvteht * (1 - slor_remise/100)) * 100
-                END)                                                     AS pct_mb_max,
-                MIN(CASE
+                END))                                                     AS pct_mb_max,
+                ROUND(MIN(CASE
                     WHEN (slor_pxvteht * (1 - slor_remise/100)) <> 0
                     THEN ((slor_pxvteht * (1 - slor_remise/100)) - slor_pmp) / (slor_pxvteht * (1 - slor_remise/100)) * 100
-                END)                                                      AS pct_mb_min
+                END))                                                      AS pct_mb_min
             FROM (
                 SELECT
                     l.slor_numor AS numero_or,
