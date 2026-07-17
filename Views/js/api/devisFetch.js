@@ -38,38 +38,18 @@ export function fetchDevis(
  */
 function valeurDocASoumettre(docDansDw) {
   let docASoumettre = [];
-  // && !docDansDw.numeroOR
-  // if (
-  //   docDansDw.client === "EXTERNE" &&
-  //   (docDansDw.statutDit === "AFFECTEE SECTION" ||
-  //     docDansDw.statutDevis !== "CLOTUREE VALIDEE") &&
-  //   docDansDw.statutDevis !== "Validé atelier"
-  // ) {
-  //   docASoumettre = [{ value: "DEVIS", text: "DEVIS" }];
-  // } else if (
-  //   docDansDw.client === "EXTERNE" &&
-  //   docDansDw.statutDevis === "Validé atelier"
-  // ) {
-  //   docASoumettre = [
-  //     { value: "DEVIS", text: "DEVIS" },
-  //     { value: "BC", text: "BC" },
-  //   ];
-  // } else {
-  //   docASoumettre = [
-  //     { value: "OR", text: "OR" },
-  //     { value: "RI", text: "RI" },
-  //     { value: "FACTURE", text: "FACTURE" },
-  //   ];
-  // }
+  
+  // DEVIS-VP ne s'affiche pas si le backend indique qu'aucun article
+  // de vérification de prix n'est présent sur l'OR (afficherVerifPrix === false)
+  if (docDansDw.afficherVerifPrix !== false) docASoumettre.push({ value: "DEVIS-VP", text: "DEVIS - Vérification de prix" });
 
-  docASoumettre = [
-    { value: "DEVIS-VP", text: "DEVIS - Vérification de prix" },
+  docASoumettre.push(
     { value: "DEVIS-VA", text: "DEVIS - Validation atelier" },
     { value: "BC", text: "BC - BON COMMANDE" },
     { value: "OR", text: "OR - ORDRE DE REPARATION" },
     { value: "RI", text: "RI - RAPPORT D'INTERVENTION" },
-    { value: "FACTURE", text: "FACTURE" },
-  ];
+    { value: "FACTURE", text: "FACTURE" }
+  );
 
   return docASoumettre; // Retourne le tableau
 }
