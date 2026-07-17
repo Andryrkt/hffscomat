@@ -41,10 +41,7 @@ class CommandeTraiterSearchType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $services = [];
-        $services = $this->transformEnSeulTableauAvecKeyService($this->commandeTraiterModel->service());
-        if (!empty($data['agenceUser'])) {
-        }
-
+        $services = $this->transformEnSeulTableauAvecKeyService($this->commandeTraiterModel->service($options['data']->codeSociete));
         $builder
 
             ->add('referencePiece', TextType::class, [
@@ -75,6 +72,7 @@ class CommandeTraiterSearchType extends AbstractType
                 'choices' => $services,
                 'placeholder' => " -- choisir service--",
                 'expanded' => true,
+                'data' => array_values($services),
             ])
 
 

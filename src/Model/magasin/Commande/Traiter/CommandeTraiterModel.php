@@ -38,15 +38,18 @@ class CommandeTraiterModel extends Model
     nlig_qtewait as quantite,
     nlig_qtedisp as quantiteDispo
 FROM
-    neg_ent
-    inner join neg_lig on nlig_soc = nent_soc
-    and nlig_succ = nent_succ
-    and nlig_numcde = nent_numcde
+    {$this->dbIps}.neg_ent
+    INNER JOIN neg_lig ON nlig_soc = nent_soc
+        AND nlig_succ = nent_succ
+        AND nlig_numcde = nent_numcde
+    INNER JOIN art_bse ON abse_constp = nlig_constp 
+        AND abse_refp = nlig_refp
 WHERE
     nent_natop = 'DIR'
-    and nlig_qtewait > 0
-    and nlig_datealloc is NULL
-    
+    --and nlig_qtewait > 0
+    AND nlig_datealloc is NULL
+    --and nlig_typlig  = 'P'
+
     $conditions
     ;
  ";
@@ -62,10 +65,10 @@ WHERE
     public function agence(string $codeSociete)
     {
         $statement = "  SELECT DISTINCT
-                            slor_succdeb||'-'||(select trim(asuc_lib) from agr_succ where asuc_numsoc = slor_soc and asuc_num = slor_succdeb) as agence
-                        FROM {$this->dbIps}.sav_lor
-                        WHERE slor_succdeb||'-'||(select trim(asuc_lib) from agr_succ where asuc_numsoc = slor_soc and asuc_num = slor_succdeb) <> ''
-                        AND slor_soc = '$codeSociete'
+                            nent_succdeb||'-'||(select trim(asuc_lib) from agr_succ where asuc_numsoc = nent_soc and asuc_num = nent_succdeb) as agence
+                        FROM {$this->dbIps}.neg_ent
+                        WHERE nent_succdeb||'-'||(select trim(asuc_lib) from agr_succ where asuc_numsoc = nent_soc and asuc_num = nent_succdeb) <> ''
+                        AND nent_soc = '$codeSociete'
                     ";
 
         $result = $this->connect->executeQuery($statement);
@@ -75,19 +78,12 @@ WHERE
         return array_column($this->convertirEnUtf8($data), 'agence');
     }
 
-    public function service()
+    public function service(string $codeSociete)
     {
-
-
-        // Reverted to string concatenation as executeQuery might not support parameters
-        $statement = " SELECT DISTINCT
-                            nent_servcrt ||'-'||(select trim(atab_lib) from agr_tab where atab_nom = 'SER' and atab_code = nent_servdeb) as service
-                        FROM neg_ent
-                        WHERE nent_servdeb ||'-'||(select trim(atab_lib) from agr_tab where atab_nom = 'SER' and atab_code = nent_servdeb) <> ''
-                        AND  nent_soc = 'CO'
-                       
-            ";
-
+        $statement = "SELECT DISTINCT nent_servcrt as service, atab_lib as description 
+                    FROM {$this->dbIps}.neg_ent
+                    INNER JOIN agr_tab ON atab_code = nent_servcrt AND atab_nom = 'SER'
+                    WHERE nent_soc = '$codeSociete' ";
 
         $result = $this->connect->executeQuery($statement);
 
@@ -98,8 +94,8 @@ WHERE
 
         return array_map(function ($item) {
             return [
-                "value" => explode('-', $item['service'])[0],
-                "text"  => $item['service']
+                "value" => $item["service"],
+                "text"  =>  $item["service"] . "- " . $item["description"]
             ];
         }, $dataUtf8);
     }
