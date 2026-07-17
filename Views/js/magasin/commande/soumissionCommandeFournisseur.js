@@ -2,12 +2,6 @@ import { FetchManager } from "../../api/FetchManager";
 
 const fetchManager = new FetchManager();
 
-async function generatePdf(numCde) {
-  return await fetchManager.get(
-    `api/generer-pdf-cmde-fournisseur?numCde=${numCde}`,
-  );
-}
-
 document.addEventListener("DOMContentLoaded", function () {
   const form = document.getElementById("myForm");
   const pdfBtn = document.getElementById("genererPdf");
@@ -17,10 +11,10 @@ document.addEventListener("DOMContentLoaded", function () {
   const viewerContainer = document.getElementById("viewer-container");
   const numCdeInput = document.getElementById("soumission_commande_numCmde");
   const hiddenNumCdeAValiderInput = document.getElementById(
-    "soumission_commande_numCmdeAValider",
+    "soumission_commande_numCmdeAValider"
   );
   const hiddenGeneratedFilePath = document.getElementById(
-    "soumission_commande_generatedFilePath",
+    "soumission_commande_generatedFilePath"
   );
 
   numCdeInput.addEventListener("keydown", function (e) {
@@ -47,7 +41,9 @@ document.addEventListener("DOMContentLoaded", function () {
       loader.classList.remove("d-none");
       viewerContainer.style.display = "block";
 
-      const response = await generatePdf(numCde);
+      const response = await fetchManager.get(
+        `api/generer-pdf-cmde-fournisseur?numCde=${numCde}`
+      );
       const pdfUrl = response.url || response;
 
       if (!pdfUrl) {
@@ -59,7 +55,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       console.log(hiddenGeneratedFilePath, hiddenNumCdeAValiderInput);
 
-      iframe.src = pdfUrl + "#toolbar=0";
+      iframe.src = pdfUrl;
       loader.classList.add("d-none");
       validationBtn.style.display = "block";
     } catch (error) {

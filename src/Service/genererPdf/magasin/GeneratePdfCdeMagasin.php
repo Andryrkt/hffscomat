@@ -13,25 +13,25 @@ class GeneratePdfCdeMagasin extends GeneratePdf
     private TCPDF  $pdf;
     private const FONT             = 'helvetica';
 
-    private const MARGIN_RIGHT     = 10.0;
-    private const MARGIN_LEFT      = 10.0;
-    private const MARGIN_TOP       = 10.0;
-    private const MARGIN_BOTTOM    = 10.0;
+    private const MARGIN_RIGHT     = 7.5;
+    private const MARGIN_LEFT      = 7.5;
+    private const MARGIN_TOP       = 7.5;
+    private const MARGIN_BOTTOM    = 7.5;
 
     private const TITLE_SIZE       = 10.0;
     private const MAIN_TEXT_SIZE   = 7.2;
     private const SUB_TEXT_SIZE    = 6.7;
 
     private const MAIN_TEXT_HEIGHT = 5.3;
-    private const MAIN_ROW_HEIGHT  = 5.5;
-    private const SUB_ROW_HEIGHT   = 5.3;
+    private const MAIN_ROW_HEIGHT  = 6.5;
+    private const SUB_ROW_HEIGHT   = 5.75;
     private const TITLE_HEIGHT     = 7.5;
 
-    private const TEXT_COLOR        = [0, 0, 0];
+    private const TEXT_COLOR        = [50, 50, 50];
     private const TEXT_HEADER_COLOR = [240, 240, 240];
     private const HEADER_COLOR      = [50, 50, 50];
     private const ROW_COLOR         = [200, 200, 200];
-    private const DOTTED_LINE_COLOR = [0, 0, 0];
+    private const DOTTED_LINE_COLOR = [50, 50, 50];
 
     /** @var array{noLigne:int|float,cst:int|float,avBat:int|float,ref:int|float,packQty:int|float,designation:int|float,npr:int|float,fms:int|float,ret:int|float,qteCdee:int|float,qteDispo:int|float,qteDispoMin:int|float,qteDispoMax:int|float,qteVte6M:int|float,nbrVte6M:int|float,coutUnit:int|float,coutTotal:int|float,poids:int|float} $mainRowWidths */
     private array $mainRowWidths = [];
@@ -141,7 +141,7 @@ class GeneratePdfCdeMagasin extends GeneratePdf
      */
     private function renderTable(array $lignesDto): void
     {
-        $this->pdf->Ln(5);
+        $this->pdf->Ln(3);
 
         // Définir la largeur du colonne principale avant utilisation
         $this->defineMainRowWidths();
@@ -219,7 +219,7 @@ class GeneratePdfCdeMagasin extends GeneratePdf
         $this->subRowWidths = [
             "empty"          => $emptyWidth,
             "refClientLabel" => 20,
-            "rmqClient"      => 10,
+            "rmqClient"      => 15,
             "numDoc"         => 15,
             "ref"            => 75,
             "client"         => 90,
@@ -324,9 +324,10 @@ class GeneratePdfCdeMagasin extends GeneratePdf
 
         // Ligne pointillée séparant ce détail du suivant (sous la cellule texte)
         $this->drawDottedSeparator(
-            $x + $this->subRowWidths['empty'],
+            $x + $this->subRowWidths['empty'] + $this->subRowWidths['refClientLabel'],
             $y,
-            $this->pdf->getPageWidth() - self::MARGIN_LEFT
+            $this->pdf->getPageWidth() - self::MARGIN_LEFT,
+            $fill
         );
 
         // Cellule vide (avec bordure normale, comme le reste du tableau)
@@ -336,7 +337,7 @@ class GeneratePdfCdeMagasin extends GeneratePdf
         $this->cellUnderline($this->subRowWidths['refClientLabel'], self::SUB_ROW_HEIGHT, "Référence client:", 0, 0, 'L', $fill);
 
         $this->pdf->Cell($this->subRowWidths['rmqClient'],    self::SUB_ROW_HEIGHT, $detailDto->rmqClient,                  0, 0, 'R', $fill);
-        $this->pdf->Cell($this->subRowWidths['numDoc'],       self::SUB_ROW_HEIGHT, " - {$detailDto->numDoc}",              0, 0, 'L', $fill);
+        $this->pdf->Cell($this->subRowWidths['numDoc'],       self::SUB_ROW_HEIGHT, "- {$detailDto->numDoc}",              0, 0, 'L', $fill);
         $this->pdf->Cell($this->subRowWidths['ref'],          self::SUB_ROW_HEIGHT, $detailDto->getRefSplitted(),           0, 0, 'C', $fill);
         $this->pdf->Cell($this->subRowWidths['client'],       self::SUB_ROW_HEIGHT, $detailDto->getClient(),                0, 0, 'L', $fill);
         $this->pdf->Cell($this->subRowWidths['datePlanning'], self::SUB_ROW_HEIGHT, $detailDto->getDatePlanningFormatted(), 0, 1, 'L', $fill);
@@ -345,10 +346,10 @@ class GeneratePdfCdeMagasin extends GeneratePdf
     /**
      * Trace une ligne horizontale en pointillés entre deux sous-lignes de détail.
      */
-    private function drawDottedSeparator(float $xStart, float $y, float $xEnd): void
+    private function drawDottedSeparator(float $xStart, float $y, float $xEnd, bool $fill): void
     {
         $this->pdf->SetLineStyle([
-            'width' => 0.5,
+            'width' => $fill ? 0.5 : 0.1,
             'dash'  => 2.25,
             'color' => self::DOTTED_LINE_COLOR,
         ]);
@@ -377,7 +378,7 @@ class GeneratePdfCdeMagasin extends GeneratePdf
         // Largeur réelle du texte pour ne souligner que le texte, pas toute la cellule
         $textWidth = $this->pdf->GetStringWidth($txt);
 
-        $lineY = $y + $h - 1; // légèrement au-dessus du bas de la cellule
+        $lineY = $y + $h - 1.35; // légèrement au-dessus du bas de la cellule
         $lineXStart = $x;
         $lineXEnd = $x + $textWidth;
 
