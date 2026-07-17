@@ -415,30 +415,23 @@ class TraitementFichierService
 
     public function tableauMarge(string $numOr, string $codeSociete): array
     {
-        $ditOrsoumisAValidationModel = new DitOrSoumisAValidationModel();
-
-        $infoOrs = $ditOrsoumisAValidationModel->getInformationOr($numOr, $codeSociete);
-
         $tableauMargeCat = [];
         $tableauMargeMfn = [];
         $tableauMargeAutres = [];
+        
+        $ditOrsoumisAValidationModel = new DitOrSoumisAValidationModel();
+        $tableauMarges = $ditOrsoumisAValidationModel->tableauDeMarge($codeSociete, $numOr);
 
-        if (!empty($infoOrs)) {
-            foreach ($infoOrs as $infoOr) {
-                $afficher = $ditOrsoumisAValidationModel->tableauDeMarge($codeSociete, $numOr, $infoOr['reference'], $infoOr['code_agence']);
-
-                foreach ($afficher as $value) {
-                    if ($value['constructeur'] == 'CAT') {
-                        $tableauMargeCat[] = $value;
-                    } elseif ($value['constructeur'] == 'MFN') {
-                        $tableauMargeMfn[] = $value;
-                    } else {
-                        $tableauMargeAutres[] = $value;
-                    }
-                }
+        foreach ($tableauMarges as $value) {
+            if ($value['constructeur'] == 'CAT') {
+                $tableauMargeCat[] = $value;
+            } elseif ($value['constructeur'] == 'MFN') {
+                $tableauMargeMfn[] = $value;
+            } else {
+                $tableauMargeAutres[] = $value;
             }
         }
-        // dd($tableauMargeCat, $tableauMargeMfn, $tableauMargeAutres);
+
         return [
             'tableauMargeCat' => $tableauMargeCat,
             'tableauMargeMfn' => $tableauMargeMfn,
