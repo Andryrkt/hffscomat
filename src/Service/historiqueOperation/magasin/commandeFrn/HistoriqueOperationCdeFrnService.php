@@ -10,6 +10,6 @@ class HistoriqueOperationCdeFrnService extends HistoriqueOperationService
 {
     public function __construct(EntityManagerInterface $em)
     {
-        parent::__construct($em, TypeDocument::TYPE_DOCUMENT_CDE_ID);
+        parent::__construct($em, TypeDocument::TYPE_DOCUMENT_CDE_FRN_ID);
     }
 }
