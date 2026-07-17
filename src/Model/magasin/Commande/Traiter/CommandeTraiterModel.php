@@ -95,12 +95,10 @@ WHERE
 
     public function service(string $codeSociete)
     {
-
-        // Reverted to string concatenation as executeQuery might not support parameters
-        $statement = "  SELECT DISTINCT nent_servcrt as service, atab_lib as description 
-                         FROM {$this->dbIps}.neg_ent
-                         INNER JOIN agr_tab ON atab_code = nent_servcrt AND atab_nom = 'SER'
-                        WHERE nent_soc = '$codeSociete' ";
+        $statement = "SELECT DISTINCT nent_servcrt as service, atab_lib as description 
+                    FROM {$this->dbIps}.neg_ent
+                    INNER JOIN agr_tab ON atab_code = nent_servcrt AND atab_nom = 'SER'
+                    WHERE nent_soc = '$codeSociete' ";
 
         $result = $this->connect->executeQuery($statement);
 

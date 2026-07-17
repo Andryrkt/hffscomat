@@ -38,16 +38,10 @@ export function fetchDevis(
  */
 function valeurDocASoumettre(docDansDw) {
   let docASoumettre = [];
-
   
   // DEVIS-VP ne s'affiche pas si le backend indique qu'aucun article
   // de vérification de prix n'est présent sur l'OR (afficherVerifPrix === false)
-  if (docDansDw.afficherVerifPrix !== false) {
-    docASoumettre.push({
-      value: "DEVIS-VP",
-      text: "DEVIS - Vérification de prix",
-    });
-  }
+  if (docDansDw.afficherVerifPrix !== false) docASoumettre.push({ value: "DEVIS-VP", text: "DEVIS - Vérification de prix" });
 
   docASoumettre.push(
     { value: "DEVIS-VA", text: "DEVIS - Validation atelier" },

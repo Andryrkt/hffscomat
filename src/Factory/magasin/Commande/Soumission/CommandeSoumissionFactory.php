@@ -8,13 +8,14 @@ use App\Dto\Magasin\Commande\Soumission\CommandeSoumissionDetailDTO;
 
 class CommandeSoumissionFactory
 {
-
     /**
      * @param array<int,array{num_cde:string,date_cde:string,type_cde:string,num_frn:string,nom_frn:string,agence_lib:string,service_lib:string,cst:string,refp:string,desi:string,qte_cde:string,package_qty:string,prix_unit:string,montant:string,poids_total:string,av_bt:string,fms:string,vte_der_mois:string,nbr_vente:string,stock_dispo:string,stock_min:string,stock_max:string,npr:string}> $data
      * @param array<string,array{cst:string,refp:string,lib:string,num_doc:string,num_cli:string,nom_cli:string,rmq:string,datepla:string}> $detailsData
      * @param string $email
      * 
      * @return CommandeSoumissionDTO|null
+     *
+     * @throws \RuntimeException si les lignes de $data contiennent des valeurs d'en-tête incohérentes
      */
     public function hydrate(array $data, array $detailsData, string $email): ?CommandeSoumissionDTO
     {
@@ -22,7 +23,7 @@ class CommandeSoumissionFactory
 
         $dto = new CommandeSoumissionDTO;
 
-        $headerInfo = $data[0];
+        $headerInfo = $this->assertHeaderConsistency($data);
 
         $dto->dateCde         = new \DateTime($headerInfo['date_cde']);
         $dto->numeroCommande  = $headerInfo['num_cde'];
@@ -36,6 +37,47 @@ class CommandeSoumissionFactory
         $dto->lignes          = $this->hydrateLignes($data, $detailsData);
 
         return $dto;
+    }
+
+    /**
+     * Vérifie que toutes les lignes de $data partagent les mêmes valeurs
+     * pour les champs utilisés au niveau de l'en-tête (num_cde, date_cde, type_cde,
+     * num_frn, nom_frn, agence_lib, service_lib).
+     *
+     * @param array<int,array<string,string>> $data
+     * 
+     * @return array
+     *
+     * @throws \RuntimeException si une incohérence est détectée
+     */
+    private function assertHeaderConsistency(array $data): array
+    {
+        $headerFields = [
+            'num_cde'      => 'Numéro de commande',
+            'date_cde'     => 'Date de commande',
+            'type_cde'     => 'Type de commande',
+            'num_frn'      => 'Numéro du fournisseur',
+            'nom_frn'      => 'Nom du fournisseur',
+            'agence_lib'   => 'Agence',
+            'service_lib'  => 'Service',
+        ];
+
+        $reference = $data[0];
+
+        foreach ($headerFields as $field => $label) {
+            $values = array_map(static fn(array $line): string => (string) ($line[$field] ?? 'N/A'), $data);
+            $unique = array_unique($values);
+
+            if (count($unique) > 1) {
+                throw new \RuntimeException(sprintf(
+                    'Incohérence détectée sur le champ "%s" : plusieurs valeurs distinctes trouvées (%s).',
+                    $label,
+                    implode(', ', array_unique($unique))
+                ));
+            }
+        }
+
+        return $reference;
     }
 
     /**

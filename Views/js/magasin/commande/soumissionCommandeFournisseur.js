@@ -64,9 +64,7 @@ document.addEventListener("DOMContentLoaded", function () {
       Swal.fire({
         icon: "error",
         title: "Erreur",
-        text: "Impossible de générer le PDF : " + error.message,
-        timer: 3000,
-        showConfirmButton: false,
+        html: "Impossible de générer le PDF : <br>" + error.message,
       });
       loader.classList.add("d-none");
       validationBtn.style.display = "none";

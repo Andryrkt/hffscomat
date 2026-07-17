@@ -68,10 +68,7 @@ class SoumissionCommandeController extends Controller
             throw new \Exception("Le fichier PDF n'existe pas : " . $generatedFilePath);
         }
 
-        $isCopiedToDWFilePath = $this->generatePdfCdeMagasin->copyToDOCUWARE(
-            $cheminDuFichier,
-            $numCommande
-        );
+        $isCopiedToDWFilePath = $this->generatePdfCdeMagasin->copyToDOCUWARE($cheminDuFichier, $numCommande);
 
         if ($isCopiedToDWFilePath) {
             $bcSoumisMagasinDto->deposerDw = true;
