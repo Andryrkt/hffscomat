@@ -229,37 +229,27 @@ class PlanningModel extends Model
         return  array_column($data, 'num_or');
     }
 
-    public function getEtaMagasin(string $numeroCmd, string $refP, string $cst): array
+    public function getEtaMagasin(string $numeroCmd): array
     {
-        if ($cst == 'CAT')
-            $cst = 'K230';
 
         $statement = "SELECT
-                Eta_ivato,
-                Eta_magasin,
-                Est_ship_date
-            from Ces_magasin
-            where Cust_ref = '$numeroCmd'
-                {$this->selectCond->eq('Part_no', $refP)}
-                {$this->selectCond->eq('custCode', $cst)}
+                eta_magasin,
+                etat_pays
+            from {$this->dbIrium}.ces_magasin
+            where po_number = '$numeroCmd'
         ";
 
-        $sql = $this->connexion->query($statement);
-        $data = array();
-        while ($tabType = odbc_fetch_array($sql)) {
-            $data[] = $tabType;
-        }
-        return $data;
+        $result = $this->connect->executeQuery($statement);
+        return $this->connect->fetchResults($result);
     }
 
-    public function getEtatPiecePartiel(string $numCmd, string $refP): array
+    public function getEtatPiecePartiel(string $numCmd): array
     {
         $statement = " SELECT fcdl_solde as solde,
                           fcdl_qte as qte
                   FROM FRN_CDL 
                   WHERE 1=1
                   {$this->selectCond->eq('fcdl_numcde', $numCmd)}
-                  {$this->selectCond->eq('fcdl_refp', $refP)}
         ";
 
         $result = $this->connect->executeQuery($statement);

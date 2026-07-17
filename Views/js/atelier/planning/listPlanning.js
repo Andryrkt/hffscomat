@@ -238,9 +238,9 @@ document.addEventListener("DOMContentLoaded", (event) => {
             let row = `<tr>
                         <td>${detail.num_or}</td> 
                         <td>${detail.num_itv}</td> 
+                        <td>${detail.num_cis}</td> 
                         <td ${cmdColor}>${numCde}</td> 
-                        <td ></td> 
-                        <td></td> 
+                        <td>${statrmq}</td> 
                         <td>${detail.cst}</td> 
                         <td>${numRef}</td> 
                         <td>${detail.desi}</td> 
@@ -250,8 +250,8 @@ document.addEventListener("DOMContentLoaded", (event) => {
                         <td>${parseInt(detail.qte_liv)}</td> 
                         <td>${statut} </td> 
                         <td>${dateStatut}</td>
-                        <td></td>
-                        <td></td>
+                        <td>${detail.etat_pays}</td>
+                        <td>${detail.eta_magasin}</td>
                     </tr>`;
             // tableBody.innerHTML += row;
             tableBody.innerHTML += row;
