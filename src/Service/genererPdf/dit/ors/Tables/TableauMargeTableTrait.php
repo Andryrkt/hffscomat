@@ -76,6 +76,11 @@ trait TableauMargeTableTrait
             return ($row['disponibilite'] ?? '') === 'DISPONIBLE' ? 'Dispo Stock' : 'Non dispo stock';
         };
 
+        // Trace une ligne entre la ligne "Dispo Stock" et la ligne "Non dispo stock".
+        $stylerSeparateur = function ($value, $row) {
+            return ($row['disponibilite'] ?? '') === 'DISPONIBLE' ? 'border-bottom: 0.5px solid #000000;' : '';
+        };
+
         return [
             [
                 'key'          => 'disponibilite',
@@ -85,7 +90,8 @@ trait TableauMargeTableTrait
                 'header_style' => 'font-weight: bold; text-align: center;',
                 'cell_style'   => 'font-size: 6px;',
                 'footer_style' => 'font-weight: 900;',
-                'formatter'    => $formatterDispoStock
+                'formatter'    => $formatterDispoStock,
+                'styler'       => $stylerSeparateur
             ],
             [
                 'key'          => 'nb_ref',
@@ -95,7 +101,8 @@ trait TableauMargeTableTrait
                 'header_style' => 'font-weight: bold; text-align: center; font-size: 6px;',
                 'cell_style'   => 'text-align: center; font-size: 6px;',
                 'footer_style' => 'font-weight: 900;',
-                'default_value' => '-'
+                'default_value' => '-',
+                'styler'       => $stylerSeparateur
             ],
             [
                 'key'          => 'somme_pmp',
@@ -106,7 +113,8 @@ trait TableauMargeTableTrait
                 'cell_style'   => 'text-align: right; font-size: 6px; padding-right:6px;',
                 'footer_style' => 'font-weight: 900;',
                 'type'         => 'number',
-                'default_value' => '-'
+                'default_value' => '-',
+                'styler'       => $stylerSeparateur
             ],
             [
                 'key'          => 'somme_pxvteht',
@@ -117,7 +125,8 @@ trait TableauMargeTableTrait
                 'cell_style'   => 'text-align: right; font-size: 6px; margin-right:2px;',
                 'footer_style' => 'font-weight: 900;',
                 'type'         => 'number',
-                'default_value' => '-'
+                'default_value' => '-',
+                'styler'       => $stylerSeparateur
             ],
             [
                 'key'          => 'somme_remise',
@@ -128,7 +137,8 @@ trait TableauMargeTableTrait
                 'cell_style'   => 'text-align: right; font-size: 6px; margin-right:2px;',
                 'footer_style' => 'font-weight: 900;',
                 'type'         => 'number',
-                'default_value' => '-'
+                'default_value' => '-',
+                'styler'       => $stylerSeparateur
             ],
             [
                 'key'          => 'somme_pxvte_remise',
@@ -139,7 +149,8 @@ trait TableauMargeTableTrait
                 'cell_style'   => 'text-align: right; font-size: 6px; margin-right:2px;',
                 'footer_style' => 'font-weight: 900;',
                 'type'         => 'number',
-                'default_value' => '-'
+                'default_value' => '-',
+                'styler'       => $stylerSeparateur
             ],
             [
                 'key'          => 'somme_marge_brute',
@@ -150,7 +161,8 @@ trait TableauMargeTableTrait
                 'cell_style'   => 'text-align: right; font-size: 6px; margin-right:2px;',
                 'footer_style' => 'font-weight: 900;',
                 'type'         => 'number',
-                'default_value' => '-'
+                'default_value' => '-',
+                'styler'       => $stylerSeparateur
             ],
             [
                 'key'          => 'pct_marge_brute',
@@ -162,7 +174,8 @@ trait TableauMargeTableTrait
                 'footer_style' => 'font-weight: 900;',
                 'type'         => 'number',
                 'formatter'    => $formatterPourcentage,
-                'default_value' => '-'
+                'default_value' => '-',
+                'styler'       => $stylerSeparateur
             ],
             [
                 'key'          => 'pct_mb_max',
@@ -174,7 +187,8 @@ trait TableauMargeTableTrait
                 'footer_style' => 'font-weight: 900;',
                 'type'         => 'number',
                 'formatter'    => $formatterPourcentage,
-                'default_value' => '-'
+                'default_value' => '-',
+                'styler'       => $stylerSeparateur
             ],
             [
                 'key'          => 'pct_mb_min',
@@ -186,7 +200,8 @@ trait TableauMargeTableTrait
                 'footer_style' => 'font-weight: 900;',
                 'type'         => 'number',
                 'formatter'    => $formatterPourcentage,
-                'default_value' => '-'
+                'default_value' => '-',
+                'styler'       => $stylerSeparateur
             ],
         ];
     }
