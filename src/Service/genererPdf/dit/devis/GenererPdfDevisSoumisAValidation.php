@@ -282,6 +282,6 @@ class GenererPdfDevisSoumisAValidation extends GeneratePdf
 
         $filePath = $Dossier . $nomFichierCtrl;
 
-        $pdf->Output($filePath, 'I');
+        $pdf->Output($filePath, 'F');
     }
 }
