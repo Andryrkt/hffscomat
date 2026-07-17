@@ -56,7 +56,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       console.log(hiddenGeneratedFilePath, hiddenNumCdeAValiderInput);
 
-      iframe.src = pdfUrl;
+      iframe.src = `${pdfUrl}#zoom=150`;
       loader.classList.add("d-none");
       validationBtn.style.display = "block";
     } catch (error) {

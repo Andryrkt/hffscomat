@@ -3,78 +3,53 @@
 namespace App\Api\magasin;
 
 use App\Controller\Controller;
-use App\Dto\Magasin\Commande\Soumission\CommandeSoumissionDTO;
 use App\Model\magasin\CommANDe\Soumission\CdeSoumissionModel;
 use App\Service\genererPdf\magasin\GeneratePdfCdeMagasin;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
-
-
 
 class GenerateCommandeFournisseurApi extends Controller
 {
     /**
-     * @Route("/api/generer-pdf-cmde-fournisseur", name="api_generate_cmde_fournisseur" ,methods={"GET"})
+     * @Route("/api/cmde-fournisseur/{numCde}/generate-pdf", name="api_generate_cmde_fournisseur", methods={"GET"})
      */
-    public function generatePdfCmdeFournisseur(Request $request): JsonResponse
+    public function generatePdfCmdeFournisseur(string $numCde): JsonResponse
     {
-        $numCde = $request->query->get('numCde');
-        $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
-        $userMail = $this->getUserMail();
-
-
-        if (!$numCde) {
+        // 1. Validation basique de l'input
+        if (empty($numCde) || !preg_match('/^[0-9]+$/', $numCde)) {
             return new JsonResponse([
-                'message' => 'Numéro de commande requis'
+                'success' => false,
+                'error'   => 'Numéro de document invalide.'
             ], JsonResponse::HTTP_BAD_REQUEST);
         }
 
-        $fileName = "Commande_Fournisseur_{$numCde}.pdf";
-
         $basePath = rtrim($_ENV['BASE_PATH_FICHIER'], '/\\');
-        $basePathCourt = rtrim($_ENV['BASE_PATH_FICHIER_COURT'], '/\\');
-        $dirPath = $basePath . "/cmde/" . $numCde;
+        $filePath = "magasin/commandes fournisseurs/$numCde/$numCde.pdf";
+        $dirPath = dirname("$basePath/$filePath");
 
-        if (!is_dir($dirPath)) {
-            mkdir($dirPath, 0777, true);
-        }
-
-        $filePath = $dirPath . "/" . $fileName;
+        if (!is_dir($dirPath)) mkdir($dirPath, 0777, true);
 
         if (file_exists($filePath)) {
+            // TODO que faire ?
             unlink($filePath);
         }
 
-
         try {
-            $cdeSoumissionModel = new CdeSoumissionModel();
-
-            $commandeSoumissionDto = $cdeSoumissionModel->findInfoCommande(
-                $numCde,
-                $userMail,
-                "1",
-                $codeSociete
-            );
+            $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
+            $userMail = $this->getUserMail();
+            $commandeSoumissionDto = (new CdeSoumissionModel())->findInfoCommande($numCde, $userMail, $_ENV["SUC_NEG"], $codeSociete);
 
             if ($commandeSoumissionDto === null) {
                 return new JsonResponse([
                     'url' => null,
-                    'message' => "Aucune information trouvée pour la commande {$numCde}."
+                    'message' => "Aucune information trouvée pour la commande \"{$numCde}\"."
                 ], JsonResponse::HTTP_NOT_FOUND);
             }
 
-            $generatePdfCdeMagasin = new GeneratePdfCdeMagasin();
-            $generatePdfCdeMagasin->generate(
-                $commandeSoumissionDto,
-                $filePath
-            );
+            (new GeneratePdfCdeMagasin())->generate($commandeSoumissionDto, "$basePath/$filePath");
 
-            $url = $basePathCourt
-                . "/cmde/"
-                . $numCde
-                . "/"
-                . $fileName;
+            $basePathCourt = rtrim($_ENV['BASE_PATH_FICHIER_COURT'], '/\\');
+            $url = "$basePathCourt/$filePath";
 
             return new JsonResponse([
                 'url' => $url,
