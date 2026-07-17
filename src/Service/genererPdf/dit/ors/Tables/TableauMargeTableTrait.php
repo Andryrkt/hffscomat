@@ -46,7 +46,7 @@ trait TableauMargeTableTrait
 
                 // Ajouter les bordures pour le footer
                 $colFooterStyle = $col['footer_style'] ?? $col['style'] ?? '';
-                $col['footer_style'] = rtrim($colFooterStyle, '; ') . '; border-top: 0.5px solid #000000; border-bottom: 0.5px solid #000000;';
+                $col['footer_style'] = rtrim($colFooterStyle, '; ') . '; border-top: 0.5px solid #000000;';
             }
             unset($col);
 
@@ -103,7 +103,7 @@ trait TableauMargeTableTrait
             [
                 'key'          => 'disponibilite',
                 'label'        => $label,
-                'width'        => 70,
+                'width'        => 75,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center;',
                 'cell_style'   => 'text-align: left;',
@@ -114,10 +114,10 @@ trait TableauMargeTableTrait
             [
                 'key'          => 'nb_ref',
                 'label'        => 'Nb Refs',
-                'width'        => 40,
+                'width'        => 50,
                 'style'        => '',
-                'header_style' => 'font-weight: bold; text-align: center;',
-                'cell_style'   => 'font-weight: normal; text-align: center;',
+                'header_style' => 'font-weight: bold; text-align: right;',
+                'cell_style'   => 'font-weight: normal; text-align: right;',
                 'footer_style' => 'font-weight: 900;',
                 'default_value' => '-',
                 'styler'       => $stylerSeparateur

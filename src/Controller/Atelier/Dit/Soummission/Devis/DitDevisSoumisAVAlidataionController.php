@@ -69,12 +69,12 @@ class DitDevisSoumisAVAlidataionController extends Controller
 
             $ditDevisSoumisAValidationModel = new DitDevisSoumisAValidationModel();
 
-            // TODO : enregistrement dans la base de donnée
-            // $datas = DitDevisSoumisAValidationMapper::enregistreDevis($dto);
-            // $ditDevisSoumisAValidationModel->enregistrerDevis($datas);
-            // TODO : edit du table demande_itervention en modifiant les colonnes, numero_devis_rattache et statut_devis
-            // $donnees = DitDevisSoumisAValidationMapper::updateDit($dto);
-            // $ditDevisSoumisAValidationModel->updateNumeroEtStatuDevis($dto->numeroDit, $dto->codeSociete, $donnees);
+            // enregistrement dans la base de donnée
+            $datas = DitDevisSoumisAValidationMapper::enregistreDevis($dto);
+            $ditDevisSoumisAValidationModel->enregistrerDevis($datas);
+            // edit du table demande_itervention en modifiant les colonnes, numero_devis_rattache et statut_devis
+            $donnees = DitDevisSoumisAValidationMapper::updateDit($dto);
+            $ditDevisSoumisAValidationModel->updateNumeroEtStatuDevis($dto->numeroDit, $dto->codeSociete, $donnees);
 
             // traitement de fichier et copie dans DOCUWARE
             $traitementDuFichier = new TraitementDeFicherService($this->getSecurityService());
