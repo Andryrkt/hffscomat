@@ -26,14 +26,14 @@ trait TableauMargeTableTrait
         ];
 
         $pdf->SetTextColor(0, 0, 0);
-        $this->addTitle($pdf, "TABLEAU DE MARGE", 'arial', 'B', 10, 'L', 0);
-        $pdf->setFont('arial', '', 9);
+        $this->addTitle($pdf, "TABLEAU DE MARGE", 'helvetica', 'B', 10, 'L', 0);
+        $pdf->setFont('helvetica', '', 8);
 
         foreach ($sections as $key => $label) {
             $lignes = $tableauMarge[$key] ?? [];
 
             $tableGenerator->setOptions([
-                'table_attributes' => 'border="0" cellpadding="3" cellspacing="0" align="center" style="font-size: 9px; font-family:arial;"',
+                'table_attributes' => 'border="0" cellpadding="3" cellspacing="0" align="center" style="font-size: 9px; font-family:helvetica;"',
                 'header_row_style' => 'border-top: 1px solid #000000; border-bottom: 1px solid #000000; background-color: #ffffff;',
                 'footer_row_style' => 'border-top: 1px solid #000000; border-bottom: 1px solid #000000; background-color: #ffffff;',
             ]);
