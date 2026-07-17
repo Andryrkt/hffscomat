@@ -60,6 +60,12 @@ class GeneratePdfCdeMagasin extends GeneratePdf
         'poids'        => "Poids\n[kg]",
     ];
 
+    public function copyToDOCUWARE(string $cheminDuFichier, string $numCmde): bool
+    {
+        $cheminDW = rtrim($this->baseCheminDocuware, '/\\') . "CDE FRN MAGASIN/$numCmde.pdf";
+        return $this->copyFile($cheminDuFichier, $cheminDW);
+    }
+
     public function generate(CommandeSoumissionDTO $dto, string $filePath): void
     {
         $this->pdf = $this->initPDF();
@@ -388,11 +394,5 @@ class GeneratePdfCdeMagasin extends GeneratePdf
         if ($ln == 0)      $this->pdf->SetXY($x + $w - 1, $y);
         elseif ($ln == 1)  $this->pdf->SetXY(self::MARGIN_LEFT, $y + $h);
         elseif ($ln == 2)  $this->pdf->SetXY($x - 1, $y + $h);
-    }
-
-    public function copyToDOCUWARE(string $cheminDuFichier, string $numCmde): bool
-    {
-        $cheminDW = rtrim($this->baseCheminDocuware, '/\\') . '/cmde/' . $numCmde . '.pdf';
-        return $this->copyFile($cheminDuFichier, $cheminDW);
     }
 }
