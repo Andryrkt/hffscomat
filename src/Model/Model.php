@@ -4,18 +4,15 @@ namespace App\Model;
 
 use App\Model\Traits\ConversionModel;
 
-
-
 class Model
 {
     use ConversionModel;
 
-    protected $connexion;
-    protected $connect;
-    protected $sqlServer;
-    protected $informix;
-    protected $dbIrium;
-    protected $dbIps;
+    protected Connexion $connexion;
+    protected DatabaseInformix $connect;
+    protected string $dbIrium;
+    protected string $dbIps;
+    protected string $dbIpsRegix;
 
 
     public function __construct()
@@ -23,8 +20,9 @@ class Model
         $this->connexion = new Connexion();
         $this->connect = new DatabaseInformix();
 
-        $this->dbIrium = $_ENV['DB_NAME_IRIUM'] ?? 'ir_scomat:regix';
-        $this->dbIps = $_ENV['DB_NAME_IPS'] ?? 'ips_scomat:informix';
+        $this->dbIrium    = $_ENV['DB_NAME_IRIUM'] ?? 'ir_scomat:regix';
+        $this->dbIps      = $_ENV['DB_NAME_IPS'] ?? 'ips_scomat:informix';
+        $this->dbIpsRegix = preg_replace('/(?<=:).*/', $_ENV['DB_USER_IPS_2'] ?? 'regix', $this->dbIps);
 
         // On force la connexion pour ne pas casser les modèles enfants existants
         try {
