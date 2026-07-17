@@ -122,7 +122,7 @@ class CdeSoumissionModel extends Model
             ) AS stock_max,
             (
                 SELECT NVL(SUM(asta_qtesor), 0)
-                FROM {$this->dbIps}.art_sta
+                FROM {$this->dbIpsRegix}.art_sta
                 WHERE asta_constp = fcdl_constp
                 AND asta_refp   = fcdl_refp
                 AND asta_per >= '$startDate'
@@ -130,7 +130,7 @@ class CdeSoumissionModel extends Model
             ) AS vte_der_mois,
             (
                 SELECT NVL(SUM(asta_nblign), 0)
-                FROM {$this->dbIps}.art_sta
+                FROM {$this->dbIpsRegix}.art_sta
                 WHERE asta_constp = fcdl_constp
                 AND asta_refp   = fcdl_refp
                 AND asta_per >= '$startDate'
