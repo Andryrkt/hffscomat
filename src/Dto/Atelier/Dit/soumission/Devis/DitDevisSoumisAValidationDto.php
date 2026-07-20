@@ -7,6 +7,8 @@ class DitDevisSoumisAValidationDto
     public ?string $numeroDit = null;
 
     public ?string $numeroDevis = null;
+    
+    public ?string $numeroDevisDeux = null;
 
     public int $numeroItv = 0;
 

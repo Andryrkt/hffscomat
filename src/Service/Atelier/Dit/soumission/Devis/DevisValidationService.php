@@ -198,9 +198,9 @@ class DevisValidationService
             return true;
         }
 
-        // Vérifie si le numéro du devis dans le nom du fichier correspond au numéro de dit attendu (S'assurer que le Facture envoyé corresponde à la ligne de facture utilisé pour la soumission dans l'intranet)
+        // Vérifie si le numéro du devis dans le nom du fichier correspond au numéro de dit attendu (S'assurer que le devis envoyé corresponde à la ligne de devis utilisé pour la soumission dans l'intranet)
         if (!$this->matchNumberAfterUnderscore($fileName, $dto->numeroDevis)) {
-            $message = "Le numéro de facture dans le nom du fichier ($fileName) ne correspond pas à l'OR du formulaire ( $dto->numeroDevis)";
+            $message = "Le numéro du devis dans le nom du fichier ($fileName) ne correspond pas au devis du formulaire ( $dto->numeroDevis)";
             $this->sendNotificationOR($message, $dto->numeroDevis, false);
             return true;
         }

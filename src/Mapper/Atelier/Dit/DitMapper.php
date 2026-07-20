@@ -126,10 +126,10 @@ class DitMapper
         $dto->etatFacturation =  $ditInformations['etat_facturation'] ?? null;
         $dto->ri =  $ditInformations['ri'] ?? null;
         $dto->mailClient =  $ditInformations['mail_client'] ?? null;
-        $dto->estAnnulable =  $ditInformations['a_annuler'] ?? null;
-        $dto->estDitAvoir =  $ditInformations['dit_avoir'] ?? null;
-        $dto->estDitRefacturation =  $ditInformations['dit_refacturation'] ?? null;
-        $dto->estAtePolTana =  $ditInformations['ate_pol_tana'] ?? null;
+        $dto->estAnnulable =  $ditInformations['a_annuler'] ?? false;
+        $dto->estDitAvoir =  $ditInformations['dit_avoir'] ?? false;
+        $dto->estDitRefacturation =  $ditInformations['dit_refacturation'] ?? false;
+        $dto->estAtePolTana =  $ditInformations['ate_pol_tana'] ?? false;
         // $dto->pdf_deposer_dw =  $ditInformations['pdf_deposer_dw'] ?? null;
         // $dto->date_depot_pdf_dw =  $ditInformations['date_depot_pdf_dw'] ?? null;
 

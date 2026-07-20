@@ -49,11 +49,12 @@ class DitDevisSoumisAValidationModel extends Model
 
     public function recupNumeroDevis(string $numDit, string $codeSociete): ?string
     {
-        $statement = "SELECT  seor_numor  as numDevis
+        $statement = "SELECT FIRST 1  seor_numor  as numDevis
                     from {$this->dbIps}.sav_eor
                     where seor_serv = 'DEV'
                     AND seor_soc = '$codeSociete'
                     AND seor_refdem like '%$numDit%'
+                    order by seor_numor desc
                 ";
 
         $result = $this->connect->executeQuery($statement);
@@ -65,7 +66,7 @@ class DitDevisSoumisAValidationModel extends Model
 
     public function recupNumeroDevisApresSoumission(string $numDit, string $codeSociete): ?string
     {
-        $statement = "SELECT
+        $statement = "SELECT FIRST 1
                         CASE 
                             WHEN (select max(seor_numor_seq) 
                                     from {$this->dbIps}.sav_eor 
@@ -78,6 +79,7 @@ class DitDevisSoumisAValidationModel extends Model
                     where seor_serv = 'DEV'
                     AND seor_soc = '$codeSociete'
                     AND seor_refdem like '%{$numDit}%'
+
                 ";
 
         $result = $this->connect->executeQuery($statement);

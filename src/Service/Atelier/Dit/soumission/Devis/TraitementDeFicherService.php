@@ -39,9 +39,9 @@ class TraitementDeFicherService
 
         if ($dto->type == 'VP') {
             //generer le nom du fichier
-            $nomFichierGenerer = "sctverificationprix_{$dto->numeroDevis}-{$dto->numeroVersion}#{$suffix}~{$dto->tacheValidateur}.pdf";
-            $nomFichierGenererSansTache = "sctverificationprix_{$dto->numeroDevis}-{$dto->numeroVersion}#{$suffix}.pdf";
-            $nomFichierCtrl = "sctdevisctrlvp_{$dto->numeroDevis}-{$dto->numeroVersion}#{$suffix}.pdf";
+            $nomFichierGenerer = "sctverificationprix_{$dto->numeroDevisDeux}-{$dto->numeroVersion}#{$suffix}~{$dto->tacheValidateur}.pdf";
+            $nomFichierGenererSansTache = "sctverificationprix_{$dto->numeroDevisDeux}-{$dto->numeroVersion}#{$suffix}.pdf";
+            $nomFichierCtrl = "sctdevisctrlvp_{$dto->numeroDevisDeux}-{$dto->numeroVersion}#{$suffix}.pdf";
 
             // telecharger le fichier en copiant sur son repertoire
             $fileUploader->uploadFileSansName($file, $nomFichierGenererSansTache);
@@ -60,9 +60,9 @@ class TraitementDeFicherService
             //envoye des fichier fusionner dans le DW pour les types "Vente" et "Forfait"
             $generePdfDevis->copyToDWFichierDevisSoumisVp($nomFichierGenerer); // copier le fichier de devis dans docuware
         } else {
-            $nomFichierCtrl = "sctdevisctrl_{$dto->numeroDevis}-{$dto->numeroVersion}#{$suffix}.pdf";
+            $nomFichierCtrl = "sctdevisctrl_{$dto->numeroDevisDeux}-{$dto->numeroVersion}#{$suffix}.pdf";
             //generer le nom du fichier
-            $nomFichierGenerer = "sctdevisatelier_{$dto->numeroDevis}-{$dto->numeroVersion}#{$suffix}.pdf";
+            $nomFichierGenerer = "sctdevisatelier_{$dto->numeroDevisDeux}-{$dto->numeroVersion}#{$suffix}.pdf";
 
             // telecharger le fichier en copiant sur son repertoire
             $fileUploader->uploadFileSansName($file, $nomFichierGenerer);
