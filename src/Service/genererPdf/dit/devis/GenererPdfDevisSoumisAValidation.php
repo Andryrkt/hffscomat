@@ -256,9 +256,10 @@ class GenererPdfDevisSoumisAValidation extends GeneratePdf
         $pdf->Output($filePath, 'F');
     }
 
-    public function genererPdfVerificationPrix(array $tableauMarge, string $nomFichierCtrl)
+     public function genererPdfVerificationPrix(array $tableauMarge, string $nomFichierCtrl)
     {
         $pdf = new HeaderPdf(null);
+        $pdf->setPrintHeader(false);
         $tableGenerator = new PdfTableGeneratorFlexible();
         $tableGenerator->setOptions([
             'table_attributes' => 'border="0" cellpadding="0" cellspacing="0" align="center" style="font-size: 8px;"',
