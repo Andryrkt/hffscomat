@@ -32,6 +32,7 @@ class DitDevisSoumisAValidationFactory
         $ditDevisSoumisAValidationModel = new DitDevisSoumisAValidationModel();
         $dto->numeroDit = $numDit;
         $dto->numeroDevis = $ditDevisSoumisAValidationModel->recupNumeroDevis($dto->numeroDit, $dto->codeSociete);
+        $dto->numeroDevisDeux = $ditDevisSoumisAValidationModel->recupNumeroDevisApresSoumission($dto->numeroDit, $dto->codeSociete);
         $dto->dateHeureSoumission = date('Y-m-d H:i:s');
         $dto->estCeVente = $this->estCeVente($dto->numeroDevis, $dto->codeSociete);
         $dto->numeroVersion = $ditDevisSoumisAValidationModel->recupNumeroVersion($dto->numeroDevis, $dto->codeSociete);

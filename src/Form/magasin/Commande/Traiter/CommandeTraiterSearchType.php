@@ -32,11 +32,6 @@ class CommandeTraiterSearchType extends AbstractType
         return array_combine($this->commandeTraiterModel->agence($codeSociete), $this->commandeTraiterModel->agence($codeSociete));
     }
 
-    private function agenceAutoriserUser(string $codeAgence, string $codeSociete)
-    {
-        return array_combine($this->commandeTraiterModel->agenceUser($codeAgence, $codeSociete), $this->commandeTraiterModel->agenceUser($codeAgence, $codeSociete));
-    }
-
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
@@ -61,7 +56,16 @@ class CommandeTraiterSearchType extends AbstractType
                 'required' => false,
             ])
 
+            // ->add(
+            //     'agence',
+            //     ChoiceType::class,
+            //     [
+            //         'label' => 'Agence ',
+            //         'required' => false,
+            //         'choices' => $this->agence($options['data']->codeSociete) ?? [],
 
+            //     ]
+            // )
 
             ->add('service', ChoiceType::class, [
                 'label' => 'Services ',

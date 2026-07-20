@@ -13,7 +13,7 @@ class DitDevisSoumisAValidationMapper
             $devisDto = new DitDevisSoumisAValidationDto();
             $devisDto->numeroVersion = $dto->numeroVersion;
             $devisDto->dateHeureSoumission = $dto->dateHeureSoumission;
-            $devisDto->numeroDevis = $dto->numeroDevis;
+            $devisDto->numeroDevis = $dto->numeroDevisDeux;
             $devisDto->numeroDit = $dto->numeroDit;
             $devisDto->numeroItv = $item['numero_itv'];
             $devisDto->nombreLigneItv = $item['nombre_ligne'];
@@ -46,7 +46,7 @@ class DitDevisSoumisAValidationMapper
         return array_map(function ($item) use ($dto) {
             return [
                 'numerodit' => $dto->numeroDit,
-                'numerodevis' => $dto->numeroDevis,
+                'numerodevis' => $dto->numeroDevisDeux,
                 'numeroitv' => $item['numero_itv'],
                 'nombreligneitv' => $item['nombre_ligne'],
                 'montantitv' => $item['montant_itv'],
@@ -79,7 +79,7 @@ class DitDevisSoumisAValidationMapper
     public static function updateDit(DitDevisSoumisAValidationDto $dto)
     {
         return [
-            'numero_devis_rattache' => $dto->numeroDevis,
+            'numero_devis_rattache' => $dto->numeroDevisDeux,
             'statut_devis' => $dto->type === 'VP' ? ConstantStatutDevis::PRIX_A_CONFIRMER : ConstantStatutDevis::A_VALIDER_ATELIER,
         ];
     }

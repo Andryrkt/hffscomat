@@ -39,19 +39,20 @@ class TraitementDeFicherService
 
         if ($dto->type == 'VP') {
             //generer le nom du fichier
-            $nomFichierGenerer = "sctverificationprix_{$dto->numeroDevis}-{$dto->numeroVersion}#{$suffix}~{$dto->tacheValidateur}.pdf";
-            $nomFichierGenererSansTache = "sctverificationprix_{$dto->numeroDevis}-{$dto->numeroVersion}#{$suffix}.pdf";
-            $nomFichierCtrl = "sctdevisctrlvp_{$dto->numeroDevis}-{$dto->numeroVersion}#{$suffix}.pdf";
+            $nomFichierGenerer = "sctverificationprix_{$dto->numeroDevisDeux}-{$dto->numeroVersion}#{$suffix}~{$dto->tacheValidateur}.pdf";
+            $nomFichierGenererSansTache = "sctverificationprix_{$dto->numeroDevisDeux}-{$dto->numeroVersion}#{$suffix}.pdf";
+            $nomFichierCtrl = "sctdevisctrlvp_{$dto->numeroDevisDeux}-{$dto->numeroVersion}#{$suffix}.pdf";
 
             // telecharger le fichier en copiant sur son repertoire
             $fileUploader->uploadFileSansName($file, $nomFichierGenererSansTache);
 
             // creation du pdf de verification de prix
             $tableauMarge = $this->tableauMarge($dto->numeroDevis, $dto->codeSociete);
-            $generePdfDevis->genererPdfVerificationPrix($tableauMarge, $nomFichierCtrl);
+            $mailUtilisateur = $this->securityService->getDataService()->getUserMail();
+            $generePdfDevis->genererPdfVerificationPrix($tableauMarge, $nomFichierCtrl, $mailUtilisateur);
 
             // fusion du pdf de verification de prix avec le fichier ajouter par l'utilisateur en le mettant à la dernière position
-            $fichierConvertis = $this->ConvertirLesPdf([$chemin . 'fichiers/'.$nomFichierGenererSansTache, $chemin . $nomFichierCtrl]);
+            $fichierConvertis = $this->ConvertirLesPdf([$chemin . 'fichiers/' . $nomFichierGenererSansTache, $chemin . $nomFichierCtrl]);
             $fileUploaderService = new FileUploaderService($chemin);
             $fusionPdf           = $fileUploaderService->getFusionPdf();
             $fusionPdf->mergePdfs($fichierConvertis, $chemin . $nomFichierGenerer);
@@ -59,18 +60,28 @@ class TraitementDeFicherService
             //envoye des fichier fusionner dans le DW pour les types "Vente" et "Forfait"
             $generePdfDevis->copyToDWFichierDevisSoumisVp($nomFichierGenerer); // copier le fichier de devis dans docuware
         } else {
-            $nomFichierCtrl = "sctdevisctrl_{$dto->numeroDevis}-{$dto->numeroVersion}#{$suffix}.pdf";
+            $nomFichierCtrl = "sctdevisctrl_{$dto->numeroDevisDeux}-{$dto->numeroVersion}#{$suffix}.pdf";
             //generer le nom du fichier
-            $nomFichierGenerer = "sctdevisatelier_{$dto->numeroDevis}-{$dto->numeroVersion}#{$suffix}.pdf";
+            $nomFichierGenerer = "sctdevisatelier_{$dto->numeroDevisDeux}-{$dto->numeroVersion}#{$suffix}.pdf";
 
             // telecharger le fichier en copiant sur son repertoire
             $fileUploader->uploadFileSansName($file, $nomFichierGenerer);
 
-            //pour création du pdf
-            $this->creationPdf($dto, $generePdfDevis, $nomFichierCtrl, $dto->codeSociete);
+            // création du pdf pour devis forfait
+            //$this->creationPdf($dto, $generePdfDevis, $nomFichierCtrl, $dto->codeSociete);
+
+            // création pdf pour devis vente
+            $mailUtilisateur = $this->securityService->getDataService()->getUserMail();
+            $generePdfDevis->genererPdfDevis($nomFichierCtrl, $mailUtilisateur);
+
+            // fusion du pdf de verification de prix avec le fichier ajouter par l'utilisateur en le mettant à la dernière position
+            $fichierConvertis = $this->ConvertirLesPdf([$chemin . 'fichiers/' . $nomFichierGenerer, $chemin . 'fichiers/' . $nomFichierCtrl]);
+            $fileUploaderService = new FileUploaderService($chemin . 'fichiers/');
+            $fusionPdf           = $fileUploaderService->getFusionPdf();
+            $fusionPdf->mergePdfs($fichierConvertis, $chemin . 'fichiers/' . $nomFichierGenerer);
 
             // envoyer les fichiers dans DW pour les types "Vente" et "Forfait"
-            $generePdfDevis->copyToDWDevisSoumis($nomFichierCtrl); // copier le fichier de controlle dans docuware
+            //$generePdfDevis->copyToDWDevisSoumis($nomFichierCtrl); // copier le fichier de controlle dans docuware
             $generePdfDevis->copyToDWFichierDevisSoumis($nomFichierGenerer); // copier le fichier de devis dans docuware
         }
     }

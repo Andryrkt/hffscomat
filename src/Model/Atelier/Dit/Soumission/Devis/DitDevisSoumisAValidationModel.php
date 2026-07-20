@@ -49,11 +49,12 @@ class DitDevisSoumisAValidationModel extends Model
 
     public function recupNumeroDevis(string $numDit, string $codeSociete): ?string
     {
-        $statement = "SELECT  seor_numor  as numDevis
+        $statement = "SELECT FIRST 1  seor_numor  as numDevis
                     from {$this->dbIps}.sav_eor
                     where seor_serv = 'DEV'
                     AND seor_soc = '$codeSociete'
                     AND seor_refdem like '%$numDit%'
+                    order by seor_numor desc
                 ";
 
         $result = $this->connect->executeQuery($statement);
@@ -62,6 +63,33 @@ class DitDevisSoumisAValidationModel extends Model
 
         return $data[0]['numdevis'] ?? null;
     }
+
+    public function recupNumeroDevisApresSoumission(string $numDit, string $codeSociete): ?string
+    {
+        $statement = "SELECT FIRST 1
+                        CASE 
+                            WHEN (select max(seor_numor_seq) 
+                                    from {$this->dbIps}.sav_eor 
+                                    where seor_refdem like '%{$numDit}%' 
+                                    and seor_serv='DEV') > 1 
+                            THEN seor_numor_lie
+                            ELSE seor_numor
+                        END as numero_devis
+                    from {$this->dbIps}.sav_eor
+                    where seor_serv = 'DEV'
+                    AND seor_soc = '$codeSociete'
+                    AND seor_refdem like '%{$numDit}%'
+
+                ";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
+
+        return $data[0]['numero_devis'] ?? null;
+    }
+
+
 
     public function recupNbPieceMagasin(?string $numDevis, string $codeSociete): int
     {
@@ -489,19 +517,19 @@ class DitDevisSoumisAValidationModel extends Model
         $statement = " SELECT
                     CASE
                         WHEN COUNT(CASE WHEN slor_constp = 'CAT' THEN 1 END) > 0
-                        AND COUNT(CASE WHEN slor_constp IN (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST') THEN 1 END) > 0
+                            AND COUNT(CASE WHEN slor_constp IN (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST') THEN 1 END) > 0
                         THEN TRIM('CP')
                     
                         WHEN COUNT(CASE WHEN slor_constp = 'CAT' THEN 1 END) > 0
-                        AND COUNT(CASE WHEN slor_constp IN (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST') THEN 1 END) = 0
+                            AND COUNT(CASE WHEN slor_constp IN (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST') THEN 1 END) = 0
                         THEN TRIM('C')
 
                         WHEN COUNT(CASE WHEN slor_constp = 'CAT' THEN 1 END) = 0
-                        AND COUNT(CASE WHEN slor_constp IN (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST') THEN 1 END) = 0
+                            AND COUNT(CASE WHEN slor_constp IN (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST') THEN 1 END) = 0
                         THEN TRIM('N')
 
                         WHEN COUNT(CASE WHEN slor_constp = 'CAT' THEN 1 END) = 0
-                        AND COUNT(CASE WHEN slor_constp IN (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST') THEN 1 END) > 0
+                            AND COUNT(CASE WHEN slor_constp IN (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST') THEN 1 END) > 0
                         THEN TRIM('P')
                     END AS retour
                 FROM {$this->dbIps}.sav_lor

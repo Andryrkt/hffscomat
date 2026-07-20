@@ -44,10 +44,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Desactivation sur [1]
 const agenceUserSelect = document.getElementById(
-  "commande_traiter_search_agenceUser",
+  "commande_traiter_search_agence",
 );
 
-// if (agenceUserSelect) {
-//   agenceUserSelect.selectedIndex = 1;
-//   // agenceUserSelect.disabled = true;
-// }
+if (agenceUserSelect) {
+  agenceUserSelect.selectedIndex = 1;
+  agenceUserSelect.disabled = true;
+  agenceUserSelect.style.pointerEvents = "none";
+  agenceUserSelect.style.backgroundColor = "#e9ecef"; // Gris standard Bootstrap
+  agenceUserSelect.style.color = "#6c757d"; // Texte grisé
+  agenceUserSelect.style.borderColor = "#ced4da"; // Bordure adoucie
+  agenceUserSelect.style.cursor = "not-allowed"; // Curseur d'interdiction
+}

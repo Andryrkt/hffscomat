@@ -17,7 +17,7 @@ class CommandeTraiterController extends Controller
     /**
      * @Route("/liste-commande-traiter", name="magasinListe_commande_traiter")
      */
-    public function listCommandeLivrer(Request $request)
+    public function listCommandeTraiter(Request $request)
     {
         $dtoSearch = (new CommandeTraiterSearchFactory($this->getSecurityService()))->initialisationSearch();
 

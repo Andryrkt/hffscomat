@@ -325,7 +325,7 @@ class DitOrSoumisAValidationModel extends Model
     public function countAgServDebit($numOr, $codeSociete)
     {
         $statement = " SELECT count(distinct sitv_servdeb) as retour
-                    from sav_itv 
+                    from sav_itv
                     where sitv_numor = '$numOr' AND sitv_soc = '$codeSociete'
         ";
 
@@ -336,7 +336,7 @@ class DitOrSoumisAValidationModel extends Model
         return (int) ($data[0]['retour'] ?? 0);
     }
 
-     /**
+    /**
      * Compte les lignes de l'OR correspondant à un article de stock (abse_codg = 'ST')
      * Sert à determiner si l'option DEVIS-VP (vérification de prix) doit être proposée
      */
@@ -355,7 +355,7 @@ class DitOrSoumisAValidationModel extends Model
 
         return (int) ($data[0]['nombre'] ?? 0);
     }
-    
+
     public function getNumcli(string $numOr, string $codeSociete): ?string
     {
         $statement = " SELECT seor_numcli as numcli
@@ -823,53 +823,54 @@ class DitOrSoumisAValidationModel extends Model
         string $numeroOr
     ) {
         $statement = "SELECT
-    numero_or As numero_or,
-    categorie_constp As constructeur,
-    disponibilite As disponibilite,
-    COUNT(*) AS nb_ref,
-    SUM(slor_pmp) AS somme_pmp,
-    SUM(slor_pxvteht) AS somme_pxvteht,
-    SUM(slor_pxvteht * (slor_remise/100)) AS somme_remise,
-    SUM(slor_pxvteht * (1 - slor_remise/100)) AS somme_pxvte_remise,
-    SUM((slor_pxvteht * (1 - slor_remise/100)) - slor_pmp) AS somme_marge_brute,
-    CASE
-        WHEN SUM(slor_pxvteht * (1 - slor_remise/100)) = 0 THEN NULL
-        ELSE SUM((slor_pxvteht * (1 - slor_remise/100)) - slor_pmp)
-             / SUM(slor_pxvteht * (1 - slor_remise/100)) * 100
-    END AS pct_marge_brute,
-    MAX(CASE
-        WHEN (slor_pxvteht * (1 - slor_remise/100)) <> 0
-        THEN ((slor_pxvteht * (1 - slor_remise/100)) - slor_pmp) / (slor_pxvteht * (1 - slor_remise/100)) * 100
-    END) AS pct_mb_max,
-    MIN(CASE
-        WHEN (slor_pxvteht * (1 - slor_remise/100)) <> 0
-        THEN ((slor_pxvteht * (1 - slor_remise/100)) - slor_pmp) / (slor_pxvteht * (1 - slor_remise/100)) * 100
-    END) AS pct_mb_min
-FROM (
-    SELECT
-        l.slor_numor AS numero_or,
-        CASE
-            WHEN l.slor_constp = 'MFN' THEN 'MFN'
-            WHEN l.slor_constp = 'CAT' THEN 'CAT'
-            ELSE 'AUTRE'
-        END AS categorie_constp,
-        CASE WHEN s.astp_stock > 0 THEN 'DISPONIBLE' ELSE 'NON_DISPONIBLE' END AS disponibilite,
-        l.slor_pmp,
-        l.slor_pxvteht,
-        l.slor_remise
-    FROM sav_lor l
-    INNER JOIN art_stp s
-        ON s.astp_constp = l.slor_constp
-        AND s.astp_refp = l.slor_refp
-        --AND s.astp_succ = '01'
-    INNER JOIN art_bse b
-        ON b.abse_constp = l.slor_constp
-        AND b.abse_refp = l.slor_refp
-        AND b.abse_codg = 'ST'
-    WHERE l.slor_numor = $numeroOr
-) t
-GROUP BY numero_or, categorie_constp, disponibilite
-ORDER BY categorie_constp, disponibilite DESC;
+                numero_or                                               As numero_or,
+                TRIM(categorie_constp)                                        As constructeur,
+                TRIM(disponibilite)                                           As disponibilite,
+                COUNT(*)                                                AS nb_ref,
+                SUM(slor_pmp)                                           AS somme_pmp,
+                SUM(slor_pxvteht)                                       AS somme_pxvteht,
+                SUM(slor_pxvteht * (slor_remise/100))                   AS somme_remise,
+                SUM(slor_pxvteht * (1 - slor_remise/100))               AS somme_pxvte_remise,
+                SUM((slor_pxvteht * (1 - slor_remise/100)) - slor_pmp)  AS somme_marge_brute,
+                ROUND(CASE
+                    WHEN SUM(slor_pxvteht * (1 - slor_remise/100)) = 0 THEN NULL
+                    ELSE SUM((slor_pxvteht * (1 - slor_remise/100)) - slor_pmp)
+                        / SUM(slor_pxvteht * (1 - slor_remise/100)) * 100
+                END)                                                      AS pct_marge_brute,
+                ROUND(MAX(CASE
+                    WHEN (slor_pxvteht * (1 - slor_remise/100)) <> 0
+                    THEN ((slor_pxvteht * (1 - slor_remise/100)) - slor_pmp) / (slor_pxvteht * (1 - slor_remise/100)) * 100
+                END))                                                     AS pct_mb_max,
+                ROUND(MIN(CASE
+                    WHEN (slor_pxvteht * (1 - slor_remise/100)) <> 0
+                    THEN ((slor_pxvteht * (1 - slor_remise/100)) - slor_pmp) / (slor_pxvteht * (1 - slor_remise/100)) * 100
+                END))                                                      AS pct_mb_min
+            FROM (
+                SELECT
+                    l.slor_numor AS numero_or,
+                    CASE
+                        WHEN l.slor_constp = 'MFN' THEN 'MFN'
+                        WHEN l.slor_constp = 'CAT' THEN 'CAT'
+                        ELSE 'AUTRE'
+                    END AS categorie_constp,
+                    CASE WHEN s.astp_stock > 0 THEN 'DISPONIBLE' ELSE 'NON_DISPONIBLE' END AS disponibilite,
+                    l.slor_pmp,
+                    l.slor_pxvteht,
+                    l.slor_remise
+                FROM sav_lor l
+                INNER JOIN art_stp s
+                    ON s.astp_constp = l.slor_constp
+                    AND s.astp_refp = l.slor_refp
+                    --AND s.astp_succ = '01'
+                INNER JOIN art_bse b
+                    ON b.abse_constp = l.slor_constp
+                    AND b.abse_refp = l.slor_refp
+                    AND b.abse_codg = 'ST'
+                WHERE l.slor_numor = $numeroOr
+                AND l.slor_soc = '$codeSociete'
+            ) t
+            GROUP BY numero_or, categorie_constp, disponibilite
+            ORDER BY categorie_constp, disponibilite DESC
         ";
 
         $result = $this->connect->executeQuery($statement);
