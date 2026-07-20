@@ -63,6 +63,32 @@ class DitDevisSoumisAValidationModel extends Model
         return $data[0]['numdevis'] ?? null;
     }
 
+    public function recupNumeroDevisApresSoumission(string $numDit, string $codeSociete): ?string
+    {
+        $statement = "SELECT
+                        CASE 
+                            WHEN (select max(seor_numor_seq) 
+                                    from {$this->dbIps}.sav_eor 
+                                    where seor_refdem like '%{$numDit}%' 
+                                    and seor_serv='DEV') > 1 
+                            THEN seor_numor_lie
+                            ELSE seor_numor
+                        END as numero_devis
+                    from {$this->dbIps}.sav_eor
+                    where seor_serv = 'DEV'
+                    AND seor_soc = '$codeSociete'
+                    AND seor_refdem like '%{$numDit}%'
+                ";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
+
+        return $data[0]['numero_devis'] ?? null;
+    }
+
+
+
     public function recupNbPieceMagasin(?string $numDevis, string $codeSociete): int
     {
         if ($numDevis === null) return 0;
