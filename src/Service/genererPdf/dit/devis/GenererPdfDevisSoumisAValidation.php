@@ -256,9 +256,9 @@ class GenererPdfDevisSoumisAValidation extends GeneratePdf
         $pdf->Output($filePath, 'F');
     }
 
-    public function genererPdfVerificationPrix(array $tableauMarge, string $nomFichierCtrl)
+    public function genererPdfVerificationPrix(array $tableauMarge, string $nomFichierCtrl, string $email)
     {
-        $pdf = new HeaderPdf(null);
+        $pdf = new HeaderPdf($email);
         $pdf->setPrintHeader(false);
         $tableGenerator = new PdfTableGeneratorFlexible();
         $tableGenerator->setOptions([
@@ -275,6 +275,24 @@ class GenererPdfDevisSoumisAValidation extends GeneratePdf
         //==========================================================================================================
 
         $Dossier = $_ENV['BASE_PATH_FICHIER'] . '/dit/dev/';
+
+        // Vérifier et créer le dossier si nécessaire
+        if (!is_dir($Dossier)) {
+            mkdir($Dossier, 0777, true); // true pour créer récursivement
+        }
+
+        $filePath = $Dossier . $nomFichierCtrl;
+
+        $pdf->Output($filePath, 'F');
+    }
+
+    public function genererPdfDevis(string $nomFichierCtrl, string $email)
+    {
+        $pdf = new HeaderPdf($email);
+
+        $pdf->AddPage();
+
+        $Dossier = $_ENV['BASE_PATH_FICHIER'] . '/dit/dev/fichiers/';
 
         // Vérifier et créer le dossier si nécessaire
         if (!is_dir($Dossier)) {
