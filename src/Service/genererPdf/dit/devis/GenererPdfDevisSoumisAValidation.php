@@ -258,7 +258,7 @@ class GenererPdfDevisSoumisAValidation extends GeneratePdf
 
     public function genererPdfVerificationPrix(array $tableauMarge, string $nomFichierCtrl, string $email)
     {
-        $pdf = new HeaderPdf($email);
+        $pdf = new HeaderPdf(' email : ' . $email);
         $pdf->setPrintHeader(false);
         $tableGenerator = new PdfTableGeneratorFlexible();
         $tableGenerator->setOptions([
@@ -288,7 +288,7 @@ class GenererPdfDevisSoumisAValidation extends GeneratePdf
 
     public function genererPdfDevis(string $nomFichierCtrl, string $email)
     {
-        $pdf = new HeaderPdf($email);
+        $pdf = new HeaderPdf(' email : ' . $email);
 
         $pdf->AddPage();
 
