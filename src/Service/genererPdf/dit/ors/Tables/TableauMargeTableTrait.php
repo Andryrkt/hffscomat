@@ -38,7 +38,7 @@ trait TableauMargeTableTrait
                 'footer_row_style' => 'background-color: #ffffff;',
             ]);
 
-            $headerConfig = $this->headerTableauMarge($label);
+            $headerConfig = $this->headerTableauMargeTable($label);
             foreach ($headerConfig as &$col) {
                 // Ajouter les bordures pour le header
                 $colHeaderStyle = $col['header_style'] ?? $col['style'] ?? '';
@@ -84,7 +84,7 @@ trait TableauMargeTableTrait
         ];
     }
 
-    private function headerTableauMarge(string $label): array
+    private function headerTableauMargeTable(string $label): array
     {
         $formatterPourcentage = function ($value) {
             return $value == 0 ?   '-' : round((float) $value, 2) . '%';

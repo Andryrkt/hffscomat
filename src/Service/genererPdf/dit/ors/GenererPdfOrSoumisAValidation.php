@@ -2,15 +2,16 @@
 
 namespace App\Service\genererPdf\dit\ors;
 
-use App\Service\genererPdf\HeaderPdf;
-use App\Service\genererPdf\GeneratePdf;
 use App\Controller\Traits\FormatageTrait;
 use App\Dto\atelier\dit\soumission\OrSoumissionDto;
-use App\Service\genererPdf\PdfTableGeneratorFlexible;
-use App\Service\genererPdf\dit\ors\Tables\SituationOrTableTrait;
-use App\Service\genererPdf\dit\ors\Tables\RecapitulationOrTableTrait;
 use App\Service\genererPdf\dit\ors\Tables\PieceFaibleActiviteTableTrait;
+use App\Service\genererPdf\dit\ors\Tables\RecapitulationOrTableTrait;
+use App\Service\genererPdf\dit\ors\Tables\SituationOrTableTrait;
+use App\Service\genererPdf\dit\ors\Tables\TableauMargeReferenceTableTrait;
 use App\Service\genererPdf\dit\ors\Tables\TableauMargeTableTrait;
+use App\Service\genererPdf\GeneratePdf;
+use App\Service\genererPdf\HeaderPdf;
+use App\Service\genererPdf\PdfTableGeneratorFlexible;
 
 class GenererPdfOrSoumisAValidation extends GeneratePdf
 {
@@ -19,6 +20,7 @@ class GenererPdfOrSoumisAValidation extends GeneratePdf
     use RecapitulationOrTableTrait;
     use PieceFaibleActiviteTableTrait;
     use TableauMargeTableTrait;
+    use TableauMargeReferenceTableTrait;
 
     // ORDRE DE REPARATION (OR)
     public function copyToDw(string $filename, string $numDit)
@@ -32,14 +34,15 @@ class GenererPdfOrSoumisAValidation extends GeneratePdf
      * generer pdf pour la soumission OR
      */
     function GenererPdf(
-        OrSoumissionDto $dto, 
-        array $montantPdf, 
-        array $quelqueaffichage, 
-        string $email, 
-        array $pieceFaibleAchat = [], 
-        array $tableauMarge, 
-        string $nomAvecCheminFichier)
-    {
+        OrSoumissionDto $dto,
+        array $montantPdf,
+        array $quelqueaffichage,
+        string $email,
+        array $pieceFaibleAchat = [],
+        array $tableauMarge,
+        array $tableauMargeReference,
+        string $nomAvecCheminFichier
+    ) {
         $pdf = new HeaderPdf($email);
         $tableGenerator = new PdfTableGeneratorFlexible();
 
@@ -157,6 +160,9 @@ class GenererPdfOrSoumisAValidation extends GeneratePdf
         //==========================================================================================================
         //Titre: Tableaux de marge (CAT, MFN, Autres)
         $this->renderTableauxMarge($pdf, $tableGenerator, $tableauMarge);
+        //==========================================================================================================
+        //Titre: Tableaux de marge avec reference (CAT, MFN, Autres)
+        $this->renderTableauxMargeReference($pdf, $tableGenerator, $tableauMargeReference);
         //==========================================================================================================
         //Titre: Observation
         $pdf->setFont('helvetica', 'B', 12);

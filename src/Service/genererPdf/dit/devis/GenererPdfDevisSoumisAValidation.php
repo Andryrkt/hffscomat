@@ -4,6 +4,7 @@ namespace App\Service\genererPdf\dit\devis;
 
 use App\Controller\Traits\FormatageTrait;
 use App\Dto\Atelier\Dit\soumission\Devis\DitDevisSoumisAValidationDto;
+use App\Service\genererPdf\dit\ors\Tables\TableauMargeReferenceTableTrait;
 use App\Service\genererPdf\dit\ors\Tables\TableauMargeTableTrait;
 use App\Service\genererPdf\GeneratePdf;
 use App\Service\genererPdf\HeaderPdf;
@@ -14,6 +15,7 @@ class GenererPdfDevisSoumisAValidation extends GeneratePdf
 {
     use FormatageTrait;
     use TableauMargeTableTrait;
+    use TableauMargeReferenceTableTrait;
 
     public function copyToDWDevisSoumis(string $fileName)
     {
@@ -256,7 +258,7 @@ class GenererPdfDevisSoumisAValidation extends GeneratePdf
         $pdf->Output($filePath, 'F');
     }
 
-    public function genererPdfVerificationPrix(array $tableauMarge, string $nomFichierCtrl, string $email)
+    public function genererPdfVerificationPrix(array $tableauMarge, array $tableauMargeReference, string $nomFichierCtrl, string $email)
     {
         $pdf = new HeaderPdf(' email : ' . $email);
         $pdf->setPrintHeader(false);
@@ -272,6 +274,10 @@ class GenererPdfDevisSoumisAValidation extends GeneratePdf
         //==========================================================================================================
         //Titre: Tableaux de marge (CAT, MFN, Autres)
         $this->renderTableauxMarge($pdf, $tableGenerator, $tableauMarge);
+        //==========================================================================================================
+        //==========================================================================================================
+        //Titre: Tableaux de marge avec reference (CAT, MFN, Autres)
+        $this->renderTableauxMargeReference($pdf, $tableGenerator, $tableauMargeReference);
         //==========================================================================================================
 
         $Dossier = $_ENV['BASE_PATH_FICHIER'] . '/dit/dev/';
