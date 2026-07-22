@@ -60,7 +60,7 @@ trait TableauMargeReferenceTableTrait
     private function headerTableauMargeReference(string $label = 'CAT'): array
     {
         $formatterPourcentage = function ($value) {
-            return $value == 0 ?   '-' : round((float) $value, 2) . '%';
+            return $value == 0 ?   '-' : round((float) $value) . '%';
         };
 
         $formatterDispoStock = function ($value, $row) {
@@ -81,7 +81,7 @@ trait TableauMargeReferenceTableTrait
             [
                 'key'          => 'nb_ref',
                 'label'        => 'Qte stock',
-                'width'        => 25,
+                'width'        => 30,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => 'text-align: center; ',
@@ -99,7 +99,7 @@ trait TableauMargeReferenceTableTrait
             [
                 'key'          => 'reference',
                 'label'        => 'Ref',
-                'width'        => 50,
+                'width'        => 60,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => '',
@@ -108,7 +108,7 @@ trait TableauMargeReferenceTableTrait
             [
                 'key'          => 'pmp',
                 'label'        => 'PMP',
-                'width'        => 40,
+                'width'        => 45,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => 'text-align: right;  padding-right:6px;',
@@ -119,7 +119,7 @@ trait TableauMargeReferenceTableTrait
             [
                 'key'          => 'pv_brut',
                 'label'        => 'PV Brut',
-                'width'        => 40,
+                'width'        => 45,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => 'text-align: right;  margin-right:2px;',
@@ -141,7 +141,7 @@ trait TableauMargeReferenceTableTrait
             [
                 'key'          => 'pv_net_remise',
                 'label'        => 'PV Net remisé',
-                'width'        => 40,
+                'width'        => 45,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => 'text-align: right;  margin-right:2px;',
@@ -152,7 +152,7 @@ trait TableauMargeReferenceTableTrait
             [
                 'key'          => 'mb',
                 'label'        => 'MB',
-                'width'        => 60,
+                'width'        => 45,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => 'text-align: right;  margin-right:2px;',
@@ -163,7 +163,7 @@ trait TableauMargeReferenceTableTrait
             [
                 'key'          => 'mb_p',
                 'label'        => '%MB',
-                'width'        => 25,
+                'width'        => 30,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => 'text-align: right;  margin-right:2px;',
@@ -174,7 +174,7 @@ trait TableauMargeReferenceTableTrait
             [
                 'key'          => 'max_mb',
                 'label'        => 'MB+',
-                'width'        => 40,
+                'width'        => 45,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => 'text-align: right;  margin-right:2px;',
@@ -185,7 +185,7 @@ trait TableauMargeReferenceTableTrait
             [
                 'key'          => 'max_mb_p',
                 'label'        => '%MB+',
-                'width'        => 25,
+                'width'        => 30,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => 'text-align: right;  margin-right:2px;',
@@ -196,7 +196,7 @@ trait TableauMargeReferenceTableTrait
             [
                 'key'          => 'min_mb',
                 'label'        => 'MB-',
-                'width'        => 40,
+                'width'        => 45,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center;',
                 'cell_style'   => 'text-align: right; margin-right:2px;',
@@ -207,7 +207,7 @@ trait TableauMargeReferenceTableTrait
             [
                 'key'          => 'min_mb_p',
                 'label'        => '%MB-',
-                'width'        => 25,
+                'width'        => 30,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center;',
                 'cell_style'   => 'text-align: right; margin-right:2px;',

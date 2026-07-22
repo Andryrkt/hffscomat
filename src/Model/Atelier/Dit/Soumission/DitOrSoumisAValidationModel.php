@@ -910,7 +910,10 @@ class DitOrSoumisAValidationModel extends Model
         $statement = "WITH stats_max AS (
                 SELECT FIRST 1
                     MAX(slor_pxnreel - slor_pmp) AS max_mb,
-                    ROUND(((slor_pxnreel - slor_pmp) / slor_pxnreel) * 100, 2) AS max_mb_p
+                    CASE 
+                        WHEN slor_pxnreel = 0 THEN 0
+                        ELSE ROUND(((slor_pxnreel - slor_pmp) / slor_pxnreel) * 100, 2) 
+                    END AS max_mb_p
                 FROM Informix.sav_lor slor
                 INNER JOIN Informix.sav_eor 
                     ON seor_soc = slor_soc 
@@ -928,7 +931,10 @@ class DitOrSoumisAValidationModel extends Model
             stats_min AS (
                 SELECT FIRST 1
                     MIN(slor_pxnreel - slor_pmp) AS min_mb,
-                    ROUND(((slor_pxnreel - slor_pmp) / slor_pxnreel) * 100, 2) AS min_mb_p
+                    CASE 
+                        WHEN slor_pxnreel = 0 THEN 0
+                        ELSE ROUND(((slor_pxnreel - slor_pmp) / slor_pxnreel) * 100, 2) 
+                    END AS min_mb_p
                 FROM Informix.sav_lor slor
                 INNER JOIN Informix.sav_eor 
                     ON seor_soc = slor_soc 
