@@ -48,8 +48,9 @@ class TraitementDeFicherService
 
             // creation du pdf de verification de prix
             $tableauMarge = $this->tableauMarge($dto->numeroDevis, $dto->codeSociete);
+            $tableauMargeReference = $this->tableauMargeReference($dto->numeroDevis, $dto->codeSociete);
             $mailUtilisateur = $this->securityService->getDataService()->getUserMail();
-            $generePdfDevis->genererPdfVerificationPrix($tableauMarge, $nomFichierCtrl, $mailUtilisateur);
+            $generePdfDevis->genererPdfVerificationPrix($tableauMarge, $tableauMargeReference, $nomFichierCtrl, $mailUtilisateur);
 
             // fusion du pdf de verification de prix avec le fichier ajouter par l'utilisateur en le mettant à la dernière position
             $fichierConvertis = $this->ConvertirLesPdf([$chemin . 'fichiers/' . $nomFichierGenererSansTache, $chemin . $nomFichierCtrl]);
@@ -218,6 +219,39 @@ class TraitementDeFicherService
             }
         }
 
+        return [
+            'tableauMargeCat' => $tableauMargeCat,
+            'tableauMargeMfn' => $tableauMargeMfn,
+            'tableauMargeAutres' => $tableauMargeAutres
+        ];
+    }
+
+    public function tableauMargeReference(string $numOr, string $codeSociete): array
+    {
+        $ditOrsoumisAValidationModel = new DitOrSoumisAValidationModel();
+
+        $infoOrs = $ditOrsoumisAValidationModel->getInformationDevis($numOr, $codeSociete);
+
+        $tableauMargeCat = [];
+        $tableauMargeMfn = [];
+        $tableauMargeAutres = [];
+
+        if (!empty($infoOrs)) {
+            foreach ($infoOrs as $infoOr) {
+                $afficher = $ditOrsoumisAValidationModel->tableauDeMargeAvecReference($codeSociete, $numOr, $infoOr['reference'], $infoOr['code_agence']);
+
+                foreach ($afficher as $value) {
+                    if ($value['constructeur'] == 'CAT') {
+                        $tableauMargeCat[] = $value;
+                    } elseif ($value['constructeur'] == 'MFN') {
+                        $tableauMargeMfn[] = $value;
+                    } else {
+                        $tableauMargeAutres[] = $value;
+                    }
+                }
+            }
+        }
+        // dd($tableauMargeCat, $tableauMargeMfn, $tableauMargeAutres);
         return [
             'tableauMargeCat' => $tableauMargeCat,
             'tableauMargeMfn' => $tableauMargeMfn,

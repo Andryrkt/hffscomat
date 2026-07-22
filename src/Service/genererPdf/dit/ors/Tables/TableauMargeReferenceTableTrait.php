@@ -8,12 +8,12 @@ use App\Service\genererPdf\PdfTableGeneratorFlexible;
 /**============================================================================
  * -------- Pour le tableau de marge ------------------
  *=============================================================================*/
-trait TableauMargeTableTrait
+trait TableauMargeReferenceTableTrait
 {
     /**
      * Affiche les tableaux de marge (CAT, MFN, Autres) s'ils contiennent des lignes.
      */
-    private function renderTableauxMarge(TCPDF $pdf, PdfTableGeneratorFlexible $tableGenerator, array $tableauMarge): void
+    private function renderTableauxMargeReference(TCPDF $pdf, PdfTableGeneratorFlexible $tableGenerator, array $tableauMarge): void
     {
         if (empty($tableauMarge)) {
             return;
@@ -26,7 +26,7 @@ trait TableauMargeTableTrait
         ];
 
         $pdf->SetTextColor(0, 0, 0);
-        $this->addTitle($pdf, "TABLEAU DE MARGE", 'helvetica', 'B', 10, 'L', 0);
+        $this->addTitle($pdf, "TABLEAU DE MARGE PAR REFERENCE", 'helvetica', 'B', 10, 'L', 0);
         $pdf->setFont('helvetica', '', 8);
 
         foreach ($sections as $key => $label) {
@@ -38,7 +38,7 @@ trait TableauMargeTableTrait
                 'footer_row_style' => 'background-color: #ffffff;',
             ]);
 
-            $headerConfig = $this->headerTableauMargeTable($label);
+            $headerConfig = $this->headerTableauMargeReference($label);
             foreach ($headerConfig as &$col) {
                 // Ajouter les bordures pour le header
                 $colHeaderStyle = $col['header_style'] ?? $col['style'] ?? '';
@@ -50,74 +50,41 @@ trait TableauMargeTableTrait
             }
             unset($col);
 
-            $html = $tableGenerator->generateTable($headerConfig, $this->normaliserLignesMarge($lignes), []);
-            $pdf->writeHTML($html, true, false, true, false, '');
+            if (!empty($lignes)) {
+                $html = $tableGenerator->generateTable($headerConfig, $lignes, []);
+                $pdf->writeHTML($html, true, false, true, false, '');
+            }
         }
     }
 
-    /**
-     * Garantit une ligne "Dispo Stock" et une ligne "Non dispo stock" par tableau,
-     * même si l'une des deux ne remonte aucune donnée de la requête.
-     */
-    private function normaliserLignesMarge(array $lignes): array
-    {
-        $ligneVide = [
-            'nb_ref'              => '',
-            'somme_pmp'           => '',
-            'somme_pxvteht'       => '',
-            'somme_remise'        => '',
-            'somme_pxvte_remise'  => '',
-            'somme_marge_brute'   => '',
-            'pct_marge_brute'     => '',
-            'pct_mb_max'          => '',
-            'pct_mb_min'          => '',
-        ];
-
-        $parDisponibilite = [];
-        foreach ($lignes as $ligne) {
-            $parDisponibilite[$ligne['disponibilite']] = $ligne;
-        }
-
-        return [
-            array_merge($ligneVide, $parDisponibilite['DISPONIBLE'] ?? [], ['disponibilite' => 'DISPONIBLE']),
-            array_merge($ligneVide, $parDisponibilite['NON_DISPONIBLE'] ?? [], ['disponibilite' => 'NON_DISPONIBLE']),
-        ];
-    }
-
-    private function headerTableauMargeTable(string $label): array
+    private function headerTableauMargeReference(string $label = 'CAT'): array
     {
         $formatterPourcentage = function ($value) {
             return $value == 0 ?   '-' : round((float) $value, 2) . '%';
         };
 
         $formatterDispoStock = function ($value, $row) {
-            return ($row['disponibilite'] ?? '') === 'DISPONIBLE' ? 'Dispo Stock' : 'Non dispo stock';
-        };
-
-        // Trace une ligne entre la ligne "Dispo Stock" et la ligne "Non dispo stock".
-        $stylerSeparateur = function ($value, $row) {
-            return ($row['disponibilite'] ?? '') === 'DISPONIBLE' ? 'border-bottom: 0.5px solid #D3D3D3;' : '';
+            return (int) ($row['nb_ref'] ?? 0) === 0 ? 'Non dispo stock' : 'Dispo stock';
         };
 
         return [
             [
-                'key'          => 'disponibilite',
+                'key'          => '',
                 'label'        => $label,
-                'width'        => 75,
+                'width'        => 40,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center;',
-                'cell_style'   => 'text-align: left;',
+                'cell_style'   => 'text-align: left; ',
                 'footer_style' => 'font-weight: 900;',
-                'formatter'    => $formatterDispoStock,
-                'styler'       => $stylerSeparateur
+                'formatter'    => $formatterDispoStock
             ],
             [
                 'key'          => 'nb_ref',
                 'label'        => 'Qte stock',
                 'width'        => 25,
                 'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold; text-align: center; font-size: 6px;',
-                'cell_style'   => 'text-align: center; font-size: 6px;',
+                'header_style' => 'font-weight: bold; text-align: center; ',
+                'cell_style'   => 'text-align: center; ',
                 'footer_style' => 'font-weight: 900;'
             ],
             [
@@ -125,8 +92,8 @@ trait TableauMargeTableTrait
                 'label'        => 'Qte dem',
                 'width'        => 25,
                 'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold; text-align: center; font-size: 6px;',
-                'cell_style'   => 'text-align: center; font-size: 6px;',
+                'header_style' => 'font-weight: bold; text-align: center; ',
+                'cell_style'   => 'text-align: center; ',
                 'footer_style' => 'font-weight: 900;'
             ],
             [
@@ -134,77 +101,72 @@ trait TableauMargeTableTrait
                 'label'        => 'Ref',
                 'width'        => 50,
                 'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold; text-align: center; font-size: 6px;',
-                'cell_style'   => 'font-size: 6px;',
+                'header_style' => 'font-weight: bold; text-align: center; ',
+                'cell_style'   => '',
                 'footer_style' => 'font-weight: 900;'
             ],
             [
-                'key'          => 'somme_pmp',
+                'key'          => 'pmp',
                 'label'        => 'PMP',
                 'width'        => 40,
                 'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold; text-align: center; font-size: 6px;',
-                'cell_style'   => 'text-align: right; font-size: 6px; padding-right:6px;',
+                'header_style' => 'font-weight: bold; text-align: center; ',
+                'cell_style'   => 'text-align: right;  padding-right:6px;',
                 'footer_style' => 'font-weight: 900;',
                 'type'         => 'number',
                 'default_value' => '-',
-                'styler'       => $stylerSeparateur
             ],
             [
-                'key'          => 'somme_pxvteht',
+                'key'          => 'pv_brut',
                 'label'        => 'PV Brut',
                 'width'        => 40,
                 'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold; text-align: center; font-size: 6px;',
-                'cell_style'   => 'text-align: right; font-size: 6px; margin-right:2px;',
+                'header_style' => 'font-weight: bold; text-align: center; ',
+                'cell_style'   => 'text-align: right;  margin-right:2px;',
                 'footer_style' => 'font-weight: 900;',
                 'type'         => 'number',
                 'default_value' => '-',
-                'styler'       => $stylerSeparateur
             ],
             [
-                'key'          => 'somme_remise',
+                'key'          => 'mt_remise',
                 'label'        => 'Mt Remise',
                 'width'        => 40,
                 'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold; text-align: center; font-size: 6px;',
-                'cell_style'   => 'text-align: right; font-size: 6px; margin-right:2px;',
+                'header_style' => 'font-weight: bold; text-align: center; ',
+                'cell_style'   => 'text-align: right;  margin-right:2px;',
                 'footer_style' => 'font-weight: 900;',
                 'type'         => 'number',
                 'default_value' => '-',
-                'styler'       => $stylerSeparateur
             ],
             [
-                'key'          => 'somme_pxvte_remise',
+                'key'          => 'pv_net_remise',
                 'label'        => 'PV Net remisé',
                 'width'        => 40,
                 'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold; text-align: center; font-size: 6px;',
-                'cell_style'   => 'text-align: right; font-size: 6px; margin-right:2px;',
+                'header_style' => 'font-weight: bold; text-align: center; ',
+                'cell_style'   => 'text-align: right;  margin-right:2px;',
                 'footer_style' => 'font-weight: 900;',
                 'type'         => 'number',
                 'default_value' => '-',
-                'styler'       => $stylerSeparateur
             ],
             [
-                'key'          => 'somme_marge_brute',
+                'key'          => 'mb',
                 'label'        => 'MB',
                 'width'        => 60,
                 'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold; text-align: center; font-size: 6px;',
-                'cell_style'   => 'text-align: right; font-size: 6px; margin-right:2px;',
+                'header_style' => 'font-weight: bold; text-align: center; ',
+                'cell_style'   => 'text-align: right;  margin-right:2px;',
                 'footer_style' => 'font-weight: 900;',
                 'type'         => 'number',
                 'default_value' => '-',
-                'styler'       => $stylerSeparateur
             ],
             [
-                'key'          => 'pct_marge_brute',
+                'key'          => 'mb_p',
                 'label'        => '%MB',
                 'width'        => 25,
                 'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold; text-align: center; font-size: 6px;',
-                'cell_style'   => 'text-align: right; font-size: 6px; margin-right:2px;',
+                'header_style' => 'font-weight: bold; text-align: center; ',
+                'cell_style'   => 'text-align: right;  margin-right:2px;',
                 'footer_style' => 'font-weight: 900;',
                 'type'         => 'number',
                 'formatter' => $formatterPourcentage,
@@ -214,18 +176,19 @@ trait TableauMargeTableTrait
                 'label'        => 'MB+',
                 'width'        => 40,
                 'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold; text-align: center; font-size: 6px;',
-                'cell_style'   => 'text-align: right; font-size: 6px; margin-right:2px;',
+                'header_style' => 'font-weight: bold; text-align: center; ',
+                'cell_style'   => 'text-align: right;  margin-right:2px;',
                 'footer_style' => 'font-weight: 900;',
-                'type'         => 'number'
+                'type'         => 'number',
+                'default_value' => '-',
             ],
             [
-                'key'          => 'pct_mb_max',
+                'key'          => 'max_mb_p',
                 'label'        => '%MB+',
                 'width'        => 25,
                 'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold; text-align: center; font-size: 6px;',
-                'cell_style'   => 'text-align: right; font-size: 6px; margin-right:2px;',
+                'header_style' => 'font-weight: bold; text-align: center; ',
+                'cell_style'   => 'text-align: right;  margin-right:2px;',
                 'footer_style' => 'font-weight: 900;',
                 'type'         => 'number',
                 'formatter' => $formatterPourcentage,
@@ -235,24 +198,24 @@ trait TableauMargeTableTrait
                 'label'        => 'MB-',
                 'width'        => 40,
                 'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold; text-align: center; font-size: 6px;',
-                'cell_style'   => 'text-align: right; font-size: 6px; margin-right:2px;',
+                'header_style' => 'font-weight: bold; text-align: center;',
+                'cell_style'   => 'text-align: right; margin-right:2px;',
                 'footer_style' => 'font-weight: 900;',
-                'type'         => 'number'
+                'type'         => 'number',
+                'default_value' => '-',
             ],
             [
-                'key'          => 'pct_mb_min',
+                'key'          => 'min_mb_p',
                 'label'        => '%MB-',
                 'width'        => 25,
                 'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold; text-align: center; font-size: 6px;',
-                'cell_style'   => 'text-align: right; font-size: 6px; margin-right:2px;',
+                'header_style' => 'font-weight: bold; text-align: center;',
+                'cell_style'   => 'text-align: right; margin-right:2px;',
                 'footer_style' => 'font-weight: 900;',
                 'type'         => 'number',
-                'formatter'    => $formatterPourcentage,
-                'default_value' => '-',
-                'styler'       => $stylerSeparateur
+                'formatter' => $formatterPourcentage,
             ],
+
         ];
     }
 }
