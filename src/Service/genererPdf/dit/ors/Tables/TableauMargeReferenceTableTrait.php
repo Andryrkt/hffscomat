@@ -27,13 +27,13 @@ trait TableauMargeReferenceTableTrait
 
         $pdf->SetTextColor(0, 0, 0);
         $this->addTitle($pdf, "TABLEAU DE MARGE PAR REFERENCE", 'helvetica', 'B', 10, 'L', 0);
-        $pdf->setFont('helvetica', '', 8);
+        $pdf->setFont('helvetica', '', 6);
 
         foreach ($sections as $key => $label) {
             $lignes = $tableauMarge[$key] ?? [];
 
             $tableGenerator->setOptions([
-                'table_attributes' => 'border="0" cellpadding="3" cellspacing="0" align="center" style="font-size: 9px; font-family:helvetica;"',
+                'table_attributes' => 'border="0" cellpadding="3" cellspacing="0" align="center" style="font-size: 6px; font-family:helvetica;"',
                 'header_row_style' => 'background-color: #ffffff;',
                 'footer_row_style' => 'background-color: #ffffff;',
             ]);
@@ -60,7 +60,7 @@ trait TableauMargeReferenceTableTrait
     private function headerTableauMargeReference(string $label = 'CAT'): array
     {
         $formatterPourcentage = function ($value) {
-            return $value == 0 ?   '-' : round((float) $value) . '%';
+            return $value == 0.0 ?   '-' : round((float) $value) . '%';
         };
 
         $formatterDispoStock = function ($value, $row) {
