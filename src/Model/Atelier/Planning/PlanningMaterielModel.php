@@ -108,7 +108,7 @@ class PlanningMaterielModel extends Model
         return $this->connect->fetchResults($results);
     }
 
-    public function getDetailPieceInformix(string $numOrItv, PlanningSearchDto $searchDto): array
+   public function getDetailPieceInformix(string $numOrItv, PlanningSearchDto $searchDto): array
     {
 
         $statement = " SELECT '$searchDto->planning'                    as planning,
