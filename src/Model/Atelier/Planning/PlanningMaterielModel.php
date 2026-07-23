@@ -220,7 +220,6 @@ class PlanningMaterielModel extends Model
                                                                AND Parts_Number = slor_refp  
                                                                AND Parts_CST = slor_constp 
                                                                AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign) )
-	                        	      )
                                  ), '%Y-%m-%d')
                     END                                                             as dateStatut,
                     CASE  
@@ -253,7 +252,7 @@ class PlanningMaterielModel extends Model
                     and slor_refp not like '%-CTRL'
                 )
                 {$this->getTypeLignePieceCondition($searchDto)}
-            GROUP BY 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17
+            GROUP BY 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18
         ";
 
         $result = $this->connect->executeQuery($statement);
