@@ -817,29 +817,8 @@ class DitOrSoumisAValidationModel extends Model
         }
     }
 
-    /**
-     * Methode pour voir si on il y a OR 
-     *  dans la base de donnée ors_soumis_a_validation
-     *
-     * @return bool
-     */
 
-    public function existsNumOrEtDit(?string $numOr, ?string $numDit): bool
-    {
-        $statement = "
-        SELECT COUNT(*) AS total
-        FROM {$this->dbIrium}.ors_soumis_a_validation
-        WHERE numeroor = '$numOr'
-        AND numerodit = '$numDit'
-    ";
-
-        $result = $this->connect->executeQuery($statement);
-        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
-
-        return ((int)($data[0]['total'] ?? 0)) > 0;
-    }
-
-    public function tableauDeMarge(
+     public function tableauDeMarge(
         string $codeSociete,
         string $numeroOr
     ) {
@@ -847,7 +826,8 @@ class DitOrSoumisAValidationModel extends Model
                 numero_or                                               As numero_or,
                 TRIM(categorie_constp)                                  As constructeur,
                 TRIM(disponibilite)                                     As disponibilite,
-                SUM(astp_stock)                                         AS nb_ref,
+                --SUM(astp_stock)                                                AS nb_ref,
+                COUNT(*)                                                AS nb_ref,
                 SUM(slor_pmp)                                           AS somme_pmp,
                 SUM(slor_pxvteht)                                       AS somme_pxvteht,
                 SUM(slor_pxvteht * (slor_remise/100))                   AS somme_remise,
@@ -877,13 +857,13 @@ class DitOrSoumisAValidationModel extends Model
                     CASE WHEN s.astp_stock > 0 THEN 'DISPONIBLE' ELSE 'NON_DISPONIBLE' END AS disponibilite,
                     l.slor_pmp,
                     l.slor_pxvteht,
-                    l.slor_remise,
-                    s.astp_stock AS astp_stock 
+                    l.slor_remise
+                    --s.astp_stock AS astp_stock 
                 FROM sav_lor l
                 INNER JOIN art_stp s
                     ON s.astp_constp = l.slor_constp
                     AND s.astp_refp = l.slor_refp
-                    --AND s.astp_succ = '01'
+                    AND s.astp_soc = '$codeSociete'
                 INNER JOIN art_bse b
                     ON b.abse_constp = l.slor_constp
                     AND b.abse_refp = l.slor_refp
@@ -899,6 +879,112 @@ class DitOrSoumisAValidationModel extends Model
         $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
 
         return $data;
+
+    }
+
+    public function tableauDeMargeAvecReference(
+        string $codeSociete,
+        string $numeroOr,
+        string $ref,
+        string $codeSuccursale = '1'
+    ) {
+        $statement = "WITH stats_max AS (
+                SELECT FIRST 1
+                    MAX(slor_pxnreel - slor_pmp) AS max_mb,
+                    CASE 
+                        WHEN slor_pxnreel = 0 THEN 0
+                        ELSE ROUND(((slor_pxnreel - slor_pmp) / slor_pxnreel) * 100, 2) 
+                    END AS max_mb_p
+                FROM Informix.sav_lor slor
+                INNER JOIN Informix.sav_eor 
+                    ON seor_soc = slor_soc 
+                    AND seor_succ = slor_succ 
+                    AND seor_numor = slor_numor
+                WHERE slor_refp = '$ref'
+                    AND seor_serv = 'SAV'
+                    AND slor_soc = '$codeSociete'
+                    AND slor_succ = '$codeSuccursale'
+                    --AND YEAR(slor_datec) = YEAR(TODAY)
+                    AND slor_pos IN ('FC','CP')
+                GROUP BY 2
+                ORDER BY MAX(slor_pxnreel - slor_pmp) DESC
+            ),
+            stats_min AS (
+                SELECT FIRST 1
+                    MIN(slor_pxnreel - slor_pmp) AS min_mb,
+                    CASE 
+                        WHEN slor_pxnreel = 0 THEN 0
+                        ELSE ROUND(((slor_pxnreel - slor_pmp) / slor_pxnreel) * 100, 2) 
+                    END AS min_mb_p
+                FROM Informix.sav_lor slor
+                INNER JOIN Informix.sav_eor 
+                    ON seor_soc = slor_soc 
+                    AND seor_succ = slor_succ 
+                    AND seor_numor = slor_numor
+                WHERE slor_refp = '$ref'
+                    AND seor_serv = 'SAV'
+                    AND slor_soc = '$codeSociete'
+                    AND slor_succ = '$codeSuccursale'
+                    --AND YEAR(slor_datec) = YEAR(TODAY)
+                    AND slor_pos IN ('FC','CP')
+                GROUP BY 2
+                ORDER BY MIN(slor_pxnreel - slor_pmp) ASC
+            )
+            SELECT
+                slor_constp AS constructeur,
+                -- Stock
+                ROUND(CASE WHEN astp_stock IS NULL THEN 0 ELSE astp_stock END) AS nb_ref,
+                TRIM(slor_refp) AS reference,
+                ROUND(slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) AS quantite_demander,
+
+                -- Prix et remises
+                ROUND(slor_pmp, 2) AS pmp,
+                slor_pxvteht AS pv_brut,
+                (slor_pxvteht - slor_pxnreel) AS mt_remise,
+                slor_pxnreel AS pv_net_remise,
+
+                -- Marge brute
+                ROUND(slor_pxnreel - ROUND(slor_pmp, 2), 2) AS mb,
+
+                -- Marge brute en pourcentage
+                CASE 
+                    WHEN slor_pxnreel = 0 THEN 0 
+                    ELSE ROUND(((slor_pxnreel - ROUND(slor_pmp, 2)) / slor_pxnreel) * 100, 2) 
+                END AS mb_p,
+
+                -- Maximum MB (issu de la ligne réelle correspondante)
+                COALESCE(stats_max.max_mb, 0) AS max_mb,
+                COALESCE(stats_max.max_mb_p, 0) AS max_mb_p,
+
+                -- Minimum MB (issu de la ligne réelle correspondante)
+                COALESCE(stats_min.min_mb, 0) AS min_mb,
+                COALESCE(stats_min.min_mb_p, 0) AS min_mb_p
+
+            FROM Informix.sav_lor
+            INNER JOIN Informix.art_stp 
+                ON astp_refp = slor_refp 
+                AND astp_soc = slor_soc 
+                AND astp_succ = slor_succ
+                AND astp_constp = slor_constp 
+            INNER JOIN Informix.sav_eor 
+                ON seor_numor = slor_numor 
+                AND seor_soc = slor_soc 
+                AND seor_succ = slor_succ
+            CROSS JOIN stats_max
+            CROSS JOIN stats_min
+            WHERE slor_numor = '$numeroOr' 
+                AND slor_succ = '$codeSuccursale'
+                AND slor_soc = '$codeSociete'
+                AND slor_refp = '$ref'
+                AND slor_typlig = 'P'
+                AND YEAR(slor_datec) = YEAR(TODAY);
+        ";
+
+        $result = $this->connect->executeQuery($statement);
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
+
+        return $data;
+
     }
 
     public function tableauDeMargeAvecReference(
