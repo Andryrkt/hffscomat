@@ -117,25 +117,35 @@ function formatFileSize(bytes) {
  * blocage de l'article DA si le nombre d'articles à valider n'est pas égale au nombre d'article dans IPS
  */
 document.addEventListener("DOMContentLoaded", function () {
-  const blocageArticleDa = document.getElementById("blocage-article-da");
+  const form = document.getElementById("upload-form");
+  if (!form) return;
 
-  if (blocageArticleDa.classList.contains("d-none")) {
-    //cree moi une sweet-alert-2 confirm cancel
-    Swal.fire({
-      title: "Souhaitez vous tout de même soumettre l'OR ?",
-      text: "Les articles du bon d'achat validé ne correspondent pas à ceux saisis dans l'OR. Voulez-vous continuer ?",
-      icon: "warning",
-      showCancelButton: true,
-      allowOutsideClick: false,
-      allowEscapeKey: false,
-      confirmButtonColor: "#d4a817ff",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "OUI",
-      cancelButtonText: "NON",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        blocageArticleDa.classList.remove("d-none");
-      }
-    });
-  }
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    confirmation(form);
+  });
 });
+
+function confirmation(form) {
+  Swal.fire({
+    title: "Confirmation",
+    text: "Voulez-vous vraiment soumettre cette OR ?",
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonText: "Oui",
+    cancelButtonText: "Annuler",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      // Disable button and show loading
+      const submitBtn =
+        document.getElementById("submit-dit-or") ||
+        form.querySelector('button[type="submit"]');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML =
+          '<i class="fas fa-spinner fa-spin"></i> En cours...';
+      }
+      form.submit();
+    }
+  });
+}
