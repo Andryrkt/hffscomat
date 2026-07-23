@@ -108,7 +108,7 @@ class PlanningMaterielModel extends Model
         return $this->connect->fetchResults($results);
     }
 
-    public function getDetailPieceInformix(string $numOrItv, PlanningSearchDto $searchDto): array
+   public function getDetailPieceInformix(string $numOrItv, PlanningSearchDto $searchDto): array
     {
 
         $statement = " SELECT '$searchDto->planning'                    as planning,
@@ -145,25 +145,49 @@ class PlanningMaterielModel extends Model
                     END                                                 as qte_res_or,
                 slor_qterea                                             as qte_liv,
                 slor_qteres                                             as qte_all,
-                CASE WHEN slor_natcm = 'C' THEN 'COMMANDE'
+                CASE 
+                    WHEN slor_natcm = 'C' THEN 'COMMANDE'
                     WHEN slor_natcm = 'L' THEN 'RECEPTION'
-                    END                                                 as statut_ctrmq,
-                CASE WHEN slor_natcm = 'C' THEN slor_numcf
-                    WHEN slor_natcm = 'L' THEN
-                        (select max(fllf_numcde)
-                        from frn_llf WHERE fllf_numliv = slor_numcf
+                END                                                     as statut_ctrmq,
+                CASE 
+                    WHEN slor_natcm = 'C' 
+                    THEN slor_numcf
+                    WHEN slor_natcm = 'L'
+                    THEN (select max(fllf_numcde)
+                        from frn_llf 
+                        WHERE fllf_numliv = slor_numcf
                             and fllf_ligne = slor_noligncm
                             and fllf_refp = slor_refp)
-                    END                                                 as num_cmd,
-                CASE WHEN slor_qteres = (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec)
-                        and slor_qterel >0 THEN trim('A LIVRER')
+                END                                                     as num_cmd,
+                CASE 
+                    WHEN slor_qteres = (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec)
+                        and slor_qterel >0 
+                    THEN trim('A LIVRER')
                     WHEN (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) = slor_qteres
                         and slor_qterel = 0
-                        and slor_qterea = 0 THEN trim('DISPO STOCK')
-                    WHEN slor_qterea =  (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) THEN trim('LIVRE')
-                    END                                                 as statut,
-                CASE WHEN slor_qteres = (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec)
-                        and slor_qterel >0 THEN
+                        and slor_qterea = 0
+                    THEN trim('DISPO STOCK')
+                    WHEN slor_qterea =  (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) 
+                    THEN trim('LIVRE')
+                    WHEN slor_natcm = 'C' 
+                    THEN ( SELECT libelle_type 
+                            FROM  gcot_acknow_cat 
+                            WHERE Numero_PO = slor_numcf 
+                            AND Parts_Number = slor_refp  
+                            AND Parts_CST = slor_constp 
+                            AND Line_Number = slor_noligncm 
+		   		            AND id_gcot_acknow_cat = ( SELECT MAX(id_gcot_acknow_cat)
+                                                             FROM gcot_acknow_cat 
+                                                             WHERE Numero_PO = slor_numcf  
+                                                             AND Parts_Number = slor_refp  
+                                                             AND Parts_CST = slor_constp 
+                                                             AND Line_Number = slor_noligncm )
+					    )
+                END                                                 as statut,
+                CASE 
+                    WHEN slor_qteres = (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec)
+                        and slor_qterel >0 
+                    THEN
                             TO_CHAR((
                                 select spic_datepic
                                 from (
@@ -176,28 +200,59 @@ class PlanningMaterielModel extends Model
                                     )                                                AS ranked_dates
                                 where rn = 1
                             ), '%Y-%m-%d')
-                    WHEN slor_qterea = (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) THEN
-                        TO_CHAR(((
+                    WHEN slor_qterea = (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) 
+                    THEN TO_CHAR(((
                             select min(sliv_date) 
                             from sav_liv 
                             where sliv_numor = slor_numor 
                                 and sliv_nolign = slor_nolign)
                         ), '%Y-%m-%d')
-                    END                                                             as dateStatut
-            from sav_lor
-            join sav_itv
-                on slor_numor = sitv_numor
-                and sitv_interv = slor_nogrp / 100
-            left join neg_lig
-                on slor_numcf = nlig_numcde
-                and slor_refp = nlig_refp
-            where cast(sitv_numor || '-' || sitv_interv as varchar(50)) = '" . $numOrItv . "'
-                and (
+                    WHEN slor_natcm = 'C' 
+                    THEN TO_CHAR((select date_creation
+                                    FROM  gcot_acknow_cat 
+                                    WHERE Numero_PO = slor_numcf 
+                                    AND Parts_Number = slor_refp  
+                                    AND Parts_CST = slor_constp 
+                                    AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign)
+                                    AND id_gcot_acknow_cat = ( SELECT MAX(id_gcot_acknow_cat) 
+                                                               FROM gcot_acknow_cat 
+                                                               WHERE Numero_PO = slor_numcf  
+                                                               AND Parts_Number = slor_refp  
+                                                               AND Parts_CST = slor_constp 
+                                                               AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign) )
+                                 ), '%Y-%m-%d')
+                    END                                                             as dateStatut,
+                    CASE  
+                        WHEN slor_qterea <> (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) THEN
+	                        ( SELECT message FROM  gcot_acknow_cat 
+                                WHERE Numero_PO = slor_numcf 
+                                AND Parts_Number = slor_refp  
+                                AND Parts_CST = slor_constp 
+                                AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign)
+		   		                AND id_gcot_acknow_cat = ( SELECT MAX(id_gcot_acknow_cat) 
+                                                      FROM gcot_acknow_cat 
+                                                      WHERE Numero_PO = slor_numcf  
+                                                      AND Parts_Number = slor_refp  
+                                                      AND Parts_CST = slor_constp 
+                                                      AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign))
+					            	)
+					    ELSE
+					        ''
+					END                                                             as Message
+            FROM sav_lor
+            JOIN sav_itv
+                ON slor_numor = sitv_numor
+                AND sitv_interv = slor_nogrp / 100
+            LEFT JOIN neg_lig
+                ON slor_numcf = nlig_numcde
+                AND slor_refp = nlig_refp
+            WHERE cast(sitv_numor || '-' || sitv_interv as varchar(50)) = '$numOrItv'
+                AND (
                     slor_refp not like '%-L'
                     and slor_refp not like '%-CTRL'
                 )
                 {$this->getTypeLignePieceCondition($searchDto)}
-            GROUP BY 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17
+            GROUP BY 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18
         ";
 
         $result = $this->connect->executeQuery($statement);
