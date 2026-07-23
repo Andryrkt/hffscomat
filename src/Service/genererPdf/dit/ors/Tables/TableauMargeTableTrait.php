@@ -26,7 +26,7 @@ trait TableauMargeTableTrait
         ];
 
         $pdf->SetTextColor(0, 0, 0);
-        $this->addTitle($pdf, "TABLEAU DE MARGE", 'helvetica', 'B', 10, 'L', 0);
+        $this->addTitle($pdf, "TABLEAU DE MARGE GLOBALE", 'helvetica', 'B', 10, 'L', 0);
         $pdf->setFont('helvetica', '', 8);
 
         foreach ($sections as $key => $label) {
@@ -195,32 +195,32 @@ trait TableauMargeTableTrait
                 'default_value' => '-',
                 'styler'       => $stylerSeparateur
             ],
-            [
-                'key'          => 'pct_mb_max',
-                'label'        => '%MB+',
-                'width'        => 40,
-                'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold; text-align: right;',
-                'cell_style'   => 'font-weight: bold; text-align: right;',
-                'footer_style' => 'font-weight: 900;',
-                'type'         => 'number',
-                'formatter'    => $formatterPourcentage,
-                'default_value' => '-',
-                'styler'       => $stylerSeparateur
-            ],
-            [
-                'key'          => 'pct_mb_min',
-                'label'        => '%MB-',
-                'width'        => 40,
-                'style'        => 'font-weight: bold;',
-                'header_style' => 'font-weight: bold; text-align: right; ',
-                'cell_style'   => 'font-weight: bold; text-align: right;',
-                'footer_style' => 'font-weight: 900;',
-                'type'         => 'number',
-                'formatter'    => $formatterPourcentage,
-                'default_value' => '-',
-                'styler'       => $stylerSeparateur
-            ],
+            // [
+            //     'key'          => 'pct_mb_max',
+            //     'label'        => '%MB+',
+            //     'width'        => 40,
+            //     'style'        => 'font-weight: bold;',
+            //     'header_style' => 'font-weight: bold; text-align: right;',
+            //     'cell_style'   => 'font-weight: bold; text-align: right;',
+            //     'footer_style' => 'font-weight: 900;',
+            //     'type'         => 'number',
+            //     'formatter'    => $formatterPourcentage,
+            //     'default_value' => '-',
+            //     'styler'       => $stylerSeparateur
+            // ],
+            // [
+            //     'key'          => 'pct_mb_min',
+            //     'label'        => '%MB-',
+            //     'width'        => 40,
+            //     'style'        => 'font-weight: bold;',
+            //     'header_style' => 'font-weight: bold; text-align: right; ',
+            //     'cell_style'   => 'font-weight: bold; text-align: right;',
+            //     'footer_style' => 'font-weight: 900;',
+            //     'type'         => 'number',
+            //     'formatter'    => $formatterPourcentage,
+            //     'default_value' => '-',
+            //     'styler'       => $stylerSeparateur
+            // ],
         ];
     }
 }
