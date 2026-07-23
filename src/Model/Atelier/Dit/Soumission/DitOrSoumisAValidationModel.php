@@ -824,8 +824,9 @@ class DitOrSoumisAValidationModel extends Model
     ) {
         $statement = "SELECT
                 numero_or                                               As numero_or,
-                TRIM(categorie_constp)                                        As constructeur,
-                TRIM(disponibilite)                                           As disponibilite,
+                TRIM(categorie_constp)                                  As constructeur,
+                TRIM(disponibilite)                                     As disponibilite,
+                --SUM(astp_stock)                                                AS nb_ref,
                 COUNT(*)                                                AS nb_ref,
                 SUM(slor_pmp)                                           AS somme_pmp,
                 SUM(slor_pxvteht)                                       AS somme_pxvteht,
@@ -857,11 +858,12 @@ class DitOrSoumisAValidationModel extends Model
                     l.slor_pmp,
                     l.slor_pxvteht,
                     l.slor_remise
+                    --s.astp_stock AS astp_stock 
                 FROM sav_lor l
                 INNER JOIN art_stp s
                     ON s.astp_constp = l.slor_constp
                     AND s.astp_refp = l.slor_refp
-                    --AND s.astp_succ = '01'
+                    AND s.astp_soc = '$codeSociete'
                 INNER JOIN art_bse b
                     ON b.abse_constp = l.slor_constp
                     AND b.abse_refp = l.slor_refp
