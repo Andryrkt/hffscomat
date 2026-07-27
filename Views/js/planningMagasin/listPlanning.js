@@ -1,6 +1,7 @@
 /** *======================
  * LIST DETAIL MODAL
  *  =======================*/
+import { API_ENDPOINTS } from "../api/apiEndpoints";
 import { baseUrl } from "../utils/config";
 
 document.addEventListener("DOMContentLoaded", (event) => {
@@ -29,8 +30,8 @@ document.addEventListener("DOMContentLoaded", (event) => {
     dossierDitLink.onclick = (event) => {
       event.preventDefault();
       window.open(
-        `${baseUrl}/atelier/demande-intervention/dw-intervention-atelier-avec-dit/${numDit}`,
-        "_blank",
+        `${baseUrl}/${API_ENDPOINTS.getDossierDit(numDit)}`,
+        "_blank"
       );
     };
 
@@ -80,11 +81,11 @@ document.addEventListener("DOMContentLoaded", (event) => {
         const planningTableHead = document.getElementById("planningTableHead");
         const tableBodyOR = document.getElementById("commandesTableBodyOR");
         const planningTableHeadOR = document.getElementById(
-          "planningTableHeadOR",
+          "planningTableHeadOR"
         );
         const tableBodyLign = document.getElementById("commandesTableBodyLign");
         const planningTableHeadLign = document.getElementById(
-          "planningTableHeadLign",
+          "planningTableHeadLign"
         );
         tableBody.innerHTML = ""; // Clear previous data
         tableBodyOR.innerHTML = "";
@@ -145,11 +146,11 @@ document.addEventListener("DOMContentLoaded", (event) => {
             Ornum.innerHTML = `${detail.numor} | intitulé : ${detail.commentaire} | `;
             if (detail.plan == "PLANIFIE") {
               Ornum.innerHTML += `délai client  : ${formaterDate(
-                detail.dateplanning,
+                detail.dateplanning
               )}`;
             } else {
               Ornum.innerHTML += `date début : ${formaterDate(
-                detail.dateplanning,
+                detail.dateplanning
               )}`;
             }
             // Formater la date
@@ -165,8 +166,14 @@ document.addEventListener("DOMContentLoaded", (event) => {
             let numCde = detail.numerocmd || "";
             let numeroCdeCis = detail.numerocdecis || "";
             let statrmq = detail.statut_ctrmq || "";
-            let StatutCtrmqCis = (detail.statut_ctrmq_cis == null || detail.cst.startsWith("Z")) ? "" : detail.statut_ctrmq_cis;
-            let statut = (detail.statut == null || detail.cst.startsWith("Z")) ? "" : detail.statut;
+            let StatutCtrmqCis =
+              detail.statut_ctrmq_cis == null || detail.cst.startsWith("Z")
+                ? ""
+                : detail.statut_ctrmq_cis;
+            let statut =
+              detail.statut == null || detail.cst.startsWith("Z")
+                ? ""
+                : detail.statut;
             let cmdColorRmq = "";
             let numRef = detail.ref || "";
 
@@ -201,7 +208,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
               cmdColor = 'style="background-color: red; color: white;"';
             } else if (Ord == "ORD") {
               cmdColor = 'style="background-color:#9ACD32  ; color: white;"';
-            } else if (detail.estDansCesMagasin){
+            } else if (detail.estDansCesMagasin) {
               cmdColor = 'style="background-color:#9ACD32  ; color: white;"';
             }
             //onglet CIS
@@ -360,7 +367,13 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   function formaterDate(daty) {
-    if (!daty || daty === "" || daty === "0000-00-00" || daty === "0000-00-00 00:00:00") return "";
+    if (
+      !daty ||
+      daty === "" ||
+      daty === "0000-00-00" ||
+      daty === "0000-00-00 00:00:00"
+    )
+      return "";
     const date = new Date(daty);
     if (isNaN(date.getTime())) return "";
 

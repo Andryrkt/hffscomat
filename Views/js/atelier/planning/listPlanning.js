@@ -2,6 +2,7 @@
  * LIST DETAIL MODAL
  *  =======================*/
 
+import { API_ENDPOINTS } from "../../api/apiEndpoints";
 import { baseUrl } from "../../utils/config";
 
 document.addEventListener("DOMContentLoaded", (event) => {
@@ -30,7 +31,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
     dossierDitLink.onclick = (event) => {
       event.preventDefault();
       window.open(
-        `${baseUrl}/atelier/demande-intervention/dw-intervention-atelier-avec-dit/${numDit}`,
+        `${baseUrl}/${API_ENDPOINTS.getDossierDit(numDit)}`,
         "_blank"
       );
     };
@@ -144,7 +145,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
         planningTableHeadOR.innerHTML = "";
         planningTableHeadLign.innerHTML = "";
 
-        console.log(data.data, data.data.length)
+        console.log(data.data, data.data.length);
         let rowHeader = `<th>N° OR</th>
                             <th>Intv</th>
                             <th>N° CIS</th>
@@ -161,9 +162,8 @@ document.addEventListener("DOMContentLoaded", (event) => {
                             <th>Date Statut</th>
                             <th>ETA Maurice</th>
                             <th>ETA Magasin</th>
-                            `
+                            `;
         if (data.data.length > 0) {
-
           planningTableHead.innerHTML += rowHeader;
 
           data.data.forEach((detail) => {
@@ -221,8 +221,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
             } else {
               message = detail.message;
             }
-
-
 
             //reception partiel
             let cmdColor;
