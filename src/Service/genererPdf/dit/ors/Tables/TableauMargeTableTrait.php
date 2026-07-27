@@ -195,32 +195,32 @@ trait TableauMargeTableTrait
                 'default_value' => '-',
                 'styler'       => $stylerSeparateur
             ],
-            // [
-            //     'key'          => 'pct_mb_max',
-            //     'label'        => '%MB+',
-            //     'width'        => 40,
-            //     'style'        => 'font-weight: bold;',
-            //     'header_style' => 'font-weight: bold; text-align: right;',
-            //     'cell_style'   => 'font-weight: bold; text-align: right;',
-            //     'footer_style' => 'font-weight: 900;',
-            //     'type'         => 'number',
-            //     'formatter'    => $formatterPourcentage,
-            //     'default_value' => '-',
-            //     'styler'       => $stylerSeparateur
-            // ],
-            // [
-            //     'key'          => 'pct_mb_min',
-            //     'label'        => '%MB-',
-            //     'width'        => 40,
-            //     'style'        => 'font-weight: bold;',
-            //     'header_style' => 'font-weight: bold; text-align: right; ',
-            //     'cell_style'   => 'font-weight: bold; text-align: right;',
-            //     'footer_style' => 'font-weight: 900;',
-            //     'type'         => 'number',
-            //     'formatter'    => $formatterPourcentage,
-            //     'default_value' => '-',
-            //     'styler'       => $stylerSeparateur
-            // ],
+            [
+                'key'          => 'pct_mb_max',
+                'label'        => '%MB+',
+                'width'        => 40,
+                'style'        => 'font-weight: bold;',
+                'header_style' => 'font-weight: bold; text-align: right;',
+                'cell_style'   => 'font-weight: bold; text-align: right;',
+                'footer_style' => 'font-weight: 900;',
+                'type'         => 'number',
+                'formatter'    => $formatterPourcentage,
+                'default_value' => '-',
+                'styler'       => $stylerSeparateur
+            ],
+            [
+                'key'          => 'pct_mb_min',
+                'label'        => '%MB-',
+                'width'        => 40,
+                'style'        => 'font-weight: bold;',
+                'header_style' => 'font-weight: bold; text-align: right; ',
+                'cell_style'   => 'font-weight: bold; text-align: right;',
+                'footer_style' => 'font-weight: 900;',
+                'type'         => 'number',
+                'formatter'    => $formatterPourcentage,
+                'default_value' => '-',
+                'styler'       => $stylerSeparateur
+            ],
         ];
     }
 }

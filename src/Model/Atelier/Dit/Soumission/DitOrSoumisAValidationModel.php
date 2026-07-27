@@ -905,7 +905,7 @@ class DitOrSoumisAValidationModel extends Model
                     AND slor_soc = '$codeSociete'
                     AND slor_succ = '$codeSuccursale'
                     --AND YEAR(slor_datec) = YEAR(TODAY)
-                    AND slor_pos IN ('FC','CP')
+                    --AND slor_pos IN ('FC','CP')
                 GROUP BY 2
                 ORDER BY MAX(slor_pxnreel - slor_pmp) DESC
             ),
@@ -926,7 +926,7 @@ class DitOrSoumisAValidationModel extends Model
                     AND slor_soc = '$codeSociete'
                     AND slor_succ = '$codeSuccursale'
                     --AND YEAR(slor_datec) = YEAR(TODAY)
-                    AND slor_pos IN ('FC','CP')
+                    --AND slor_pos IN ('FC','CP')
                 GROUP BY 2
                 ORDER BY MIN(slor_pxnreel - slor_pmp) ASC
             )
