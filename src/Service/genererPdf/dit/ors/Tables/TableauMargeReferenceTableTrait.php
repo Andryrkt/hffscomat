@@ -27,13 +27,13 @@ trait TableauMargeReferenceTableTrait
 
         $pdf->SetTextColor(0, 0, 0);
         $this->addTitle($pdf, "TABLEAU DE MARGE PAR REFERENCE", 'helvetica', 'B', 10, 'L', 0);
-        $pdf->setFont('helvetica', '', 6);
+        $pdf->setFont('helvetica', '', 9);
 
         foreach ($sections as $key => $label) {
             $lignes = $tableauMarge[$key] ?? [];
 
             $tableGenerator->setOptions([
-                'table_attributes' => 'border="0" cellpadding="3" cellspacing="0" align="center" style="font-size: 6px; font-family:helvetica;"',
+                'table_attributes' => 'border="0" cellpadding="3" cellspacing="0" align="center" style="font-size: 9px; font-family:helvetica;"',
                 'header_row_style' => 'background-color: #ffffff;',
                 'footer_row_style' => 'background-color: #ffffff;',
             ]);
@@ -71,7 +71,7 @@ trait TableauMargeReferenceTableTrait
             [
                 'key'          => '',
                 'label'        => $label,
-                'width'        => 40,
+                'width'        => 80,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center;',
                 'cell_style'   => 'text-align: left; ',
@@ -81,7 +81,7 @@ trait TableauMargeReferenceTableTrait
             [
                 'key'          => 'nb_ref',
                 'label'        => 'Qte stock',
-                'width'        => 30,
+                'width'        => 50,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => 'text-align: center; ',
@@ -90,7 +90,7 @@ trait TableauMargeReferenceTableTrait
             [
                 'key'          => 'quantite_demander',
                 'label'        => 'Qte dem',
-                'width'        => 25,
+                'width'        => 50,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => 'text-align: center; ',
@@ -99,7 +99,7 @@ trait TableauMargeReferenceTableTrait
             [
                 'key'          => 'reference',
                 'label'        => 'Ref',
-                'width'        => 60,
+                'width'        => 90,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => '',
@@ -108,7 +108,7 @@ trait TableauMargeReferenceTableTrait
             [
                 'key'          => 'pmp',
                 'label'        => 'PMP',
-                'width'        => 45,
+                'width'        => 50,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => 'text-align: right;  padding-right:6px;',
@@ -119,7 +119,7 @@ trait TableauMargeReferenceTableTrait
             [
                 'key'          => 'pv_brut',
                 'label'        => 'PV Brut',
-                'width'        => 45,
+                'width'        => 50,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => 'text-align: right;  margin-right:2px;',
@@ -130,7 +130,7 @@ trait TableauMargeReferenceTableTrait
             [
                 'key'          => 'mt_remise',
                 'label'        => 'Mt Remise',
-                'width'        => 40,
+                'width'        => 50,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => 'text-align: right;  margin-right:2px;',
@@ -141,7 +141,7 @@ trait TableauMargeReferenceTableTrait
             [
                 'key'          => 'pv_net_remise',
                 'label'        => 'PV Net remisé',
-                'width'        => 45,
+                'width'        => 50,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => 'text-align: right;  margin-right:2px;',
@@ -152,7 +152,7 @@ trait TableauMargeReferenceTableTrait
             [
                 'key'          => 'mb',
                 'label'        => 'MB',
-                'width'        => 45,
+                'width'        => 50,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => 'text-align: right;  margin-right:2px;',
