@@ -1,5 +1,4 @@
 import { baseUrl } from "./utils/config";
-import { FetchManager } from "./api/FetchManager";
 import { initSessionTimer } from "./utils/session/sessionTimer";
 import { displayOverlay, monitorDownloadCookie } from "./utils/ui/overlay";
 import { showNotification } from "./utils/notification/notification";

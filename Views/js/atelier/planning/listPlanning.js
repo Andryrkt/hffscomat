@@ -2,6 +2,7 @@
  * LIST DETAIL MODAL
  *  =======================*/
 
+import { API_ENDPOINTS } from "../../api/apiEndpoints";
 import { baseUrl } from "../../utils/config";
 
 document.addEventListener("DOMContentLoaded", (event) => {
@@ -19,9 +20,9 @@ document.addEventListener("DOMContentLoaded", (event) => {
     abortController = new AbortController(); // Créer un nouveau contrôleur
 
     const button = event.relatedTarget; // Bouton qui a déclenché le modal
-    const orIntv = button.getAttribute("data-id");
-    const numDit = button.getAttribute("data-numDit");
-    const migration = button.getAttribute("data-migration");
+    const orIntv = button.dataset.id;
+    const numDit = button.dataset.numDit;
+    const migration = button.dataset.migration;
     const dossierDitLink = document.getElementById("dossierDitLink");
     if (migration == "1") {
       dossierDitLink.style.display = "none";
@@ -30,7 +31,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
     dossierDitLink.onclick = (event) => {
       event.preventDefault();
       window.open(
-        `${baseUrl}/atelier/demande-intervention/dw-intervention-atelier-avec-dit/${numDit}`,
+        `${baseUrl}/${API_ENDPOINTS.getDossierDit(numDit)}`,
         "_blank"
       );
     };
@@ -69,9 +70,10 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   function fetchTechnicienInterv(numOr, numItv, signal) {
-    fetch(`${baseUrl}/api/technicien-intervenant/${numOr}/${numItv}`, {
-      signal,
-    })
+    fetch(
+      `${baseUrl}/${API_ENDPOINTS.getTechnicienIntervenant(numOr, numItv)}`,
+      { signal }
+    )
       .then((response) => {
         if (!response.ok) {
           throw new Error("Network response was not ok");
@@ -114,7 +116,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
   function fetchDetailModal(id, signal) {
     // Fetch request to get the data
     console.log(id, signal);
-    fetch(`${baseUrl}/api/detail-modal/${id}`, { signal })
+    fetch(`${baseUrl}/${API_ENDPOINTS.getDetailModal(id)}`, { signal })
       .then((response) => {
         if (!response.ok) {
           console.log(response);
@@ -144,7 +146,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
         planningTableHeadOR.innerHTML = "";
         planningTableHeadLign.innerHTML = "";
 
-        console.log(data.data, data.data.length)
+        console.log(data.data, data.data.length);
         let rowHeader = `<th>N° OR</th>
                             <th>Intv</th>
                             <th>N° CIS</th>
@@ -161,9 +163,8 @@ document.addEventListener("DOMContentLoaded", (event) => {
                             <th>Date Statut</th>
                             <th>ETA Maurice</th>
                             <th>ETA Magasin</th>
-                            `
+                            `;
         if (data.data.length > 0) {
-
           planningTableHead.innerHTML += rowHeader;
 
           data.data.forEach((detail) => {
@@ -221,8 +222,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
             } else {
               message = detail.message;
             }
-
-
 
             //reception partiel
             let cmdColor;
