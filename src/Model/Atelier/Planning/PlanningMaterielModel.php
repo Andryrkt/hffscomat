@@ -2,7 +2,6 @@
 
 namespace App\Model\Atelier\Planning;
 
-use App\Dto\Atelier\Planning\PlanningAtelierSearchDto;
 use App\Dto\Atelier\Planning\PlanningSearchDto;
 use App\Model\Informix\SelectWhereCondition;
 use App\Model\Model;
@@ -10,16 +9,12 @@ use App\Service\GlobalVariablesService;
 
 class PlanningMaterielModel extends Model
 {
-    private SelectWhereCondition $selectCond;
-    private PlanningModel $planningModel;
-
     use PlanningModelTrait;
 
     public function __construct()
     {
         parent::__construct();
         $this->selectCond = new SelectWhereCondition();
-        $this->planningModel = new PlanningModel();
     }
 
     public function getMaterielPlanifier(array $numOrs, array $orSoumis, array $orItvBack, PlanningSearchDto $searchDto, string $codeSoc = 'HF'): array
@@ -46,34 +41,33 @@ class PlanningMaterielModel extends Model
                             slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec
                         ELSE slor_qterea END
                     )
-                from sav_lor as A, sav_itv  as B
+                from {$this->dbIps}.sav_lor as A, {$this->dbIps}.sav_itv  as B
                 where  A.slor_numor = B.sitv_numor
                     and  B.sitv_interv = A.slor_nogrp/100
                     and A.slor_numor = C.slor_numor
                     and B.sitv_interv  = D.sitv_interv {$this->getTypeLigneCondition($searchDto)}
                 )                                                           as qte_cmd,
                 (select sum(slor_qterea)
-                from sav_lor as A, sav_itv as B
+                from {$this->dbIps}.sav_lor as A, {$this->dbIps}.sav_itv as B
                 where  A.slor_numor = B.sitv_numor
                     and  B.sitv_interv = A.slor_nogrp/100
                     and A.slor_numor = C.slor_numor and
                     B.sitv_interv  = D.sitv_interv {$this->getTypeLigneCondition($searchDto)}
                 )                                                           as qte_liv,
                 (select sum(slor_qteres)
-                from sav_lor as A, sav_itv  as B
+                from {$this->dbIps}.sav_lor as A, {$this->dbIps}.sav_itv  as B
                 where A.slor_numor = B.sitv_numor
                     and B.sitv_interv = A.slor_nogrp/100
                     and A.slor_numor = C.slor_numor
                     and B.sitv_interv  = D.sitv_interv   {$this->getTypeLigneCondition($searchDto)}
-                )                                                           as qte_all
-                  
-            FROM sav_eor,sav_lor as C,
-                sav_itv as D,
-                agr_succ,
-                agr_tab ser,
-                outer mat_mat,
-                agr_tab ope,
-                outer agr_tab sec
+                )
+            FROM {$this->dbIps}.sav_eor, {$this->dbIps}.sav_lor as C,
+                {$this->dbIps}.sav_itv as D,
+                {$this->dbIps}.agr_succ,
+                {$this->dbIps}.agr_tab ser,
+                outer {$this->dbIps}.mat_mat,
+                {$this->dbIps}.agr_tab ope,
+                outer {$this->dbIps}.agr_tab sec
             WHERE seor_numor = slor_numor
                 AND seor_serv <> 'DEV'
                 AND seor_soc = '$codeSoc'
@@ -108,7 +102,7 @@ class PlanningMaterielModel extends Model
         return $this->connect->fetchResults($results);
     }
 
-   public function getDetailPieceInformix(string $numOrItv, PlanningSearchDto $searchDto): array
+    public function getDetailPieceInformix(string $numOrItv, PlanningSearchDto $searchDto): array
     {
 
         $statement = " SELECT '$searchDto->planning'                    as planning,
@@ -118,7 +112,7 @@ class PlanningMaterielModel extends Model
                 trim(sitv_comment)                                      as commentaire,
                 CASE WHEN
                     (select DATE(Min(ska_d_start))
-                    from ska, skw
+                    from {$this->dbIps}.ska, {$this->dbIps}.skw
                     where ofh_id = slor_numor
                         and ofs_id=sitv_interv
                         and skw.skw_id = ska.skw_id
@@ -127,7 +121,7 @@ class PlanningMaterielModel extends Model
                     DATE(sitv_datepla) 
                 ELSE
                     (select DATE(Min(ska_d_start))
-                    from ska, skw
+                    from {$this->dbIps}.ska, {$this->dbIps}.skw
                     where ofh_id = slor_numor
                         and ofs_id=sitv_interv
                         and skw.skw_id = ska.skw_id
@@ -154,7 +148,7 @@ class PlanningMaterielModel extends Model
                     THEN slor_numcf
                     WHEN slor_natcm = 'L'
                     THEN (select max(fllf_numcde)
-                        from frn_llf 
+                        from {$this->dbIps}.frn_llf 
                         WHERE fllf_numliv = slor_numcf
                             and fllf_ligne = slor_noligncm
                             and fllf_refp = slor_refp)
@@ -171,13 +165,13 @@ class PlanningMaterielModel extends Model
                     THEN trim('LIVRE')
                     WHEN slor_natcm = 'C' 
                     THEN ( SELECT libelle_type 
-                            FROM  gcot_acknow_cat 
+                            FROM {$this->dbIrium}.gcot_acknow_cat 
                             WHERE Numero_PO = slor_numcf 
                             AND Parts_Number = slor_refp  
                             AND Parts_CST = slor_constp 
                             AND Line_Number = slor_noligncm 
 		   		            AND id_gcot_acknow_cat = ( SELECT MAX(id_gcot_acknow_cat)
-                                                             FROM gcot_acknow_cat 
+                                                             FROM {$this->dbIrium}.gcot_acknow_cat 
                                                              WHERE Numero_PO = slor_numcf  
                                                              AND Parts_Number = slor_refp  
                                                              AND Parts_CST = slor_constp 
@@ -193,7 +187,7 @@ class PlanningMaterielModel extends Model
                                 from (
                                     select spic_datepic,
                                         ROW_NUMBER() OVER (ORDER BY spic_datepic ASC) AS rn
-                                    from sav_pic
+                                    from {$this->dbIps}.sav_pic
                                     where spic_numor = slor_numor
                                         and spic_refp = slor_refp
                                         and spic_nolign = slor_nolign
@@ -203,19 +197,19 @@ class PlanningMaterielModel extends Model
                     WHEN slor_qterea = (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) 
                     THEN TO_CHAR(((
                             select min(sliv_date) 
-                            from sav_liv 
+                            from {$this->dbIps}.sav_liv 
                             where sliv_numor = slor_numor 
                                 and sliv_nolign = slor_nolign)
                         ), '%Y-%m-%d')
                     WHEN slor_natcm = 'C' 
                     THEN TO_CHAR((select date_creation
-                                    FROM  gcot_acknow_cat 
+                                    FROM {$this->dbIrium}.gcot_acknow_cat 
                                     WHERE Numero_PO = slor_numcf 
                                     AND Parts_Number = slor_refp  
                                     AND Parts_CST = slor_constp 
                                     AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign)
                                     AND id_gcot_acknow_cat = ( SELECT MAX(id_gcot_acknow_cat) 
-                                                               FROM gcot_acknow_cat 
+                                                               FROM {$this->dbIrium}.gcot_acknow_cat 
                                                                WHERE Numero_PO = slor_numcf  
                                                                AND Parts_Number = slor_refp  
                                                                AND Parts_CST = slor_constp 
@@ -224,13 +218,13 @@ class PlanningMaterielModel extends Model
                     END                                                             as dateStatut,
                     CASE  
                         WHEN slor_qterea <> (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) THEN
-	                        ( SELECT message FROM  gcot_acknow_cat 
+	                        ( SELECT message FROM {$this->dbIrium}.gcot_acknow_cat 
                                 WHERE Numero_PO = slor_numcf 
                                 AND Parts_Number = slor_refp  
                                 AND Parts_CST = slor_constp 
                                 AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign)
 		   		                AND id_gcot_acknow_cat = ( SELECT MAX(id_gcot_acknow_cat) 
-                                                      FROM gcot_acknow_cat 
+                                                      FROM {$this->dbIrium}.gcot_acknow_cat 
                                                       WHERE Numero_PO = slor_numcf  
                                                       AND Parts_Number = slor_refp  
                                                       AND Parts_CST = slor_constp 
@@ -239,11 +233,11 @@ class PlanningMaterielModel extends Model
 					    ELSE
 					        ''
 					END                                                             as Message
-            FROM sav_lor
-            JOIN sav_itv
+            FROM {$this->dbIps}.sav_lor
+            JOIN {$this->dbIps}.sav_itv
                 ON slor_numor = sitv_numor
                 AND sitv_interv = slor_nogrp / 100
-            LEFT JOIN neg_lig
+            LEFT JOIN {$this->dbIps}.neg_lig
                 ON slor_numcf = nlig_numcde
                 AND slor_refp = nlig_refp
             WHERE cast(sitv_numor || '-' || sitv_interv as varchar(50)) = '$numOrItv'
@@ -320,7 +314,7 @@ class PlanningMaterielModel extends Model
                         WHEN slor_natcm = 'C' 
                         THEN slor_numcf
                         WHEN slor_natcm = 'L' 
-                        THEN (SELECT MAX(fllf_numcde) FROM frn_llf 
+                        THEN (SELECT MAX(fllf_numcde) FROM {$this->dbIps}.frn_llf 
                                 WHERE fllf_numliv = slor_numcf
                                 AND fllf_ligne = slor_noligncm
                                 AND fllf_refp = slor_refp)
@@ -335,13 +329,13 @@ class PlanningMaterielModel extends Model
                         THEN trim('LIVRE')
                         WHEN slor_natcm = 'C' 
                         THEN (SELECT libelle_type 
-                              FROM  gcot_acknow_cat 
+                              FROM {$this->dbIrium}.gcot_acknow_cat 
                               WHERE CAST(Numero_PO as varchar(10)) = CAST(slor_numcf  as varchar(10)) 
                               AND Parts_Number = slor_refp  
                               AND Parts_CST = slor_constp 
                                   AND Line_Number = slor_noligncm 
 		   		                        AND id_gcot_acknow_cat = ( SELECT MAX(id_gcot_acknow_cat)
-                                                             FROM gcot_acknow_cat 
+                                                             FROM {$this->dbIrium}.gcot_acknow_cat 
                                                              WHERE CAST(Numero_PO as varchar(10)) = CAST(slor_numcf  as varchar(10))  
                                                              AND Parts_Number = slor_refp  
                                                              AND Parts_CST = slor_constp 
@@ -355,7 +349,7 @@ class PlanningMaterielModel extends Model
                                      FROM (
                                         SELECT spic_datepic,
                                          ROW_NUMBER() OVER (ORDER BY spic_datepic ASC) AS rn
-                                         FROM sav_pic
+                                         FROM {$this->dbIps}.sav_pic
                                          WHERE spic_numor = slor_numor
                                         AND spic_refp = slor_refp
                                         AND spic_nolign = slor_nolign
@@ -364,18 +358,18 @@ class PlanningMaterielModel extends Model
                              ), '%Y-%m-%d')
 
 	                    WHEN slor_qterea = (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) 
-                        THEN TO_CHAR((SELECT sliv_date FROM sav_liv 
+                        THEN TO_CHAR((SELECT sliv_date FROM {$this->dbIps}.sav_liv 
                                     WHERE sliv_numor = slor_numor 
 		                            AND sliv_nolign = slor_nolign), '%Y-%m-%d')
                         WHEN slor_natcm = 'C' 
                         THEN TO_CHAR((SELECT date_creation
-                                    FROM  gcot_acknow_cat 
+                                    FROM {$this->dbIrium}.gcot_acknow_cat 
                                     WHERE CAST(Numero_PO as varchar(10)) = CAST(slor_numcf  as varchar(10)) 
                                     AND Parts_Number = slor_refp  
                                     AND Parts_CST = slor_constp 
                                     AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign)
                                     AND id_gcot_acknow_cat = ( SELECT MAX(id_gcot_acknow_cat) 
-                                                               FROM gcot_acknow_cat 
+                                                               FROM {$this->dbIrium}.gcot_acknow_cat 
                                                                WHERE CAST(Numero_PO as varchar(10)) = CAST(slor_numcf  as varchar(10))  
                                                                AND Parts_Number = slor_refp  
                                                                AND Parts_CST = slor_constp 
@@ -385,20 +379,20 @@ class PlanningMaterielModel extends Model
 	                    END AS dateStatut,
                         CASE  
                             WHEN slor_qterea <> (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) 
-                            THEN ( SELECT message FROM  gcot_acknow_cat 
+                            THEN ( SELECT message FROM {$this->dbIrium}.gcot_acknow_cat 
                                     WHERE CAST(Numero_PO as varchar(10)) = CAST(slor_numcf  as varchar(10)) 
                                     AND Parts_Number = slor_refp  
                                     AND Parts_CST = slor_constp 
                                     AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign)
                                             AND id_gcot_acknow_cat = ( SELECT MAX(id_gcot_acknow_cat) 
-                                                                FROM gcot_acknow_cat 
+                                                                FROM {$this->dbIrium}.gcot_acknow_cat 
                                                                 WHERE CAST(Numero_PO as varchar(10)) = CAST(slor_numcf  as varchar(10))  
                                                                 AND Parts_Number = slor_refp  
                                                                 AND Parts_CST = slor_constp 
                                                                 AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign))
                                 )
                         END as Message
-                FROM sav_lor
+                FROM {$this->dbIps}.sav_lor
 	              JOIN sav_itv ON slor_numor = sitv_numor AND sitv_interv = slor_nogrp / 100
               LEFT JOIN neg_lig ON slor_numcf = nlig_numcde AND slor_refp = nlig_refp
                 WHERE slor_constp NOT LIKE '%ZDI%'
@@ -435,21 +429,21 @@ class PlanningMaterielModel extends Model
                             slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec
                         ELSE slor_qterea END
                     )
-                from sav_lor as A, sav_itv  as B
+                from {$this->dbIps}.sav_lor as A, {$this->dbIps}.sav_itv  as B
                 where  A.slor_numor = B.sitv_numor
                     and  B.sitv_interv = A.slor_nogrp/100
                     and A.slor_numor = C.slor_numor
                     and B.sitv_interv  = D.sitv_interv {$this->getTypeLigneCondition($searchDto)}
                 )                                                                                                                               as qte_cmd,
                 (select sum(slor_qterea)
-                from sav_lor as A, sav_itv as B
+                from {$this->dbIps}.sav_lor as A, {$this->dbIps}.sav_itv as B
                 where  A.slor_numor = B.sitv_numor
                     and  B.sitv_interv = A.slor_nogrp/100
                     and A.slor_numor = C.slor_numor and
                     B.sitv_interv  = D.sitv_interv {$this->getTypeLigneCondition($searchDto)}
                 )                                                                                                                               as qte_liv,
                 (select sum(slor_qteres)
-                from sav_lor as A, sav_itv  as B
+                from {$this->dbIps}.sav_lor as A, {$this->dbIps}.sav_itv  as B
                 where A.slor_numor = B.sitv_numor
                     and B.sitv_interv = A.slor_nogrp/100
                     and A.slor_numor = C.slor_numor
@@ -467,15 +461,15 @@ class PlanningMaterielModel extends Model
                                 ELSE A.slor_qterea  
                             END
                         )
-                        FROM sav_lor AS A
-                        INNER JOIN sav_itv AS B
+                        FROM {$this->dbIps}.sav_lor AS A
+                        INNER JOIN {$this->dbIps}.sav_itv AS B
                             ON A.slor_numor = B.sitv_numor 
                             AND B.sitv_interv = A.slor_nogrp / 100 
                         WHERE A.slor_numor = C.slor_numor AND B.sitv_interv = D.sitv_interv
                     ) = (
                         SELECT SUM(A.slor_qterea)
-                        FROM sav_lor AS A
-                        INNER JOIN sav_itv AS B
+                        FROM {$this->dbIps}.sav_lor AS A
+                        INNER JOIN {$this->dbIps}.sav_itv AS B
                             ON A.slor_numor = B.sitv_numor 
                             AND B.sitv_interv = A.slor_nogrp / 100 
                         WHERE A.slor_numor = C.slor_numor AND B.sitv_interv = D.sitv_interv
@@ -483,16 +477,16 @@ class PlanningMaterielModel extends Model
                     THEN TRIM('TOUT LIVRE')
                     WHEN (
                         SELECT SUM(A.slor_qterea)
-                        FROM sav_lor AS A
-                        INNER JOIN sav_itv AS B
+                        FROM {$this->dbIps}.sav_lor AS A
+                        INNER JOIN {$this->dbIps}.sav_itv AS B
                             ON A.slor_numor = B.sitv_numor 
                             AND B.sitv_interv = A.slor_nogrp / 100 
                         WHERE A.slor_numor = C.slor_numor AND B.sitv_interv = D.sitv_interv
                     ) > 0 
                     AND (
                         SELECT SUM(A.slor_qterea)
-                        FROM sav_lor AS A
-                        INNER JOIN sav_itv AS B
+                        FROM {$this->dbIps}.sav_lor AS A
+                        INNER JOIN {$this->dbIps}.sav_itv AS B
                             ON A.slor_numor = B.sitv_numor 
                             AND B.sitv_interv = A.slor_nogrp / 100 
                         WHERE A.slor_numor = C.slor_numor AND B.sitv_interv = D.sitv_interv
@@ -504,8 +498,8 @@ class PlanningMaterielModel extends Model
                                 ELSE A.slor_qterea 
                             END
                         )
-                        FROM sav_lor AS A
-                        INNER JOIN sav_itv AS B
+                        FROM {$this->dbIps}.sav_lor AS A
+                        INNER JOIN {$this->dbIps}.sav_itv AS B
                             ON A.slor_numor = B.sitv_numor 
                             AND B.sitv_interv = A.slor_nogrp / 100 
                         WHERE A.slor_numor = C.slor_numor AND B.sitv_interv = D.sitv_interv
@@ -519,15 +513,15 @@ class PlanningMaterielModel extends Model
                                 ELSE A.slor_qterea 
                             END
                         )
-                        FROM sav_lor AS A
-                        INNER JOIN sav_itv AS B
+                        FROM {$this->dbIps}.sav_lor AS A
+                        INNER JOIN {$this->dbIps}.sav_itv AS B
                             ON A.slor_numor = B.sitv_numor 
                             AND B.sitv_interv = A.slor_nogrp / 100 
                         WHERE A.slor_numor = C.slor_numor
                     ) != (
                         SELECT SUM(A.slor_qteres)
-                        FROM sav_lor AS A
-                        INNER JOIN sav_itv AS B
+                        FROM {$this->dbIps}.sav_lor AS A
+                        INNER JOIN {$this->dbIps}.sav_itv AS B
                             ON A.slor_numor = B.sitv_numor 
                             AND B.sitv_interv = A.slor_nogrp / 100 
                         WHERE A.slor_numor = C.slor_numor AND B.sitv_interv = D.sitv_interv
@@ -541,15 +535,15 @@ class PlanningMaterielModel extends Model
                                 ELSE A.slor_qterea 
                             END
                         )
-                        FROM sav_lor AS A
-                        INNER JOIN sav_itv AS B
+                        FROM {$this->dbIps}.sav_lor AS A
+                        INNER JOIN {$this->dbIps}.sav_itv AS B
                             ON A.slor_numor = B.sitv_numor 
                             AND B.sitv_interv = A.slor_nogrp / 100 
                         WHERE A.slor_numor = C.slor_numor AND B.sitv_interv = D.sitv_interv
                     ) = (
                         SELECT SUM(A.slor_qteres)
-                        FROM sav_lor AS A
-                        INNER JOIN sav_itv AS B
+                        FROM {$this->dbIps}.sav_lor AS A
+                        INNER JOIN {$this->dbIps}.sav_itv AS B
                             ON A.slor_numor = B.sitv_numor 
                             AND B.sitv_interv = A.slor_nogrp / 100 
                         WHERE A.slor_numor = C.slor_numor AND B.sitv_interv = D.sitv_interv
@@ -583,7 +577,7 @@ class PlanningMaterielModel extends Model
                     WHEN slor_natcm = 'C' THEN slor_numcf
                     WHEN slor_natcm = 'L' THEN 
                         (SELECT MAX(fllf_numcde)
-                        FROM frn_llf
+                        FROM {$this->dbIps}.frn_llf
                         WHERE fllf_numliv = slor_numcf
                             AND fllf_ligne = slor_noligncm
                             AND fllf_refp = slor_refp)
@@ -608,7 +602,7 @@ class PlanningMaterielModel extends Model
                                 SELECT
                                     spic_datepic,
                                     ROW_NUMBER() OVER (ORDER BY spic_datepic ASC) AS rn
-                                FROM sav_pic
+                                FROM {$this->dbIps}.sav_pic
                                 WHERE spic_numor = slor_numor
                                     AND spic_refp = slor_refp
                                     AND spic_nolign = slor_nolign
@@ -618,13 +612,13 @@ class PlanningMaterielModel extends Model
                     WHEN slor_qterea = (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) THEN
                         TO_CHAR((
                             (SELECT min(sliv_date) 
-                            FROM sav_liv 
+                            FROM {$this->dbIps}.sav_liv 
                             WHERE sliv_numor = slor_numor 
                                 AND sliv_nolign = slor_nolign
                             )
                         ), '%Y-%m-%d')
                     END                                                                                                                         as date_statut
-            FROM  sav_eor,sav_lor as C , sav_itv as D, agr_succ, agr_tab ser, mat_mat, agr_tab ope, outer agr_tab sec, outer neg_lig
+            FROM  {$this->dbIps}.sav_eor, {$this->dbIps}.sav_lor as C , {$this->dbIps}.sav_itv as D, {$this->dbIps}.agr_succ, {$this->dbIps}.agr_tab ser, {$this->dbIps}.mat_mat, {$this->dbIps}.agr_tab ope, outer {$this->dbIps}.agr_tab sec, outer {$this->dbIps}.neg_lig
             WHERE seor_numor = slor_numor
                 AND seor_soc = '$codeSoc'
                 AND seor_serv <> 'DEV'
@@ -669,7 +663,7 @@ class PlanningMaterielModel extends Model
                 COUNT( distinct seor_numor ||'-'||sitv_interv )  as nb_numOR,
                 COUNT( sitv_interv ) as nb_itv,
                 COUNT ( slor_constp) as nb_ligne
-            FROM  sav_eor,sav_lor as C , sav_itv as D, agr_succ, agr_tab ser, mat_mat, agr_tab ope, outer neg_lig
+            FROM {$this->dbIps}.sav_eor, {$this->dbIps}.sav_lor as C , {$this->dbIps}.sav_itv as D, {$this->dbIps}.agr_succ, {$this->dbIps}.agr_tab ser, {$this->dbIps}.mat_mat, {$this->dbIps}.agr_tab ope, outer {$this->dbIps}.neg_lig
             WHERE seor_numor = slor_numor
             AND seor_soc = '$codeSoc' AND mmat_marqmat NOT like 'Z%'
             AND (seor_nummat = mmat_nummat)

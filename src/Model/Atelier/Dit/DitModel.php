@@ -111,7 +111,7 @@ class DitModel extends Model
         return $this->convertirEnUtf8($data);
     }
 
-    
+
 
     /**
      * Methode pour enregistrer les données du formulaire Dit
