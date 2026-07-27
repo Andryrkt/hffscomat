@@ -67,7 +67,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
 
   function fetchDetailModal(id, signal) {
     // Fetch request to get the data
-    fetch(`${baseUrl}/api/detail-plannigMagasin-modal/${id}`, { signal })
+    fetch(`${baseUrl}/${API_ENDPOINTS.getDetailModalMagasin(id)}`, { signal })
       .then((response) => {
         if (!response.ok) {
           throw new Error("Network response was not ok");

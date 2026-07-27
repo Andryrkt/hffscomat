@@ -70,9 +70,10 @@ document.addEventListener("DOMContentLoaded", (event) => {
   }
 
   function fetchTechnicienInterv(numOr, numItv, signal) {
-    fetch(`${baseUrl}/api/technicien-intervenant/${numOr}/${numItv}`, {
-      signal,
-    })
+    fetch(
+      `${baseUrl}/${API_ENDPOINTS.getTechnicienIntervenant(numOr, numItv)}`,
+      { signal }
+    )
       .then((response) => {
         if (!response.ok) {
           throw new Error("Network response was not ok");
@@ -115,7 +116,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
   function fetchDetailModal(id, signal) {
     // Fetch request to get the data
     console.log(id, signal);
-    fetch(`${baseUrl}/api/detail-modal/${id}`, { signal })
+    fetch(`${baseUrl}/${API_ENDPOINTS.getDetailModal(id)}`, { signal })
       .then((response) => {
         if (!response.ok) {
           console.log(response);
