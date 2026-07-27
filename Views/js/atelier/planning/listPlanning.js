@@ -20,9 +20,9 @@ document.addEventListener("DOMContentLoaded", (event) => {
     abortController = new AbortController(); // Créer un nouveau contrôleur
 
     const button = event.relatedTarget; // Bouton qui a déclenché le modal
-    const orIntv = button.getAttribute("data-id");
-    const numDit = button.getAttribute("data-numDit");
-    const migration = button.getAttribute("data-migration");
+    const orIntv = button.dataset.id;
+    const numDit = button.dataset.numDit;
+    const migration = button.dataset.migration;
     const dossierDitLink = document.getElementById("dossierDitLink");
     if (migration == "1") {
       dossierDitLink.style.display = "none";
