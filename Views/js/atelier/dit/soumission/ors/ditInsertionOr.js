@@ -1,3 +1,5 @@
+import { displayOverlay } from "../../../../utils/ui/overlay";
+
 function initializeFileHandlers(idSuffix) {
   const fileInput = document.querySelector(
     `#dit_ors_soumis_a_validation_pieceJoint0${idSuffix}`,
@@ -104,38 +106,39 @@ numOrInput.addEventListener("input", function () {
   numOrInput.value = value;
 });
 
-// Fonction pour formater la taille des fichiers en Ko ou Mo
-function formatFileSize(bytes) {
-  if (bytes >= 1048576) {
-    return (bytes / 1048576).toFixed(2) + " MB";
-  } else {
-    return (bytes / 1024).toFixed(2) + " KB";
-  }
-}
-
 /**
- * blocage de l'article DA si le nombre d'articles à valider n'est pas égale au nombre d'article dans IPS
+ * blocage de la soumission de l'OR si pas confirmer et ajout de spinner
  */
-document.addEventListener("DOMContentLoaded", function () {
-  const blocageArticleDa = document.getElementById("blocage-article-da");
 
-  if (blocageArticleDa.classList.contains("d-none")) {
-    //cree moi une sweet-alert-2 confirm cancel
-    Swal.fire({
-      title: "Souhaitez vous tout de même soumettre l'OR ?",
-      text: "Les articles du bon d'achat validé ne correspondent pas à ceux saisis dans l'OR. Voulez-vous continuer ?",
-      icon: "warning",
-      showCancelButton: true,
-      allowOutsideClick: false,
-      allowEscapeKey: false,
-      confirmButtonColor: "#d4a817ff",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "OUI",
-      cancelButtonText: "NON",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        blocageArticleDa.classList.remove("d-none");
-      }
-    });
-  }
+document.addEventListener("DOMContentLoaded", function () {
+  const form = document.getElementById("upload-form");
+  if (!form) return;
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    confirmation(form);
+  });
 });
+
+function confirmation(form) {
+  const submitBtn =
+    document.getElementById("submit-dit-or") ||
+    form.querySelector('button[type="submit"]');
+
+  Swal.fire({
+    title: "Confirmation",
+    text: "Voulez-vous vraiment soumettre cette OR ?",
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonText: "Oui",
+    cancelButtonText: "Annuler",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      if (submitBtn) {
+        displayOverlay(true, "Soumission en cours...");
+        submitBtn.disabled = true;
+      }
+      form.submit();
+    }
+  });
+}
