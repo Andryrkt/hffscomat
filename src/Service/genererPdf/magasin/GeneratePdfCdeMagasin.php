@@ -62,7 +62,7 @@ class GeneratePdfCdeMagasin extends GeneratePdf
 
     public function copyToDOCUWARE(string $cheminDuFichier, string $numCmde): bool
     {
-        $cheminDW = rtrim($this->baseCheminDocuware, '/\\') . "CDE FRN MAGASIN/$numCmde.pdf";
+        $cheminDW = rtrim($this->baseCheminDocuware, '/\\') . "/CDE FRN MAGASIN/$numCmde.pdf";
         return $this->copyFile($cheminDuFichier, $cheminDW);
     }
 
