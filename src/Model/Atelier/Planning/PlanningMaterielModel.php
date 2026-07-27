@@ -187,7 +187,7 @@ class PlanningMaterielModel extends Model
                                 from (
                                     select spic_datepic,
                                         ROW_NUMBER() OVER (ORDER BY spic_datepic ASC) AS rn
-                                    from {$this->dbIps}.sav_pic
+                                    from {$this->dbIpsRegix}.sav_pic
                                     where spic_numor = slor_numor
                                         and spic_refp = slor_refp
                                         and spic_nolign = slor_nolign
@@ -349,7 +349,7 @@ class PlanningMaterielModel extends Model
                                      FROM (
                                         SELECT spic_datepic,
                                          ROW_NUMBER() OVER (ORDER BY spic_datepic ASC) AS rn
-                                         FROM {$this->dbIps}.sav_pic
+                                         FROM {$this->dbIpsRegix}.sav_pic
                                          WHERE spic_numor = slor_numor
                                         AND spic_refp = slor_refp
                                         AND spic_nolign = slor_nolign
@@ -602,7 +602,7 @@ class PlanningMaterielModel extends Model
                                 SELECT
                                     spic_datepic,
                                     ROW_NUMBER() OVER (ORDER BY spic_datepic ASC) AS rn
-                                FROM {$this->dbIps}.sav_pic
+                                FROM {$this->dbIpsRegix}.sav_pic
                                 WHERE spic_numor = slor_numor
                                     AND spic_refp = slor_refp
                                     AND spic_nolign = slor_nolign
