@@ -39,9 +39,9 @@ class TraitementDeFicherService
 
         if ($dto->type == 'VP') {
             //generer le nom du fichier
-            $nomFichierGenerer = "sctverificationprix_{$dto->numeroDevisDeux}-{$dto->numeroVersion}#{$suffix}~{$dto->tacheValidateur}.pdf";
-            $nomFichierGenererSansTache = "sctverificationprix_{$dto->numeroDevisDeux}-{$dto->numeroVersion}#{$suffix}.pdf";
-            $nomFichierCtrl = "sctdevisctrlvp_{$dto->numeroDevisDeux}-{$dto->numeroVersion}#{$suffix}.pdf";
+            $nomFichierGenerer = "sctverificationprix{$dto->langue}_{$dto->numeroDevisDeux}-{$dto->numeroVersion}#{$suffix}~{$dto->tacheValidateur}.pdf";
+            $nomFichierGenererSansTache = "sctverificationprix{$dto->langue}_{$dto->numeroDevisDeux}-{$dto->numeroVersion}#{$suffix}.pdf";
+            $nomFichierCtrl = "sctdevisctrlvp{$dto->langue}_{$dto->numeroDevisDeux}-{$dto->numeroVersion}#{$suffix}.pdf";
 
             // telecharger le fichier en copiant sur son repertoire
             $fileUploader->uploadFileSansName($file, $nomFichierGenererSansTache);
@@ -59,11 +59,11 @@ class TraitementDeFicherService
             $fusionPdf->mergePdfs($fichierConvertis, $chemin . $nomFichierGenerer);
 
             //envoye des fichier fusionner dans le DW pour les types "Vente" et "Forfait"
-            $generePdfDevis->copyToDWFichierDevisSoumisVp($nomFichierGenerer); // copier le fichier de devis dans docuware
+            $generePdfDevis->copyToDWFichierDevisSoumisVp($nomFichierGenerer, $dto->langue); // copier le fichier de devis dans docuware
         } else {
-            $nomFichierCtrl = "sctdevisctrl_{$dto->numeroDevisDeux}-{$dto->numeroVersion}#{$suffix}.pdf";
+            $nomFichierCtrl = "sctdevisctrl{$dto->langue}_{$dto->numeroDevisDeux}-{$dto->numeroVersion}#{$suffix}.pdf";
             //generer le nom du fichier
-            $nomFichierGenerer = "sctdevisatelier_{$dto->numeroDevisDeux}-{$dto->numeroVersion}#{$suffix}.pdf";
+            $nomFichierGenerer = "sctdevisatelier{$dto->langue}_{$dto->numeroDevisDeux}-{$dto->numeroVersion}#{$suffix}.pdf";
 
             // telecharger le fichier en copiant sur son repertoire
             $fileUploader->uploadFileSansName($file, $nomFichierGenerer);
@@ -83,7 +83,7 @@ class TraitementDeFicherService
 
             // envoyer les fichiers dans DW pour les types "Vente" et "Forfait"
             //$generePdfDevis->copyToDWDevisSoumis($nomFichierCtrl); // copier le fichier de controlle dans docuware
-            $generePdfDevis->copyToDWFichierDevisSoumis($nomFichierGenerer); // copier le fichier de devis dans docuware
+            $generePdfDevis->copyToDWFichierDevisSoumis($nomFichierGenerer, $dto->langue); // copier le fichier de devis dans docuware
         }
     }
 

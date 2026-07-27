@@ -65,7 +65,7 @@ class DitDevisSoumisAVAlidataionController extends Controller
 
             // Validation des données
             $devisValidationService = new DevisValidationService();
-            if($devisValidationService->validateApresSoumission( $form, $dto)) return ;
+            if ($devisValidationService->validateApresSoumission($form, $dto)) return;
 
             $ditDevisSoumisAValidationModel = new DitDevisSoumisAValidationModel();
 

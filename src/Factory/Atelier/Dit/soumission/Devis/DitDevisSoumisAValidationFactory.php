@@ -39,6 +39,7 @@ class DitDevisSoumisAValidationFactory
         $dto->nbPieceSortieMagasin = $ditDevisSoumisAValidationModel->recupNbPieceMagasin($dto->numeroDevis, $dto->codeSociete);
         $dto->infoDit = $ditDevisSoumisAValidationModel->recupInfoDit($dto->numeroDit, $dto->numeroDevis, $dto->codeSociete);
         $dto->infoDevisIps = $ditDevisSoumisAValidationModel->recupDevisSoumisValidation($dto->numeroDevis, $dto->codeSociete);
+        $dto->langue = substr($dto->pieceJoint01->getClientOriginalName(), 0, 9) === "QUOTATION" ? 'EN' : 'FR';
         return $dto;
     }
 

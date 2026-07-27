@@ -7,7 +7,7 @@ class DitDevisSoumisAValidationDto
     public ?string $numeroDit = null;
 
     public ?string $numeroDevis = null;
-    
+
     public ?string $numeroDevisDeux = null;
 
     public int $numeroItv = 0;
@@ -77,6 +77,8 @@ class DitDevisSoumisAValidationDto
     public array $infoDit = [];
 
     public array $infoDevisIps = [];
+
+    public string $langue = 'EN';
 
     // Comparaison des objets par leur numero d'intervention
     public function estEgalParNumero(self $autre)

@@ -24,16 +24,16 @@ class GenererPdfDevisSoumisAValidation extends GeneratePdf
         $this->copyFile($cheminDestinationLocal, $cheminFichierDistant);
     }
 
-    public function copyToDWFichierDevisSoumis(string $fileName)
+    public function copyToDWFichierDevisSoumis(string $fileName, string $langue)
     {
-        $cheminFichierDistant = $this->baseCheminDocuware . 'DEVIS ATELIER/' . $fileName;
+        $cheminFichierDistant = $langue === 'EN' ? $this->baseCheminDocuware . 'DEVIS ATELIER/' . $fileName : $this->baseCheminDocuware . 'DEVIS ATELIER - Fr/' . $fileName;
         $cheminDestinationLocal = $this->baseCheminDuFichier . 'dit/dev/fichiers/' . $fileName;
         $this->copyFile($cheminDestinationLocal, $cheminFichierDistant);
     }
 
-    public function copyToDWFichierDevisSoumisVp(string $fileName)
+    public function copyToDWFichierDevisSoumisVp(string $fileName, string $langue)
     {
-        $cheminFichierDistant = $this->baseCheminDocuware . 'VERIFICATION_PRIX/' . $fileName;
+        $cheminFichierDistant = $langue === 'EN' ? $this->baseCheminDocuware . 'VERIFICATION_PRIX/' . $fileName : $this->baseCheminDocuware . 'VERIFICATION_PRIX - Fr/' . $fileName;
         $cheminDestinationLocal = $this->baseCheminDuFichier . 'dit/dev/' . $fileName;
         $this->copyFile($cheminDestinationLocal, $cheminFichierDistant);
     }
@@ -263,7 +263,7 @@ class GenererPdfDevisSoumisAValidation extends GeneratePdf
         $mail = 'email : ' . $email;
 
         $pdf = new HeaderPdf($mail);
-        
+
         $tableGenerator = new PdfTableGeneratorFlexible();
         $tableGenerator->setOptions([
             'table_attributes' => 'border="0" cellpadding="0" cellspacing="0" align="center" style="font-size: 8px;"',
