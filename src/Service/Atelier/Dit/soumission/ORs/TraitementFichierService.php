@@ -23,6 +23,7 @@ class TraitementFichierService
 
         $numeroOr = $dto->numeroOr;
         $numeroDit = $dto->numeroDit;
+        $langueIps = $dto->langueIps;
         $suffix = $ditOrsoumisAValidationModel->constructeurPieceMagasin($numeroOr)[0]['retour'];
 
         /** 
@@ -48,7 +49,7 @@ class TraitementFichierService
         $traitementDeFichier->fusionFichers($nomEtCheminFichierConvertie, $nomAvecCheminFichier);
 
         // 5.  envoyer le pdf fusionner dans DW
-        $genererPdfOrSoumisAValidation->copyToDw($nomFichier, $numeroDit);
+        $genererPdfOrSoumisAValidation->copyToDw($nomFichier, $numeroDit, $langueIps);
     }
 
     private function enregistrementFichier(FormInterface $form, OrSoumissionDto $dto, string $suffix): array
@@ -74,12 +75,12 @@ class TraitementFichierService
                 UploadedFile $file,
                 int $index
             ) use ($nameGenerator, $dto, $suffix) {
-                return $nameGenerator->generateNameFile($file, $dto->numeroOr, $dto->numeroVersion, $suffix, $index);
+                return $nameGenerator->generateNameFile($file, $dto->numeroOr, $dto->numeroVersion, $suffix, $dto->langueIps, $index);
             }
         ]);
 
 
-        $nomFichier = $nameGenerator->generateNamePrincipal($dto->numeroOr, $dto->numeroVersion, $suffix);
+        $nomFichier = $nameGenerator->generateNamePrincipal($dto->numeroOr, $dto->numeroVersion, $suffix, $dto->langueIps);
         $nomAvecCheminFichier = $path . $nomFichier;
 
         return [$nomEtCheminFichiersEnregistrer, $nomFichierEnregistrer, $nomAvecCheminFichier, $nomFichier];

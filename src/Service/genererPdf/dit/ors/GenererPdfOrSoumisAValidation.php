@@ -23,9 +23,9 @@ class GenererPdfOrSoumisAValidation extends GeneratePdf
     use TableauMargeReferenceTableTrait;
 
     // ORDRE DE REPARATION (OR)
-    public function copyToDw(string $filename, string $numDit)
+    public function copyToDw(string $filename, string $numDit, string $langueIps)
     {
-        $cheminFichierDistant = $this->baseCheminDocuware . 'OR/' . $filename;
+        $cheminFichierDistant = $langueIps === 'A' ? $this->baseCheminDocuware . 'OR/' . $filename : $this->baseCheminDocuware . 'OR - Fr/' . $filename;
         $cheminDestinationLocal = $this->baseCheminDuFichier . 'dit/' . $numDit . '/' . $filename;
         copy($cheminDestinationLocal, $cheminFichierDistant);
     }

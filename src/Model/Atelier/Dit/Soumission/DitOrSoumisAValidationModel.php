@@ -818,7 +818,7 @@ class DitOrSoumisAValidationModel extends Model
     }
 
 
-     public function tableauDeMarge(
+    public function tableauDeMarge(
         string $codeSociete,
         string $numeroOr
     ) {
@@ -879,7 +879,6 @@ class DitOrSoumisAValidationModel extends Model
         $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
 
         return $data;
-
     }
 
     public function tableauDeMargeAvecReference(
@@ -984,5 +983,25 @@ class DitOrSoumisAValidationModel extends Model
         $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
 
         return $data;
+    }
+
+
+    public function getLangueIps(string $numcli, string $codeSociete): ?string
+    {
+        if ($numcli === null) {
+            return null;
+        }
+        $statement = " SELECT cbse_langue as langue
+                        FROM Informix.cli_bse 
+                        INNER JOIN Informix.cli_soc 
+                            ON cbse_numcli = csoc_numcli 
+                            AND csoc_soc = '$codeSociete'
+                        WHERE cbse_numcli='$numcli'
+                    ";
+
+        $result = $this->connect->executeQuery($statement);
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
+
+        return $data[0]['langue'] ?? null;
     }
 }

@@ -17,11 +17,13 @@ class OrGeneratorNameService extends AbstractFileNameGeneratorService
         string $numOr,
         int $numeroVersion,
         string $suffix,
+        string $langueIps,
         int $index = 1
     ): string {
         return $this->generateFileName($file, [
-            'format' => 'oRValidation_{numOr}-{numeroVersion}#{suffix}.{extension}',
+            'format' => 'oRValidation{langueIps}_{numOr}-{numeroVersion}#{suffix}.{extension}',
             'variables' => [
+                'langueIps' => $langueIps === 'A' ? 'EN' : 'FR',
                 'numOr' => $numOr,
                 'numeroVersion' => $numeroVersion,
                 'suffix' => $suffix
@@ -35,8 +37,10 @@ class OrGeneratorNameService extends AbstractFileNameGeneratorService
     public function generateNamePrincipal(
         string $numOr,
         int $numeroVersion,
-        string $suffix
+        string $suffix,
+        string $langueIps
     ) {
-        return "oRValidation_$numOr-$numeroVersion#$suffix.pdf";
+        $langue =  $langueIps === 'A' ? 'EN' : 'FR';
+        return "oRValidation{$langue}_$numOr-$numeroVersion#$suffix.pdf";
     }
 }

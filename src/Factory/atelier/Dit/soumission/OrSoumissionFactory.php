@@ -24,6 +24,8 @@ class OrSoumissionFactory
         $dto->numeroOr = $ditOrsoumisAValidationModel->recupNumeroOr($numDit, $dto->codeSociete);
         $dto->idCategorieDemande = (int) $ditModel->findIdCategorieByNumeroDit($numDit, $dto->codeSociete);
         $dto->typeOr = $ditOrsoumisAValidationModel->recupTypeOr($dto->numeroOr);
+        $dto->numCli = $ditModel->getNumClient($numDit);
+        $dto->langueIps = $ditOrsoumisAValidationModel->getLangueIps($dto->numCli, $dto->codeSociete) ?? 'A';
 
         return $dto;
     }

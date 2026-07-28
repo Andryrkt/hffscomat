@@ -110,8 +110,26 @@ class DitModel extends Model
 
         return $this->convertirEnUtf8($data);
     }
+    /**
+     * Recupe un client
+     *
+     * @return string
+     */
+    public function getNumClient(string $numDit): ?string
+    {
+        $statement = "SELECT numero_client as numClient
+                        from {$this->dbIrium}.demande_intervention 
+                        WHERE numero_demande_dit = '$numDit'
+        ";
 
-    
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->connect->fetchResults($result);
+
+        return $this->convertirEnUtf8($data)[0]['numClient'] ?? null;
+    }
+
+
 
     /**
      * Methode pour enregistrer les données du formulaire Dit

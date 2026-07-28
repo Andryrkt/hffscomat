@@ -98,8 +98,10 @@ class OrSoumissionDto
 
     public $id_materiel_ips;
 
+    public ?string $langueIps = null;
 
 
+    public ?string $numCli = null;
 
 
     public function estEgalParNumero(self $other): bool
