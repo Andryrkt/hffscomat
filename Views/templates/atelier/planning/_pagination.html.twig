@@ -5,12 +5,14 @@
 			Excel
 		</a>
 	</div>
-	{% for item in count %}
 	<div class="align-self-center">
-		<p class="fw-bold m-0" id="nombreResultat">Nombre d'OR :  {{ item.nb_numor }} </p>
+		<p class="fw-bold m-0" id="nombreResultat">Nombre d'OR :
+			{{ count.nb_numor }}
+		</p>
 	</div>
 	<div class="align-self-center">
-		<p class="fw-bold m-0" id="nombreResultat">Nombre de ligne : {{ item.nb_ligne }} </p>
+		<p class="fw-bold m-0" id="nombreResultat">Nombre de ligne :
+			{{ count.nb_ligne }}
+		</p>
 	</div>
-	{% endfor %}
 </div>

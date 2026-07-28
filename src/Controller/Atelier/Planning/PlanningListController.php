@@ -67,10 +67,10 @@ class PlanningListController extends Controller
         }
 
         return $this->render('atelier/planning/listePlanning.html.twig', [
-            'form' => $form->createView(),
+            'form'     => $form->createView(),
             'criteria' => $dto->toArray(),
-            'data' => $data['data'],
-            'count' => [['nb_numor' => $data['nb_num_or'], 'nb_ligne' => $data['nb_ligne']]],
+            'data'     => $data['data'],
+            'count'    => ['nb_numor' => $data['nb_num_or'], 'nb_ligne' => $data['nb_ligne']],
         ]);
     }
 
