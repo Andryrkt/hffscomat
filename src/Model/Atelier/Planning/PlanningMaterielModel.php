@@ -505,7 +505,23 @@ class PlanningMaterielModel extends Model
                         WHERE A.slor_numor = C.slor_numor AND B.sitv_interv = D.sitv_interv
                     ) 
                     THEN TRIM('PARTIELLEMENT LIVRE')
-                    WHEN (
+                    WHEN 
+                    (
+                        SELECT SUM(A.slor_qteres)
+                        FROM {$this->dbIps}.sav_lor AS A
+                        INNER JOIN {$this->dbIps}.sav_itv AS B
+                            ON A.slor_numor = B.sitv_numor 
+                            AND B.sitv_interv = A.slor_nogrp / 100 
+                        WHERE A.slor_numor = C.slor_numor AND B.sitv_interv = D.sitv_interv
+                    ) > 0
+                    AND (
+                        SELECT SUM(A.slor_qteres)
+                        FROM {$this->dbIps}.sav_lor AS A
+                        INNER JOIN {$this->dbIps}.sav_itv AS B
+                            ON A.slor_numor = B.sitv_numor 
+                            AND B.sitv_interv = A.slor_nogrp / 100 
+                        WHERE A.slor_numor = C.slor_numor AND B.sitv_interv = D.sitv_interv
+                    ) != (
                         SELECT SUM(
                             CASE  
                                 WHEN A.slor_typlig = 'P' 
@@ -518,13 +534,6 @@ class PlanningMaterielModel extends Model
                             ON A.slor_numor = B.sitv_numor 
                             AND B.sitv_interv = A.slor_nogrp / 100 
                         WHERE A.slor_numor = C.slor_numor
-                    ) != (
-                        SELECT SUM(A.slor_qteres)
-                        FROM {$this->dbIps}.sav_lor AS A
-                        INNER JOIN {$this->dbIps}.sav_itv AS B
-                            ON A.slor_numor = B.sitv_numor 
-                            AND B.sitv_interv = A.slor_nogrp / 100 
-                        WHERE A.slor_numor = C.slor_numor AND B.sitv_interv = D.sitv_interv
                     ) 
                     THEN TRIM('PARTIELLEMENT DISPO')
                     WHEN (
