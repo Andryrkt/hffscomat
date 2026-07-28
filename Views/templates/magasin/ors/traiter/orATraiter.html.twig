@@ -75,7 +75,7 @@
                                 </td>
                                 <td class="fw-bold ">{{item.numero_dit}}</td>
                                 <td class="fw-bold ">{{item.numero_or}}</td>
-                                <td>{{ item.datePlanning == null ? '--' : item.datePlanning| date("d/m/Y")}}</td>
+                                <td>{{ item.dateplanning == null ? '--' : item.dateplanning| date("d/m/Y")}}</td>
                                 <td class="">{{item.niveauurgence}}</td>
                                 <td class="">{{ item.datecreation | date("d/m/Y")}}</td>
                                 <td class="">{{ item.numclient ?: '' }}{{ item.numclient and item.nomclient ? ' - ' : '' }}{{ item.nomclient ?: '' }}</td>

@@ -63,8 +63,10 @@ class OrTraiterModel extends Model
             END as datePlanning
             ,w.description as niveauUrgence
             ,slor_datec as dateCreation
-            ,slor_succ as agenceCrediteur
-            ,slor_servcrt as serviceCrediteur
+            --,slor_succ as agenceCrediteur
+            ,(select TRIM(asuc_num) || '-'|| asuc_lib  from Informix.agr_succ where asuc_num = slor_succ) as agenceCrediteur
+            --,slor_servcrt as serviceCrediteur
+            ,(select TRIM(atab_code)||'-'|| atab_lib from Informix.agr_tab where atab_nom='SER' and atab_code=slor_servcrt) as serviceCrediteur
             ,slor_succdeb as agence
             ,slor_servdeb as service
             ,slor_nogrp/100 as numInterv
@@ -72,10 +74,11 @@ class OrTraiterModel extends Model
             ,trim(slor_constp) as constructeur
             ,trim(slor_refp) as referencePiece
             ,trim(slor_desi) as designation
-            ,CASE WHEN slor_typlig = 'P' THEN (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) WHEN slor_typlig IN ('F','M','U','C') THEN slor_qterea END AS quantiteDemander
+            ,(slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) AS quantiteDemander
             , trim(atab_lib) as nomPrenom
 
-            from {$this->dbIps}.sav_lor 
+            from {$this->dbIps}.sav_lor
+            inner join art_bse on abse_constp = slor_constp and abse_refp = slor_refp and abse_codg = 'ST' -- n'afficher que les pièces gérés au magasin 
             inner join {$this->dbIps}.sav_eor on seor_soc = slor_soc and seor_succ = slor_succ and seor_numor = slor_numor and seor_soc = '{$dtoSearch->codeSociete}'
             inner join {$this->dbIps}.mat_mat on mmat_nummat =  seor_nummat
             inner join {$this->dbIps}.agr_usr on ausr_num = seor_usr
@@ -107,7 +110,7 @@ class OrTraiterModel extends Model
             and slor_qteres = 0 and slor_qterel = 0 and slor_qterea = 0
             order by numInterv ASC, seor_dateor DESC, slor_numor DESC, numeroLigne ASC
         ";
-
+// dd($statement);
         $result = $this->connect->executeQuery($statement);
 
         $data = $this->connect->fetchResults($result);
