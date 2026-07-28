@@ -216,7 +216,7 @@ class TraitementFichierService
         ];
     }
 
-    private function datePlanning(string $numOr, int $numItv, string $codeSociete): string
+    private function datePlanning(string $numOr, int $numItv, string $codeSociete): ?string
     {
         $ditOrsoumisAValidationModel = new DitOrSoumisAValidationModel();
 

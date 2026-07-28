@@ -61,17 +61,26 @@ class DitListeModel extends Model
                         (CASE WHEN d0_.piece_joint IS NOT NULL AND d0_.piece_joint <> '' AND d0_.piece_joint <> ' ' THEN 1 ELSE 0 END)
                     ) AS nbrPj,
                     CASE
-                        WHEN d0_.id_statut_demande = 50
-                        OR (d0_.id_statut_demande = 51 AND d0_.utilisateur_demandeur = 'lanto')
-                        OR (d0_.id_statut_demande = 53 AND (d0_.numero_or IS NULL OR d0_.numero_or = ''))
-                        THEN 1 ELSE 0
+                        -- statut DIT = A AFFECTER => on affiche le bouton d'annulation
+                        WHEN d0_.id_statut_demande = 50 THEN 1
+                        -- statut DIT = AFFACTER SECTION ET l'utilisateur connecter est l'utilisateur qui a crée la DIT => on affiche le bouton d'annulation
+                        WHEN (d0_.id_statut_demande = 51 AND d0_.utilisateur_demandeur = 'lanto') THEN 1
+                        -- statut DIT = CLOTUREE_VALIDER ET pas d'OR soumis => on affiche le bouton d'annulation
+                        WHEN (d0_.id_statut_demande = 53 AND (d0_.numero_or IS NULL OR d0_.numero_or = ''))THEN 1 
+                        -- on n'affiche pas le bouton d'annulation
+                        ELSE 0
                     END AS est_annulable,
                     CASE
-                        WHEN (d0_.id_statut_demande = 51 AND COALESCE(osv_or.montantitv, osv_dit.montantitv) IS NULL)
-                        OR (d0_.id_statut_demande = 53 AND d0_.internet_externe = 'EXTERNE')
-                        OR (d0_.id_statut_demande = 53 AND COALESCE(osv_or.montantitv, osv_dit.montantitv) IS NOT NULL)
-                        OR  d0_.id_statut_demande = 57
-                        THEN 1 ELSE 0
+                        -- statut DIT = AFFACTER SECTION  ET pas d'OR soumis => on affiche  le bouton de soumission
+                        WHEN (d0_.id_statut_demande = 51 AND COALESCE(osv_or.montantitv, osv_dit.montantitv) IS NULL) THEN 1
+                        -- statut DIT = CLOTUREE_VALIDER ET le DIT est EXTERNE => on affiche  le bouton de soumission
+                        WHEN (d0_.id_statut_demande = 53 AND d0_.internet_externe = 'EXTERNE') THEN 1
+                        -- statut DIT = CLOTUREE_VALIDER ET pas d'OR soumis => on n'affiche pas le bouton de soumission
+                        WHEN (d0_.id_statut_demande = 53 AND COALESCE(osv_or.montantitv, osv_dit.montantitv) IS NOT NULL) THEN 0
+                        -- statut DIT = TERMINER => on n'affiche pas le bouton de somission
+                        WHEN d0_.id_statut_demande = 57 THEN 0 
+                        -- n'afficher pas le bouton de soumission
+                        ELSE 0
                     END AS est_a_soumis,
                     d0_.code_societe as code_societe
 

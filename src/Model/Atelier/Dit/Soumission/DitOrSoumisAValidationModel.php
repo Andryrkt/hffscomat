@@ -986,7 +986,7 @@ class DitOrSoumisAValidationModel extends Model
     }
 
 
-    public function getLangueIps(string $numcli, string $codeSociete): ?string
+    public function getLangueIps(?string $numcli, string $codeSociete): ?string
     {
         if ($numcli === null) {
             return null;
