@@ -895,16 +895,9 @@ class DitOrSoumisAValidationModel extends Model
                         ELSE ROUND(((slor_pxnreel - slor_pmp) / slor_pxnreel) * 100, 2) 
                     END AS max_mb_p
                 FROM Informix.sav_lor slor
-                INNER JOIN Informix.sav_eor 
-                    ON seor_soc = slor_soc 
-                    AND seor_succ = slor_succ 
-                    AND seor_numor = slor_numor
                 WHERE slor_refp = '$ref'
-                    AND seor_serv = 'SAV'
                     AND slor_soc = '$codeSociete'
                     AND slor_succ = '$codeSuccursale'
-                    --AND YEAR(slor_datec) = YEAR(TODAY)
-                    --AND slor_pos IN ('FC','CP')
                 GROUP BY 2
                 ORDER BY MAX(slor_pxnreel - slor_pmp) DESC
             ),
@@ -916,16 +909,9 @@ class DitOrSoumisAValidationModel extends Model
                         ELSE ROUND(((slor_pxnreel - slor_pmp) / slor_pxnreel) * 100, 2) 
                     END AS min_mb_p
                 FROM Informix.sav_lor slor
-                INNER JOIN Informix.sav_eor 
-                    ON seor_soc = slor_soc 
-                    AND seor_succ = slor_succ 
-                    AND seor_numor = slor_numor
                 WHERE slor_refp = '$ref'
-                    AND seor_serv = 'SAV'
                     AND slor_soc = '$codeSociete'
                     AND slor_succ = '$codeSuccursale'
-                    --AND YEAR(slor_datec) = YEAR(TODAY)
-                    --AND slor_pos IN ('FC','CP')
                 GROUP BY 2
                 ORDER BY MIN(slor_pxnreel - slor_pmp) ASC
             )
@@ -965,18 +951,12 @@ class DitOrSoumisAValidationModel extends Model
                 AND astp_soc = slor_soc 
                 AND astp_succ = slor_succ
                 AND astp_constp = slor_constp 
-            INNER JOIN Informix.sav_eor 
-                ON seor_numor = slor_numor 
-                AND seor_soc = slor_soc 
-                AND seor_succ = slor_succ
             CROSS JOIN stats_max
             CROSS JOIN stats_min
             WHERE slor_numor = '$numeroOr' 
                 AND slor_succ = '$codeSuccursale'
                 AND slor_soc = '$codeSociete'
                 AND slor_refp = '$ref'
-                AND slor_typlig = 'P'
-                --AND YEAR(slor_datec) = YEAR(TODAY);
         ";
 
         $result = $this->connect->executeQuery($statement);
