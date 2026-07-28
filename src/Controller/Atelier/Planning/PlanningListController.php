@@ -59,7 +59,7 @@ class PlanningListController extends Controller
             $dto = $form->getData();
         $data = ['data' => [], 'nb_num_or' => 0, 'nb_ligne' => 0];
         if ($request->query->get('action') !== 'oui') {
-             $numOrs = $this->planningModel->getNumeroOrValider($dto);
+            $numOrs = $this->planningModel->getNumeroOrValider($dto);
             $numOrSoumis = $this->planningModel->getOrsSoumis();
             $result = $this->planningMaterielModel->getMaterielPlanningList($numOrs, $numOrSoumis, [], $dto, $codeSociete);
             $data = $this->planningService->getDetailledDataList($result, []);
@@ -141,5 +141,4 @@ class PlanningListController extends Controller
         $writer->save('php://output');
         exit();
     }
-
 }
