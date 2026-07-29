@@ -30,13 +30,6 @@ export function applyRowspanAndClass(
   });
 }
 
-/**
- * affiche le rectangle contenant l'id materiel , marque et casier au survol
- * @param {*} cell
- * @param {*} row
- * @param {*} cellIndices
- * @param {*} fetchFunction
- */
 export function miseEnPlaceRectangle(cell, row, cellIndices, fetchFunction) {
   // Créer un élément rectangle (initialement vide ou avec un loader)
   const rectangle = document.createElement("div");
@@ -46,27 +39,22 @@ export function miseEnPlaceRectangle(cell, row, cellIndices, fetchFunction) {
   // Ajouter le rectangle dans la cellule
   cell.appendChild(rectangle);
 
-  // Ajouter l'écouteur de survol sur la cellule
-  cell.addEventListener("mouseenter", function () {
-    // Si les données n'ont pas encore été chargées
-    if (rectangle.getAttribute("data-loaded") === "false") {
-      rectangle.textContent = "Loading...";
+  // Charger immédiatement les données après le chargement de la page
+  rectangle.textContent = "Loading...";
 
-      // Récupérer la valeur de `orNumber`
-      const numOr = row
-        .getElementsByTagName("td")
-        [cellIndices["orNumber"]]?.textContent.trim();
+  // Récupérer la valeur de `orNumber`
+  const numOr = row
+    .getElementsByTagName("td")
+    [cellIndices["orNumber"]]?.textContent.trim();
 
-      if (numOr) {
-        // Appeler la fonction fetch avec `numOr` et le rectangle
-        fetchFunction(numOr, rectangle);
-        rectangle.setAttribute("data-loaded", "true");
-      } else {
-        console.error("La valeur de `orNumber` est introuvable ou vide.");
-        rectangle.textContent = "Erreur";
-      }
-    }
-  });
+  if (numOr) {
+    // Appeler la fonction fetch avec `numOr` et le rectangle
+    fetchFunction(numOr, rectangle);
+    rectangle.setAttribute("data-loaded", "true");
+  } else {
+    console.error("La valeur de `orNumber` est introuvable ou vide.");
+    rectangle.textContent = "Erreur";
+  }
 }
 
 export function addSeparatorRow(tableBody, currentRow) {
