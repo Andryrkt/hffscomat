@@ -17,14 +17,21 @@
 
 /* Cellule avec rectangle */
 .rowspan-cell {
-  position: relative; /* Positionner le rectangle par rapport à la cellule */
-  cursor: pointer; /* Curseur en forme de main au survol */
+  position: relative;
+  /* Positionner le rectangle par rapport à la cellule */
+}
+
+/* Réserve de l'espace à l'intérieur des cellules de la ligne pour éviter que le rectangle absolu ne masque les informations (notamment sur 1 ou 2 lignes) */
+tr:has(.rectangle) td {
+  padding-top: 55px !important;
 }
 
 .rectangle {
   position: absolute;
-  top: 2px !important; /* Positionné en haut à l'intérieur de la cellule */
-  right: -150px !important; /* Décalé vers la droite (débordement extérieur) */
+  top: 2px !important;
+  /* Positionné en haut à l'intérieur de la cellule */
+  left: 4px !important;
+  /* Aligné sur le bord gauche de la cellule N° DIT */
   background-color: var(--rectangle-bg);
   color: var(--rectangle-text-color);
   padding: 4px 8px;
@@ -32,17 +39,13 @@
   line-height: 1.2;
   font-weight: bold;
   border-radius: 4px;
-  display: none !important; /* Cacher par défaut */
+  display: block;
+  /* Toujours afficher */
   z-index: 1010;
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
   white-space: nowrap;
   text-align: left;
   border: 1px solid rgba(0, 0, 0, 0.1);
-  pointer-events: none; /* Évite que le rectangle n'interfère avec le survol de la cellule */
-}
-
-.rowspan-cell:hover .rectangle {
-  display: block !important; /* Afficher au survol */
 }
 
 /* Largeur personnalisée pour la modale */
@@ -131,10 +134,12 @@
 
 /* Animation pour les barres */
 @keyframes fade {
+
   0%,
   100% {
     opacity: var(--spinner-opacity-low);
   }
+
   50% {
     opacity: var(--spinner-opacity-high);
   }
