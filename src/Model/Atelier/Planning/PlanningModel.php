@@ -266,7 +266,7 @@ class PlanningModel extends Model
             select
             slnk_pk1 as numero_commande
             , slnk_pk2 as numero_ligne
-            , slnk_date1 as eta_maurice
+            , slnk_date1 as eta_magasin
             , slnk_alpha1 as eta_maurice
             from sip_lnk
             where slnk_tabname in ('frn_cdl', 'frn_cde')
