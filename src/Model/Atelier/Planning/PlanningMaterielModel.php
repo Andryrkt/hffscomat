@@ -154,17 +154,14 @@ class PlanningMaterielModel extends Model
                             and fllf_refp = slor_refp)
                 END                                                     as num_cmd,
                 CASE 
-                    WHEN slor_qteres = (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec)
-                        and slor_qterel >0 
-                    THEN trim('A LIVRER')
-                    WHEN (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) = slor_qteres
-                        and slor_qterel = 0
-                        and slor_qterea = 0
-                    THEN trim('DISPO STOCK')
+                    WHEN slor_qteres = (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec)and slor_qterel >0 
+                        THEN trim('A LIVRER')
+                    WHEN (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) = slor_qteres and slor_qterel = 0 and slor_qterea = 0
+                        THEN trim('DISPO STOCK')
                     WHEN slor_qterea =  (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) 
-                    THEN trim('LIVRE')
+                        THEN trim('LIVRE')
                     WHEN slor_natcm = 'C' 
-                    THEN ( SELECT libelle_type 
+                        THEN ( SELECT libelle_type 
                             FROM {$this->dbIrium}.gcot_acknow_cat 
                             WHERE Numero_PO = slor_numcf 
                             AND Parts_Number = slor_refp  
@@ -177,6 +174,13 @@ class PlanningMaterielModel extends Model
                                                              AND Parts_CST = slor_constp 
                                                              AND Line_Number = slor_noligncm )
 					    )
+                    ELSE (select 
+                            case
+                                when fcde_cdeext is not null or fcde_cdeext <> '' or fcde_cdeext = '0' then 'Commande envoyée'
+                                else ''
+                            end 
+                        from frn_cde where fcde_soc = slor_soc and fcde_succ = slor_succ and fcde_numcde = slor_numcf
+                        )
                 END                                                 as statut,
                 CASE 
                     WHEN slor_qteres = (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec)

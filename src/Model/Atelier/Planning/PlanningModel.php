@@ -247,7 +247,7 @@ class PlanningModel extends Model
     //     $result = $this->connect->executeQuery($statement);
     //     return $this->connect->fetchResults($result);
     // }
-    public function getEtaMagasin(string $numeroCmd): array
+    public function getEtaMagasin(string $numeroCmd, string $ref): array
     {
 
         $statement = "SELECT
@@ -266,8 +266,8 @@ class PlanningModel extends Model
             select
             slnk_pk1 as numero_commande
             , slnk_pk2 as numero_ligne
-            , slnk_date1 as ETA_MAGASIN
-            , slnk_alpha1 as ETA_MAURICE
+            , slnk_date1 as eta_maurice
+            , slnk_alpha1 as eta_maurice
             from sip_lnk
             where slnk_tabname in ('frn_cdl', 'frn_cde')
             and slnk_pk1 = $numeroCmd
@@ -275,6 +275,7 @@ class PlanningModel extends Model
             ) A on A.numero_commande = fcdl_numcde and A.numero_ligne = fcdl_ligne
             inner join frn_cde on fcde_soc = fcdl_soc and fcdl_succ = fcde_succ and fcdl_numcde = fcde_numcde
             where fcdl_numcde = '$numeroCmd'
+            and fcdl_refp ='$ref'
         ";
 
         $result = $this->connect->executeQuery($statement);

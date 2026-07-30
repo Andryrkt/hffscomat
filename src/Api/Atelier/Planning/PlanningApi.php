@@ -58,8 +58,8 @@ class PlanningApi extends Controller
             $parts = [];
             for ($i = 0; $i < $detailSize; $i++) {
                 $parts[] = [];
-                if ($details[$i]['num_cmd'] != "") {
-                    $magasin = $this->planningModel->getEtaMagasin($details[$i]['num_cmd']);
+                if ($details[$i]['num_cis'] != "") {
+                    $magasin = $this->planningModel->getEtaMagasin($details[$i]['num_cis'], $details[$i]['ref']);
                     if (!empty($magasin) && !empty($magasin[0])) {
                         $details[$i]['eta_magasin'] = $magasin[0]['eta_magasin'];
                         $details[$i]['etat_pays'] = $magasin[0]['etat_pays'];
