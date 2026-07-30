@@ -161,26 +161,12 @@ class PlanningMaterielModel extends Model
                     WHEN slor_qterea =  (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) 
                         THEN trim('LIVRE')
                     WHEN slor_natcm = 'C' 
-                        THEN ( SELECT libelle_type 
-                            FROM {$this->dbIrium}.gcot_acknow_cat 
-                            WHERE Numero_PO = slor_numcf 
-                            AND Parts_Number = slor_refp  
-                            AND Parts_CST = slor_constp 
-                            AND Line_Number = slor_noligncm 
-		   		            AND id_gcot_acknow_cat = ( SELECT MAX(id_gcot_acknow_cat)
-                                                             FROM {$this->dbIrium}.gcot_acknow_cat 
-                                                             WHERE Numero_PO = slor_numcf  
-                                                             AND Parts_Number = slor_refp  
-                                                             AND Parts_CST = slor_constp 
-                                                             AND Line_Number = slor_noligncm )
-					    )
-                    ELSE (select 
+                        THEN ( select 
                             case
                                 when fcde_cdeext is not null or fcde_cdeext <> '' or fcde_cdeext = '0' then 'Commande envoyée'
-                                else ''
+                                else null
                             end 
-                        from frn_cde where fcde_soc = slor_soc and fcde_succ = slor_succ and fcde_numcde = slor_numcf
-                        )
+                        from frn_cde where fcde_soc = slor_soc and fcde_succ = slor_succ and fcde_numcde = slor_numcf)
                 END                                                 as statut,
                 CASE 
                     WHEN slor_qteres = (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec)
