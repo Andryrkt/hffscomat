@@ -5,7 +5,7 @@ export function getCmdColor(detail) {
   if (["Error", "Back Order"].includes(detail.statut)) {
     return { backgroundColor: "red", color: "white" };
   }
-  if (detail.Ord === "ORD") {
+  if (detail.statut === "Commande envoyée") {
     return { backgroundColor: "#9ACD32", color: "white" };
   }
   return {};

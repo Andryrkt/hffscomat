@@ -130,7 +130,7 @@ class DatabaseInformix implements DatabaseConnectionInterface
      * Méthode pour récupérer les résultats d'une requête
      * sous forme d'un tableau associatif
      */
-    public function fetchResults($result, string $fromEncoding = "ISO-8859-1, UTF-8, ASCII")
+    public function fetchResults($result, string $fromEncoding = "UTF-8, ISO-8859-1, ASCII")
     {
         $rows = [];
         if ($result) {
@@ -145,7 +145,7 @@ class DatabaseInformix implements DatabaseConnectionInterface
      * Méthode pour récupérer les résultats d'une requête
      * sous forme d'une seule ligne (tableau associatif)
      */
-    public function fetchScalarResults($result, string $fromEncoding = "ISO-8859-1, UTF-8, ASCII")
+    public function fetchScalarResults($result, string $fromEncoding = "UTF-8, ISO-8859-1, ASCII")
     {
         if ($result) {
             $row = odbc_fetch_array($result);
@@ -159,7 +159,7 @@ class DatabaseInformix implements DatabaseConnectionInterface
     /**
      * Convertit récursivement les données en UTF-8
      */
-    private function convertToUtf8($data, string $fromEncoding = "ISO-8859-1, UTF-8, ASCII")
+    private function convertToUtf8($data, string $fromEncoding = "UTF-8, ISO-8859-1, ASCII")
     {
         if (is_array($data)) {
             foreach ($data as $key => $value) {

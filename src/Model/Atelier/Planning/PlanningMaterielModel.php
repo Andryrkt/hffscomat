@@ -240,8 +240,7 @@ class PlanningMaterielModel extends Model
         ";
 
         $result = $this->connect->executeQuery($statement);
-        $data = $this->connect->fetchResults($result);
-        return $this->convertirEnUtf8($data);
+        return $this->connect->fetchResults($result);
     }
 
     public function getDetailPieceInformixModal(string $numOr, PlanningSearchDto $searchDto)
