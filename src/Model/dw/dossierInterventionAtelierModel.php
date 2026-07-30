@@ -39,7 +39,6 @@ class dossierInterventionAtelierModel extends Model
         $conditions = "
             {$this->selectCond->like('dit.numero_dit',$dto->numDit)}
             {$this->selectCond->like('cnt_or.numero_or',$dto->numOr)}
-            {$this->selectCond->like('cnt_dd.numero_devis',$dto->numDev)}
             {$this->selectCond->like('dit.designation_materiel',$dto->designation)}
             {$this->selectCond->like('dit.id_materiel',$dto->idMateriel)}
             {$this->selectCond->like('dit.numero_parc',$dto->numParc)}
@@ -50,7 +49,8 @@ class dossierInterventionAtelierModel extends Model
 
         $statement = "WITH
                 cnt_or  AS ({$this->getCountQueryWithDit('dw_ordre_de_reparation', 'numero_or')}),
-                cnt_dd  AS ({$this->getCountQueryWithDit('dw_devis_ate', 'numero_devis')}),
+                cnt_dva AS ({$this->getCountQueryWithDit('dw_devis_ate', 'numero_devis')}),
+                cnt_dev AS ({$this->getCountQueryWithDit('dw_devis', 'numero_devis')}),
                 cnt_bcc AS ({$this->getCountQueryWithDit('dw_bc_client')}),
                 cnt_cde AS ({$this->getCountQueryWithOr('dw_commande')}),
                 cnt_ri  AS ({$this->getCountQueryWithOr('dw_rapport_intervention')}),
@@ -58,7 +58,8 @@ class dossierInterventionAtelierModel extends Model
             SELECT
                 dit.numero_dit,
                 cnt_or.numero_or,
-                cnt_dd.numero_devis,
+                cnt_dva.numero_devis,
+                cnt_dev.numero_devis,
                 dit.numero_parc,
                 dit.numero_serie,
                 dit.id_materiel,
@@ -67,7 +68,7 @@ class dossierInterventionAtelierModel extends Model
                 dit.type_reparation,
                 1
                 + COALESCE(cnt_or.n, 0)
-                + COALESCE(cnt_dd.n, 0)
+                + COALESCE(cnt_dva.n, 0)
                 + COALESCE(cnt_bcc.n, 0)
                 + COALESCE(cnt_cde.n, 0)
                 + COALESCE(cnt_ri.n, 0)
@@ -75,12 +76,13 @@ class dossierInterventionAtelierModel extends Model
                 AS nb_docs
             FROM {$this->dbIrium}.dw_demande_intervention dit
                 LEFT JOIN cnt_or  ON cnt_or.numero_dit  = dit.numero_dit
-                LEFT JOIN cnt_dd  ON cnt_dd.numero_dit  = dit.numero_dit
+                LEFT JOIN cnt_dva  ON cnt_dva.numero_dit  = dit.numero_dit
+                LEFT JOIN cnt_dev  ON cnt_dev.numero_dit  = dit.numero_dit
                 LEFT JOIN cnt_bcc ON cnt_bcc.numero_dit = dit.numero_dit
                 LEFT JOIN cnt_cde ON cnt_cde.numero_or  = cnt_or.numero_or
                 LEFT JOIN cnt_ri  ON cnt_ri.numero_or   = cnt_or.numero_or
                 LEFT JOIN cnt_fac ON cnt_fac.numero_or  = cnt_or.numero_or
-            WHERE 1=1
+            WHERE (cnt_dva.numero_devis LIKE '%{$dto->numDev}%' OR cnt_dev.numero_devis LIKE '%{$dto->numDev}%')
             $conditions
             ORDER BY dit.date_creation DESC
             ;";
@@ -96,7 +98,8 @@ class dossierInterventionAtelierModel extends Model
             "dw_demande_intervention" => "Demande d''intervention",
             "dw_ordre_de_reparation"  => "Ordre de réparation",
             "dw_bc_client"            => "Bon de Commande Client",
-            "dw_devis_ate"            => "Devis",
+            "dw_devis"                => "Devis Vérif Prix",
+            "dw_devis_ate"            => "Devis Atelier",
             "dw_commande"             => "Commande",
             "dw_rapport_intervention" => "Rapport d''intervention",
             "dw_facture"              => "Facture",
@@ -112,6 +115,7 @@ class dossierInterventionAtelierModel extends Model
             "dw_ordre_de_reparation"  => "numero_or",
             "dw_bc_client"            => "numero_bc",
             "dw_devis_ate"            => "numero_devis",
+            "dw_devis"                => "numero_devis",
             "dw_commande"             => "numero_cde",
             "dw_rapport_intervention" => "numero_ri",
             "dw_facture"              => "numero_fac",
@@ -172,7 +176,11 @@ class dossierInterventionAtelierModel extends Model
                 INNER JOIN ref r
                     ON bcc.numero_dit = r.numero_dit
             UNION ALL
-                {$this->getQueryDoc('dw_devis_ate', 'dev')}
+                {$this->getQueryDoc('dw_devis_ate', 'dva')}
+                INNER JOIN ref r
+                    ON dva.numero_dit = r.numero_dit
+            UNION ALL
+                {$this->getQueryDoc('dw_devis', 'dev')}
                 INNER JOIN ref r
                     ON dev.numero_dit = r.numero_dit
             UNION ALL
