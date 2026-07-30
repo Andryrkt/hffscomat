@@ -61,8 +61,8 @@ class PlanningApi extends Controller
                 if ($details[$i]['num_cis'] != "") {
                     $magasin = $this->planningModel->getEtaMagasin($details[$i]['num_cis'], $details[$i]['ref']);
                     if (!empty($magasin) && !empty($magasin[0])) {
-                        $details[$i]['eta_magasin'] = (new \DateTime($magasin[0]['eta_magasin']))->format('d/m/Y');
-                        $details[$i]['etat_pays'] = (new \DateTime($magasin[0]['etat_pays']))->format('d/m/Y');
+                        $details[$i]['eta_magasin'] = $magasin[0]['eta_magasin'] != null ? (new \DateTime($magasin[0]['eta_magasin']))->format('d/m/Y') : "";
+                        $details[$i]['etat_pays'] = $magasin[0]['etat_pays'] != null ? (new \DateTime($magasin[0]['etat_pays']))->format('d/m/Y') : "";
                     }
                 }
 
