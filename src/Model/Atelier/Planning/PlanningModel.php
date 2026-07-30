@@ -259,8 +259,8 @@ class PlanningModel extends Model
             when fcde_cdeext is not null or fcde_cdeext <> '' or fcde_cdeext = '0' then 'Commande envoyée'
             else ''
             end as statut
-            , A.eta_maurice as etat_pays
-            , A.eta_magasin as eta_magasin
+            , TO_CHAR(A.eta_maurice, '%d/%m/%Y') as etat_pays
+            , TO_CHAR(A.eta_magasin, '%d/%m/%Y') as eta_magasin
             from frn_cdl
             left join (
             select
