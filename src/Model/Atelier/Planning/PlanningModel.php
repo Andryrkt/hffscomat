@@ -63,7 +63,9 @@ class PlanningModel extends Model
 
         return array_combine(
             array_column($data, 'asuc_lib'),
-            array_map(function ($item) { return $item['asuc_num']; }, $data)
+            array_map(function ($item) {
+                return $item['asuc_num'];
+            }, $data)
         );
     }
 
@@ -84,7 +86,9 @@ class PlanningModel extends Model
 
         return array_combine(
             array_column($data, 'sec_lib'),
-            array_map(function ($item) { return $item['sec_num']; }, $data)
+            array_map(function ($item) {
+                return $item['sec_num'];
+            }, $data)
         );
     }
 
@@ -101,7 +105,7 @@ class PlanningModel extends Model
                 where substr(b.atab_nom,10,2) = asuc_num
                   and b.atab_nom like 'SERBLOSUC%'
             ) 
-            {$this->selectCond->eq('asuc_num', $agence)}
+            {$this->selectCond->eq('asuc_num',$agence)}
         ";
         $result = $this->connect->executeQuery($statement);
         $data = $this->connect->fetchResults($result);
@@ -173,8 +177,7 @@ class PlanningModel extends Model
 
     public function getBackOrderPlanningNoItv(array $orsValides, array $orsSoumis, PlanningSearchDto $searchDto)
     {
-        if (!empty($orsValides))
-        {
+        if (!empty($orsValides)) {
             if ($searchDto->orNonValiderDw)
                 $vOrValideDw = $this->selectCond->ni('slor_numor', $orsSoumis);
             else
@@ -204,7 +207,9 @@ class PlanningModel extends Model
         $results = $this->connect->executeQuery($statement);
         $data = $this->connect->fetchResults($results);
         $data = $this->convertirEnUtf8($data);
-        return array_map(function ($item) { return $item['intervention']; }, $data);
+        return array_map(function ($item) {
+            return $item['intervention'];
+        }, $data);
     }
 
     /**
@@ -219,24 +224,57 @@ class PlanningModel extends Model
                 di.numero_or                               as num_or
                     from {$this->dbIrium}.demande_intervention di
                     where di.statut_or LIKE 'Valid%'
-                        {$this->selectCond->eq('type_document', $searchDto->typeDocument)}
-                        {$this->selectCond->eq('reparation_realise', $searchDto->reparationRealise)}
-                        {$this->selectCond->eq('numero_or', $searchDto->numOr)}
-                        {$this->selectCond->eq('id_niveau_urgence', $searchDto->niveauUrgence)}
+                        {$this->selectCond->eq('type_document',$searchDto->typeDocument)}
+                        {$this->selectCond->eq('reparation_realise',$searchDto->reparationRealise)}
+                        {$this->selectCond->eq('numero_or',$searchDto->numOr)}
+                        {$this->selectCond->eq('id_niveau_urgence',$searchDto->niveauUrgence)}
         ";
         $results = $this->connect->executeQuery($statement);
         $data = $this->connect->fetchResults($results);
         return  array_column($data, 'num_or');
     }
 
+    // public function getEtaMagasin(string $numeroCmd): array
+    // {
+
+    //     $statement = "SELECT
+    //             eta_magasin,
+    //             etat_pays
+    //         from {$this->dbIrium}.ces_magasin
+    //         where po_number = '$numeroCmd'
+    //     ";
+
+    //     $result = $this->connect->executeQuery($statement);
+    //     return $this->connect->fetchResults($result);
+    // }
     public function getEtaMagasin(string $numeroCmd): array
     {
 
         $statement = "SELECT
-                eta_magasin,
-                etat_pays
-            from {$this->dbIrium}.ces_magasin
-            where po_number = '$numeroCmd'
+            fcdl_numcde
+            , fcdl_constp
+            , fcdl_refp
+            , fcdl_qte
+            , case
+            when fcde_cdeext is not null or fcde_cdeext <> '' or fcde_cdeext = '0' then 'Commande envoyée'
+            else ''
+            end as statut
+            , A.eta_maurice as etat_pays
+            , A.eta_magasin as eta_magasin
+            from frn_cdl
+            left join (
+            select
+            slnk_pk1 as numero_commande
+            , slnk_pk2 as numero_ligne
+            , slnk_date1 as ETA_MAGASIN
+            , slnk_alpha1 as ETA_MAURICE
+            from sip_lnk
+            where slnk_tabname in ('frn_cdl', 'frn_cde')
+            and slnk_pk1 = $numeroCmd
+            order by slnk_id
+            ) A on A.numero_commande = fcdl_numcde and A.numero_ligne = fcdl_ligne
+            inner join frn_cde on fcde_soc = fcdl_soc and fcdl_succ = fcde_succ and fcdl_numcde = fcde_numcde
+            where fcdl_numcde = '$numeroCmd'
         ";
 
         $result = $this->connect->executeQuery($statement);
@@ -249,7 +287,7 @@ class PlanningModel extends Model
                           fcdl_qte as qte
                   FROM FRN_CDL 
                   WHERE 1=1
-                  {$this->selectCond->eq('fcdl_numcde', $numCmd)}
+                  {$this->selectCond->eq('fcdl_numcde',$numCmd)}
         ";
 
         $result = $this->connect->executeQuery($statement);
@@ -278,9 +316,9 @@ class PlanningModel extends Model
             inner join ska on ska.skw_id = skw.skw_id
             inner join sav_sal
                 on sav_sal.ssal_numsal = ska.skr_id
-                {$this->selectCond->eq('ofs_id', $numItv)}
+                {$this->selectCond->eq('ofs_id',$numItv)}
             where ssal_numsal <> 9999
-            {$this->selectCond->eq('skw.ofh_id', $numOr)}
+            {$this->selectCond->eq('skw.ofh_id',$numOr)}
         ";
 
         $results = $this->connect->executeQuery($statement);
@@ -295,8 +333,8 @@ class PlanningModel extends Model
             from sav_itv
             inner join sav_sal on sav_sal.ssal_numsal = sitv_techn
             where ssal_numsal <> 9999
-            {$this->selectCond->eq('sitv_interv', $numItv)}
-            {$this->selectCond->eq('sitv_numor', $numOr)}
+            {$this->selectCond->eq('sitv_interv',$numItv)}
+            {$this->selectCond->eq('sitv_numor',$numOr)}
         ";
 
         $results = $this->connect->executeQuery($statement);
@@ -318,9 +356,9 @@ class PlanningModel extends Model
                 and nlig_constp = slor_constp
                 and nlig_refp = slor_refp
             where nlig_natop = 'CIS'
-                {$this->selectCond->eq('slor_numor', $numOr)}
-                {$this->selectCond->eq('trunc(slor_nogrp/100)', $numItv)}
-                {$this->selectCond->eq('slor_refp', $refP)}
+                {$this->selectCond->eq('slor_numor',$numOr)}
+                {$this->selectCond->eq('trunc(slor_nogrp/100)',$numItv)}
+                {$this->selectCond->eq('slor_refp',$refP)}
         ";
 
         $result = $this->connect->executeQuery($statement);
@@ -333,10 +371,10 @@ class PlanningModel extends Model
                 max(nliv_dateexp)   as date_livraison
             from neg_liv, neg_llf
             where nliv_soc = nllf_soc
-                {$this->selectCond->eq('nllf_numcde', $numCIS)}
+                {$this->selectCond->eq('nllf_numcde',$numCIS)}
                 and nliv_numliv = nllf_numliv
-                {$this->selectCond->eq('nllf_constp', $cst)}
-                {$this->selectCond->eq('nllf_refp', $refP)}
+                {$this->selectCond->eq('nllf_constp',$cst)}
+                {$this->selectCond->eq('nllf_refp',$refP)}
         ";
 
         $result = $this->connect->executeQuery($statement);
@@ -350,7 +388,7 @@ class PlanningModel extends Model
             from sav_lor, sav_eor
             where slor_succ = seor_succ
                 and slor_numor = seor_numor
-                {$this->selectCond->eq('slor_numor  || '-' || trunc(slor_nogrp/100)', $numOrItv)}
+                {$this->selectCond->eq('slor_numor  || ' - ' || trunc(slor_nogrp/100)',$numOrItv)}
         ";
 
         $result = $this->connect->executeQuery($statement);
@@ -377,13 +415,12 @@ class PlanningModel extends Model
             from neg_pic, neg_pil
             where npic_soc = npil_soc
                 and npic_numcde = npil_numcde
-                {$this->selectCond->eq('npic_numcde', $numCIS)}
-                {$this->selectCond->eq('npil_constp', $cst)}
-                {$this->selectCond->eq('npil_refp', $refP)}
+                {$this->selectCond->eq('npic_numcde',$numCIS)}
+                {$this->selectCond->eq('npil_constp',$cst)}
+                {$this->selectCond->eq('npil_refp',$refP)}
         ";
 
         $result = $this->connect->executeQuery($statement);
         return $this->connect->fetchResults($result);
     }
-
 }

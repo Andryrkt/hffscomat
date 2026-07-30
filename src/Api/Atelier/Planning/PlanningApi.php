@@ -30,9 +30,7 @@ class PlanningApi extends Controller
     {
         if ($agentId == 10) {
             $serviceDebiteur = [];
-        }
-        else
-        {
+        } else {
             $serviceDebiteur = $this->planningModel->getServiceDebiteByAgence($agentId);
         }
 
@@ -52,8 +50,7 @@ class PlanningApi extends Controller
         $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
         if ($numOr === '')
             $details = [];
-        else
-        {
+        else {
             $details = $this->planningMaterielModel->getDetailPieceInformix($numOr, $dto);
             $numDit = $this->ditModel->getNumDitByNumOr($numOr, $codeSociete);
             $detailSize = count($details);
@@ -61,11 +58,9 @@ class PlanningApi extends Controller
             $parts = [];
             for ($i = 0; $i < $detailSize; $i++) {
                 $parts[] = [];
-                if ($details[$i]['num_cmd'] != "")
-                {
+                if ($details[$i]['num_cmd'] != "") {
                     $magasin = $this->planningModel->getEtaMagasin($details[$i]['num_cmd']);
-                    if (!empty($magasin) && !empty($magasin[0]))
-                    {
+                    if (!empty($magasin) && !empty($magasin[0])) {
                         $details[$i]['eta_magasin'] = $magasin[0]['eta_magasin'];
                         $details[$i]['etat_pays'] = $magasin[0]['etat_pays'];
                     }
@@ -75,15 +70,12 @@ class PlanningApi extends Controller
                     $details[$i]['eta_magasin'] = "";
                 if (!isset($details[$i]['etat_pays']))
                     $details[$i]['etat_pays'] = "";
-                
 
-                if ($parts[$i])
-                {
+
+                if ($parts[$i]) {
                     $details[$i]['qteSolde'] = $parts[$i]['0']['solde'];
                     $details[$i]['qte'] = $parts[$i]['0']['qte'];
-                }
-                else
-                {
+                } else {
                     $details[$i]['qteSolde'] = "";
                     $details[$i]['qte'] = "";
                 }
@@ -136,5 +128,4 @@ class PlanningApi extends Controller
         }
         return $groupedDetails;
     }
-
 }
