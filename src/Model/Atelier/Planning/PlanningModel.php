@@ -270,7 +270,7 @@ class PlanningModel extends Model
                 )
                 else
                 A.eta_maurice
-                end as etat_maurice
+                end as etat_pays
                 , case
                 when A.numero_ligne is null then
                 (
