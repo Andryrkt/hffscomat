@@ -27,6 +27,7 @@
 			<thead class="table-dark">
 				<tr>
 					<th>Agence - Service Travaux</th>
+					<th>Client</th>
 					<th>ID</th>
 					<th>Marque</th>
 					<th>Modèle</th>
@@ -43,6 +44,7 @@
 				{% for item in preparedData %}
 					<tr>
 						<td>{{ item.libsuc ~ ' - ' ~ item.libserv }}</td>
+						<td>{{ item.client }}</td>
 						<td>{{ item.idmat }}</td>
 						<td>{{ item.marqueMat }}</td>
 						<td>{{ item.typemat }}</td>

@@ -230,7 +230,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
               cmdColor = 'style="background-color: #c8ad7f; color: white;"';
             } else if (statut == "Error" || statut == "Back Order") {
               cmdColor = 'style="background-color: red; color: white;"';
-            } else if (Ord == "ORD") {
+            } else if (statut == "COMMANDE ENVOYEE") {
               cmdColor = 'style="background-color:#9ACD32  ; color: white;"';
             }
 

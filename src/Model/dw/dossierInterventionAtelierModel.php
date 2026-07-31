@@ -89,7 +89,7 @@ class dossierInterventionAtelierModel extends Model
 
         $result = $this->connect->executeQuery($statement);
 
-        return $this->connect->fetchResults($result, "Windows-1252, UTF-8, ASCII");
+        return $this->connect->fetchResults($result, "UTF-8, Windows-1252, ASCII");
     }
 
     private function getTypeDoc(string $table): string
@@ -202,6 +202,6 @@ class dossierInterventionAtelierModel extends Model
 
         $result = $this->connect->executeQuery($statement);
 
-        return $this->connect->fetchResults($result, "Windows-1252, UTF-8, ASCII");
+        return $this->connect->fetchResults($result, "UTF-8, Windows-1252, ASCII");
     }
 }

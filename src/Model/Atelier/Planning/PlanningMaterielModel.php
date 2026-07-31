@@ -60,7 +60,8 @@ class PlanningMaterielModel extends Model
                     and B.sitv_interv = A.slor_nogrp/100
                     and A.slor_numor = C.slor_numor
                     and B.sitv_interv  = D.sitv_interv   {$this->getTypeLigneCondition($searchDto)}
-                )
+                ),
+                (select cbse_numcli ||'-'|| TRIM(cbse_nomcli) from {$this->dbIps}.cli_bse where cbse_numcli = seor_numcli) as client
             FROM {$this->dbIps}.sav_eor, {$this->dbIps}.sav_lor as C,
                 {$this->dbIps}.sav_itv as D,
                 {$this->dbIps}.agr_succ,
@@ -94,7 +95,7 @@ class PlanningMaterielModel extends Model
                 {$this->getNumSerieCondition($searchDto)}
                 {$this->getCasierCondition($searchDto)}
                 {$this->getSectionCondition($searchDto)}
-            group by 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17
+            group by 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18
             order by 10
         ";
         // dd($statement);
@@ -154,29 +155,19 @@ class PlanningMaterielModel extends Model
                             and fllf_refp = slor_refp)
                 END                                                     as num_cmd,
                 CASE 
-                    WHEN slor_qteres = (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec)
-                        and slor_qterel >0 
-                    THEN trim('A LIVRER')
-                    WHEN (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) = slor_qteres
-                        and slor_qterel = 0
-                        and slor_qterea = 0
-                    THEN trim('DISPO STOCK')
+                    WHEN slor_qteres = (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec)and slor_qterel >0 
+                        THEN trim('A LIVRER')
+                    WHEN (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) = slor_qteres and slor_qterel = 0 and slor_qterea = 0
+                        THEN trim('DISPO STOCK')
                     WHEN slor_qterea =  (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) 
-                    THEN trim('LIVRE')
+                        THEN trim('LIVRE')
                     WHEN slor_natcm = 'C' 
-                    THEN ( SELECT libelle_type 
-                            FROM {$this->dbIrium}.gcot_acknow_cat 
-                            WHERE Numero_PO = slor_numcf 
-                            AND Parts_Number = slor_refp  
-                            AND Parts_CST = slor_constp 
-                            AND Line_Number = slor_noligncm 
-		   		            AND id_gcot_acknow_cat = ( SELECT MAX(id_gcot_acknow_cat)
-                                                             FROM {$this->dbIrium}.gcot_acknow_cat 
-                                                             WHERE Numero_PO = slor_numcf  
-                                                             AND Parts_Number = slor_refp  
-                                                             AND Parts_CST = slor_constp 
-                                                             AND Line_Number = slor_noligncm )
-					    )
+                        THEN ( select 
+                            case
+                                when fcde_cdeext is not null or fcde_cdeext <> '' or fcde_cdeext = '0' then 'COMMANDE ENVOYEE'
+                                else null
+                            end 
+                        from frn_cde where fcde_soc = slor_soc and fcde_succ = slor_succ and fcde_numcde = slor_numcf)
                 END                                                 as statut,
                 CASE 
                     WHEN slor_qteres = (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec)
