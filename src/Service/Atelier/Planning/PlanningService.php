@@ -81,6 +81,7 @@ class PlanningService
                 'commercial'     => $item->commercial ?? '',
                 'libsuc'         => $item->libsuc ?? '',
                 'libserv'        => $item->libServ ?? '',
+                'client'         => $item->client ?? '',
                 'idmat'          => $item->idMat ?? '',
                 'marqueMat'      => $item->markMat ?? '',
                 'typemat'        => $item->typeMat ?? '',

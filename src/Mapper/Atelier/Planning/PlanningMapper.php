@@ -34,6 +34,7 @@ class PlanningMapper
         $dto->codeServ    = $item['code_serv'] ?? '';
         $dto->libServ     = $item['lib_serv'] ?? '';
         $dto->commentaire = $item['commentaire'] ?? '';
+        $dto->client      = $item['client'] ??''; 
 
         $dto->idMat       = $item['id_mat'] ?? '';
         $dto->markMat     = $item['mark_mat'] ?? '';
