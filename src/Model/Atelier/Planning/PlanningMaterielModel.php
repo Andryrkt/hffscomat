@@ -164,7 +164,7 @@ class PlanningMaterielModel extends Model
                     WHEN slor_natcm = 'C' 
                         THEN ( select 
                             case
-                                when fcde_cdeext is not null or fcde_cdeext <> '' or fcde_cdeext = '0' then 'COMMANDE ENVOYEE'
+                                when (fcde_cdeext is not null or fcde_cdeext <> '' or fcde_cdeext = '0') and slor_constp <> 'CAT' then 'COMMANDE ENVOYEE'
                                 else null
                             end 
                         from frn_cde where fcde_soc = slor_soc and fcde_succ = slor_succ and fcde_numcde = slor_numcf)
