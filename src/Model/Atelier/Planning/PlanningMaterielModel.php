@@ -60,7 +60,8 @@ class PlanningMaterielModel extends Model
                     and B.sitv_interv = A.slor_nogrp/100
                     and A.slor_numor = C.slor_numor
                     and B.sitv_interv  = D.sitv_interv   {$this->getTypeLigneCondition($searchDto)}
-                )
+                ),
+                (select cbse_numcli ||'-'|| TRIM(cbse_nomcli) from {$this->dbIps}.cli_bse where cbse_numcli = seor_numcliand cbse_soc='$codeSoc') as client
             FROM {$this->dbIps}.sav_eor, {$this->dbIps}.sav_lor as C,
                 {$this->dbIps}.sav_itv as D,
                 {$this->dbIps}.agr_succ,
@@ -94,7 +95,7 @@ class PlanningMaterielModel extends Model
                 {$this->getNumSerieCondition($searchDto)}
                 {$this->getCasierCondition($searchDto)}
                 {$this->getSectionCondition($searchDto)}
-            group by 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17
+            group by 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18
             order by 10
         ";
         // dd($statement);
