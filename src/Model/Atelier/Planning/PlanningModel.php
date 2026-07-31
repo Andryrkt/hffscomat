@@ -277,7 +277,7 @@ class PlanningModel extends Model
             where fcdl_numcde = '$numeroCmd'
             and fcdl_refp ='$ref'
         ";
-
+        
         $result = $this->connect->executeQuery($statement);
         return $this->connect->fetchResults($result);
     }
