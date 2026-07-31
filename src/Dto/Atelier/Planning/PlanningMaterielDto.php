@@ -11,6 +11,7 @@ class PlanningMaterielDto
     public ?string $codeServ = null;
     public ?string $libServ = null;
     public ?string $commentaire = null;
+    public ?string $client = null;
 
     public ?string $idMat = null;
     public ?string $markMat = null;
