@@ -61,7 +61,7 @@ class PlanningMaterielModel extends Model
                     and A.slor_numor = C.slor_numor
                     and B.sitv_interv  = D.sitv_interv   {$this->getTypeLigneCondition($searchDto)}
                 ),
-                (select cbse_numcli ||'-'|| TRIM(cbse_nomcli) from {$this->dbIps}.cli_bse where cbse_numcli = seor_numcli) as client
+                (select cbse_numcli ||'-'|| TRIM(cbse_nomcli) from {$this->dbIps}.cli_bse where cbse_numcli = seor_numcliand cbse_soc='$codeSoc') as client
             FROM {$this->dbIps}.sav_eor, {$this->dbIps}.sav_lor as C,
                 {$this->dbIps}.sav_itv as D,
                 {$this->dbIps}.agr_succ,

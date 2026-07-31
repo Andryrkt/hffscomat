@@ -259,8 +259,31 @@ class PlanningModel extends Model
             when fcde_cdeext is not null or fcde_cdeext <> '' or fcde_cdeext = '0' then 'Commande envoyée'
             else ''
             end as statut
-            , A.eta_maurice as etat_pays
-            , A.eta_magasin as eta_magasin
+            , case
+                when A.numero_ligne is null then
+                (
+                select
+                S.slnk_alpha1
+                from sip_lnk S
+                where S.slnk_tabname in ('frn_cdl', 'frn_cde')
+                and S.slnk_pk1 = fcdl_numcde and S.slnk_pk2 is null
+                )
+                else
+                A.eta_maurice
+                end as etat_maurice
+                , case
+                when A.numero_ligne is null then
+                (
+                select
+                S.slnk_date2
+                from sip_lnk S
+                where S.slnk_tabname in ('frn_cdl', 'frn_cde')
+                and S.slnk_pk1 = fcdl_numcde and S.slnk_pk2 is null
+                )
+                else
+                A.eta_magasin
+                end as eta_magasin
+
             from frn_cdl
             left join (
             select
@@ -277,7 +300,7 @@ class PlanningModel extends Model
             where fcdl_numcde = '$numeroCmd'
             and fcdl_refp ='$ref'
         ";
-        
+
         $result = $this->connect->executeQuery($statement);
         return $this->connect->fetchResults($result);
     }
