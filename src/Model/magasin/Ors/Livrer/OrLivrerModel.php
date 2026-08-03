@@ -25,134 +25,149 @@ class OrLivrerModel extends Model
             {$selectWhereCondition->eq('T.situation',$dtoSearch->orCompletNon)}
         ";
 
-        $statement = " SELECT
-                            TRIM(seor_refdem) as referencedit
-                            , seor_numor as numeroOr
-                            , CASE 
-                                WHEN  (SELECT DATE(Min(ska_d_start)) FROM informix.ska, informix.skw WHERE ofh_id = sitv_numor AND ofs_id=sitv_interv AND skw.skw_id = ska.skw_id )  is Null 
-                                THEN DATE(sitv_datepla) 
-                                ELSE(SELECT DATE(Min(ska_d_start)) FROM informix.ska, informix.skw WHERE ofh_id = sitv_numor AND ofs_id=sitv_interv AND skw.skw_id = ska.skw_id ) 
-                            END as datePlanning
-                            , w.description as niveauUrgence
-                            , seor_dateor as dateCreation
-                            , seor_succ as agenceCrediteur
-                            , seor_servcrt as serviceCrediteur
-                            , sitv_succdeb as agenceDebiteur
-                            , sitv_servdeb as serviceDebiteur
-                            , sitv_interv as numInterv
-                            , slor_nolign as numeroLigne
-                            , slor_constp as constructeur
-                            , TRIM(slor_refp) as referencePiece
-                            , TRIM(slor_desi) as designation
-                            , SUM(CASE
+        $statement = "SELECT 
+            TRIM(seor_refdem) as referencedit, 
+            seor_numor as numeroOr, 
+            CASE 
+                WHEN (SELECT DATE(Min(ska_d_start)) FROM informix.ska, informix.skw WHERE ofh_id = sitv_numor AND ofs_id=sitv_interv AND skw.skw_id = ska.skw_id )  is Null 
+                THEN DATE(sitv_datepla) 
+                ELSE (SELECT DATE(Min(ska_d_start)) FROM informix.ska, informix.skw WHERE ofh_id = sitv_numor AND ofs_id=sitv_interv AND skw.skw_id = ska.skw_id ) 
+            END as datePlanning, 
+            w.description as niveauUrgence, 
+            seor_dateor as dateCreation, 
+            seor_succ as agenceCrediteur, 
+            seor_servcrt as serviceCrediteur, 
+            sitv_succdeb as agenceDebiteur, 
+            sitv_servdeb as serviceDebiteur, 
+            sitv_interv as numInterv, 
+            slor_nolign as numeroLigne, 
+            slor_constp as constructeur, 
+            TRIM(slor_refp) as referencePiece, 
+            TRIM(slor_desi) as designation, 
+            SUM(
+                CASE
+                    WHEN slor_typlig = 'P' THEN (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec)
+                    WHEN slor_typlig IN ('F','M','U','C') THEN slor_qterea
+                END
+            )  AS quantiteDemander, 
+            SUM(slor_qteres) as qteALivrer, 
+            SUM(slor_qterea) as quantiteLivree, 
+            TRIM(atab_lib) as nomPrenom, 
+            (
+                SELECT F.situation 
+                FROM (
+                    SELECT
+                        CASE
+                            WHEN
+                                sum(slor_qteres) > 0 AND
+                                sum(CASE
                                     WHEN slor_typlig = 'P' THEN (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec)
                                     WHEN slor_typlig IN ('F','M','U','C') THEN slor_qterea
-                                END)  AS quantiteDemander
-                            , SUM(slor_qteres) as qteALivrer
-                            , SUM(slor_qterea) as quantiteLivree
-                            , TRIM(atab_lib) as nomPrenom
-                            , (SELECT F.situation FROM (select
-                                                            CASE
-                                                            WHEN
-                                                                sum(slor_qteres) > 0 AND
-                                                                sum(CASE
-                                                                WHEN slor_typlig = 'P' THEN (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec)
-                                                                    WHEN slor_typlig IN ('F','M','U','C') THEN slor_qterea
-                                                                    END) = sum(slor_qteres + slor_qterea)
-                                                                THEN 'ORs COMPLET'
-                                                                WHEN sum(slor_qteres) > 0 AND
-                                                                    sum(CASE
-                                                                        WHEN slor_typlig = 'P' THEN (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec)
-                                                                        WHEN slor_typlig IN ('F','M','U','C') THEN slor_qterea
-                                                                            END) > sum(slor_qteres + slor_qterea)
-                                                                THEN 'ORs INCOMPLETS'
-                                                            END as situation
-                                                            , situ.slor_numor as numero_or
-                                                        
-                                                            FROM sav_lor situ
-                                                            WHERE
-                                                            situ.slor_numor = OR.slor_numor
-                                                            and situ.slor_constp in (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST')
-                                                            group by 2 
-                                                        ) as F
-                            ) as situationtest
-                            -- mety tsy ilaina
-                            , seor_usr as idUser
-                            , trim(ausr_nom) as nomUtilisateur
-                            
-                            , mmat_nummat as idMateriel
-                            , trim(mmat_numserie) as num_serie
-                            , trim(mmat_recalph) as num_parc 
-                            , trim(mmat_marqmat) as marque
-                            , trim(mmat_numparc) as casie
-                            ,mmat_numcdec as numCommande
-
-                    FROM {$this->dbIps}.sav_lor as OR
-                    inner join {$this->dbIps}.sav_eor as U on U.seor_numor = slor_numor and U.seor_soc = slor_soc and U.seor_succ = slor_succ
-                    inner join {$this->dbIps}.mat_mat on mmat_nummat =  seor_nummat
-                    inner join {$this->dbIps}.agr_usr on ausr_num = seor_usr
-                    inner join {$this->dbIps}.agr_tab on atab_nom = 'OPE' and atab_code = ausr_ope
-                    inner join {$this->dbIps}.sav_itv as I
-                        on I.sitv_soc = slor_soc
-                        and I.sitv_succ = slor_succ
-                        and I.sitv_numor = slor_numor
-                        and I.sitv_interv = slor_nogrp /100
-                        and sitv_numor || '-' || sitv_interv in ( SELECT DISTINCT osv.numeroor || '-' || osv.numeroitv
-                                                                    FROM {$this->dbIrium}.ors_soumis_a_validation osv
-                                                                    WHERE osv.statut LIKE 'Valid%'
-                                                                    AND osv.numeroversion = (
-                                                                        SELECT MAX(osv2.numeroversion)
-                                                                        FROM {$this->dbIrium}.ors_soumis_a_validation osv2
-                                                                        WHERE osv2.id = osv.id
-                                                                    )
-            )
-            inner join( select F.* from (select
-			            CASE
-			                WHEN sum(slor_qteres) > 0 AND sum(CASE WHEN slor_typlig = 'P' THEN (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) WHEN slor_typlig IN ('F','M','U','C') THEN slor_qterea END) = sum(slor_qteres + slor_qterea)
+                                END) = sum(slor_qteres + slor_qterea)
                             THEN 'ORs COMPLET'
-			                WHEN sum(slor_qteres) > 0 AND sum(CASE WHEN slor_typlig = 'P' THEN (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) WHEN slor_typlig IN ('F','M','U','C') THEN slor_qterea END) > sum(slor_qteres + slor_qterea)
-			                THEN 'ORs INCOMPLETS'
-			            END as situation
-			            , situ.slor_numor as numero_or
-			            FROM sav_lor situ
-			            WHERE
-			            situ.slor_numor in (SELECT DISTINCT osv.numeroor FROM {$this->dbIrium}.ors_soumis_a_validation osv WHERE osv.statut LIKE 'Valid%' AND osv.numeroversion = (SELECT MAX(osv2.numeroversion) FROM {$this->dbIrium}.ors_soumis_a_validation osv2 WHERE osv2.id = osv.id))
-			            AND situ.slor_constp in (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST') AND (slor_refp not like '%-L' and slor_refp not like '%-CTRL')
-			            group by 2 ) as F
-            		) as T ON T.numero_or = OR.slor_numor
-            left join {$this->dbIrium}.demande_intervention di on di.numero_or = seor_numor
-            LEFT JOIN {$this->dbIrium}.wor_niveau_urgence w ON di.id_niveau_urgence = w.id
-            inner JOIN {$this->dbIrium}.ors_soumis_a_validation osv_or 
-                ON osv_or.numeroor = seor_numor
-                AND osv_or.numeroversion = (
+                            WHEN sum(slor_qteres) > 0 AND
+                                sum(CASE
+                                    WHEN slor_typlig = 'P' THEN (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec)
+                                    WHEN slor_typlig IN ('F','M','U','C') THEN slor_qterea
+                                END) > sum(slor_qteres + slor_qterea)
+                            THEN 'ORs INCOMPLETS'
+                        END as situation
+                        , situ.slor_numor as numero_or
+                    FROM sav_lor situ
+                    WHERE
+                        situ.slor_numor = OR.slor_numor
+                        and situ.slor_constp in (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST')
+                    group by 2 
+                ) as F
+            ) as situationtest, 
+            seor_usr as idUser, 
+            trim(ausr_nom) as nomUtilisateur, 
+            mmat_nummat as idMateriel, 
+            trim(mmat_numserie) as num_serie, 
+            trim(mmat_recalph) as num_parc , 
+            trim(mmat_marqmat) as marque, 
+            trim(mmat_numparc) as casie,
+            mmat_numcdec as numCommande
+        FROM {$this->dbIps}.sav_lor as OR
+        inner join {$this->dbIps}.sav_eor as U on U.seor_numor = slor_numor and U.seor_soc = slor_soc and U.seor_succ = slor_succ
+        inner join {$this->dbIps}.mat_mat on mmat_nummat =  seor_nummat
+        inner join {$this->dbIps}.agr_usr on ausr_num = seor_usr
+        inner join {$this->dbIps}.agr_tab on atab_nom = 'OPE' and atab_code = ausr_ope
+        inner join {$this->dbIps}.sav_itv as I
+            on I.sitv_soc = slor_soc
+            and I.sitv_succ = slor_succ
+            and I.sitv_numor = slor_numor
+            and I.sitv_interv = slor_nogrp /100
+            and sitv_numor || '-' || sitv_interv in ( 
+                SELECT DISTINCT osv.numeroor || '-' || osv.numeroitv
+                FROM {$this->dbIrium}.ors_soumis_a_validation osv
+                WHERE osv.statut LIKE 'Valid%'
+                    AND osv.numeroversion = (
+                        SELECT MAX(osv2.numeroversion)
+                        FROM {$this->dbIrium}.ors_soumis_a_validation osv2
+                        WHERE osv2.id = osv.id
+                    )
+            )
+        inner join( 
+            select F.* 
+            from (
+                select
+                    CASE
+                        WHEN sum(slor_qteres) > 0 AND sum(CASE WHEN slor_typlig = 'P' THEN (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) WHEN slor_typlig IN ('F','M','U','C') THEN slor_qterea END) = sum(slor_qteres + slor_qterea)
+                        THEN 'ORs COMPLET'
+                        WHEN sum(slor_qteres) > 0 AND sum(CASE WHEN slor_typlig = 'P' THEN (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) WHEN slor_typlig IN ('F','M','U','C') THEN slor_qterea END) > sum(slor_qteres + slor_qterea)
+                        THEN 'ORs INCOMPLETS'
+                    END as situation
+                    , situ.slor_numor as numero_or
+                FROM {$this->dbIps}.sav_lor situ
+                WHERE
+                    situ.slor_numor in (
+                        SELECT DISTINCT osv.numeroor 
+                        FROM {$this->dbIrium}.ors_soumis_a_validation osv 
+                        WHERE osv.statut LIKE 'Valid%' 
+                            AND osv.numeroversion = (
+                                SELECT MAX(osv2.numeroversion) 
+                                FROM {$this->dbIrium}.ors_soumis_a_validation osv2 
+                                WHERE osv2.id = osv.id
+                            )
+                    )
+                    AND situ.slor_constp in (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST') AND (slor_refp not like '%-L' and slor_refp not like '%-CTRL')
+            group by 2 )
+            as F
+        ) as T ON T.numero_or = OR.slor_numor
+        left join {$this->dbIrium}.demande_intervention di on di.numero_or = seor_numor
+        LEFT JOIN {$this->dbIrium}.wor_niveau_urgence w ON di.id_niveau_urgence = w.id
+        inner join {$this->dbIrium}.ors_soumis_a_validation osv_or 
+            ON osv_or.numeroor = seor_numor
+            AND osv_or.numeroversion = (
+                SELECT MAX(osv2.numeroversion)
+                FROM {$this->dbIrium}.ors_soumis_a_validation osv2
+                WHERE osv2.id = osv_or.id
+            )
+            AND osv_or.statut LIKE 'Valid%'
+        where seor_numor in
+            (
+                select slor_numor from sav_lor l
+                where l.slor_numor  in (    SELECT DISTINCT osv.numeroor
+                FROM {$this->dbIrium}.ors_soumis_a_validation osv
+                WHERE osv.statut LIKE 'Valid%'
+                AND osv.numeroversion = (
                     SELECT MAX(osv2.numeroversion)
                     FROM {$this->dbIrium}.ors_soumis_a_validation osv2
-                    WHERE osv2.id = osv_or.id
+                    WHERE osv2.id = osv.id
                 )
-                AND osv_or.statut LIKE 'Valid%'
-            where seor_numor in
-            (
-	            select slor_numor from sav_lor l
-	            where l.slor_numor  in (    SELECT DISTINCT osv.numeroor
-    FROM {$this->dbIrium}.ors_soumis_a_validation osv
-    WHERE osv.statut LIKE 'Valid%'
-    AND osv.numeroversion = (
-        SELECT MAX(osv2.numeroversion)
-        FROM {$this->dbIrium}.ors_soumis_a_validation osv2
-        WHERE osv2.id = osv.id
-    )
-    )
-	             AND l.slor_constp in (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST') AND (slor_refp not like '%-L' and slor_refp not like '%-CTRL')
-	            group by l.slor_numor
-	            having sum(l.slor_qteres) > 0
+                )
+                AND l.slor_constp in (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST') AND (slor_refp not like '%-L' and slor_refp not like '%-CTRL')
+                group by l.slor_numor
+                having sum(l.slor_qteres) > 0
             )
-             AND slor_constp in (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST') AND (slor_refp not like '%-L' and slor_refp not like '%-CTRL')
-            and seor_typeor not in('950', '501') -- a voir avec Atish ==> hoby
+            AND slor_constp in (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST') AND (slor_refp not like '%-L' and slor_refp not like '%-CTRL')
+            and seor_typeor not in('950', '501')
             $conditions
-
-            group by 1,2,3,4, 5, 6, 7, 8, 9, 10, 11, 12, 13,14,18, 19, 20, 21,22,23,24,25,26,27
-            order by seor_numor asc, sitv_interv asc, slor_nolign asc;
+        group by 1,2,3,4,5,6,7,8,9,10,11,12,13,14,18,19,20,21,22,23,24,25,26,27
+        order by seor_numor asc, sitv_interv asc, slor_nolign asc;
         ";
+
         $result = $this->connect->executeQuery($statement);
 
         $data = $this->connect->fetchResults($result);
