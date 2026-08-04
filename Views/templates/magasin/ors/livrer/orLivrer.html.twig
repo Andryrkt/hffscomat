@@ -20,10 +20,10 @@
 		<div class="container">
 			<div class="d-flex justify-content-between">
 				<div>
-					{# Bouton EXCEL#}
 					<a href="{{path("export_liste_or_livrer")}}" class="btn btn bg-success text-white my-3 fw-bold">
 						<i class="fas fa-table"></i>
-						Excel</a>
+						Excel
+					</a>
 				</div>
 			</div>
 		</div>
@@ -50,7 +50,6 @@
 							<th>CST</th>
 							<th>Réf</th>
 							<th>Désignation</th>
-
 							<th class="text-center">Qté demandée</th>
 							<th class="text-center">Qté à livrer</th>
 							<th class="text-center">Qté déjà livrée</th>
@@ -59,12 +58,6 @@
 					</thead>
 					<tbody id="tableBody">
 						{% for item in data %}
-							{% set textColor = "" %}
-							{% if item.quantitedemander > (item.qtealivrer + item.quantitelivree) %}
-								{% set textColor = "textColor" %}
-							{% endif %}
-
-
 							<tr>
 								<td class="" style="vertical-align: middle">
 									<div class="dropdown">
@@ -73,33 +66,33 @@
 										</div>
 										<ul class="dropdown-menu dropdown-menu-end" id="dropdown-menu" aria-labelledby="dropdownMenuButton" style="">
 											<li>
-												{% if item.referencedit is not empty %}{# <a class="dropdown-item fw-bold" target="_blank" href="{{ path('dw_interv_ate_avec_dit', {'numDit': item.referencedit}) }}"> #}
-													{# Dossier DIT #}
-													{# </a> #}
+												{% if item.referenceDit is not empty %}
+													<a class="dropdown-item fw-bold" target="_blank" href="{{ path('dw_interv_ate_avec_dit', {'numDit': item.referenceDit}) }}">
+														Dossier DIT
+													</a>
 												{% endif %}
 											</li>
 										</ul>
 									</div>
 								</td>
-								<td class="fw-bold ">{{item.referencedit}}</td>
-								<td class="fw-bold ">{{item.numeroor}}</td>
-								<td>{{ item.datePlanning == null ? '--' : item.datePlanning| date("d/m/Y")}}</td>
-								<td class="">{{item.niveauurgence}}</td>
-								<td class="">{{ item.datecreation | date("d/m/Y")}}</td>
-								<td class="text-center">{{ item.agencecrediteur}}</td>
-								<td class="text-center">{{ item.servicecrediteur}}</td>
-								<td class="text-center">{{ item.agencedebiteur}}</td>
-								<td class="text-center">{{ item.servicedebiteur}}</td>
-								<td class="text-center">{{item.numinterv | number_format(0)}}</td>
-								<td class="text-center {{textColor}}">{{ item.numeroligne}}</td>
-								<td class="{{textColor}}">{{item.constructeur}}</td>
-								<td class="{{textColor}}">{{item.referencepiece}}</td>
-								<td class="{{textColor}}">{{item.designation}}</td>
-								<td class="text-center {{textColor}}">{{item.quantitedemander == 0 ? '-': item.quantitedemander | number_format(0)}}</td>
-								<td class="text-center {{textColor}}">{{item.qtealivrer == 0 ? '-' : item.qtealivrer | number_format(0)}}</td>
-								<td class="text-center">{{item.quantitelivree == 0 ? '-' : item.quantitelivree | number_format(0)}}</td>
-								<td>{{ item.nomprenom }}</td>
-
+								<td class="fw-bold ">{{ item.referenceDit }}</td>
+								<td class="fw-bold ">{{ item.numeroOr }}</td>
+								<td>{{ item.datePlanningFormatee }}</td>
+								<td class="">{{ item.niveauUrgence }}</td>
+								<td class="">{{ item.dateCreationFormatee }}</td>
+								<td class="text-center">{{ item.agenceCrediteur }}</td>
+								<td class="text-center">{{ item.serviceCrediteur }}</td>
+								<td class="text-center">{{ item.agenceDebiteur }}</td>
+								<td class="text-center">{{ item.serviceDebiteur }}</td>
+								<td class="text-center">{{ item.numeroInterventionFormate }}</td>
+								<td class="text-center {{ item.classeLigne }}">{{ item.numeroLigne }}</td>
+								<td class="{{ item.classeLigne }}">{{ item.constructeur }}</td>
+								<td class="{{ item.classeLigne }}">{{ item.referencePiece }}</td>
+								<td class="{{ item.classeLigne }}">{{ item.designation }}</td>
+								<td class="text-center {{ item.classeLigne }}">{{ item.quantiteDemandeeFormatee }}</td>
+								<td class="text-center {{ item.classeLigne }}">{{ item.quantiteALivrerFormatee }}</td>
+								<td class="text-center">{{ item.quantiteLivreeFormatee }}</td>
+								<td>{{ item.nomPrenom }}</td>
 							</tr>
 						{% endfor %}
 					</tbody>

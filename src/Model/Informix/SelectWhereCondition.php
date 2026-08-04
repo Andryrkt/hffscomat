@@ -19,7 +19,7 @@ class SelectWhereCondition
         return "AND $column <> '$value'";
     }
 
-    public function in(string $column, ?array $values, bool $withAnd = true): string
+    public function in(string $column, ?array $values): string
     {
         if (empty($values)) return '';
         return $this->createInConditionWithTemp($column, $values);
