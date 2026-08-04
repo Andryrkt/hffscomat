@@ -35,32 +35,57 @@ class ExportExcelController extends Controller
     private function transformationEnTableauAvecEntet(array $orLivrers): array
     {
         $data = [];
-        $data[] = ['N° DIT', 'N° Or', 'Date planning', "Niv. d'urg", "Date Or", "Agence Emetteur", "Service Emetteur", 'Agence Débiteur', 'Service Débiteur', 'N° Intv', 'N° lig', 'Cst', 'Réf.', 'Désignations', 'Qté demandée', 'Qté a livrer', 'Qté déjà livrée', 'Utilisateur', 'ID Materiel', 'N° Serie', 'N° Parc', 'Marque', 'Casier'];
+        $data[] = [
+            'N° DIT',
+            'N° Or',
+            'Date planning',
+            "Niv. d'urg",
+            "Date Or",
+            "Agence Emetteur",
+            "Service Emetteur",
+            'Agence Débiteur',
+            'Service Débiteur',
+            'N° Intv',
+            'N° lig',
+            'Cst',
+            'Réf.',
+            'Désignations',
+            'Qté demandée',
+            'Qté a livrer',
+            'Qté déjà livrée',
+            'Utilisateur',
+            'ID Materiel',
+            'N° Serie',
+            'N° Parc',
+            'Marque',
+            'Casier'
+        ];
+
         foreach ($orLivrers as $orLivrer) {
             $data[] = [
-                $orLivrer['referencedit'],
-                $orLivrer['numeroor'],
-                $orLivrer['dateplanning'],
-                $orLivrer['niveauurgence'] ?? '',
-                $orLivrer['datecreation'],
-                $orLivrer['agencecrediteur'],
-                $orLivrer['servicecrediteur'],
-                $orLivrer['agencedebiteur'],
-                $orLivrer['servicedebiteur'],
-                $orLivrer['numinterv'],
-                $orLivrer['numeroligne'],
-                $orLivrer['constructeur'],
-                $orLivrer['referencepiece'],
-                $orLivrer['designation'],
-                $orLivrer['quantitedemander'],
-                $orLivrer['qtealivrer'],
-                $orLivrer['quantitelivree'],
-                $orLivrer['nomprenom'],
-                $orLivrer['idmateriel'],
-                $orLivrer['num_serie'],
-                $orLivrer['num_parc'],
-                $orLivrer['marque'],
-                $orLivrer['casie']
+                $orLivrer->referenceDit,
+                $orLivrer->numeroOr,
+                $orLivrer->datePlanning,
+                $orLivrer->niveauUrgence ?? '',
+                $orLivrer->dateCreation,
+                $orLivrer->agenceCrediteur,
+                $orLivrer->serviceCrediteur,
+                $orLivrer->agenceDebiteur,
+                $orLivrer->serviceDebiteur,
+                $orLivrer->numeroIntervention,
+                $orLivrer->numeroLigne,
+                $orLivrer->constructeur,
+                $orLivrer->referencePiece,
+                $orLivrer->designation,
+                $orLivrer->quantiteDemandee,
+                $orLivrer->quantiteALivrer,
+                $orLivrer->quantiteLivree,
+                $orLivrer->nomPrenom,
+                $orLivrer->idMateriel,
+                $orLivrer->numeroSerie,
+                $orLivrer->numeroParc,
+                $orLivrer->marque,
+                $orLivrer->casier
             ];
         }
 

@@ -2,12 +2,21 @@
 
 namespace App\Model\magasin\Ors\Livrer;
 
-use App\Dto\Magasin\Ors\Livrer\OrLivrerSearchDto;
-use App\Model\Informix\SelectWhereCondition;
 use App\Model\Model;
+use App\Model\Informix\SelectWhereCondition;
+use App\Dto\Magasin\Ors\Livrer\OrLivrerSearchDto;
+use App\Dto\Magasin\Ors\Livrer\MaterielALivrerDto;
+use App\Factory\magasin\Ors\Livrer\MaterielALivrerFactory;
 
 class OrLivrerModel extends Model
 {
+    /**
+     * Retourne la liste des lignes de matériel des OR validés à livrer, selon les critères de recherche
+     *
+     * @param OrLivrerSearchDto $dtoSearch critères de recherche
+     *
+     * @return array<MaterielALivrerDto>
+     */
     public function recupereListeMaterielValider(OrLivrerSearchDto $dtoSearch): array
     {
         $selectCond = new SelectWhereCondition();
@@ -30,38 +39,38 @@ class OrLivrerModel extends Model
             valid_or AS ({$this->getQueryOrValide()}),
             const_st AS ({$this->getQueryConstructeurST()})
         SELECT
-            TRIM(eor.seor_refdem) AS referencedit,
-            eor.seor_numor AS numeroOr,
-            COALESCE(pln.date_planning_ska, DATE(itv.sitv_datepla)) AS datePlanning,
-            urg.description AS niveauUrgence,
-            eor.seor_dateor AS dateCreation,
-            eor.seor_succ AS agenceCrediteur,
-            eor.seor_servcrt AS serviceCrediteur,
-            itv.sitv_succdeb AS agenceDebiteur,
-            itv.sitv_servdeb AS serviceDebiteur,
-            itv.sitv_interv AS numInterv,
-            lor.slor_nolign AS numeroLigne,
+            TRIM(eor.seor_refdem) AS reference_dit,
+            eor.seor_numor AS numero_or,
+            COALESCE(pln.date_planning_ska, DATE(itv.sitv_datepla)) AS date_planning,
+            urg.description AS niveau_urgence,
+            eor.seor_dateor AS date_creation,
+            eor.seor_succ AS agence_crediteur,
+            eor.seor_servcrt AS service_crediteur,
+            itv.sitv_succdeb AS agence_debiteur,
+            itv.sitv_servdeb AS service_debiteur,
+            itv.sitv_interv AS numero_intervention,
+            lor.slor_nolign AS numero_ligne,
             lor.slor_constp AS constructeur,
-            TRIM(lor.slor_refp) AS referencePiece,
+            TRIM(lor.slor_refp) AS reference_piece,
             TRIM(lor.slor_desi) AS designation,
             SUM(
                 CASE
                     WHEN lor.slor_typlig = 'P' THEN (lor.slor_qterel + lor.slor_qterea + lor.slor_qteres + lor.slor_qtewait - lor.slor_qrec)
                     WHEN lor.slor_typlig IN ('F','M','U','C') THEN lor.slor_qterea
                 END
-            ) AS quantiteDemander,
-            SUM(lor.slor_qteres) AS qteALivrer,
-            SUM(lor.slor_qterea) AS quantiteLivree,
-            TRIM(tab.atab_lib) AS nomPrenom,
-            sit.situation AS situationtest,
-            eor.seor_usr AS idUser,
-            TRIM(usr.ausr_nom) AS nomUtilisateur,
-            mat.mmat_nummat AS idMateriel,
-            TRIM(mat.mmat_numserie) AS num_serie,
-            TRIM(mat.mmat_recalph) AS num_parc ,
+            ) AS quantite_demandee,
+            SUM(lor.slor_qteres) AS quantite_a_livrer,
+            SUM(lor.slor_qterea) AS quantite_livree,
+            TRIM(tab.atab_lib) AS nom_prenom,
+            TRIM(sit.situation) AS situation,
+            eor.seor_usr AS id_user,
+            TRIM(usr.ausr_nom) AS nom_utilisateur,
+            mat.mmat_nummat AS id_materiel,
+            TRIM(mat.mmat_numserie) AS numero_serie,
+            TRIM(mat.mmat_recalph) AS numero_parc ,
             TRIM(mat.mmat_marqmat) AS marque,
-            TRIM(mat.mmat_numparc) AS casie,
-            mat.mmat_numcdec AS numCommande
+            TRIM(mat.mmat_numparc) AS casier,
+            mat.mmat_numcdec AS numero_commande
         FROM {$this->dbIps}.sav_lor AS lor
         INNER JOIN {$this->dbIps}.sav_eor AS eor ON eor.seor_numor = lor.slor_numor AND eor.seor_soc = lor.slor_soc AND eor.seor_succ = lor.slor_succ
         INNER JOIN {$this->dbIps}.mat_mat AS mat ON mat.mmat_nummat = eor.seor_nummat
@@ -134,9 +143,11 @@ class OrLivrerModel extends Model
 
         $result = $this->connect->executeQuery($statement);
 
-        $data = $this->connect->fetchResults($result);
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
 
-        return $this->convertirEnUtf8($data);
+        $factory = new MaterielALivrerFactory();
+
+        return array_map(fn(array $ligne) => $factory->hydrate($ligne), $data);
     }
 
     private function getQueryOrValide(): string
