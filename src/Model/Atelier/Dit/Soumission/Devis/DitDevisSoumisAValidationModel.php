@@ -450,17 +450,20 @@ class DitDevisSoumisAValidationModel extends Model
 
     public function recupNumeroVersion(string $numDevis, string $codeSociete): int
     {
-        $statement = " SELECT COALESCE(MAX(numeroversion)+1, 1) as numero_version 
-                from {$this->dbIrium}.devis_soumis_a_validation 
-                where numerodevis ='$numDevis'
-                AND code_societe = '$codeSociete'
-        ";
+        // Récupérer le MAX actuel
+        $statement = "SELECT MAX(numeroversion) as max_version 
+                    FROM {$this->dbIrium}.devis_soumis_a_validation 
+                    WHERE numerodevis = '$numDevis'
+                    AND code_societe = '$codeSociete'";
 
         $result = $this->connect->executeQuery($statement);
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
 
-        $data = array_column($this->convertirEnUtf8($this->connect->fetchResults($result)), 'numero_version');
+        if (empty($data) || $data[0]['max_version'] === null) {
+            return 1;
+        }
 
-        return $data[0] ?? 1;
+        return (int)$data[0]['max_version'] + 1;
     }
 
     public function enregistrerDevis(array $data): void
