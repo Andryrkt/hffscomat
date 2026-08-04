@@ -18,5 +18,5 @@ class OrLivrerSearchDto
     public ?string $agenceUserHidden = null;
     public ?string $codeSociete = null;
     public ?string $numMat = null;
-    public ?string $orCompletNon = null;
+    public ?string $orCompletude = null;
 }

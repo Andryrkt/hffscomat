@@ -2,6 +2,7 @@
 
 namespace App\Form\magasin\Ors\Livrer;
 
+use App\Constants\Magasin\MagasinOrConstant;
 use App\Dto\Magasin\Ors\Livrer\OrLivrerSearchDto;
 use App\Model\Atelier\Dit\WorNiveauUrgenceModel;
 use App\Model\magasin\Ors\Livrer\OrLivrerModel;
@@ -18,12 +19,6 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class OrLivrerSearchType extends AbstractType
 {
-    const OR_COMPLET_OU_NON = [
-        'TOUS' => 'TOUTS LES OR',
-        'COMPLETS' => 'ORs COMPLET',
-        'INCOMPLETS' => 'ORs INCOMPLETS'
-    ];
-
     private OrLivrerModel $OrLivrerModel;
 
     public function __construct()
@@ -92,14 +87,13 @@ class OrLivrerSearchType extends AbstractType
                 'required' => false,
             ])
             ->add(
-                'orCompletNon',
+                'orCompletude',
                 ChoiceType::class,
                 [
-                    'label' => 'Etat OR',
-                    'required' => false,
-                    'choices' => self::OR_COMPLET_OU_NON,
+                    'label'       => 'Etat OR',
+                    'required'    => false,
+                    'choices'     => MagasinOrConstant::ETATS_COMPLETUDE,
                     'placeholder' => false,
-                    'data' => 'ORs COMPLET'
                 ]
             )
             ->add(
