@@ -1,0 +1,35 @@
+<div class="modal fade" tabindex="-1" id="statutDevis" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Statut devis</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            {# body du modal #}
+            <div class="modal-body">
+                <!-- Spinner de chargement -->
+                <div id="loadingStatutDevis" class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Chargement...</span>
+                    </div>
+                </div>
+
+                <!-- Contenu des données -->
+                <div id="dataContentStatutDevis" style="display: none;">
+                    <table class="table rounded mt-1">
+                        <thead class="table">
+                            <tr>
+                                <th>Numéro devis</th>
+                                <th>Type</th>
+                                <th>Statut</th>
+                                <th>Remarque magasin</th>
+                                <th>Date maj</th>
+                            </tr>
+                        </thead>
+                        <tbody id="statutDevisBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

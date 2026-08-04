@@ -11,6 +11,7 @@ use App\Model\Atelier\Dit\DitListeModel;
 use App\Model\Atelier\Dit\DitModel;
 use App\Model\Atelier\Dit\Soumission\DitFactureSoumisAValidationModel;
 use App\Model\Atelier\Dit\Soumission\DitRiSoumisAValidationModel;
+use App\Model\Atelier\Dit\Soumission\Devis\DitDevisSoumisAValidationModel;
 use Symfony\Component\Routing\Annotation\Route;
 
 
@@ -169,5 +170,25 @@ class ListApi extends Controller
 
         header("Content-type:application/json");
         echo json_encode($niveauUrgence);
+    }
+
+    /** 
+     * @Route("/statut-devis-modal-fetch/{numDevis}", name="api_statut_devis_modal_fetch") 
+     */
+    public function statutDevisModal(string $numDevis)
+    {
+        $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
+
+        if (empty($numDevis)) {
+            header("Content-type:application/json");
+            echo json_encode([]);
+            return;
+        }
+
+        $ditDevisModel = new DitDevisSoumisAValidationModel();
+        $data = $ditDevisModel->getStatutDwDitDevis($numDevis, $codeSociete);
+
+        header("Content-type:application/json");
+        echo json_encode($data);
     }
 }

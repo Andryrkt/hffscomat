@@ -725,4 +725,24 @@ class DitDevisSoumisAValidationModel extends Model
 
         return $this->convertirEnUtf8($data);
     }
+
+    public function getStatutDwDitDevis(string $numDevis, string $codeSociete): array
+    {
+        $statement = " SELECT 
+                        numerodevis as numero_devis, 
+                        case when type = 'VP' then 'Vérification prix' else 'Validation atelier' end as type_devis, 
+                        statut as statut_devis,
+                        remarque_magains as note_magasin,
+                        date_statut as date_statut
+                        from {$this->dbIrium}.devis_soumis_a_validation
+                        where numerodevis = '$numDevis'
+                        and code_societe = '$codeSociete'
+            ";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->connect->fetchResults($result);
+
+        return $this->convertirEnUtf8($data);
+    }
 }
