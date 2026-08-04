@@ -31,4 +31,50 @@ class MaterielALivrerDto
     public ?string $marque = null;
     public ?string $casier = null;
     public ?string $numeroCommande = null;
+
+    /**
+     * Indique si la quantité demandée n'est pas totalement couverte par ce qui est déjà à livrer/livré
+     */
+    public function estIncomplet(): bool
+    {
+        return $this->quantiteDemandee > ($this->quantiteALivrer + $this->quantiteLivree);
+    }
+
+    /**
+     * Classe CSS à appliquer à la ligne lorsque la quantité demandée n'est pas totalement couverte
+     */
+    public function getClasseLigne(): string
+    {
+        return $this->estIncomplet() ? 'textColor' : '';
+    }
+
+    public function getDatePlanningFormatee(): string
+    {
+        return $this->datePlanning === null ? '--' : $this->datePlanning->format('d/m/Y');
+    }
+
+    public function getDateCreationFormatee(): string
+    {
+        return $this->dateCreation === null ? '--' : $this->dateCreation->format('d/m/Y');
+    }
+
+    public function getNumeroInterventionFormate(): string
+    {
+        return number_format($this->numeroIntervention ?? 0, 0);
+    }
+
+    public function getQuantiteDemandeeFormatee(): string
+    {
+        return empty($this->quantiteDemandee) ? '-' : number_format($this->quantiteDemandee, 0);
+    }
+
+    public function getQuantiteALivrerFormatee(): string
+    {
+        return empty($this->quantiteALivrer) ? '-' : number_format($this->quantiteALivrer, 0);
+    }
+
+    public function getQuantiteLivreeFormatee(): string
+    {
+        return empty($this->quantiteLivree) ? '-' : number_format($this->quantiteLivree, 0);
+    }
 }

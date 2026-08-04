@@ -2,11 +2,12 @@
 
 namespace App\Controller\magasin\Ors\Livrer;
 
-use App\Controller\Controller;
-use App\Factory\magasin\Ors\Livrer\OrLivrerSearchFactory;
-use App\Model\magasin\Ors\Livrer\OrLivrerModel;
 use App\Service\ExcelService;
+use App\Controller\Controller;
 use Symfony\Component\Routing\Annotation\Route;
+use App\Model\magasin\Ors\Livrer\OrLivrerModel;
+use App\Dto\Magasin\Ors\Livrer\MaterielALivrerDto;
+use App\Factory\magasin\Ors\Livrer\OrLivrerSearchFactory;
 
 /**
  * @Route("/magasin/or")
@@ -32,6 +33,11 @@ class ExportExcelController extends Controller
         (new ExcelService())->createSpreadsheet($data);
     }
 
+    /** 
+     * @param array<MaterielALivrerDto> $orLivrers
+     * 
+     * @return array
+     */
     private function transformationEnTableauAvecEntet(array $orLivrers): array
     {
         $data = [];
@@ -65,9 +71,9 @@ class ExportExcelController extends Controller
             $data[] = [
                 $orLivrer->referenceDit,
                 $orLivrer->numeroOr,
-                $orLivrer->datePlanning,
+                $orLivrer->getDatePlanningFormatee(),
                 $orLivrer->niveauUrgence ?? '',
-                $orLivrer->dateCreation,
+                $orLivrer->getDateCreationFormatee(),
                 $orLivrer->agenceCrediteur,
                 $orLivrer->serviceCrediteur,
                 $orLivrer->agenceDebiteur,
