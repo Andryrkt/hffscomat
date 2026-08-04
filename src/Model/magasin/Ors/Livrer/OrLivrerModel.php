@@ -4,6 +4,7 @@ namespace App\Model\magasin\Ors\Livrer;
 
 use App\Model\Model;
 use App\Model\Informix\SelectWhereCondition;
+use App\Constants\Magasin\MagasinOrConstant;
 use App\Dto\Magasin\Ors\Livrer\OrLivrerSearchDto;
 use App\Dto\Magasin\Ors\Livrer\MaterielALivrerDto;
 use App\Factory\magasin\Ors\Livrer\MaterielALivrerFactory;
@@ -31,8 +32,9 @@ class OrLivrerModel extends Model
             {$selectCond->eq('lor.slor_succdeb', trim(explode('-',$dtoSearch->agence)[0]))}
             {$selectCond->eq('lor.slor_servdeb', trim(explode('-',$dtoSearch->service)[0]))}
             {$selectCond->eq('lor.slor_succdeb', trim(explode('-',$dtoSearch->agenceUser)[0]))}
-            {$selectCond->eq('sit.situation',$dtoSearch->orCompletNon)}
         ";
+
+        if ($dtoSearch->orCompletude !== MagasinOrConstant::TOUS) $conditions .= $selectCond->eq('sit.situation', $dtoSearch->orCompletude);
 
         $statement = "--sql
         WITH
@@ -104,7 +106,7 @@ class OrLivrerModel extends Model
                                 WHEN lorSit.slor_typlig IN ('F','M','U','C') THEN lorSit.slor_qterea
                             END
                         ) = SUM(lorSit.slor_qteres + lorSit.slor_qterea)
-                        THEN 'ORs COMPLET'  --  somme_qte_dispo > 0 AND somme_qte_dem = (somme_qte_dispo + somme_qte_livree)
+                        THEN '" . MagasinOrConstant::COMPLET . "'  --  somme_qte_dispo > 0 AND somme_qte_dem = (somme_qte_dispo + somme_qte_livree)
                     WHEN SUM(lorSit.slor_qteres) > 0 
                         AND SUM(
                             CASE
@@ -112,7 +114,7 @@ class OrLivrerModel extends Model
                                 WHEN lorSit.slor_typlig IN ('F','M','U','C') THEN lorSit.slor_qterea
                             END
                         ) > SUM(lorSit.slor_qteres + lorSit.slor_qterea)
-                        THEN 'ORs INCOMPLETS' -- somme_qte_dispo > 0 AND somme_qte_dem > (somme_qte_dispo + somme_qte_livree)
+                        THEN '" . MagasinOrConstant::INCOMPLET . "' -- somme_qte_dispo > 0 AND somme_qte_dem > (somme_qte_dispo + somme_qte_livree)
                 END AS situation
             FROM {$this->dbIps}.sav_lor lorSit
             WHERE lorSit.slor_numor IN (SELECT numero_or FROM valid_or)
