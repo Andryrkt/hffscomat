@@ -19,11 +19,10 @@ class ExportExcelController extends Controller
      */
     public function exportExcel()
     {
-        $dtoSearch = (new OrLivrerSearchFactory(
-            $this->getSecurityService()
-        ))->initialisationSearch();
-        $criteria = $this->getSessionService()
-            ->get('magasin_liste_or_livrer_search_criteria', $dtoSearch);
+        $dtoSearch = (new OrLivrerSearchFactory($this->getSecurityService()))->initialisationSearch();
+
+        $criteria = $this->getSessionService()->get('magasin_liste_or_livrer_search_criteria', $dtoSearch);
+
         $orLivrerModel = new OrLivrerModel();
         $orLivrers = $orLivrerModel->recupereListeMaterielValider($criteria);
 

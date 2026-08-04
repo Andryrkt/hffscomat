@@ -25,23 +25,10 @@ class OrLivrerModel extends Model
             {$selectCond->eq('sit.situation',$dtoSearch->orCompletNon)}
         ";
 
-        $statement = "WITH valid_or AS (
-                SELECT DISTINCT
-                    osv.numeroor AS numero_or,
-                    osv.numeroor || '-' || osv.numeroitv AS numero_or_itv
-                FROM {$this->dbIrium}.ors_soumis_a_validation osv
-                WHERE osv.statut LIKE 'Valid%'
-                    AND osv.numeroversion = (
-                        SELECT MAX(osv2.numeroversion)
-                        FROM {$this->dbIrium}.ors_soumis_a_validation osv2
-                        WHERE osv2.id = osv.id
-                    )
-            ),
-            constructeurs_st AS (
-                SELECT DISTINCT abse_constp
-                FROM {$this->dbIps}.art_bse
-                WHERE abse_codg = 'ST'
-            )
+        $statement = "--sql
+        WITH
+            valid_or AS ({$this->getQueryOrValide()}),
+            const_st AS ({$this->getQueryConstructeurST()})
         SELECT
             TRIM(eor.seor_refdem) AS referencedit,
             eor.seor_numor AS numeroOr,
@@ -92,7 +79,7 @@ class OrLivrerModel extends Model
                 SUM(lorQte.slor_qteres) AS total_qteres
             FROM {$this->dbIps}.sav_lor lorQte
             WHERE lorQte.slor_numor IN (SELECT numero_or FROM valid_or)
-                AND lorQte.slor_constp IN (SELECT abse_constp FROM constructeurs_st)
+                AND lorQte.slor_constp IN (SELECT abse_constp FROM const_st)
                 AND lorQte.slor_refp NOT LIKE '%-L' AND lorQte.slor_refp NOT LIKE '%-CTRL'
             GROUP BY lorQte.slor_numor
         ) AS qte ON qte.numero_or = lor.slor_numor AND qte.total_qteres > 0
@@ -101,22 +88,26 @@ class OrLivrerModel extends Model
                 lorSit.slor_numor AS numero_or,
                 lorSit.slor_nogrp AS num_groupe,
                 CASE
-                    WHEN sum(lorSit.slor_qteres) > 0 AND
-                        sum(CASE
-                            WHEN lorSit.slor_typlig = 'P' THEN (lorSit.slor_qterel + lorSit.slor_qterea + lorSit.slor_qteres + lorSit.slor_qtewait - lorSit.slor_qrec)
-                            WHEN lorSit.slor_typlig IN ('F','M','U','C') THEN lorSit.slor_qterea
-                        END) = sum(lorSit.slor_qteres + lorSit.slor_qterea)
-                    THEN 'ORs COMPLET'
-                    WHEN sum(lorSit.slor_qteres) > 0 AND
-                        sum(CASE
-                            WHEN lorSit.slor_typlig = 'P' THEN (lorSit.slor_qterel + lorSit.slor_qterea + lorSit.slor_qteres + lorSit.slor_qtewait - lorSit.slor_qrec)
-                            WHEN lorSit.slor_typlig IN ('F','M','U','C') THEN lorSit.slor_qterea
-                        END) > sum(lorSit.slor_qteres + lorSit.slor_qterea)
-                    THEN 'ORs INCOMPLETS'
+                    WHEN SUM(lorSit.slor_qteres) > 0 
+                        AND SUM(
+                            CASE
+                                WHEN lorSit.slor_typlig = 'P' THEN (lorSit.slor_qterel + lorSit.slor_qterea + lorSit.slor_qteres + lorSit.slor_qtewait - lorSit.slor_qrec)
+                                WHEN lorSit.slor_typlig IN ('F','M','U','C') THEN lorSit.slor_qterea
+                            END
+                        ) = SUM(lorSit.slor_qteres + lorSit.slor_qterea)
+                        THEN 'ORs COMPLET'  --  somme_qte_dispo > 0 AND somme_qte_dem = (somme_qte_dispo + somme_qte_livree)
+                    WHEN SUM(lorSit.slor_qteres) > 0 
+                        AND SUM(
+                            CASE
+                                WHEN lorSit.slor_typlig = 'P' THEN (lorSit.slor_qterel + lorSit.slor_qterea + lorSit.slor_qteres + lorSit.slor_qtewait - lorSit.slor_qrec)
+                                WHEN lorSit.slor_typlig IN ('F','M','U','C') THEN lorSit.slor_qterea
+                            END
+                        ) > SUM(lorSit.slor_qteres + lorSit.slor_qterea)
+                        THEN 'ORs INCOMPLETS' -- somme_qte_dispo > 0 AND somme_qte_dem > (somme_qte_dispo + somme_qte_livree)
                 END AS situation
             FROM {$this->dbIps}.sav_lor lorSit
             WHERE lorSit.slor_numor IN (SELECT numero_or FROM valid_or)
-                AND lorSit.slor_constp IN (SELECT abse_constp FROM constructeurs_st)
+                AND lorSit.slor_constp IN (SELECT abse_constp FROM const_st)
                 AND lorSit.slor_refp NOT LIKE '%-L' AND lorSit.slor_refp NOT LIKE '%-CTRL'
             GROUP BY lorSit.slor_numor, lorSit.slor_nogrp
         ) AS sit ON sit.numero_or = lor.slor_numor AND sit.num_groupe = lor.slor_nogrp
@@ -134,7 +125,7 @@ class OrLivrerModel extends Model
         LEFT JOIN {$this->dbIrium}.wor_niveau_urgence urg ON urg.id = di.id_niveau_urgence
         WHERE eor.seor_typeor NOT IN('950', '501')
             AND sit.situation IS NOT NULL
-            AND lor.slor_constp IN (SELECT abse_constp FROM constructeurs_st)
+            AND lor.slor_constp IN (SELECT abse_constp FROM const_st)
             AND (lor.slor_refp NOT LIKE '%-L' AND lor.slor_refp NOT LIKE '%-CTRL')
             $conditions
         GROUP BY 1,2,3,4,5,6,7,8,9,10,11,12,13,14,18,19,20,21,22,23,24,25,26,27
@@ -146,6 +137,27 @@ class OrLivrerModel extends Model
         $data = $this->connect->fetchResults($result);
 
         return $this->convertirEnUtf8($data);
+    }
+
+    private function getQueryOrValide(): string
+    {
+        return "SELECT DISTINCT
+                    osv.numeroor AS numero_or,
+                    osv.numeroor || '-' || osv.numeroitv AS numero_or_itv
+                FROM {$this->dbIrium}.ors_soumis_a_validation osv
+                WHERE osv.statut LIKE 'Valid%'
+                    AND osv.numeroversion = (
+                        SELECT MAX(osv2.numeroversion)
+                        FROM {$this->dbIrium}.ors_soumis_a_validation osv2
+                        WHERE osv2.id = osv.id
+                    )";
+    }
+
+    private function getQueryConstructeurST(): string
+    {
+        return "SELECT DISTINCT abse_constp
+                FROM {$this->dbIps}.art_bse
+                WHERE abse_codg = 'ST'";
     }
 
     public function agence(string $codeSociete)
