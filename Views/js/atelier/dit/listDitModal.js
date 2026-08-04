@@ -290,3 +290,80 @@ listeCommandeModal.addEventListener("hidden.bs.modal", function () {
   const tableBody = document.getElementById("commandesTableBody");
   tableBody.innerHTML = ""; // Vider le tableau
 });
+
+/** ============================================== 
+ *  Statut Devis modal
+ * 
+=================================================*/
+const statutDevisModalInput = document.getElementById("statutDevis");
+
+if (statutDevisModalInput) {
+  statutDevisModalInput.addEventListener("show.bs.modal", function (event) {
+    const button = event.relatedTarget;
+    const id = button.getAttribute("data-id");
+    const loadingStatutDevis = document.getElementById("loadingStatutDevis");
+    const dataContentStatutDevis = document.getElementById("dataContentStatutDevis");
+
+    // Afficher le spinner et masquer le contenu des données
+    loadingStatutDevis.style.display = "block";
+    dataContentStatutDevis.style.display = "none";
+
+    // Fetch request to get the data
+    fetchManager
+      .get(`api/statut-devis-modal-fetch/${id}`)
+      .then((data) => {
+        const tableBody = document.getElementById("statutDevisBody");
+        tableBody.innerHTML = ""; // Clear previous data
+
+        if (data && data.length > 0) {
+          data.forEach((item) => {
+            let dateFormatted = "-";
+            if (item.date_statut) {
+              const d = new Date(item.date_statut);
+              if (!isNaN(d.getTime())) {
+                const day = String(d.getDate()).padStart(2, "0");
+                const month = String(d.getMonth() + 1).padStart(2, "0");
+                const year = d.getFullYear();
+                dateFormatted = `${day}/${month}/${year}`;
+              } else {
+                dateFormatted = item.date_statut;
+              }
+            }
+
+            let row = `<tr>
+                        <td>${item.numero_devis || "-"}</td>
+                        <td>${item.type_devis || "-"}</td>
+                        <td>${item.statut_devis || "-"}</td>
+                        <td>${item.note_magasin || "-"}</td>
+                        <td>${dateFormatted}</td>
+                      </tr>`;
+
+            tableBody.innerHTML += row;
+          });
+        } else {
+          tableBody.innerHTML =
+            '<tr><td colspan="5" class="text-center">Aucune donnée disponible.</td></tr>';
+        }
+
+        loadingStatutDevis.style.display = "none";
+        dataContentStatutDevis.style.display = "block";
+      })
+      .catch((error) => {
+        const tableBody = document.getElementById("statutDevisBody");
+        tableBody.innerHTML =
+          '<tr><td colspan="5" class="text-center">On ne peut pas récupérer les données</td></tr>';
+        console.error("There was a problem with the fetch operation:", error);
+
+        loadingStatutDevis.style.display = "none";
+        dataContentStatutDevis.style.display = "block";
+      });
+  });
+
+  statutDevisModalInput.addEventListener("hidden.bs.modal", function () {
+    const tableBody = document.getElementById("statutDevisBody");
+    if (tableBody) {
+      tableBody.innerHTML = "";
+    }
+  });
+}
+
