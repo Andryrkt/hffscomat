@@ -46,6 +46,8 @@ class DitController extends Controller
      */
     public function new(Request $request)
     {
+        $this->getSessionService()->set('microtime_start', microtime(true));
+
         // Code Société de l'utilisateur
         $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
 
