@@ -3,6 +3,7 @@
 namespace App\Factory\magasin\Ors\Livrer;
 
 use App\Constants\admin\ApplicationConstant;
+use App\Constants\Magasin\MagasinOrConstant;
 use App\Dto\Magasin\Ors\Livrer\OrLivrerSearchDto;
 use App\Service\security\SecurityService;
 use App\Service\TableauEnStringService;
@@ -35,7 +36,7 @@ class OrLivrerSearchFactory
         $dto = new OrLivrerSearchDto();
         $dto->codeSociete = $this->securityService->getCodeSocieteUser();
         $dto->agenceUser = $agenceUser;
-        $dto->orCompletNon = "ORs COMPLET";
+        $dto->orCompletude = MagasinOrConstant::COMPLET;
 
         return $dto;
     }

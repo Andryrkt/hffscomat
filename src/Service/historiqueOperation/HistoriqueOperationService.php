@@ -74,6 +74,13 @@ class HistoriqueOperationService implements HistoriqueOperationInterface
     {
         $historique = new HistoriqueOperationDocument();
         $userInfo   = $this->sessionService->get('user_info');
+        $startTime  = $this->sessionService->get('microtime_start');
+
+        if ($startTime) {
+            $this->sessionService->remove('microtime_start');
+            $historique->setTempsExecution($this->formatTempsExecution(microtime(true) - $startTime));
+        }
+
         $historique
             ->setNumeroDocument($numeroDocument)
             ->setUtilisateur($userInfo["username"] ?? "-")
@@ -86,6 +93,23 @@ class HistoriqueOperationService implements HistoriqueOperationInterface
         // Sauvegarder dans la base de données
         $this->em->persist($historique);
         $this->em->flush();
+    }
+
+    /** 
+     * Méthode pour formatter le temps d'éxecution
+     */
+    private function formatTempsExecution(float $secondes): string
+    {
+        $minutes = (int) floor($secondes / 60);
+        $secondesRestantes = (int) floor($secondes) % 60;
+        $millisecondes = (int) round(($secondes - floor($secondes)) * 1000);
+
+        return sprintf(
+            '%02dmn %02ds %03dms',
+            $minutes,
+            $secondesRestantes,
+            $millisecondes
+        );
     }
 
     /**
