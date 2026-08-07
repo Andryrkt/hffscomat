@@ -84,20 +84,16 @@ class PlanningMagasinModel extends Model
         return $this->convertirEnUtf8($data);
     }
 
-    public function recupListeFournissseur()
+    public function recupListeFournissseur(string $codeSociete)
     {
-        $statement = " SELECT  
-                        FBSE_NUMFOU AS num_fournisseur,
-                        UPPER(FBSE_NOMFOU) AS nom_fournisseur
-                    FROM 
-                        FRN_BSE
-                    JOIN 
-                        FRN_FOU ON FBSE_NUMFOU = FFOU_NUMFOU
-                    WHERE 
-                        FFOU_SOC = 'HF'
-                    ORDER BY 
-                        FBSE_NOMFOU;
-        ";
+        $statement = "SELECT DISTINCT
+                        fbse_numfou AS num_fournisseur,
+                        TRIM(fbse_nomfou) AS nom_fournisseur
+                    FROM Informix.frn_bse
+                        JOIN Informix.frn_fou ON fbse_numfou=ffou_numfou
+                        JOIN Informix.frn_cde on fcde_numfou=fbse_numfou
+                    WHERE ffou_soc='$codeSociete'
+                    ORDER by nom_fournisseur";
 
         $result = $this->connect->executeQuery($statement);
 

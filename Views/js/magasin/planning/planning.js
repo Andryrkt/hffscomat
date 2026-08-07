@@ -1,4 +1,5 @@
 import { FetchManager } from "../../api/FetchManager.js";
+import { API_ENDPOINTS } from "../../api/apiEndpoints.js";
 import { AutoComplete } from "../../utils/AutoComplete.js";
 import { filterServiceByAgence } from "../../utils/agenceService/filterServiceByAgence.js";
 
@@ -14,7 +15,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   async function fetchFournisseurs() {
-    return await fetchManager.get("api/magasin-planning-liste-fournisseur");
+    return await fetchManager.get(API_ENDPOINTS.LIST_FOURNISSEURS);
   }
 
   function displayFournisseur(item) {
