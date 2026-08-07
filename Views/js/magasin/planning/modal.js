@@ -22,20 +22,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const button = event.relatedTarget; // Bouton qui a déclenché le modal
     const orIntv = button.getAttribute("data-id");
-    const numDit = button.getAttribute("data-numDit");
-    const migration = button.getAttribute("data-migration");
-    const dossierDitLink = document.getElementById("dossierDitLink");
-    if (migration == "1") {
-      dossierDitLink.style.display = "none";
-    }
-
-    dossierDitLink.onclick = (event) => {
-      event.preventDefault();
-      window.open(
-        `${baseUrl}/${API_ENDPOINTS.getDossierDit(numDit)}`,
-        "_blank"
-      );
-    };
 
     // Afficher le spinner
     document.getElementById("loading").style.display = "block";
