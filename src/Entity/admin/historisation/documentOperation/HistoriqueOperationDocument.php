@@ -68,6 +68,11 @@ class HistoriqueOperationDocument
      */
     private $libelleOperation;
 
+    /**
+     * @ORM\Column(type="string", length=20, nullable=true)
+     */
+    private ?string $tempsExecution = null;
+
     //========================================================================================================================================================
 
     public function __construct()
@@ -252,6 +257,24 @@ class HistoriqueOperationDocument
     public function setLibelleOperation($libelleOperation)
     {
         $this->libelleOperation = $libelleOperation;
+
+        return $this;
+    }
+
+    /**
+     * Get the value of tempsExecution
+     */
+    public function getTempsExecution(): ?string
+    {
+        return $this->tempsExecution;
+    }
+
+    /**
+     * Set the value of tempsExecution
+     */
+    public function setTempsExecution(?string $tempsExecution): self
+    {
+        $this->tempsExecution = $tempsExecution;
 
         return $this;
     }
