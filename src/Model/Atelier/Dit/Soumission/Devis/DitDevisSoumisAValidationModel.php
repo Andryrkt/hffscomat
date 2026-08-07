@@ -64,6 +64,38 @@ class DitDevisSoumisAValidationModel extends Model
         return $data[0]['numdevis'] ?? null;
     }
 
+    public function estDevisSequence(string $numDit, string $codeSociete): bool
+    {
+        $statement = "SELECT max(seor_numor_seq) as sequence 
+                        from {$this->dbIps}.sav_eor 
+                        where seor_refdem like '%{$numDit}%' 
+                        and seor_serv='DEV'
+                        AND seor_soc = '$codeSociete'
+        ";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
+
+        return (int)$data[0]['sequence'] > 1;
+    }
+
+    public function recupNumDitDevisSequence(string $numDevisFile, string $codeSociete): string
+    {
+        $statement = " SELECT seor_refdem as num_dit
+                        from {$this->dbIps}.sav_eor 
+                        where seor_numor =  '$numDevisFile'
+                        and seor_serv='DEV'
+                        AND seor_soc = '$codeSociete'
+        ";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
+
+        return $data[0]['num_dit'] ?? null;
+    }
+
     public function recupNumeroDevisApresSoumission(string $numDit, string $codeSociete): ?string
     {
         $statement = "SELECT FIRST 1
