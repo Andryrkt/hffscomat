@@ -6,6 +6,10 @@ class DitDevisSoumisAValidationDto
 {
     public ?string $numeroDit = null;
 
+    public ?string $numeroDitInitial = null;
+
+    public ?bool $estDevisSequence = null;
+
     public ?string $numeroDevis = null;
 
     public ?string $numeroDevisDeux = null;

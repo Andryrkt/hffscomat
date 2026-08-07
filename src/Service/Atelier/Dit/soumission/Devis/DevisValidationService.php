@@ -189,8 +189,15 @@ class DevisValidationService
             return true;
         }
 
+        if ($dto->estDevisSequence && ($dto->numeroDit === null || $dto->numeroDit <> $dto->numeroDitInitial)) {
+            $message = "Aucune DIT n'est rattachée au devis séquencé {$dto->numeroDevis} : {$dto->numeroDevisDeux} ou la DIT renseignée sur le devis ne correspond pas à la DIT initiale {$dto->numeroDitInitial}";
+            $this->sendNotificationOR($message, $dto->numeroDevis, false);
+            return true;
+        }
+
         $file = $form->get(self::FILE_FIELD_NAME)->getData();
         $fileName = $file->getClientOriginalName();
+        //$numDevisFile = explode("_", $fileName)[1] ?? null;
         //Vérifie si le nom du fichier correspond au pattern attendu (S'assurer que c'est bien un OR qui soit soumis)
         if (!$this->matchPattern($fileName, self::FILENAME_PATTERN)) {
             $message = "Le nom du fichier soumis n'est pas conforme au format attendu. Reçu: " . $fileName;
