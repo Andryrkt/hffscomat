@@ -27,6 +27,13 @@ class PlanningApi extends Controller
 
             $fournisseurs = $this->planningMagasinModel->recupListeFournissseur($codeSociete);
 
+            if (empty($fournisseurs)) {
+                return new JsonResponse([
+                    'message' => 'Aucune donnée trouvée',
+                    'data'    => []
+                ], JsonResponse::HTTP_OK);
+            }
+
             return new JsonResponse([
                 'message' => 'Données chargées avec succès',
                 'data'    => $fournisseurs

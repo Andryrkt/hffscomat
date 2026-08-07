@@ -15,7 +15,8 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   async function fetchFournisseurs() {
-    return await fetchManager.get(API_ENDPOINTS.LIST_FOURNISSEURS);
+    const response = await fetchManager.get(API_ENDPOINTS.LIST_FOURNISSEURS);
+    return response.data;
   }
 
   function displayFournisseur(item) {
