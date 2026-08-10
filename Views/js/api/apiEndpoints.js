@@ -16,4 +16,6 @@ export const API_ENDPOINTS = {
 
   /** Planning Magasin */
   LIST_FOURNISSEURS: "api/magasin-planning-liste-fournisseur",
+  getLigneCommandeMagasin: (numCde) =>
+    `api/magasin-planning-ligne-commande/${numCde}`,
 };

@@ -45,4 +45,53 @@ class PlanningApi extends Controller
             ], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
+    /**
+     * @Route("/api/magasin-planning-ligne-commande/{numCde}", name="api_magasin_planning_ligne_commande")
+     */
+    public function ligneCommande(string $numCde): JsonResponse
+    {
+        // Données mockées, en attendant le branchement sur le modèle
+        $lignes = [
+            [
+                'numcdeFRN'    => $numCde,
+                'type'         => 'BC',
+                'num_bc_negoce' => 'NEG-0001',
+                'num_ligne'    => 1,
+                'client'       => 'CLIENT A',
+                'const'        => 'CONST1',
+                'ref'          => 'REF-0001',
+                'desi'         => 'Désignation article 1',
+                'qte_dem'      => 10,
+                'qte_rest'     => 4,
+                'alivrer'      => 4,
+                'qteLivree'    => 6,
+                'qtefac'       => 6,
+                'statut'       => 'EN COURS',
+                'Eta_magasin'  => '2026-08-10',
+            ],
+            [
+                'numcdeFRN'    => $numCde,
+                'type'         => 'BC',
+                'num_bc_negoce' => 'NEG-0002',
+                'num_ligne'    => 2,
+                'client'       => 'CLIENT B',
+                'const'        => 'CONST2',
+                'ref'          => 'REF-0002',
+                'desi'         => 'Désignation article 2',
+                'qte_dem'      => 5,
+                'qte_rest'     => 0,
+                'alivrer'      => 0,
+                'qteLivree'    => 5,
+                'qtefac'       => 5,
+                'statut'       => 'LIVREE',
+                'Eta_magasin'  => '2026-07-28',
+            ],
+        ];
+
+        return new JsonResponse([
+            'message' => 'Données chargées avec succès',
+            'data'    => $lignes
+        ], JsonResponse::HTTP_OK);
+    }
 }
