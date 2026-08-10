@@ -33,7 +33,7 @@ class DitDevisSoumisAValidationFactory
         $estDevisSequence = $ditDevisSoumisAValidationModel->estDevisSequence($numDit, $dto->codeSociete);
         $dto->numeroDitInitial = $numDit;
         $dto->estDevisSequence = $estDevisSequence;
-        $dto->numeroDit = $estDevisSequence ? $ditDevisSoumisAValidationModel->recupNumDitDevisSequence($numDevisFile, $dto->codeSociete) : $numDit;
+        $dto->numeroDit = $ditDevisSoumisAValidationModel->recupNumDitDevisSequence($numDevisFile, $dto->codeSociete);
         $dto->numeroDevis = $estDevisSequence ? $numDevisFile : $ditDevisSoumisAValidationModel->recupNumeroDevisApresSoumission($dto->numeroDit, $dto->codeSociete);
         $dto->numeroDevisDeux = $ditDevisSoumisAValidationModel->recupNumeroDevisApresSoumission($dto->numeroDit, $dto->codeSociete);
         $dto->dateHeureSoumission = date('Y-m-d H:i:s');
@@ -53,8 +53,9 @@ class DitDevisSoumisAValidationFactory
      * @param string $numDevis
      * @return boolean
      */
-    private function estCeVente(string $numDevis, string $codeSociete): bool
+    private function estCeVente(?string $numDevis, string $codeSociete): bool
     {
+        if($numDevis === null) return false;
         $ditDevisSoumisAValidationModel = new DitDevisSoumisAValidationModel();
 
         $recupConstRefPremDev = $ditDevisSoumisAValidationModel->recupConstRefPremDev($numDevis, $codeSociete);

@@ -82,7 +82,7 @@ class DitDevisSoumisAValidationModel extends Model
         return (int)$data[0]['sequence'] > 1;
     }
 
-    public function recupNumDitDevisSequence(string $numDevisFile, string $codeSociete): string
+    public function recupNumDitDevisSequence(string $numDevisFile, string $codeSociete): ?string
     {
         $statement = " SELECT seor_refdem as num_dit
                         from {$this->dbIps}.sav_eor 
@@ -98,8 +98,9 @@ class DitDevisSoumisAValidationModel extends Model
         return $data[0]['num_dit'] ?? null;
     }
 
-    public function recupNumeroDevisApresSoumission(string $numDit, string $codeSociete): ?string
+    public function recupNumeroDevisApresSoumission(?string $numDit, string $codeSociete): ?string
     {
+        if($numDit === null) return null;
         $statement = "SELECT FIRST 1
                         CASE 
                             WHEN (select max(seor_numor_seq) 
@@ -246,8 +247,9 @@ class DitDevisSoumisAValidationModel extends Model
     }
 
 
-    public function recupInfoDit(string $numDit, string $numDevis, string $codeSociete): ?array
+    public function recupInfoDit(?string $numDit, ?string $numDevis, string $codeSociete): array
     {
+        if($numDit === null) return [];
         $statement = " SELECT  *
                         from {$this->dbIrium}.demande_intervention 
                         where numero_demande_dit ='$numDit'
@@ -259,7 +261,7 @@ class DitDevisSoumisAValidationModel extends Model
 
         $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
 
-        return $data[0] ?? null;
+        return $data[0] ?? [];
     }
 
     public function recupNumeroClientIps(string $numDevis, string $codeSociete): ?string
@@ -317,8 +319,10 @@ class DitDevisSoumisAValidationModel extends Model
      * @param string $codeSociete
      * @return array
      */
-    public function recupDevisSoumisValidation(string $numDevis, string $codeSociete): array
+    public function recupDevisSoumisValidation(?string $numDevis, string $codeSociete): array
     {
+        if($numDevis === null) return [];
+
         $statement = " SELECT 
             sitv_succdeb as num_agence, 
             slor_numor as numero_devis, 
@@ -482,9 +486,9 @@ class DitDevisSoumisAValidationModel extends Model
         return $this->convertirEnUtf8($data);
     }
 
-    public function recupNumeroVersion(string $numDevis, string $codeSociete): int
+    public function recupNumeroVersion(?string $numDevis, string $codeSociete): int
     {
-        // Récupérer le MAX actuel
+        if($numDevis === null) return 1;        // Récupérer le MAX actuel
         $statement = "SELECT MAX(numeroversion) as max_version 
                     FROM {$this->dbIrium}.devis_soumis_a_validation 
                     WHERE numerodevis = '$numDevis'

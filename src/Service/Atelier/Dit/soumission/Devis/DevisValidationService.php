@@ -40,14 +40,15 @@ class DevisValidationService
      */
     private function sendNotificationOR(
         string $message,
-        string $numeroDit,
+        ?string $numeroDit,
         bool $success
     ): void {
         $criteria = (array)$this->getSessionService()->get('criteria_for_excel_dit_liste');
         $nomInputSearch = 'dit_search'; // initialistion de nom de chaque champ ou input
+        $numDit = $numeroDit ?? '';
         $this->getHistoriqueService()->sendNotificationSoumission(
             $message,
-            $numeroDit,
+            $numDit,
             'dit_liste',
             $success,
             $criteria,
@@ -189,7 +190,7 @@ class DevisValidationService
             return true;
         }
 
-        if ($dto->estDevisSequence && ($dto->numeroDit === null || $dto->numeroDit <> $dto->numeroDitInitial)) {
+        if ($dto->numeroDit === null || $dto->numeroDit <> $dto->numeroDitInitial) {
             $message = "Aucune DIT n'est rattachée au devis séquencé {$dto->numeroDevis} : {$dto->numeroDevisDeux} ou la DIT renseignée sur le devis ne correspond pas à la DIT initiale {$dto->numeroDitInitial}";
             $this->sendNotificationOR($message, $dto->numeroDevis, false);
             return true;
