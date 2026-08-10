@@ -84,7 +84,7 @@ class DitDevisSoumisAValidationModel extends Model
 
     public function recupNumDitDevisSequence(string $numDevisFile, string $codeSociete): ?string
     {
-        $statement = " SELECT seor_refdem as num_dit
+        $statement = " SELECT TRIM(seor_refdem) as num_dit
                         from {$this->dbIps}.sav_eor 
                         where seor_numor =  '$numDevisFile'
                         and seor_serv='DEV'

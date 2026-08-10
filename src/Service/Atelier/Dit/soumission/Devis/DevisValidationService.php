@@ -191,7 +191,7 @@ class DevisValidationService
         }
 
         if ($dto->numeroDit === null || $dto->numeroDit <> $dto->numeroDitInitial) {
-            $message = "Aucune DIT n'est rattachée au devis séquencé {$dto->numeroDevis} : {$dto->numeroDevisDeux} ou la DIT renseignée sur le devis ne correspond pas à la DIT initiale {$dto->numeroDitInitial}";
+            $message = "Aucune DIT n'est rattachée au devis séquencé {$dto->numeroDevis} ou la DIT renseignée sur le devis ne correspond pas à la DIT initiale {$dto->numeroDitInitial}";
             $this->sendNotificationOR($message, $dto->numeroDevis, false);
             return true;
         }
