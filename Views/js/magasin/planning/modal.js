@@ -22,6 +22,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const button = event.relatedTarget; // Bouton qui a déclenché le modal
     const orIntv = button.getAttribute("data-id");
+    const numCdeFrn = document.getElementById("numCdeFrn");
+    const emetteur = document.getElementById("emetteurCdeFrn");
+
+    numCdeFrn.textContent = orIntv;
+    emetteur.textContent = button.dataset.emetteur;
 
     // Afficher le spinner
     document.getElementById("loading").style.display = "block";
@@ -34,11 +39,13 @@ document.addEventListener("DOMContentLoaded", function () {
   // Gestionnaire pour la fermeture du modal
   listeCommandeModal.addEventListener("hidden.bs.modal", function () {
     const tableBody = document.getElementById("commandesTableBody");
-    const Ornum = document.getElementById("orIntv");
+    const numCdeFrn = document.getElementById("numCdeFrn");
+    const emetteur = document.getElementById("emetteurCdeFrn");
     const planningTableHead = document.getElementById("planningTableHead");
 
     tableBody.innerHTML = ""; // Vider le tableau
-    Ornum.innerHTML = "";
+    numCdeFrn.textContent = "";
+    emetteur.textContent = "";
     planningTableHead.innerHTML = "";
   });
 
@@ -49,8 +56,9 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function fetchDetailModal(id, signal) {
-    // TODO: définir le moyen d'obtenir les données du modal (endpoint API)
-    fetch(``, { signal })
+    fetch(`${baseUrl}/${API_ENDPOINTS.getLigneCommandeMagasin(id)}`, {
+      signal,
+    })
       .then((response) => {
         if (!response.ok) {
           throw new Error("Network response was not ok");
@@ -58,94 +66,45 @@ document.addEventListener("DOMContentLoaded", function () {
         return response.json();
       })
       .then((data) => {
-        const Ornum = document.getElementById("orIntv");
         const tableBody = document.getElementById("commandesTableBody");
         const planningTableHead = document.getElementById("planningTableHead");
         tableBody.innerHTML = ""; // Clear previous data
-        Ornum.innerHTML = "";
         planningTableHead.innerHTML = "";
 
         if (data.data.length > 0) {
-          let rowHeader = `<th>N°BC Irium </th>
-                          <th>Ligne</th>
-                          <th>N° Commande</th>
-                          <th>Statut ctrmrq</th>
-                          <th>CST</th>
-                          <th>Ref</th>
+          let rowHeader = `<th>N° Ligne</th>
+                          <th>Type</th>
+                          <th>N° BC Négoce</th>
+                          <th>Client</th>
+                          <th>Const.</th>
+                          <th>Réf</th>
                           <th>Désignation</th>
-                          <th>Qté DEM</th>
-                          <th>Qté ALL</th>
-                          <th>QTé RLQ</th>
-                          <th>QTé LIV</th>
+                          <th>Qté DEM.</th>
+                          <th>Qté REST.</th>
+                          <th>A Livrer</th>
+                          <th>Qté Livrée</th>
+                          <th>Qté FAC.</th>
                           <th>Statut</th>
-                          <th>Date Statut</th>
-                          <th>Eta Maurice</th>
                           <th>Eta Magasin</th>
                         `;
           planningTableHead.innerHTML += rowHeader;
           data.data.forEach((detail) => {
-            Ornum.innerHTML = `${detail.numor} | intitulé : ${detail.commentaire} | `;
-            if (detail.plan == "PLANIFIE") {
-              Ornum.innerHTML += `délai client  : ${formaterDate(
-                detail.dateplanning
-              )}`;
-            } else {
-              Ornum.innerHTML += `date début : ${formaterDate(
-                detail.dateplanning
-              )}`;
-            }
-            // Formater la date
-            let dateStatut = formaterDate(detail.datestatut);
-            if (detail.cst && detail.cst.startsWith("Z")) {
-              dateStatut = "";
-            }
-
-            let dateEtatPays = formaterDate(detail.Etat_pays);
-            let dateEtaMagasin = formaterDate(detail.Eta_magasin);
-
-            let numCde = detail.numerocmd || "";
-            let statrmq = detail.statut_ctrmq || "";
-            let statut =
-              detail.statut == null || detail.cst.startsWith("Z")
-                ? ""
-                : detail.statut;
-            let cmdColorRmq = "";
-            let numRef = detail.ref || "";
-
-            //reception partiel
-            let qteSolde = parseInt(detail.qteSlode);
-            let qteQte = parseInt(detail.qte);
-
-            if (qteSolde > 0 && qteSolde != qteQte) {
-              cmdColorRmq = 'style="background-color: yellow;"';
-            }
-            let cmdColor;
-            let Ord = detail.Ord;
-            if (statut == "DISPO STOCK") {
-              cmdColor = 'style="background-color: #c8ad7f; color: white;"';
-            } else if (statut == "Error" || statut == "Back Order") {
-              cmdColor = 'style="background-color: red; color: white;"';
-            } else if (Ord == "ORD") {
-              cmdColor = 'style="background-color:#9ACD32  ; color: white;"';
-            } else if (detail.estDansCesMagasin) {
-              cmdColor = 'style="background-color:#9ACD32  ; color: white;"';
-            }
+            const qte = (val) => (parseInt(val) === 0 ? "" : parseInt(val));
             let row = `<tr>
-                      <td>${detail.numor}</td>
-                      <td>${detail.intv}</td>
-                      <td ${cmdColor}>${numCde}</td>
-                      <td ${cmdColorRmq}>${statrmq}</td>
-                      <td>${detail.cst}</td>
-                      <td>${numRef}</td>
-                      <td>${detail.desi}</td>
-                      <td>${parseInt(detail.qteres_or) === 0 ? "" : parseInt(detail.qteres_or)}</td>
-                      <td>${parseInt(detail.qteall) === 0 ? "" : parseInt(detail.qteall)}</td>
-                      <td>${parseInt(detail.qtereliquat) === 0 ? "" : parseInt(detail.qtereliquat)}</td>
-                      <td>${parseInt(detail.qteliv) === 0 ? "" : parseInt(detail.qteliv)}</td>
-                      <td >${statut}</td>
-                      <td>${dateStatut}</td>
-                      <td>${dateEtatPays}</td>
-                      <td>${dateEtaMagasin}</td>
+                      <td>${detail.num_ligne || ""}</td>
+                      <td>${detail.type || ""}</td>
+                      <td>${detail.num_bc_negoce || ""}</td>
+                      <td>${detail.client || ""}</td>
+                      <td>${detail.const || ""}</td>
+                      <td>${detail.ref || ""}</td>
+                      <td>${detail.desi || ""}</td>
+                      <td>${qte(detail.qte_dem)}</td>
+                      <td>${qte(detail.qte_rest)}</td>
+                      <td>${qte(detail.alivrer)}</td>
+                      <td>${qte(detail.qteLivree)}</td>
+                      <td>${qte(detail.qtefac)}</td>
+                      <td>${detail.statut || ""}</td>
+                      <td>${formaterDate(detail.Eta_magasin)}</td>
                   </tr>`;
             tableBody.innerHTML += row;
           });

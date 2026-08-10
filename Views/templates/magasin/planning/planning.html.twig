@@ -148,7 +148,7 @@
 										{% elseif commande.statut == 'Complet facturé' %}
 											{% set classe = 'bg-success text-white' %}
 										{% endif %}
-										<a href="#" data-bs-toggle="modal" data-bs-target="#listeLigneCommandeMagasin" style="cursor: pointer;" data-id="{{ commande.numero }}" data-numdit="" data-migration="" class="d-inline-block px-2 pt-1 my-1 rounded text-wrap {{ classe }}" title="{{ commande.statut }}">
+										<a href="#" data-bs-toggle="modal" data-bs-target="#listeLigneCommandeMagasin" style="cursor: pointer;" data-id="{{ commande.numero }}" data-emetteur="{{ item.fournisseur }}" class="d-inline-block px-2 pt-1 my-1 rounded text-wrap {{ classe }}" title="{{ commande.statut }}">
 											{{ commande.numero }}
 										</a><br>
 									{% endfor %}
@@ -165,7 +165,7 @@
 
 	<!-- FIN tableau -->
 	{# body modal #}
-	{% include "/magasin/planning/_modal.html.twig" %} 
+	{% include "/magasin/planning/_modal.html.twig" %}
 {% endblock %}
 
 {% block javascript %}
