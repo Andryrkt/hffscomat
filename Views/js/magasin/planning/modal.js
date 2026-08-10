@@ -21,11 +21,11 @@ document.addEventListener("DOMContentLoaded", function () {
     abortController = new AbortController(); // Créer un nouveau contrôleur
 
     const button = event.relatedTarget; // Bouton qui a déclenché le modal
-    const orIntv = button.getAttribute("data-id");
+    const commandeId = button.getAttribute("data-id");
     const numCdeFrn = document.getElementById("numCdeFrn");
     const emetteur = document.getElementById("emetteurCdeFrn");
 
-    numCdeFrn.textContent = orIntv;
+    numCdeFrn.textContent = commandeId;
     emetteur.textContent = button.dataset.emetteur;
 
     // Afficher le spinner
@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("dataContent").style.display = "none";
 
     // Utiliser AbortController pour fetchDetailModal
-    fetchDetailModal(orIntv, abortController.signal);
+    fetchDetailModal(commandeId, abortController.signal);
   });
 
   // Gestionnaire pour la fermeture du modal
@@ -41,12 +41,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const tableBody = document.getElementById("commandesTableBody");
     const numCdeFrn = document.getElementById("numCdeFrn");
     const emetteur = document.getElementById("emetteurCdeFrn");
-    const planningTableHead = document.getElementById("planningTableHead");
 
     tableBody.innerHTML = ""; // Vider le tableau
     numCdeFrn.textContent = "";
     emetteur.textContent = "";
-    planningTableHead.innerHTML = "";
   });
 
   function masquerSpinner() {
@@ -67,47 +65,34 @@ document.addEventListener("DOMContentLoaded", function () {
       })
       .then((data) => {
         const tableBody = document.getElementById("commandesTableBody");
-        const planningTableHead = document.getElementById("planningTableHead");
         tableBody.innerHTML = ""; // Clear previous data
-        planningTableHead.innerHTML = "";
 
         if (data.data.length > 0) {
-          let rowHeader = `<th>N° Ligne</th>
-                          <th>Type</th>
-                          <th>N° BC Négoce</th>
-                          <th>Client</th>
-                          <th>Const.</th>
-                          <th>Réf</th>
-                          <th>Désignation</th>
-                          <th>Qté DEM.</th>
-                          <th>Qté REST.</th>
-                          <th>A Livrer</th>
-                          <th>Qté Livrée</th>
-                          <th>Qté FAC.</th>
-                          <th>Statut</th>
-                          <th>Eta Magasin</th>
-                        `;
-          planningTableHead.innerHTML += rowHeader;
-          data.data.forEach((detail) => {
-            const qte = (val) => (parseInt(val) === 0 ? "" : parseInt(val));
-            let row = `<tr>
-                      <td>${detail.num_ligne || ""}</td>
-                      <td>${detail.type || ""}</td>
-                      <td>${detail.num_bc_negoce || ""}</td>
-                      <td>${detail.client || ""}</td>
-                      <td>${detail.const || ""}</td>
-                      <td>${detail.ref || ""}</td>
-                      <td>${detail.desi || ""}</td>
-                      <td>${qte(detail.qte_dem)}</td>
-                      <td>${qte(detail.qte_rest)}</td>
-                      <td>${qte(detail.alivrer)}</td>
-                      <td>${qte(detail.qteLivree)}</td>
-                      <td>${qte(detail.qtefac)}</td>
-                      <td>${detail.statut || ""}</td>
-                      <td>${formaterDate(detail.Eta_magasin)}</td>
-                  </tr>`;
-            tableBody.innerHTML += row;
-          });
+          const qte = (val) => {
+            const n = parseInt(val);
+            return n === 0 ? "" : n;
+          };
+          tableBody.innerHTML = data.data
+            .map(
+              (detail) => `
+                <tr>
+                  <td>${detail.num_ligne || ""}</td>
+                  <td>${detail.type || ""}</td>
+                  <td>${detail.num_bc_negoce || ""}</td>
+                  <td>${detail.client || ""}</td>
+                  <td>${detail.code_cst || ""}</td>
+                  <td>${detail.ref || ""}</td>
+                  <td>${detail.designation || ""}</td>
+                  <td>${qte(detail.qte_dem)}</td>
+                  <td>${qte(detail.qte_rest)}</td>
+                  <td>${qte(detail.qte_a_livrer)}</td>
+                  <td>${qte(detail.qte_livree)}</td>
+                  <td>${qte(detail.qte_facturee)}</td>
+                  <td>${detail.statut || ""}</td>
+                  <td>${formaterDate(detail.eta_magasin)}</td>
+                </tr>`
+            )
+            .join("");
 
           masquerSpinner();
         } else {
