@@ -30,7 +30,7 @@ class DitDevisSoumisAValidationFactory
     public function apresSoumission(DitDevisSoumisAValidationDto $dto, string $numDit, string $numDevisFile): DitDevisSoumisAValidationDto
     {
         $ditDevisSoumisAValidationModel = new DitDevisSoumisAValidationModel();
-        $estDevisSequence = $ditDevisSoumisAValidationModel->estDevisSequence($dto->numeroDit, $dto->codeSociete);
+        $estDevisSequence = $ditDevisSoumisAValidationModel->estDevisSequence($numDit, $dto->codeSociete);
         $dto->numeroDitInitial = $numDit;
         $dto->estDevisSequence = $estDevisSequence;
         $dto->numeroDit = $estDevisSequence ? $ditDevisSoumisAValidationModel->recupNumDitDevisSequence($numDevisFile, $dto->codeSociete) : $numDit;
