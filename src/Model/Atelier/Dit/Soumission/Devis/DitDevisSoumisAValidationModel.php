@@ -64,8 +64,10 @@ class DitDevisSoumisAValidationModel extends Model
         return $data[0]['numdevis'] ?? null;
     }
 
-    public function estDevisSequence(string $numDit, string $codeSociete): bool
+    public function estDevisSequence(?string $numDit, string $codeSociete): bool
     {
+        if ($numDit === null) return false;
+
         $statement = "SELECT max(seor_numor_seq) as sequence 
                         from {$this->dbIps}.sav_eor 
                         where seor_refdem like '%{$numDit}%' 
