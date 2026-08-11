@@ -48,7 +48,7 @@ FROM
         AND abse_refp = nlig_refp
 WHERE
     nent_natop = 'DIR'
-    --and nlig_qtewait > 0
+    and nlig_qtewait > 0
     AND nlig_datealloc is NULL
     --and nlig_typlig  = 'P'
 
