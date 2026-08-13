@@ -100,7 +100,7 @@ class DitOrSoumisAValidationModel extends Model
               seor_numor = slor_numor
               AND seor_serv <> 'DEV'
               AND sitv_numor = slor_numor
-              AND sitv_interv = slor_nogrp / 100
+              AND sitv_interv = TRUNC(slor_nogrp / 100)
               AND seor_soc = '$codeSociete'
               AND slor_soc=seor_soc
               AND sitv_soc=seor_soc
@@ -544,7 +544,7 @@ class DitOrSoumisAValidationModel extends Model
         WHERE seor_numor = slor_numor
             AND seor_serv <> 'DEV'
             AND sitv_numor = slor_numor
-            AND sitv_interv = slor_nogrp / 100
+            AND sitv_interv = TRUNC(slor_nogrp / 100)
             AND seor_soc = '$codeSociete'
             AND seor_numor = '$numOr'
             AND slor_constp in (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST')
@@ -573,7 +573,7 @@ class DitOrSoumisAValidationModel extends Model
         from {$this->dbIps}.sav_eor, {$this->dbIps}.sav_lor, {$this->dbIps}.sav_itv
         WHERE seor_numor = slor_numor
             AND sitv_numor = slor_numor
-            AND sitv_interv = slor_nogrp / 100
+            AND sitv_interv = TRUNC(slor_nogrp / 100)
             AND seor_soc = '$codeSociete'
             AND seor_numor = '$numOr'
             AND slor_constp in (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST')

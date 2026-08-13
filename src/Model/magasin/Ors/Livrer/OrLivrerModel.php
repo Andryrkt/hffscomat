@@ -82,7 +82,7 @@ class OrLivrerModel extends Model
             ON itv.sitv_soc = lor.slor_soc
             AND itv.sitv_succ = lor.slor_succ
             AND itv.sitv_numor = lor.slor_numor
-            AND itv.sitv_interv = lor.slor_nogrp / 100
+            AND itv.sitv_interv = TRUNC(lor.slor_nogrp/100)
             AND itv.sitv_numor || '-' || itv.sitv_interv IN (SELECT numero_or_itv FROM valid_or)
         INNER JOIN (
             SELECT 
@@ -97,7 +97,7 @@ class OrLivrerModel extends Model
         INNER JOIN (
             SELECT
                 lorSit.slor_numor AS numero_or,
-                lorSit.slor_nogrp AS num_groupe,
+                TRUNC(lorSit.slor_nogrp/100) AS num_groupe,
                 CASE
                     WHEN SUM(lorSit.slor_qteres) > 0 
                         AND SUM(
@@ -120,8 +120,8 @@ class OrLivrerModel extends Model
             WHERE lorSit.slor_numor IN (SELECT numero_or FROM valid_or)
                 AND lorSit.slor_constp IN (SELECT abse_constp FROM const_st)
                 AND lorSit.slor_refp NOT LIKE '%-L' AND lorSit.slor_refp NOT LIKE '%-CTRL'
-            GROUP BY lorSit.slor_numor, lorSit.slor_nogrp
-        ) AS sit ON sit.numero_or = lor.slor_numor AND sit.num_groupe = lor.slor_nogrp
+            GROUP BY lorSit.slor_numor, TRUNC(lorSit.slor_nogrp/100)
+        ) AS sit ON sit.numero_or = lor.slor_numor AND sit.num_groupe = TRUNC(lor.slor_nogrp/100)
         LEFT JOIN (
             SELECT
                 skw.ofh_id AS num_or_planning,

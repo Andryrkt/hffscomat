@@ -114,7 +114,7 @@ class AcBcSoumisModel extends Model
     private function getQueryNbrIntervention(string $codeSociete, string $aliasDevisSoumisValide): string
     {
         return "SELECT 
-                    COUNT(DISTINCT l.slor_nogrp) AS nb
+                    COUNT(DISTINCT TRUNC(l.slor_nogrp/100)) AS nb
                 FROM {$this->dbIps}.sav_lor l
                 JOIN (
                     SELECT DISTINCT numeroDevis
