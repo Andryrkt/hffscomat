@@ -128,7 +128,7 @@ class OrLivrerModel extends Model
                 skw.ofs_id AS num_interv_planning,
                 DATE(MIN(ska.ska_d_start)) AS date_planning_ska
             FROM {$this->dbIps}.ska ska
-            INNER JOIN {$this->dbIps}.skw skw ON skw.skw_id = ska.ska_id
+            INNER JOIN {$this->dbIps}.skw skw ON skw.skw_id = ska.skw_id
             WHERE skw.ofh_id IN (SELECT numero_or FROM valid_or)
             GROUP BY skw.ofh_id, skw.ofs_id
         ) AS pln ON pln.num_or_planning = itv.sitv_numor AND pln.num_interv_planning = itv.sitv_interv
