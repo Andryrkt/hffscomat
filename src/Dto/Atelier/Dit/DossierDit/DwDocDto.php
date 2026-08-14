@@ -16,4 +16,5 @@ class DwDocDto
     public string $tailleFichier;
     public string $extension;
     public string $chemin;
+    public ?string $lienMargeRef = null;
 }

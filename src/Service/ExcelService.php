@@ -85,4 +85,125 @@ class ExcelService
         $writer = new Xlsx($spreadsheet);
         $writer->save('php://output');
     }
+
+    /**
+     * Génère un fichier Excel pour le tableau de marge par référence contenant les 3 tableaux (CAT, MFN, AUTRES).
+     *
+     * @param array $tableauMargeReference Tableau contenant 'tableauMargeCat', 'tableauMargeMfn', 'tableauMargeAutres'
+     * @param string|null $filePath Chemin où enregistrer le fichier (si null, le fichier est envoyé en téléchargement HTTP)
+     * @param string $filename Nom du fichier en cas de téléchargement HTTP
+     * @return string|void
+     */
+    public function genererExcelTableauMargeReference(array $tableauMargeReference, ?string $filePath = null, string $filename = "tableau_marge_reference")
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Marge Reference');
+
+        $sections = [
+            'tableauMargeCat'    => 'CAT',
+            'tableauMargeMfn'    => 'MFN',
+            'tableauMargeAutres' => 'AUTRES',
+        ];
+
+        $formatterPourcentage = function ($value) {
+            return ($value == 0.0 || $value === null || $value === '') ? '-' : round((float) $value) . '%';
+        };
+
+        $formatterDispoStock = function ($row) {
+            return (int) ($row['nb_ref'] ?? 0) === 0 ? 'Non dispo stock' : 'Dispo stock';
+        };
+
+        $headers = [
+            'Qte stock',
+            'Qte dem',
+            'Ref',
+            'PMP',
+            'PV Brut',
+            'Mt Remise',
+            'PV Net remisé',
+            'MB',
+            '%MB'
+        ];
+
+        $currentRow = 1;
+
+        foreach ($sections as $key => $label) {
+            $lignes = $tableauMargeReference[$key] ?? [];
+
+            // En-tête avec le label de la catégorie en première colonne
+            $headerRow = array_merge([$label], $headers);
+
+            foreach ($headerRow as $colIndex => $headerText) {
+                $cellCoordinate = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex + 1) . $currentRow;
+                $sheet->setCellValue($cellCoordinate, $headerText);
+            }
+
+            // Style de l'en-tête (Gras + Aligné au centre + couleur de fond)
+            $lastColLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(count($headerRow));
+            $headerRange = "A{$currentRow}:{$lastColLetter}{$currentRow}";
+            $sheet->getStyle($headerRange)->getFont()->setBold(true);
+            $sheet->getStyle($headerRange)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle($headerRange)->getFill()
+                ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                ->getStartColor()->setRGB('EAEAEA');
+
+            $currentRow++;
+
+            if (!empty($lignes)) {
+                foreach ($lignes as $item) {
+                    $dispoStock = $formatterDispoStock($item);
+                    $nbRef      = $item['nb_ref'] ?? 0;
+                    $qteDem     = $item['quantite_demander'] ?? 0;
+                    $ref        = $item['reference'] ?? '';
+                    $pmp        = (isset($item['pmp']) && $item['pmp'] !== '') ? $item['pmp'] : '-';
+                    $pvBrut     = (isset($item['pv_brut']) && $item['pv_brut'] !== '') ? $item['pv_brut'] : '-';
+                    $mtRemise   = (isset($item['mt_remise']) && $item['mt_remise'] !== '') ? $item['mt_remise'] : '-';
+                    $pvNet      = (isset($item['pv_net_remise']) && $item['pv_net_remise'] !== '') ? $item['pv_net_remise'] : '-';
+                    $mb         = (isset($item['mb']) && $item['mb'] !== '') ? $item['mb'] : '-';
+                    $mbP        = isset($item['mb_p']) ? $formatterPourcentage($item['mb_p']) : '-';
+
+                    $rowValues = [$dispoStock, $nbRef, $qteDem, $ref, $pmp, $pvBrut, $mtRemise, $pvNet, $mb, $mbP];
+
+                    foreach ($rowValues as $colIndex => $val) {
+                        $cellCoordinate = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex + 1) . $currentRow;
+                        $sheet->setCellValue($cellCoordinate, $val);
+                    }
+
+                    // Alignements par cellule
+                    $sheet->getStyle("A{$currentRow}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+                    $sheet->getStyle("B{$currentRow}:C{$currentRow}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+                    $sheet->getStyle("D{$currentRow}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+                    $sheet->getStyle("E{$currentRow}:J{$currentRow}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+
+                    $currentRow++;
+                }
+            }
+
+            // Espace d'une ligne entre les tableaux
+            $currentRow += 1;
+        }
+
+        // Auto-fit des colonnes
+        for ($col = 1; $col <= 10; $col++) {
+            $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col);
+            $sheet->getColumnDimension($colLetter)->setAutoSize(true);
+        }
+
+        if ($filePath !== null) {
+            if (!file_exists(dirname($filePath))) {
+                mkdir(dirname($filePath), 0777, true);
+            }
+            $writer = new Xlsx($spreadsheet);
+            $writer->save($filePath);
+            return $filePath;
+        }
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="' . $filename . '.xlsx"');
+        setcookie('fileDownload', 'true', 0, '/');
+        $writer = new Xlsx($spreadsheet);
+        $writer->save('php://output');
+    }
 }
+
