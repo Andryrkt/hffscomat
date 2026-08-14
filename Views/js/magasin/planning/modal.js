@@ -3,6 +3,16 @@
  *  =======================*/
 import { API_ENDPOINTS } from "../../api/apiEndpoints";
 import { baseUrl } from "../../utils/config";
+import { hideCells, applyRowspanAndClass } from "../utils/uiUtils.js";
+
+const CELL_INDICES_LIGNE = {
+  constp: 0,
+  refp: 1,
+  desi: 2,
+  qteDem: 3,
+  qteRest: 4,
+  statut: 5,
+};
 
 document.addEventListener("DOMContentLoaded", function () {
   let abortController; // AbortController pour annuler les requêtes fetch précédentes
@@ -47,6 +57,39 @@ document.addEventListener("DOMContentLoaded", function () {
     emetteur.textContent = "";
   });
 
+  function getPivotKey(row) {
+    return ["constp", "refp", "desi"]
+      .map((key) => row.cells[CELL_INDICES_LIGNE[key]]?.textContent.trim())
+      .join("|");
+  }
+
+  function fusionnerLignesParPivot(tableBody) {
+    const cellIndices = Object.values(CELL_INDICES_LIGNE);
+    let firstRowInGroup = null;
+    let rowSpanCount = 0;
+    let previousKey = null;
+
+    Array.from(tableBody.rows).forEach((row) => {
+      const key = getPivotKey(row);
+
+      if (key === previousKey) {
+        rowSpanCount++;
+        hideCells(row, cellIndices);
+      } else {
+        if (firstRowInGroup) {
+          applyRowspanAndClass(firstRowInGroup, rowSpanCount, CELL_INDICES_LIGNE);
+        }
+        firstRowInGroup = row;
+        rowSpanCount = 1;
+        previousKey = key;
+      }
+    });
+
+    if (firstRowInGroup) {
+      applyRowspanAndClass(firstRowInGroup, rowSpanCount, CELL_INDICES_LIGNE);
+    }
+  }
+
   function masquerSpinner() {
     // Masquer le spinner et afficher les données
     document.getElementById("loading").style.display = "none";
@@ -76,29 +119,28 @@ document.addEventListener("DOMContentLoaded", function () {
             .map(
               (detail) => `
                 <tr>
-                  <td>${detail.num_ligne || ""}</td>
-                  <td>${detail.type || ""}</td>
-                  <td>${detail.num_bc_negoce || ""}</td>
-                  <td>${detail.client || ""}</td>
-                  <td>${detail.code_cst || ""}</td>
-                  <td>${detail.ref || ""}</td>
-                  <td>${detail.designation || ""}</td>
+                  <td>${detail.constp || ""}</td>
+                  <td>${detail.refp || ""}</td>
+                  <td>${detail.desi || ""}</td>
                   <td>${qte(detail.qte_dem)}</td>
                   <td>${qte(detail.qte_rest)}</td>
-                  <td>${qte(detail.qte_a_livrer)}</td>
-                  <td>${qte(detail.qte_livree)}</td>
-                  <td>${qte(detail.qte_facturee)}</td>
                   <td>${detail.statut || ""}</td>
-                  <td>${formaterDate(detail.eta_magasin)}</td>
+                  <td class="col-separator">${detail.type_doc || ""}</td>
+                  <td>${detail.numero || ""}</td>
+                  <td>${detail.numcli || ""}</td>
+                  <td>${detail.nomcli || ""}</td>
+                  <td>${qte(detail.qte_dem_ligne)}</td>
                 </tr>`
             )
             .join("");
+
+          fusionnerLignesParPivot(tableBody);
 
           masquerSpinner();
         } else {
           // Si les données sont vides, afficher un message vide
           tableBody.innerHTML =
-            '<tr><td colspan="5">Aucune donnée disponible.</td></tr>';
+            '<tr><td colspan="11">Aucune donnée disponible.</td></tr>';
           masquerSpinner();
         }
       })
@@ -108,22 +150,10 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
           const tableBody = document.getElementById("commandesTableBody");
           tableBody.innerHTML =
-            '<tr><td colspan="5">Could not retrieve data.</td></tr>';
+            '<tr><td colspan="11">Could not retrieve data.</td></tr>';
           console.error("There was a problem with the fetch operation:", error);
           masquerSpinner();
         }
       });
-  }
-
-  function formaterDate(daty) {
-    if (!daty || daty === "0000-00-00" || daty === "0000-00-00 00:00:00")
-      return "";
-    const date = new Date(daty);
-    if (isNaN(date.getTime())) return "";
-
-    const formatted = date.toLocaleDateString("fr-FR");
-    if (formatted === "01/01/1970" || formatted === "01/01/1900") return "";
-
-    return formatted;
   }
 });
