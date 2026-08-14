@@ -115,9 +115,11 @@ class ExcelService
         };
 
         $headers = [
+            'Ref',
+            'Designation',
+            'Famille',
             'Qte stock',
             'Qte dem',
-            'Ref',
             'PMP',
             'PV Brut',
             'Mt Remise',
@@ -153,9 +155,11 @@ class ExcelService
             if (!empty($lignes)) {
                 foreach ($lignes as $item) {
                     $dispoStock = $formatterDispoStock($item);
+                    $ref        = $item['reference'] ?? '';
+                    $designation = $item['designation'] ?? '';
+                    $famille    = $item['famille'] ?? '';
                     $nbRef      = $item['nb_ref'] ?? 0;
                     $qteDem     = $item['quantite_demander'] ?? 0;
-                    $ref        = $item['reference'] ?? '';
                     $pmp        = (isset($item['pmp']) && $item['pmp'] !== '') ? $item['pmp'] : '-';
                     $pvBrut     = (isset($item['pv_brut']) && $item['pv_brut'] !== '') ? $item['pv_brut'] : '-';
                     $mtRemise   = (isset($item['mt_remise']) && $item['mt_remise'] !== '') ? $item['mt_remise'] : '-';
@@ -163,7 +167,7 @@ class ExcelService
                     $mb         = (isset($item['mb']) && $item['mb'] !== '') ? $item['mb'] : '-';
                     $mbP        = isset($item['mb_p']) ? $formatterPourcentage($item['mb_p']) : '-';
 
-                    $rowValues = [$dispoStock, $nbRef, $qteDem, $ref, $pmp, $pvBrut, $mtRemise, $pvNet, $mb, $mbP];
+                    $rowValues = [$dispoStock, $ref, $designation, $famille,  $nbRef, $qteDem, $pmp, $pvBrut, $mtRemise, $pvNet, $mb, $mbP];
 
                     foreach ($rowValues as $colIndex => $val) {
                         $cellCoordinate = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex + 1) . $currentRow;
@@ -206,4 +210,3 @@ class ExcelService
         $writer->save('php://output');
     }
 }
-

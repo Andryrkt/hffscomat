@@ -920,6 +920,7 @@ class DitOrSoumisAValidationModel extends Model
                 -- Stock
                 ROUND(CASE WHEN astp_stock IS NULL THEN 0 ELSE astp_stock END) AS nb_ref,
                 TRIM(slor_refp) AS reference,
+                TRIM(slor_desi) AS designation,
                 ROUND(slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) AS quantite_demander,
 
                 -- Prix et remises
@@ -943,14 +944,19 @@ class DitOrSoumisAValidationModel extends Model
 
                 -- Minimum MB (issu de la ligne réelle correspondante)
                 COALESCE(stats_min.min_mb, 0) AS min_mb,
-                COALESCE(stats_min.min_mb_p, 0) AS min_mb_p
+                COALESCE(stats_min.min_mb_p, 0) AS min_mb_p,
+
+                -- Famille
+                abse_fams1 || '-' || atab_lib as famille
 
             FROM Informix.sav_lor
             INNER JOIN Informix.art_stp 
                 ON astp_refp = slor_refp 
                 AND astp_soc = slor_soc 
                 AND astp_succ = slor_succ
-                AND astp_constp = slor_constp 
+                AND astp_constp = slor_constp
+            INNER JOIN Informix.art_bse on abse_refp = slor_refp
+            INNER JOIN Informix.agr_tab on atab_nom = 'STA' and atab_code = abse_fams1
             CROSS JOIN stats_max
             CROSS JOIN stats_min
             WHERE slor_numor = '$numeroOr' 
