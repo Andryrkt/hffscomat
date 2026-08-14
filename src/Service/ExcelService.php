@@ -115,7 +115,8 @@ class ExcelService
         };
 
         $headers = [
-            'Ref',
+            'Constructeur',
+            'Référence',
             'Designation',
             'Famille',
             'Qte stock',
@@ -155,6 +156,7 @@ class ExcelService
             if (!empty($lignes)) {
                 foreach ($lignes as $item) {
                     $dispoStock = $formatterDispoStock($item);
+                    $constructeur = $item['constructeur'] ?? '';
                     $ref        = $item['reference'] ?? '';
                     $designation = $item['designation'] ?? '';
                     $famille    = $item['famille'] ?? '';
@@ -167,7 +169,7 @@ class ExcelService
                     $mb         = (isset($item['mb']) && $item['mb'] !== '') ? $item['mb'] : '-';
                     $mbP        = isset($item['mb_p']) ? $formatterPourcentage($item['mb_p']) : '-';
 
-                    $rowValues = [$dispoStock, $ref, $designation, $famille,  $nbRef, $qteDem, $pmp, $pvBrut, $mtRemise, $pvNet, $mb, $mbP];
+                    $rowValues = [$dispoStock, $constructeur, $ref, $designation, $famille, $nbRef, $qteDem, $pmp, $pvBrut, $mtRemise, $pvNet, $mb, $mbP];
 
                     foreach ($rowValues as $colIndex => $val) {
                         $cellCoordinate = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex + 1) . $currentRow;
