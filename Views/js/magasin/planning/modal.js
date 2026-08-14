@@ -77,7 +77,11 @@ document.addEventListener("DOMContentLoaded", function () {
         hideCells(row, cellIndices);
       } else {
         if (firstRowInGroup) {
-          applyRowspanAndClass(firstRowInGroup, rowSpanCount, CELL_INDICES_LIGNE);
+          applyRowspanAndClass(
+            firstRowInGroup,
+            rowSpanCount,
+            CELL_INDICES_LIGNE
+          );
         }
         firstRowInGroup = row;
         rowSpanCount = 1;
@@ -115,6 +119,16 @@ document.addEventListener("DOMContentLoaded", function () {
             const n = parseInt(val);
             return n === 0 ? "" : n;
           };
+          const statutBadge = (statut) => {
+            const badges = {
+              livre: ["LIVRE", "bg-success text-white"],
+              partiel: ["PARTIEL DISPO", "bg-warning text-white"],
+            };
+            const [label, classe] = badges[statut] || [];
+            return label
+              ? `<span class="d-inline-block px-2 pt-1 my-1 rounded text-wrap ${classe}">${label}</span>`
+              : "";
+          };
           tableBody.innerHTML = data.data
             .map(
               (detail) => `
@@ -124,7 +138,7 @@ document.addEventListener("DOMContentLoaded", function () {
                   <td>${detail.desi || ""}</td>
                   <td>${qte(detail.qte_dem)}</td>
                   <td>${qte(detail.qte_rest)}</td>
-                  <td>${detail.statut || ""}</td>
+                  <td>${statutBadge(detail.statut)}</td>
                   <td class="col-separator">${detail.type_doc || ""}</td>
                   <td>${detail.numero || ""}</td>
                   <td>${detail.numcli || ""}</td>
