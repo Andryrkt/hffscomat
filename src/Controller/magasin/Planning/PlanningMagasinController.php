@@ -50,7 +50,7 @@ class PlanningMagasinController extends Controller
         $data = $this->filtrerParStatut($data, $condition);
 
         $uniqueMonths = $this->genererMoisAffiches($dto->months ?? 3);
-        $preparedData = $this->preparerDonnees($data);
+        $preparedData = $this->preparerDonnees($data, array_column($uniqueMonths, 'key'));
 
         return $this->render('magasin/planning/planning.html.twig', [
             'form'         => $form->createView(),
@@ -168,12 +168,18 @@ class PlanningMagasinController extends Controller
     /**
      * Regroupe les commandes par fournisseur / agence-service et les répartit par mois.
      */
-    private function preparerDonnees(array $data): array
+    private function preparerDonnees(array $data, array $monthsKey): array
     {
         $grouped = [];
 
         foreach ($data as $item) {
             $cle = $item['numero_fournisseur'] . '|' . $item['agence_service'];
+            $timestamp = strtotime($item['date_commande']);
+            if ($timestamp === false) continue;
+
+            $moisCle = date('Y-m', $timestamp);
+
+            if (!in_array($moisCle, $monthsKey)) continue;
 
             if (!isset($grouped[$cle])) {
                 $grouped[$cle] = [
@@ -183,13 +189,6 @@ class PlanningMagasinController extends Controller
                     'commandes'     => [],
                 ];
             }
-
-            $timestamp = strtotime($item['date_commande']);
-            if ($timestamp === false) {
-                continue;
-            }
-
-            $moisCle = date('Y-m', $timestamp);
 
             $grouped[$cle]['commandes'][$moisCle][] = [
                 'numero' => $item['numero_commande'],

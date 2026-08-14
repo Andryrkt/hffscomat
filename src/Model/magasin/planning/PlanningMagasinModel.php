@@ -69,7 +69,7 @@ class PlanningMagasinModel extends Model
                     LEFT JOIN frn_llf fllf ON fllf.fllf_soc = fcdl.fcdl_soc AND fllf.fllf_numcde = fcdl.fcdl_numcde AND fllf.fllf_ligne = fcdl.fcdl_ligne
                     WHERE year(fcde_date) = 2026
                     AND (fcde_cdeext NOT LIKE '%CIS%' OR fcde_cdeext IS NULL)
-                    AND fcdl_constp IN ('AGR','ATC','AUS','CAT','CGM','CMX','DNL','DYN','GRO','HYS','JDR','KIT','MAN','MNT','OLY','OOM','PAR','PDV','PER','PUB','REM','SHM','TBI','THO')
+                    AND fcdl_constp IN (select distinct abse_constp from art_bse where abse_codg = 'ST')
                     GROUP BY fcdl.fcdl_numcde, fcdl.fcdl_ligne, fcdl.fcdl_qte, fbse_numfou, fbse_nomfou, asuc_lib, atab_lib, asuc_num, atab_code, fcde_datec
                 ) l
                 GROUP BY l.fcdl_numcde, l.fbse_numfou, l.fbse_nomfou, l.asuc_lib, l.atab_lib, l.asuc_num, l.atab_code, l.fcde_datec
