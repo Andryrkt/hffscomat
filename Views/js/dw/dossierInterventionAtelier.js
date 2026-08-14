@@ -40,6 +40,10 @@ document.addEventListener("DOMContentLoaded", function () {
           response.data.forEach((doc) => {
             const row = document.createElement("tr");
 
+            const excelCell = doc.lienMargeRef
+              ? `<a href="${doc.lienMargeRef}" class="btn btn-sm btn-success text-white" download onclick="event.stopPropagation();" title="Télécharger le fichier Excel"><i class="fas fa-file-excel"></i></a>`
+              : '-';
+
             row.innerHTML = `
                       <td>${doc.iconRaw}</td>
                       <td>${doc.nomDoc}</td>
@@ -49,6 +53,7 @@ document.addEventListener("DOMContentLoaded", function () {
                       <td class="text-center">${doc.numeroVersion}</td>
                       <td class="text-center">${doc.totalPage}</td>
                       <td class="text-end">${doc.tailleFichier}</td>
+                      <td class="text-center">${excelCell}</td>
                   `;
             row.classList.add("clickable-row");
 

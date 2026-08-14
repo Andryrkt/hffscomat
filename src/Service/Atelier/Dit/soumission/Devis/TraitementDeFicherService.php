@@ -48,7 +48,7 @@ class TraitementDeFicherService
 
             // creation du pdf de verification de prix
             $tableauMarge = $this->tableauMarge($dto->numeroDevis, $dto->codeSociete);
-            $tableauMargeReference = $this->tableauMargeReference($dto->numeroDevis, $dto->codeSociete);
+            $tableauMargeReference = $this->tableauMargeReference($dto->numeroDevis, $dto->codeSociete, $dto->numeroVersion);
             $mailUtilisateur = $this->securityService->getDataService()->getUserMail();
             $generePdfDevis->genererPdfVerificationPrix($tableauMarge, $tableauMargeReference, $nomFichierCtrl, $mailUtilisateur);
 
@@ -226,7 +226,7 @@ class TraitementDeFicherService
         ];
     }
 
-    public function tableauMargeReference(string $numOr, string $codeSociete): array
+    public function tableauMargeReference(string $numOr, string $codeSociete, string $numeroVersion): array
     {
         $ditOrsoumisAValidationModel = new DitOrSoumisAValidationModel();
 
@@ -253,18 +253,18 @@ class TraitementDeFicherService
         }
         // dd($tableauMargeCat, $tableauMargeMfn, $tableauMargeAutres);
 
-        
-         $tableauMargeReference = [
+
+        $tableauMargeReference = [
             'tableauMargeCat'    => $tableauMargeCat,
             'tableauMargeMfn'    => $tableauMargeMfn,
             'tableauMargeAutres' => $tableauMargeAutres
         ];
 
         // 1. Définir le chemin où enregistrer le fichier Excel
-        $cheminFichier = $_ENV['BASE_PATH_FICHIER'] . '/dit/dev/fichiers/marge_ref_' . $numOr . '.xlsx';
+        $cheminFichier = $_ENV['BASE_PATH_FICHIER'] . '/dit/dev/fichiers/marge_ref_' . $numOr . '-' . $numeroVersion . '.xlsx';
         // 2. Appel de la fonction de génération Excel
         $this->genererExcelTableauMargeReference($tableauMargeReference, $cheminFichier);
-        
+
         return $tableauMargeReference;
     }
 
@@ -282,4 +282,3 @@ class TraitementDeFicherService
         return $excelService->genererExcelTableauMargeReference($tableauMargeReference, $filePath, $filename);
     }
 }
-
