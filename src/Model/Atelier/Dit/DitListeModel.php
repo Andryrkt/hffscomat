@@ -153,7 +153,7 @@ class DitListeModel extends Model
                 $conditionsMultisucursal
                 ORDER BY d0_.date_demande DESC, d0_.numero_demande_dit ASC              
         ";
-// dd($statement);
+        // dd($statement);
         $result = $this->connect->executeQuery($statement);
         $data = $this->connect->fetchResults($result);
 
@@ -530,7 +530,7 @@ class DitListeModel extends Model
                         sav_itv
                     JOIN
                         sav_lor ON sitv_numor = slor_numor
-                        AND sitv_interv = slor_nogrp / 100
+                        AND sitv_interv = TRUNC(slor_nogrp / 100)
                     WHERE
                         sitv_numor = '" . $numOr . "'
         ";

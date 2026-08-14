@@ -43,21 +43,21 @@ class PlanningMaterielModel extends Model
                     )
                 from {$this->dbIps}.sav_lor as A, {$this->dbIps}.sav_itv  as B
                 where  A.slor_numor = B.sitv_numor
-                    and  B.sitv_interv = A.slor_nogrp/100
+                    and  B.sitv_interv = TRUNC(A.slor_nogrp/100)
                     and A.slor_numor = C.slor_numor
                     and B.sitv_interv  = D.sitv_interv {$this->getTypeLigneCondition($searchDto)}
                 )                                                           as qte_cmd,
                 (select sum(slor_qterea)
                 from {$this->dbIps}.sav_lor as A, {$this->dbIps}.sav_itv as B
                 where  A.slor_numor = B.sitv_numor
-                    and  B.sitv_interv = A.slor_nogrp/100
+                    and  B.sitv_interv = TRUNC(A.slor_nogrp/100)
                     and A.slor_numor = C.slor_numor and
                     B.sitv_interv  = D.sitv_interv {$this->getTypeLigneCondition($searchDto)}
                 )                                                           as qte_liv,
                 (select sum(slor_qteres)
                 from {$this->dbIps}.sav_lor as A, {$this->dbIps}.sav_itv  as B
                 where A.slor_numor = B.sitv_numor
-                    and B.sitv_interv = A.slor_nogrp/100
+                    and B.sitv_interv = TRUNC(A.slor_nogrp/100)
                     and A.slor_numor = C.slor_numor
                     and B.sitv_interv  = D.sitv_interv   {$this->getTypeLigneCondition($searchDto)}
                 ),
@@ -73,7 +73,7 @@ class PlanningMaterielModel extends Model
                 AND seor_serv <> 'DEV'
                 AND seor_soc = '$codeSoc'
                 AND sitv_numor = slor_numor 
-                AND sitv_interv = slor_nogrp/100
+                AND sitv_interv = TRUNC(slor_nogrp/100)
                 AND (seor_succ = asuc_num) -- OR mmat_succ = asuc_parc)
                 AND (seor_servcrt = ser.atab_code AND ser.atab_nom = 'SER')
                 AND (sitv_typitv = sec.atab_code AND sec.atab_nom = 'TYI')
@@ -227,7 +227,7 @@ class PlanningMaterielModel extends Model
             FROM {$this->dbIps}.sav_lor
             JOIN {$this->dbIps}.sav_itv
                 ON slor_numor = sitv_numor
-                AND sitv_interv = slor_nogrp / 100
+                AND sitv_interv = TRUNC(slor_nogrp / 100)
             LEFT JOIN {$this->dbIps}.neg_lig
                 ON slor_numcf = nlig_numcde
                 AND slor_refp = nlig_refp
@@ -384,7 +384,7 @@ class PlanningMaterielModel extends Model
                                 )
                         END as Message
                 FROM {$this->dbIps}.sav_lor
-	              JOIN sav_itv ON slor_numor = sitv_numor AND sitv_interv = slor_nogrp / 100
+	              JOIN sav_itv ON slor_numor = sitv_numor AND sitv_interv = TRUNC(slor_nogrp / 100)
               LEFT JOIN neg_lig ON slor_numcf = nlig_numcde AND slor_refp = nlig_refp
                 WHERE slor_constp NOT LIKE '%ZDI%'
                 --AND slor_typlig = 'P'
@@ -422,21 +422,21 @@ class PlanningMaterielModel extends Model
                     )
                 from {$this->dbIps}.sav_lor as A, {$this->dbIps}.sav_itv  as B
                 where  A.slor_numor = B.sitv_numor
-                    and  B.sitv_interv = A.slor_nogrp/100
+                    and  B.sitv_interv = TRUNC(A.slor_nogrp/100)
                     and A.slor_numor = C.slor_numor
                     and B.sitv_interv  = D.sitv_interv {$this->getTypeLigneCondition($searchDto)}
                 )                                                                                                                               as qte_cmd,
                 (select sum(slor_qterea)
                 from {$this->dbIps}.sav_lor as A, {$this->dbIps}.sav_itv as B
                 where  A.slor_numor = B.sitv_numor
-                    and  B.sitv_interv = A.slor_nogrp/100
+                    and  B.sitv_interv = TRUNC(A.slor_nogrp/100)
                     and A.slor_numor = C.slor_numor and
                     B.sitv_interv  = D.sitv_interv {$this->getTypeLigneCondition($searchDto)}
                 )                                                                                                                               as qte_liv,
                 (select sum(slor_qteres)
                 from {$this->dbIps}.sav_lor as A, {$this->dbIps}.sav_itv  as B
                 where A.slor_numor = B.sitv_numor
-                    and B.sitv_interv = A.slor_nogrp/100
+                    and B.sitv_interv = TRUNC(A.slor_nogrp/100)
                     and A.slor_numor = C.slor_numor
                     and B.sitv_interv  = D.sitv_interv   {$this->getTypeLigneCondition($searchDto)}
                 )                                                                                                                               as qte_all,
@@ -455,14 +455,14 @@ class PlanningMaterielModel extends Model
                         FROM {$this->dbIps}.sav_lor AS A
                         INNER JOIN {$this->dbIps}.sav_itv AS B
                             ON A.slor_numor = B.sitv_numor 
-                            AND B.sitv_interv = A.slor_nogrp / 100 
+                            AND B.sitv_interv = TRUNC(A.slor_nogrp / 100) 
                         WHERE A.slor_numor = C.slor_numor AND B.sitv_interv = D.sitv_interv
                     ) = (
                         SELECT SUM(A.slor_qterea)
                         FROM {$this->dbIps}.sav_lor AS A
                         INNER JOIN {$this->dbIps}.sav_itv AS B
                             ON A.slor_numor = B.sitv_numor 
-                            AND B.sitv_interv = A.slor_nogrp / 100 
+                            AND B.sitv_interv = TRUNC(A.slor_nogrp / 100) 
                         WHERE A.slor_numor = C.slor_numor AND B.sitv_interv = D.sitv_interv
                     ) 
                     THEN TRIM('TOUT LIVRE')
@@ -471,7 +471,7 @@ class PlanningMaterielModel extends Model
                         FROM {$this->dbIps}.sav_lor AS A
                         INNER JOIN {$this->dbIps}.sav_itv AS B
                             ON A.slor_numor = B.sitv_numor 
-                            AND B.sitv_interv = A.slor_nogrp / 100 
+                            AND B.sitv_interv = TRUNC(A.slor_nogrp / 100) 
                         WHERE A.slor_numor = C.slor_numor AND B.sitv_interv = D.sitv_interv
                     ) > 0 
                     AND (
@@ -479,7 +479,7 @@ class PlanningMaterielModel extends Model
                         FROM {$this->dbIps}.sav_lor AS A
                         INNER JOIN {$this->dbIps}.sav_itv AS B
                             ON A.slor_numor = B.sitv_numor 
-                            AND B.sitv_interv = A.slor_nogrp / 100 
+                            AND B.sitv_interv = TRUNC(A.slor_nogrp / 100) 
                         WHERE A.slor_numor = C.slor_numor AND B.sitv_interv = D.sitv_interv
                     ) != (
                         SELECT SUM(
@@ -492,7 +492,7 @@ class PlanningMaterielModel extends Model
                         FROM {$this->dbIps}.sav_lor AS A
                         INNER JOIN {$this->dbIps}.sav_itv AS B
                             ON A.slor_numor = B.sitv_numor 
-                            AND B.sitv_interv = A.slor_nogrp / 100 
+                            AND B.sitv_interv = TRUNC(A.slor_nogrp / 100) 
                         WHERE A.slor_numor = C.slor_numor AND B.sitv_interv = D.sitv_interv
                     ) 
                     THEN TRIM('PARTIELLEMENT LIVRE')
@@ -502,7 +502,7 @@ class PlanningMaterielModel extends Model
                         FROM {$this->dbIps}.sav_lor AS A
                         INNER JOIN {$this->dbIps}.sav_itv AS B
                             ON A.slor_numor = B.sitv_numor 
-                            AND B.sitv_interv = A.slor_nogrp / 100 
+                            AND B.sitv_interv = TRUNC(A.slor_nogrp / 100) 
                         WHERE A.slor_numor = C.slor_numor AND B.sitv_interv = D.sitv_interv
                     ) > 0
                     AND (
@@ -510,7 +510,7 @@ class PlanningMaterielModel extends Model
                         FROM {$this->dbIps}.sav_lor AS A
                         INNER JOIN {$this->dbIps}.sav_itv AS B
                             ON A.slor_numor = B.sitv_numor 
-                            AND B.sitv_interv = A.slor_nogrp / 100 
+                            AND B.sitv_interv = TRUNC(A.slor_nogrp / 100) 
                         WHERE A.slor_numor = C.slor_numor AND B.sitv_interv = D.sitv_interv
                     ) != (
                         SELECT SUM(
@@ -523,7 +523,7 @@ class PlanningMaterielModel extends Model
                         FROM {$this->dbIps}.sav_lor AS A
                         INNER JOIN {$this->dbIps}.sav_itv AS B
                             ON A.slor_numor = B.sitv_numor 
-                            AND B.sitv_interv = A.slor_nogrp / 100 
+                            AND B.sitv_interv = TRUNC(A.slor_nogrp / 100) 
                         WHERE A.slor_numor = C.slor_numor
                     ) 
                     THEN TRIM('PARTIELLEMENT DISPO')
@@ -538,14 +538,14 @@ class PlanningMaterielModel extends Model
                         FROM {$this->dbIps}.sav_lor AS A
                         INNER JOIN {$this->dbIps}.sav_itv AS B
                             ON A.slor_numor = B.sitv_numor 
-                            AND B.sitv_interv = A.slor_nogrp / 100 
+                            AND B.sitv_interv = TRUNC(A.slor_nogrp / 100) 
                         WHERE A.slor_numor = C.slor_numor AND B.sitv_interv = D.sitv_interv
                     ) = (
                         SELECT SUM(A.slor_qteres)
                         FROM {$this->dbIps}.sav_lor AS A
                         INNER JOIN {$this->dbIps}.sav_itv AS B
                             ON A.slor_numor = B.sitv_numor 
-                            AND B.sitv_interv = A.slor_nogrp / 100 
+                            AND B.sitv_interv = TRUNC(A.slor_nogrp / 100) 
                         WHERE A.slor_numor = C.slor_numor AND B.sitv_interv = D.sitv_interv
                     ) 
                     THEN TRIM('COMPLET NON LIVRE')
@@ -624,7 +624,7 @@ class PlanningMaterielModel extends Model
                 AND seor_serv <> 'DEV'
                 AND seor_soc = '$codeSoc'
                 AND sitv_numor = slor_numor 
-                AND sitv_interv = slor_nogrp/100 
+                AND sitv_interv = TRUNC(slor_nogrp/100) 
                 AND (seor_succ = asuc_num)
                 AND (seor_servcrt = ser.atab_code AND ser.atab_nom = 'SER')
                 AND (sitv_typitv = sec.atab_code AND sec.atab_nom = 'TYI')

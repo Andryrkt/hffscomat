@@ -59,9 +59,13 @@ class DitDevisSoumisAVAlidataionController extends Controller
         if ($form->isSubmitted() && $form->isValid()) {
             $dto = $form->getData();
 
+            $file = $form->get('pieceJoint01')->getData();
+            $fileName = $file->getClientOriginalName();
+            $numDevisFile = explode("_", $fileName)[1] ?? null;
+
             // 
             $ditDevisSoumisAValidationFactory = new DitDevisSoumisAValidationFactory($this->getSecurityService());
-            $dto = $ditDevisSoumisAValidationFactory->apresSoumission($dto, $numDit);
+            $dto = $ditDevisSoumisAValidationFactory->apresSoumission($dto, $numDit, $numDevisFile);
 
             // Validation des données
             $devisValidationService = new DevisValidationService();

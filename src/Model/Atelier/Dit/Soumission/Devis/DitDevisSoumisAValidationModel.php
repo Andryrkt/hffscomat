@@ -64,8 +64,43 @@ class DitDevisSoumisAValidationModel extends Model
         return $data[0]['numdevis'] ?? null;
     }
 
-    public function recupNumeroDevisApresSoumission(string $numDit, string $codeSociete): ?string
+    public function estDevisSequence(?string $numDit, string $codeSociete): bool
     {
+        if ($numDit === null) return false;
+
+        $statement = "SELECT max(seor_numor_seq) as sequence 
+                        from {$this->dbIps}.sav_eor 
+                        where seor_refdem like '%{$numDit}%' 
+                        and seor_serv='DEV'
+                        AND seor_soc = '$codeSociete'
+        ";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
+
+        return (int)$data[0]['sequence'] > 1;
+    }
+
+    public function recupNumDitDevisSequence(string $numDevisFile, string $codeSociete): ?string
+    {
+        $statement = " SELECT TRIM(seor_refdem) as num_dit
+                        from {$this->dbIps}.sav_eor 
+                        where seor_numor =  '$numDevisFile'
+                        and seor_serv='DEV'
+                        AND seor_soc = '$codeSociete'
+        ";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
+
+        return $data[0]['num_dit'] ?? null;
+    }
+
+    public function recupNumeroDevisApresSoumission(?string $numDit, string $codeSociete): ?string
+    {
+        if ($numDit === null) return null;
         $statement = "SELECT FIRST 1
                         CASE 
                             WHEN (select max(seor_numor_seq) 
@@ -165,7 +200,7 @@ class DitDevisSoumisAValidationModel extends Model
                 WHERE seor_numor = slor_numor
                 AND seor_serv = 'DEV'
                 AND sitv_numor = slor_numor
-                AND sitv_interv = slor_nogrp / 100
+                AND sitv_interv = TRUNC(slor_nogrp / 100)
                 AND seor_soc = '$codeSociete'
                 AND slor_soc = seor_soc
                 AND sitv_soc = seor_soc
@@ -212,8 +247,9 @@ class DitDevisSoumisAValidationModel extends Model
     }
 
 
-    public function recupInfoDit(string $numDit, string $numDevis, string $codeSociete): ?array
+    public function recupInfoDit(?string $numDit, ?string $numDevis, string $codeSociete): array
     {
+        if ($numDit === null) return [];
         $statement = " SELECT  *
                         from {$this->dbIrium}.demande_intervention 
                         where numero_demande_dit ='$numDit'
@@ -225,7 +261,7 @@ class DitDevisSoumisAValidationModel extends Model
 
         $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
 
-        return $data[0] ?? null;
+        return $data[0] ?? [];
     }
 
     public function recupNumeroClientIps(string $numDevis, string $codeSociete): ?string
@@ -283,8 +319,10 @@ class DitDevisSoumisAValidationModel extends Model
      * @param string $codeSociete
      * @return array
      */
-    public function recupDevisSoumisValidation(string $numDevis, string $codeSociete): array
+    public function recupDevisSoumisValidation(?string $numDevis, string $codeSociete): array
     {
+        if ($numDevis === null) return [];
+
         $statement = " SELECT 
             sitv_succdeb as num_agence, 
             slor_numor as numero_devis, 
@@ -396,7 +434,7 @@ class DitDevisSoumisAValidationModel extends Model
                 WHERE seor_numor = slor_numor
                 AND seor_serv = 'DEV'
                 AND sitv_numor = slor_numor
-                AND sitv_interv = slor_nogrp / 100
+                AND sitv_interv = TRUNC(slor_nogrp / 100)
                 AND seor_soc = '$codeSociete'
                 AND slor_soc = seor_soc
                 AND sitv_soc = seor_soc
@@ -419,7 +457,7 @@ class DitDevisSoumisAValidationModel extends Model
         $statement = " SELECT   TRIM(slor_constp||'-'|| slor_refp) as contructeur
                         FROM {$this->dbIps}.sav_lor
                         WHERE  slor_numor = '{$numDevis}' 
-                        AND slor_nogrp = 100 
+                        AND TRUNC(slor_nogrp / 100) = 1 
                         AND slor_soc = '$codeSociete'
                         ORDER BY slor_nolign ASC
                         LIMIT 1
@@ -434,10 +472,10 @@ class DitDevisSoumisAValidationModel extends Model
 
     public function recupNbrItvDev(string $numDevis, string $codeSociete): array
     {
-        $statement = " SELECT DISTINCT COUNT( slor_nogrp) as itv
+        $statement = " SELECT COUNT(DISTINCT TRUNC(slor_nogrp / 100)) as itv
                         FROM {$this->dbIps}.sav_lor 
                         WHERE slor_numor= '{$numDevis}' 
-                        AND slor_nogrp != 100 
+                        AND TRUNC(slor_nogrp / 100) != 1 
                         AND slor_soc = '$codeSociete'
         ";
 
@@ -448,9 +486,9 @@ class DitDevisSoumisAValidationModel extends Model
         return $this->convertirEnUtf8($data);
     }
 
-    public function recupNumeroVersion(string $numDevis, string $codeSociete): int
+    public function recupNumeroVersion(?string $numDevis, string $codeSociete): int
     {
-        // Récupérer le MAX actuel
+        if ($numDevis === null) return 1;        // Récupérer le MAX actuel
         $statement = "SELECT MAX(numeroversion) as max_version 
                     FROM {$this->dbIrium}.devis_soumis_a_validation 
                     WHERE numerodevis = '$numDevis'
