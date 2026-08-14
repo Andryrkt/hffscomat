@@ -27,11 +27,10 @@ class DwDocMapper
         $dto->chemin           = $item['chemin'] ?? '-';
 
         $numOr = $item['numero_doc'] ?? '';
-        $numeroVersion = $item['numero_version'] ?? '';
-        if (!empty($numOr) && !empty($numeroVersion)) {
-            $cheminFichier = ($_ENV['BASE_PATH_FICHIER'] ?? '') . '/dit/dev/fichiers/marge_ref_' . $numOr . '-' . $numeroVersion . '.xlsx';
+        if (!empty($numOr)) {
+            $cheminFichier = ($_ENV['BASE_PATH_FICHIER'] ?? '') . '/dit/dev/fichiers/marge_ref_' . $numOr . '.xlsx';
             if (file_exists($cheminFichier)) {
-                $dto->lienMargeRef = ($_ENV['BASE_PATH_FICHIER_COURT'] ?? '') . '/dit/dev/fichiers/marge_ref_' . $numOr . '-' . $numeroVersion . '.xlsx';
+                $dto->lienMargeRef = ($_ENV['BASE_PATH_FICHIER_COURT'] ?? '') . '/dit/dev/fichiers/marge_ref_' . $numOr . '.xlsx';
             }
         }
 

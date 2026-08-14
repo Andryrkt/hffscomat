@@ -28,7 +28,6 @@
 								<th>N° Version</th>
 								<th>Nb de pages</th>
 								<th>Taille</th>
-								<th class="text-center">Fichier Excel</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -42,15 +41,6 @@
 									<td class="text-center">{{ item.numeroVersion }}</td>
 									<td class="text-center">{{ item.totalPage }}</td>
 									<td>{{ item.tailleFichier }}</td>
-									<td class="text-center">
-										{% if item.lienMargeRef %}
-											<a href="{{ item.lienMargeRef }}" class="btn btn-sm btn-success text-white" download onclick="event.stopPropagation();" title="Télécharger le fichier Excel">
-												<i class="fas fa-file-excel"></i>
-											</a>
-										{% else %}
-											-
-										{% endif %}
-									</td>
 								</tr>
 							{% endfor %}
 						</tbody>

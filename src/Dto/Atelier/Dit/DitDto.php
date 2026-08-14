@@ -133,4 +133,5 @@ class DitDto
     public float $chargeLocative = 0.0;
     public float $chiffreAffaire = 0.0;
     public float $resultatExploitation = 0.0;
+    public ?string $lienMargeRef = null;
 }

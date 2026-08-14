@@ -261,7 +261,7 @@ class TraitementDeFicherService
         ];
 
         // 1. Définir le chemin où enregistrer le fichier Excel
-        $cheminFichier = $_ENV['BASE_PATH_FICHIER'] . '/dit/dev/fichiers/marge_ref_' . $numOr . '-' . $numeroVersion . '.xlsx';
+        $cheminFichier = $_ENV['BASE_PATH_FICHIER'] . '/dit/dev/fichiers/marge_ref_' . $numOr . '.xlsx';
         // 2. Appel de la fonction de génération Excel
         $this->genererExcelTableauMargeReference($tableauMargeReference, $cheminFichier);
 
