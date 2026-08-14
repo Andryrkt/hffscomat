@@ -27,6 +27,7 @@ class PlanningMagasinModel extends Model
                 END AS statut
             FROM (
                 SELECT
+                    l.fcdl_constp,
                     l.fcdl_numcde,
                     l.fbse_numfou,
                     l.fbse_nomfou,
@@ -41,6 +42,7 @@ class PlanningMagasinModel extends Model
                     SUM(l.qte_dispo)    AS total_dispo
                 FROM (
                     SELECT
+                        fcdl.fcdl_constp,
                         fcdl.fcdl_numcde,
                         fcdl.fcdl_ligne,
                         fcdl.fcdl_qte,
@@ -70,11 +72,11 @@ class PlanningMagasinModel extends Model
                         ON fllf.fllf_soc = fcdl.fcdl_soc AND fllf.fllf_numcde = fcdl.fcdl_numcde AND fllf.fllf_ligne = fcdl.fcdl_ligne
                     WHERE year(fcde_date) = 2026
                     AND (fcde_cdeext NOT LIKE '%CIS%' OR fcde_cdeext IS NULL)
-                    AND fcdl_constp IN (select distinct abse_constp from {$this->dbIps}.art_bse where abse_codg = 'ST')
-                    GROUP BY fcdl.fcdl_numcde, fcdl.fcdl_ligne, fcdl.fcdl_qte, fbse_numfou, fbse_nomfou, asuc_lib, atab_lib, asuc_num, atab_code, fcde_datec
+                    GROUP BY fcdl.fcdl_constp, fcdl.fcdl_numcde, fcdl.fcdl_ligne, fcdl.fcdl_qte, fbse_numfou, fbse_nomfou, asuc_lib, atab_lib, asuc_num, atab_code, fcde_datec
                 ) l
-                GROUP BY l.fcdl_numcde, l.fbse_numfou, l.fbse_nomfou, l.asuc_lib, l.atab_lib, l.asuc_num, l.atab_code, l.fcde_datec
+                GROUP BY l.fcdl_constp, l.fcdl_numcde, l.fbse_numfou, l.fbse_nomfou, l.asuc_lib, l.atab_lib, l.asuc_num, l.atab_code, l.fcde_datec
             ) o
+            WHERE o.fcdl_constp IN (select distinct abse_constp from {$this->dbIps}.art_bse where abse_codg = 'ST')
             ORDER BY o.fcdl_numcde
             ";
 
@@ -118,7 +120,8 @@ class PlanningMagasinModel extends Model
                     else ''
                 end as statut,
                 res.numero,
-                res.qtedem as qte_dem_ligne,
+                NVL(res.qtedem, 0) as qte_dem_ligne,
+                res.type_doc,
                 res.numcli ,
                 res.nomcli
         FROM
@@ -147,6 +150,7 @@ class PlanningMagasinModel extends Model
         LEFT JOIN
         (
             SELECT DISTINCT
+                trim('OR')    AS type_doc,
                 liv.refp      AS refp,
                 o.slor_numor  AS numero,
                 CASE
@@ -175,6 +179,7 @@ class PlanningMagasinModel extends Model
             WHERE o.slor_soc = '$codeSociete'
             UNION ALL
             SELECT DISTINCT
+                trim('VTEDIR') AS type_doc,
                 n.nlig_refp   AS refp,
                 n.nlig_numcde AS numero,
                 n.nlig_qtecde as qtedem,
