@@ -50,7 +50,7 @@ class DitListeMapper
 
             $dto->codeSociete = $item['code_societe'];
 
-            $numOr = $item['numero_or'] ?? '';
+            $numOr = $item['numero_devis'] ?? '';
             if (!empty($numOr)) {
                 $cheminFichier = ($_ENV['BASE_PATH_FICHIER'] ?? '') . '/dit/dev/fichiers/marge_ref_' . $numOr . '.xlsx';
                 if (file_exists($cheminFichier)) {
