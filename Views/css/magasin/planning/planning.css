@@ -19,3 +19,23 @@
 .group-start > td.rowspan-cell {
   border-bottom: 2px solid #212529;
 }
+
+.badge-livre {
+  background-color: #d4edda;
+  color: #2e7d4f;
+  border-radius: 6px;
+  padding: 4px 14px 1px;
+  font-weight: 700;
+  font-size: 0.7rem !important;
+  display: inline-block;
+}
+
+.badge-partiel {
+  background-color: #fdf3d0;
+  color: #9c7a1a;
+  border-radius: 6px;
+  padding: 4px 14px 1px;
+  font-weight: 700;
+  font-size: 0.7rem !important;
+  display: inline-block;
+}

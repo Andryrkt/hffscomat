@@ -10,8 +10,9 @@ const CELL_INDICES_LIGNE = {
   refp: 1,
   desi: 2,
   qteDem: 3,
-  qteRest: 4,
-  statut: 5,
+  qteExp: 4,
+  qteRest: 5,
+  statut: 6,
 };
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -116,19 +117,22 @@ document.addEventListener("DOMContentLoaded", function () {
         tableBody.innerHTML = ""; // Clear previous data
 
         if (data.data.length > 0) {
-          const qte = (val) => {
-            const n = parseInt(val);
-            return n === 0 ? "" : n;
+          const BADGES = {
+            livre: ["LIVRÉ", "badge-livre"],
+            partiel: ["PARTIEL DISPO", "badge-partiel"],
           };
+          const STYLES_QTE = {
+            livre: "text-success fw-bold",
+            partiel: "text-warning fw-bold",
+          };
+
           const statutBadge = (statut) => {
-            const badges = {
-              livre: ["LIVRE", "bg-success text-white"],
-              partiel: ["PARTIEL DISPO", "bg-warning text-white"],
-            };
-            const [label, classe] = badges[statut] || [];
-            return label
-              ? `<span class="d-inline-block px-2 pt-1 my-1 rounded text-wrap ${classe}">${label}</span>`
-              : "";
+            const [label, classe] = BADGES[statut] || [];
+            return label ? `<span class="${classe}">${label}</span>` : "";
+          };
+          const qteAvecStyle = (qte, statut, matchStatut) => {
+            const style = statut === matchStatut ? STYLES_QTE[statut] : "";
+            return `<span class="${style}">${parseInt(qte, 10)}</span>`;
           };
           tableBody.innerHTML = data.data
             .map(
@@ -137,14 +141,15 @@ document.addEventListener("DOMContentLoaded", function () {
                   <td class="text-start">${detail.constp || ""}</td>
                   <td class="text-start">${detail.refp || ""}</td>
                   <td class="text-start">${detail.desi || ""}</td>
-                  <td class="text-center">${qte(detail.qte_dem)}</td>
-                  <td class="text-center">${qte(detail.qte_rest)}</td>
+                  <td class="text-center">${parseInt(detail.qte_dem, 10)}</td>
+                  <td class="text-center">${qteAvecStyle(detail.qte_dispo, detail.statut, "livre")}</td>
+                  <td class="text-center">${qteAvecStyle(detail.qte_dem - detail.qte_dispo, detail.statut, "partiel")}</td>
                   <td class="text-start">${statutBadge(detail.statut)}</td>
                   <td class="text-center">${detail.type_doc || ""}</td>
                   <td class="text-center">${detail.numero || ""}</td>
                   <td class="text-center">${detail.numcli || ""}</td>
                   <td class="text-start">${detail.nomcli || ""}</td>
-                  <td class="text-center">${qte(detail.qte_dem_ligne)}</td>
+                  <td class="text-center">${parseInt(detail.qte_dem_ligne, 10)}</td>
                 </tr>`
             )
             .join("");

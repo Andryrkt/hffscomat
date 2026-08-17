@@ -130,7 +130,7 @@ class PlanningMagasinModel extends Model
             TRIM(cde.refp) AS refp,
             TRIM(cde.desi) AS desi,
             cde.qte_dem,
-            cde.qte_dem - cde.qte_dispo AS qte_rest,
+            cde.qte_dispo,
             CASE
                 WHEN cde.qte_dispo > 0 AND cde.qte_dispo < cde.qte_dem THEN 'partiel'
                 WHEN cde.qte_dispo > 0 AND cde.qte_dispo = cde.qte_dem THEN 'livre'
