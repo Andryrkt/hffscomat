@@ -14,3 +14,8 @@
 .group-start > td {
   border-top: 2px solid #212529;
 }
+
+#commandesTableBody tr:last-child td,
+.group-start > td.rowspan-cell {
+  border-bottom: 2px solid #212529;
+}

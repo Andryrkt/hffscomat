@@ -82,6 +82,7 @@ document.addEventListener("DOMContentLoaded", function () {
             rowSpanCount,
             CELL_INDICES_LIGNE
           );
+          row.classList.add("group-start");
         }
         firstRowInGroup = row;
         rowSpanCount = 1;
@@ -133,17 +134,17 @@ document.addEventListener("DOMContentLoaded", function () {
             .map(
               (detail) => `
                 <tr>
-                  <td>${detail.constp || ""}</td>
-                  <td>${detail.refp || ""}</td>
-                  <td>${detail.desi || ""}</td>
-                  <td>${qte(detail.qte_dem)}</td>
-                  <td>${qte(detail.qte_rest)}</td>
-                  <td>${statutBadge(detail.statut)}</td>
-                  <td class="col-separator">${detail.type_doc || ""}</td>
-                  <td>${detail.numero || ""}</td>
-                  <td>${detail.numcli || ""}</td>
-                  <td>${detail.nomcli || ""}</td>
-                  <td>${qte(detail.qte_dem_ligne)}</td>
+                  <td class="text-start">${detail.constp || ""}</td>
+                  <td class="text-start">${detail.refp || ""}</td>
+                  <td class="text-start">${detail.desi || ""}</td>
+                  <td class="text-center">${qte(detail.qte_dem)}</td>
+                  <td class="text-center">${qte(detail.qte_rest)}</td>
+                  <td class="text-start">${statutBadge(detail.statut)}</td>
+                  <td class="text-center">${detail.type_doc || ""}</td>
+                  <td class="text-center">${detail.numero || ""}</td>
+                  <td class="text-center">${detail.numcli || ""}</td>
+                  <td class="text-start">${detail.nomcli || ""}</td>
+                  <td class="text-center">${qte(detail.qte_dem_ligne)}</td>
                 </tr>`
             )
             .join("");

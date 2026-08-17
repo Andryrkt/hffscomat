@@ -1,15 +1,15 @@
 <div class="modal fade" tabindex="-1" id="listeLigneCommandeMagasin" aria-labelledby="modalLabel" aria-hidden="true">
 	<div class="modal-dialog modal-dialog-scrollable modal-xl">
 		<div class="modal-content">
-			<div class="modal-header pb-1 dark">
+			<div class="modal-header pb-1">
 				<div class="modal-title">
 					<span class="fw-bold fs-6">
 						LIGNES D'ARTICLES — SUIVI COMMANDE FOURNISSEUR
 					</span>
 					<small class="d-block fs-7 text-muted">Commande Fournisseur N°
-						<span class="fw-bold" style="color:#fbbb01" id="numCdeFrn"></span>
+						<span class="fw-bold" style="color:#c99400" id="numCdeFrn"></span>
 						— Emetteur :
-						<span class="fw-bold text-white" id="emetteurCdeFrn"></span>
+						<span class="fw-bold text-dark" id="emetteurCdeFrn"></span>
 					</small>
 				</div>
 
@@ -19,7 +19,7 @@
 			</div>
 			{# body du modal#}
 			<div
-				class="modal-body">
+				class="modal-body pt-0">
 				<!-- Spinner de chargement -->
 				<div id="loading" class="text-center">
 					<div class="spinner-border" role="status">
@@ -27,22 +27,25 @@
 					</div>
 				</div>
 
+				<!-- Petit bg-white -->
+				<div class="bg-white w-100 position-sticky" style="top:0;height:15px;"></div>
+
 				<!-- Contenu des données -->
 				<div id="dataContent" style="display: none;">
-					<table class="table rounded mt-1">
+					<table class="table align-middle">
 						<thead class="table-secondary">
 							<tr>
-								<th>Const.</th>
-								<th>Réf</th>
-								<th>Désignation</th>
-								<th>Qté DEM.</th>
-								<th>Qté REST.</th>
-								<th>Statut</th>
-								<th class="col-separator">Type Doc</th>
-								<th>N° Doc</th>
-								<th>N° Client</th>
-								<th>Client</th>
-								<th>Qté DEM. par Doc</th>
+								<th class="text-start">Const.</th>
+								<th class="text-start">Réf</th>
+								<th class="text-start">Désignation</th>
+								<th class="text-center">Qté DEM.</th>
+								<th class="text-center">Qté REST.</th>
+								<th class="text-start">Statut</th>
+								<th class="text-center">Type Doc</th>
+								<th class="text-center">N° Doc</th>
+								<th class="text-center">N° Client</th>
+								<th class="text-start">Client</th>
+								<th class="text-center">Qté DEM. par Doc</th>
 							</tr>
 						</thead>
 						<tbody id="commandesTableBody"></tbody>
