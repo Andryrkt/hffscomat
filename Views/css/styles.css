@@ -5581,21 +5581,6 @@ fieldset:disabled .btn {
     calc(-0.5 * var(--bs-modal-header-padding-y)) auto;
 }
 
-.modal-header.dark {
-  background-color: #212529;
-  color: #fff;
-  border: 1px solid #495057;
-}
-
-.modal-header.dark .btn-close {
-  filter: invert(1) grayscale(100%) brightness(200%);
-  opacity: 0.8;
-}
-
-.modal-header.dark .btn-close:hover {
-  opacity: 1;
-}
-
 .modal-title {
   margin-bottom: 0;
   line-height: var(--bs-modal-title-line-height);

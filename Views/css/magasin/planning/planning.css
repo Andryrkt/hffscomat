@@ -1,0 +1,16 @@
+.spinner-border {
+  width: 2rem;
+  height: 2rem;
+  margin: 10px auto;
+  display: block;
+}
+
+#dataContent thead th {
+  position: sticky;
+  top: 15px;
+}
+
+/* Marque le début d'un nouveau groupe de lignes fusionnées (bordure doublée) */
+.group-start > td {
+  border-top: 2px solid #212529;
+}

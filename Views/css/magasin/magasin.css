@@ -134,7 +134,6 @@ tr:has(.rectangle) td {
 
 /* Animation pour les barres */
 @keyframes fade {
-
   0%,
   100% {
     opacity: var(--spinner-opacity-low);
