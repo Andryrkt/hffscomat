@@ -108,57 +108,70 @@ class PlanningMagasinModel extends Model
 
     function recupLigneCommande(string $numCde, string $codeSociete)
     {
-        $statement = "SELECT 
-                cde.constp,
-                cde.refp,
-                cde.desi,
-                cde.qte_dem,
-                cde.qte_dem - cde.qte_dispo AS qte_rest,
-                case
-                    when cde.qte_dispo > 0 and cde.qte_dispo < cde.qte_dem then 'partiel'
-                    when cde.qte_dispo > 0 and cde.qte_dispo = cde.qte_dem then 'livre'
-                    else ''
-                end as statut,
-                res.numero,
-                NVL(res.qtedem, 0) as qte_dem_ligne,
-                res.type_doc,
-                res.numcli ,
-                res.nomcli
-        FROM
-        (
+        $statement = "--sql
+        WITH cdl_filtre AS (
             SELECT
                 c.fcdl_constp   AS constp,
                 c.fcdl_refp     AS refp,
                 c.fcdl_desi     AS desi,
-                SUM(c.fcdl_qte) AS qte_dem,
+                c.fcdl_qte      AS qte,
+                c.fcdl_soc      AS soc,
+                c.fcdl_succ     AS succ,
+                c.fcdl_numcde   AS numcde,
+                c.fcdl_ligne    AS ligne
+            FROM {$this->dbIps}.frn_cdl c
+            WHERE c.fcdl_numcde = '$numCde'
+                AND c.fcdl_soc = '$codeSociete'
+        )
+        SELECT
+            cde.constp,
+            cde.refp,
+            cde.desi,
+            cde.qte_dem,
+            cde.qte_dem - cde.qte_dispo AS qte_rest,
+            CASE
+                WHEN cde.qte_dispo > 0 AND cde.qte_dispo < cde.qte_dem THEN 'partiel'
+                WHEN cde.qte_dispo > 0 AND cde.qte_dispo = cde.qte_dem THEN 'livre'
+                ELSE ''
+            END AS statut,
+            res.numero,
+            NVL(res.qtedem, 0) AS qte_dem_ligne,
+            res.type_doc,
+            res.numcli,
+            res.nomcli
+        FROM
+        (
+            SELECT
+                cf.constp,
+                cf.refp,
+                cf.desi,
+                SUM(cf.qte) AS qte_dem,
                 SUM(
                     CASE
                         WHEN l.fllf_majstk = 'O' THEN NVL(l.fllf_qteaff, 0)
                         ELSE 0
                     END
                 ) AS qte_dispo
-            FROM {$this->dbIps}.frn_cdl c
+            FROM cdl_filtre cf
             LEFT JOIN {$this->dbIps}.frn_llf l
-                ON c.fcdl_soc    = l.fllf_soc
-                AND c.fcdl_succ   = l.fllf_succ
-                AND c.fcdl_numcde = l.fllf_numcde
-                AND c.fcdl_ligne  = l.fllf_ligne
-            WHERE c.fcdl_numcde = '$numCde'
-                AND c.fcdl_soc = '$codeSociete'
+                ON cf.soc     = l.fllf_soc
+                AND cf.succ   = l.fllf_succ
+                AND cf.numcde = l.fllf_numcde
+                AND cf.ligne  = l.fllf_ligne
             GROUP BY 1,2,3
         ) cde
         LEFT JOIN
         (
             SELECT DISTINCT
-                trim('OR')    AS type_doc,
+                TRIM('OR')    AS type_doc,
                 liv.refp      AS refp,
                 o.slor_numor  AS numero,
                 CASE
                     WHEN o.slor_typlig = 'P' THEN (o.slor_qterel + o.slor_qterea + o.slor_qteres + o.slor_qtewait - o.slor_qrec)
                     WHEN o.slor_typlig IN ('F','M','U','C') THEN o.slor_qterea
-                end as qtedem,
-                o.slor_numcli as numcli,
-                cb.cbse_nomcli as nomcli
+                END AS qtedem,
+                o.slor_numcli AS numcli,
+                cb.cbse_nomcli AS nomcli
             FROM
             (
                 SELECT DISTINCT
@@ -166,34 +179,27 @@ class PlanningMagasinModel extends Model
                     l.fllf_numliv AS numliv
                 FROM {$this->dbIps}.frn_llf l
                 WHERE l.fllf_numcde = '$numCde'
-                AND l.fllf_refp IN (
-                    SELECT fcdl_refp FROM {$this->dbIps}.frn_cdl
-                    WHERE fcdl_numcde = '$numCde'
-                )
+                    AND l.fllf_refp IN (SELECT refp FROM cdl_filtre)
             ) liv
             INNER JOIN {$this->dbIps}.sav_lor o
-                ON o.slor_numcf = liv.numliv
-            AND o.slor_refp  = liv.refp
+                ON o.slor_numcf = liv.numliv AND o.slor_refp  = liv.refp
             INNER JOIN {$this->dbIps}.cli_bse cb ON cb.cbse_numcli = o.slor_numcli
             INNER JOIN {$this->dbIps}.cli_soc cs ON cs.csoc_soc = o.slor_soc AND cs.csoc_numcli = o.slor_numcli
             WHERE o.slor_soc = '$codeSociete'
             UNION ALL
             SELECT DISTINCT
-                trim('VTEDIR') AS type_doc,
+                TRIM('VTEDIR') AS type_doc,
                 n.nlig_refp   AS refp,
                 n.nlig_numcde AS numero,
-                n.nlig_qtecde as qtedem,
-                n.nlig_numcli as numcli,
-                cb.cbse_nomcli as nomcli
+                n.nlig_qtecde AS qtedem,
+                n.nlig_numcli AS numcli,
+                cb.cbse_nomcli AS nomcli
             FROM {$this->dbIps}.neg_lig n
             INNER JOIN {$this->dbIps}.cli_bse cb ON cb.cbse_numcli = n.nlig_numcli
             INNER JOIN {$this->dbIps}.cli_soc cs ON cs.csoc_soc = n.nlig_soc AND cs.csoc_numcli = n.nlig_numcli
             WHERE n.nlig_numcde = '$numCde'
-            AND n.nlig_soc = '$codeSociete'
-            AND n.nlig_refp IN (
-                SELECT fcdl_refp FROM {$this->dbIps}.frn_cdl
-                WHERE fcdl_numcde = '$numCde'
-            )
+                AND n.nlig_soc = '$codeSociete'
+                AND n.nlig_refp IN (SELECT refp FROM cdl_filtre)
         ) res
         ON res.refp = cde.refp
         ORDER BY cde.refp, res.numero;";
