@@ -106,7 +106,7 @@ document.addEventListener("DOMContentLoaded", function () {
     })
       .then((response) => {
         if (!response.ok) {
-          throw new Error("Network response was not ok");
+          throw new Error("La réponse du réseau n'était pas correcte.");
         }
         return response.json();
       })
@@ -164,8 +164,8 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
           const tableBody = document.getElementById("commandesTableBody");
           tableBody.innerHTML =
-            '<tr><td colspan="11">Could not retrieve data.</td></tr>';
-          console.error("There was a problem with the fetch operation:", error);
+            '<tr><td colspan="11">Impossible de récupérer les données.</td></tr>';
+          console.error("Il y a eu un problème avec l'opération fetch:", error);
           masquerSpinner();
         }
       });
