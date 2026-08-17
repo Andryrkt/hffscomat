@@ -15,11 +15,13 @@ class DwDocMapper
     {
         $dto = new DwDocDto();
 
+
         $dto->iconRaw          = $this->getIconRaw($item['extension_fichier']);
         $dto->nomDoc           = $item['nom_doc'] ?? '-';
         $dto->numeroDoc        = $item['numero_doc'] ?? '-';
-        $dto->dateCreation     = $item['date_creation'] ? (new \DateTime($item['date_creation']))->format('d/m/Y') : '-';
-        $dto->dateModification = $item['date_derniere_modification'] ? (new \DateTime($item['date_derniere_modification']))->format('d/m/Y') : '-';
+        $dto->dateCreation = $this->convertMauritiusToUtc($item['date_creation'], $item['heure_creation']);
+        $dto->dateModification = $this->convertMauritiusToUtc($item['date_derniere_modification'], $item['heure_derniere_modification']);
+
         $dto->numeroVersion    = $item['numero_version'] ?? '-';
         $dto->totalPage        = $item['total_page'] ?? '-';
         $dto->tailleFichier    = $this->convertFileSize((int) $item['taille_fichier']);
@@ -43,5 +45,20 @@ class DwDocMapper
         $icon = self::ICONS[$extension] ?? '';
 
         return new Markup("<i class='fas fa-file$icon fs-4'></i>", 'UTF-8');
+    }
+
+    private function convertMauritiusToUtc(?string $date, ?string $time): string
+    {
+        if (empty($date)) {
+            return '-';
+        }
+        try {
+            $time = $time ?? '00:00:00';
+            $datetime = new \DateTime($date . ' ' . $time, new \DateTimeZone('Indian/Mauritius'));
+            $datetime->setTimezone(new \DateTimeZone('UTC'));
+            return $datetime->format('d/m/Y H:i:s');
+        } catch (\Exception $e) {
+            return '-';
+        }
     }
 }

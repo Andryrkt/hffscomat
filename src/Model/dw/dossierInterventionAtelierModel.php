@@ -64,6 +64,7 @@ class dossierInterventionAtelierModel extends Model
                 dit.numero_serie,
                 dit.id_materiel,
                 dit.date_creation,
+                dit.heure_creation,
                 dit.designation_materiel,
                 dit.type_reparation,
                 1
@@ -143,7 +144,9 @@ class dossierInterventionAtelierModel extends Model
             TRIM('$typeDoc') AS nom_doc,
             {$alias}.{$column} AS numero_doc,
             {$alias}.date_creation,
+            {$alias}.heure_creation,
             {$alias}.date_derniere_modification,
+            {$alias}.heure_derniere_modification,
             {$version} AS numero_version,
             {$alias}.total_page,
             {$alias}.taille_fichier,
