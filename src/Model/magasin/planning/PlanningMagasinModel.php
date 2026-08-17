@@ -13,18 +13,20 @@ class PlanningMagasinModel extends Model
                 o.fcdl_numcde AS numero_commande,
                 o.fbse_numfou as numero_fournisseur,
                 o.fbse_nomfou as nom_fournisseur,
-                o.asuc_lib || ' - ' || o.atab_lib AS agence_service,
+                TRIM(o.asuc_lib) || ' - ' || TRIM(o.atab_lib) AS agence_service,
                 o.asuc_num as code_agence,
-                o.atab_code as code_service,
+                TRIM(o.atab_code) as code_service,
                 o.fcde_datec as date_commande,
-                CASE
-                    WHEN o.total_facture > 0 AND o.total_facture < o.total_qte THEN 'Partiellement facturé'
-                    WHEN o.total_dispo > 0 AND o.total_dispo < o.total_qte THEN 'Partiellement dispo'
-                    WHEN o.total_dispo = o.total_qte AND o.total_facture = 0 THEN 'Complet non facturé'
-                    WHEN o.total_recu = 0 THEN 'Aucune reception'
-                    WHEN o.total_facture = o.total_qte THEN 'Complet facturé'
-                    ELSE 'Autre'
-                END AS statut
+                TRIM(
+                    CASE
+                        WHEN o.total_facture > 0 AND o.total_facture < o.total_qte THEN 'Partiellement facturé'
+                        WHEN o.total_dispo > 0 AND o.total_dispo < o.total_qte THEN 'Partiellement dispo'
+                        WHEN o.total_dispo = o.total_qte AND o.total_facture = 0 THEN 'Complet non facturé'
+                        WHEN o.total_recu = 0 THEN 'Aucune reception'
+                        WHEN o.total_facture = o.total_qte THEN 'Complet facturé'
+                        ELSE 'Autre'
+                    END
+                ) AS statut
             FROM (
                 SELECT
                     l.fcdl_constp,
@@ -125,8 +127,8 @@ class PlanningMagasinModel extends Model
         )
         SELECT
             cde.constp,
-            cde.refp,
-            cde.desi,
+            TRIM(cde.refp) AS refp,
+            TRIM(cde.desi) AS desi,
             cde.qte_dem,
             cde.qte_dem - cde.qte_dispo AS qte_rest,
             CASE
