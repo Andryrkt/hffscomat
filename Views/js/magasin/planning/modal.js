@@ -134,6 +134,12 @@ document.addEventListener("DOMContentLoaded", function () {
             const style = statut === matchStatut ? STYLES_QTE[statut] : "";
             return `<span class="${style}">${parseInt(qte, 10)}</span>`;
           };
+          const qte = (val) => {
+            const n = parseInt(val, 10);
+            return n === 0 ? "" : n;
+          };
+          const nameAndNumberDoc = (number, name) =>
+            number ? `${number} - ${name}` : "";
           tableBody.innerHTML = data.data
             .map(
               (detail) => `
@@ -145,11 +151,9 @@ document.addEventListener("DOMContentLoaded", function () {
                   <td class="text-center">${qteAvecStyle(detail.qte_dispo, detail.statut, "livre")}</td>
                   <td class="text-center">${qteAvecStyle(detail.qte_dem - detail.qte_dispo, detail.statut, "partiel")}</td>
                   <td class="text-start">${statutBadge(detail.statut)}</td>
-                  <td class="text-center">${detail.type_doc || ""}</td>
-                  <td class="text-center">${detail.numero || ""}</td>
-                  <td class="text-center">${detail.numcli || ""}</td>
-                  <td class="text-start">${detail.nomcli || ""}</td>
-                  <td class="text-center">${parseInt(detail.qte_dem_ligne, 10)}</td>
+                  <td class="text-center"> ${nameAndNumberDoc(detail.type_doc, detail.numero)}</td>
+                  <td class="text-start">${nameAndNumberDoc(detail.numcli, detail.nomcli)}</td>
+                  <td class="text-center">${qte(detail.qte_dem_ligne)}</td>
                 </tr>`
             )
             .join("");
