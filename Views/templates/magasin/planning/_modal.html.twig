@@ -1,0 +1,56 @@
+<div class="modal fade" tabindex="-1" id="listeLigneCommandeMagasin" aria-labelledby="modalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-scrollable modal-xl">
+		<div class="modal-content">
+			<div class="modal-header pb-1">
+				<div class="modal-title">
+					<span class="fw-bold fs-6">
+						LIGNES D'ARTICLES — SUIVI COMMANDE FOURNISSEUR
+					</span>
+					<small class="d-block fs-7 text-muted">Commande Fournisseur N°
+						<span class="fw-bold" style="color:#c99400" id="numCdeFrn"></span>
+						— Emetteur :
+						<span class="fw-bold text-dark" id="emetteurCdeFrn"></span>
+					</small>
+				</div>
+
+				<div class="ms-auto d-flex align-items-center">
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+			</div>
+			{# body du modal#}
+			<div
+				class="modal-body pt-0">
+				<!-- Spinner de chargement -->
+				<div id="loading" class="text-center">
+					<div class="spinner-border" role="status">
+						<span class="visually-hidden">Chargement...</span>
+					</div>
+				</div>
+
+				<!-- Petit bg-white -->
+				<div class="bg-white w-100 position-sticky" style="top:0;height:15px;"></div>
+
+				<!-- Contenu des données -->
+				<div id="dataContent" style="display: none;">
+					<table class="table align-middle">
+						<thead class="table-secondary">
+							<tr>
+								<th class="text-start">Const.</th>
+								<th class="text-start">Réf</th>
+								<th class="text-start">Désignation</th>
+								<th class="text-center">Qté DEM.</th>
+								<th class="text-center">Qté EXP.</th>
+								<th class="text-center">Qté REST.</th>
+								<th class="text-start">Statut</th>
+								<th class="text-center">Document</th>
+								<th class="text-start ps-5">Client</th>
+								<th class="text-center">Qté DEM. par Doc</th>
+							</tr>
+						</thead>
+						<tbody id="commandesTableBody"></tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

@@ -100,7 +100,7 @@ class DitDevisSoumisAValidationModel extends Model
 
     public function recupNumeroDevisApresSoumission(?string $numDit, string $codeSociete): ?string
     {
-        if($numDit === null) return null;
+        if ($numDit === null) return null;
         $statement = "SELECT FIRST 1
                         CASE 
                             WHEN (select max(seor_numor_seq) 
@@ -200,7 +200,7 @@ class DitDevisSoumisAValidationModel extends Model
                 WHERE seor_numor = slor_numor
                 AND seor_serv = 'DEV'
                 AND sitv_numor = slor_numor
-                AND sitv_interv = slor_nogrp / 100
+                AND sitv_interv = TRUNC(slor_nogrp / 100)
                 AND seor_soc = '$codeSociete'
                 AND slor_soc = seor_soc
                 AND sitv_soc = seor_soc
@@ -249,7 +249,7 @@ class DitDevisSoumisAValidationModel extends Model
 
     public function recupInfoDit(?string $numDit, ?string $numDevis, string $codeSociete): array
     {
-        if($numDit === null) return [];
+        if ($numDit === null) return [];
         $statement = " SELECT  *
                         from {$this->dbIrium}.demande_intervention 
                         where numero_demande_dit ='$numDit'
@@ -321,7 +321,7 @@ class DitDevisSoumisAValidationModel extends Model
      */
     public function recupDevisSoumisValidation(?string $numDevis, string $codeSociete): array
     {
-        if($numDevis === null) return [];
+        if ($numDevis === null) return [];
 
         $statement = " SELECT 
             sitv_succdeb as num_agence, 
@@ -434,7 +434,7 @@ class DitDevisSoumisAValidationModel extends Model
                 WHERE seor_numor = slor_numor
                 AND seor_serv = 'DEV'
                 AND sitv_numor = slor_numor
-                AND sitv_interv = slor_nogrp / 100
+                AND sitv_interv = TRUNC(slor_nogrp / 100)
                 AND seor_soc = '$codeSociete'
                 AND slor_soc = seor_soc
                 AND sitv_soc = seor_soc
@@ -457,7 +457,7 @@ class DitDevisSoumisAValidationModel extends Model
         $statement = " SELECT   TRIM(slor_constp||'-'|| slor_refp) as contructeur
                         FROM {$this->dbIps}.sav_lor
                         WHERE  slor_numor = '{$numDevis}' 
-                        AND slor_nogrp = 100 
+                        AND TRUNC(slor_nogrp / 100) = 1 
                         AND slor_soc = '$codeSociete'
                         ORDER BY slor_nolign ASC
                         LIMIT 1
@@ -472,10 +472,10 @@ class DitDevisSoumisAValidationModel extends Model
 
     public function recupNbrItvDev(string $numDevis, string $codeSociete): array
     {
-        $statement = " SELECT DISTINCT COUNT( slor_nogrp) as itv
+        $statement = " SELECT COUNT(DISTINCT TRUNC(slor_nogrp / 100)) as itv
                         FROM {$this->dbIps}.sav_lor 
                         WHERE slor_numor= '{$numDevis}' 
-                        AND slor_nogrp != 100 
+                        AND TRUNC(slor_nogrp / 100) != 1 
                         AND slor_soc = '$codeSociete'
         ";
 
@@ -488,7 +488,7 @@ class DitDevisSoumisAValidationModel extends Model
 
     public function recupNumeroVersion(?string $numDevis, string $codeSociete): int
     {
-        if($numDevis === null) return 1;        // Récupérer le MAX actuel
+        if ($numDevis === null) return 1;        // Récupérer le MAX actuel
         $statement = "SELECT MAX(numeroversion) as max_version 
                     FROM {$this->dbIrium}.devis_soumis_a_validation 
                     WHERE numerodevis = '$numDevis'

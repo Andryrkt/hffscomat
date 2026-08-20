@@ -129,7 +129,7 @@ class DitModel extends Model
         return $this->convertirEnUtf8($data)[0]['numClient'] ?? null;
     }
 
-    
+
 
     /**
      * Methode pour enregistrer les données du formulaire Dit
@@ -397,7 +397,7 @@ class DitModel extends Model
             WHERE seor_numor = slor_numor
               AND seor_serv <> 'DEV'
               AND sitv_numor = slor_numor
-              AND sitv_interv = slor_nogrp/100
+              AND sitv_interv = TRUNC(slor_nogrp/100)
               AND (seor_succ = asuc_num)
               AND (seor_servcrt = ser.atab_code AND ser.atab_nom = 'SER')
               AND (sitv_typitv = sec.atab_code AND sec.atab_nom = 'TYI')

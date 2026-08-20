@@ -13,4 +13,9 @@ export const API_ENDPOINTS = {
   getDetailModal: (numOrItv) => `api/detail-modal/${numOrItv}`,
   getDetailModalMagasin: (numOrItv) =>
     `api/detail-plannigMagasin-modal/${numOrItv}`,
+
+  /** Planning Magasin */
+  LIST_FOURNISSEURS: "api/magasin-planning-liste-fournisseur",
+  getLigneCommandeMagasin: (numCde) =>
+    `api/magasin-planning-ligne-commande/${numCde}`,
 };

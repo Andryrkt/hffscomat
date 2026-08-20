@@ -38,6 +38,10 @@
   height: 1px;
 }
 
+.col-separator {
+  border-left: 2px solid #999;
+}
+
 .rowspan-cell {
   vertical-align: middle; /* Centrer verticalement */
   text-align: center; /* Centrer horizontalement */

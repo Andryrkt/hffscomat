@@ -69,7 +69,7 @@ class OrTraiterModel extends Model
             ,(select TRIM(atab_code)||'-'|| atab_lib from Informix.agr_tab where atab_nom='SER' and atab_code=slor_servcrt) as serviceCrediteur
             ,slor_succdeb as agence
             ,slor_servdeb as service
-            ,slor_nogrp/100 as numInterv
+            ,TRUNC(slor_nogrp/100) as numInterv
             ,slor_nolign as numeroLigne
             ,trim(slor_constp) as constructeur
             ,trim(slor_refp) as referencePiece
@@ -87,7 +87,7 @@ class OrTraiterModel extends Model
                 on sitv_soc = slor_soc 
                 and sitv_succ = slor_succ 
                 and sitv_numor = slor_numor 
-                and sitv_interv = slor_nogrp / 100 
+                and sitv_interv = TRUNC(slor_nogrp/100) 
                 and sitv_soc = '{$dtoSearch->codeSociete}'
                 and seor_succ = slor_succ 
                 and seor_numor = slor_numor
@@ -110,7 +110,7 @@ class OrTraiterModel extends Model
             and slor_qteres = 0 and slor_qterel = 0 and slor_qterea = 0
             order by numInterv ASC, seor_dateor DESC, slor_numor DESC, numeroLigne ASC
         ";
-// dd($statement);
+        // dd($statement);
         $result = $this->connect->executeQuery($statement);
 
         $data = $this->connect->fetchResults($result);
