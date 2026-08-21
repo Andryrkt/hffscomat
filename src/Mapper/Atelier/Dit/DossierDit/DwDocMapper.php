@@ -19,8 +19,8 @@ class DwDocMapper
         $dto->iconRaw          = $this->getIconRaw($item['extension_fichier']);
         $dto->nomDoc           = $item['nom_doc'] ?? '-';
         $dto->numeroDoc        = $item['numero_doc'] ?? '-';
-        $dto->dateCreation = $this->convertToUtc($item['date_creation'], $item['heure_creation'], "+00:00", 'd/m/Y H:i');
-        $dto->dateModification = $this->convertToUtc($item['date_derniere_modification'], $item['heure_derniere_modification'], "+00:00", 'd/m/Y H:i');
+        $dto->dateCreation     = $this->convertToUtc($item['date_creation'], $item['heure_creation'], "+04:00", 'd/m/Y H:i');
+        $dto->dateModification = $this->convertToUtc($item['date_derniere_modification'], $item['heure_derniere_modification'], "+04:00", 'd/m/Y H:i');
 
         $dto->numeroVersion    = $item['numero_version'] ?? '-';
         $dto->totalPage        = $item['total_page'] ?? '-';
