@@ -15,11 +15,13 @@ class DwDocMapper
     {
         $dto = new DwDocDto();
 
+
         $dto->iconRaw          = $this->getIconRaw($item['extension_fichier']);
         $dto->nomDoc           = $item['nom_doc'] ?? '-';
         $dto->numeroDoc        = $item['numero_doc'] ?? '-';
-        $dto->dateCreation     = $item['date_creation'] ? (new \DateTime($item['date_creation']))->format('d/m/Y') : '-';
-        $dto->dateModification = $item['date_derniere_modification'] ? (new \DateTime($item['date_derniere_modification']))->format('d/m/Y') : '-';
+        $dto->dateCreation     = $this->convertToUtc($item['date_creation'], $item['heure_creation'], "+04:00", 'd/m/Y H:i');
+        $dto->dateModification = $this->convertToUtc($item['date_derniere_modification'], $item['heure_derniere_modification'], "+04:00", 'd/m/Y H:i');
+
         $dto->numeroVersion    = $item['numero_version'] ?? '-';
         $dto->totalPage        = $item['total_page'] ?? '-';
         $dto->tailleFichier    = $this->convertFileSize((int) $item['taille_fichier']);
@@ -43,5 +45,34 @@ class DwDocMapper
         $icon = self::ICONS[$extension] ?? '';
 
         return new Markup("<i class='fas fa-file$icon fs-4'></i>", 'UTF-8');
+    }
+
+    /**
+     * Convertit une date/heure depuis un fuseau source vers UTC.
+     *
+     * @param string|null $date          Partie date (Y-m-d)
+     * @param string|null $time          Partie heure (H:i:s) – optionnel, défaut 00:00:00
+     * @param string      $sourceTz      Fuseau source (défaut : 'Indian/Antananarivo')
+     * @param string      $outputFormat  Format de sortie (défaut : 'd/m/Y H:i:s')
+     *
+     * @return string Date/heure en UTC formatée, ou '-' en cas d'erreur
+     */
+    private function convertToUtc(
+        ?string $date,
+        ?string $time,
+        string $sourceTz = 'Indian/Antananarivo',
+        string $outputFormat = 'd/m/Y H:i:s'
+    ): string {
+        if (empty($date)) {
+            return '-';
+        }
+        try {
+            $time = $time ?? '00:00:00';
+            $datetime = new \DateTime($date . ' ' . $time, new \DateTimeZone($sourceTz));
+            $datetime->setTimezone(new \DateTimeZone('UTC'));
+            return $datetime->format($outputFormat);
+        } catch (\Exception $e) {
+            return '-';
+        }
     }
 }
