@@ -150,7 +150,7 @@ class DitFactureSoumisAValidationModel extends Model
                         slor_numfac       AS numeroFac,
                         slor_numor        AS numeroOr,
                         slor_typeor       AS typeOr,
-                        ROUND(slor_nogrp / 100) AS numeroItv,
+                        TRUNC(slor_nogrp / 100) AS numeroItv,
                         slor_pxnreel      AS pxnreel,
                         slor_qterea       AS qterea,
                         slor_succdeb      AS agenceDebiteur,
@@ -166,7 +166,7 @@ class DitFactureSoumisAValidationModel extends Model
                     FROM {$this->dbIps}.sav_lor
                     JOIN {$this->dbIps}.sav_itv
                         ON sitv_numor  = slor_numor
-                        AND sitv_interv = slor_nogrp / 100
+                        AND sitv_interv = TRUNC(slor_nogrp / 100)
                     LEFT JOIN {$this->dbIps}.sav_liv
                         ON sliv_soc   = slor_soc
                         AND sliv_succ  = slor_succ
@@ -174,7 +174,7 @@ class DitFactureSoumisAValidationModel extends Model
                         AND slor_nolign = sliv_nolign
                     LEFT JOIN {$this->dbIrium}.ors_soumis_a_validation osv_or
                         ON osv_or.numeroor     = slor_numor
-                        AND osv_or.numeroitv    = slor_nogrp / 100
+                        AND osv_or.numeroitv    = TRUNC(slor_nogrp / 100)
                         AND osv_or.numeroversion = (
                             SELECT MAX(osv2.numeroversion)
                             FROM {$this->dbIrium}.ors_soumis_a_validation osv2
@@ -304,7 +304,7 @@ class DitFactureSoumisAValidationModel extends Model
             AND slor_soc = '$codeSociete'
             AND seor_serv <> 'DEV'
             AND sitv_numor = slor_numor
-            AND sitv_interv = slor_nogrp / 100
+            AND sitv_interv = TRUNC(slor_nogrp / 100)
 
 
         AND seor_numor = '$numOr'

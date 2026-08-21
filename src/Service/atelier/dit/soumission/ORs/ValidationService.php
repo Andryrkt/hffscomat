@@ -12,7 +12,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 class ValidationService
 {
     private const FILE_FIELD_NAME = 'pieceJoint01';
-    private const FILENAME_PATTERN = '/^(Ordre de réparation|PROFORMA INVOICE)_(\d+)_(\d+)_(\d+)\\.pdf$/';
+    private const FILENAME_PATTERN = '/^(Ordre de réparation|PROFORMA[ _]INVOICE)_(\d+)_(\d+)_(\d+)\\.pdf$/';
 
     private function getSessionService()
     {
@@ -140,7 +140,7 @@ class ValidationService
             return true;
         }
         // Verifie si id_materiel_Ips correspond id_materiel_Irium 
-        $typeOr =[230, 252, 253];
+        $typeOr = [230, 252, 253];
         if ($dto->estIdMaterielDifferent && !in_array($dto->typeOr, $typeOr)) {
             $message = "Echec de la soumission car le materiel de l'OR ne correspond pas au materiel de la DIT";
             $this->sendNotificationOR($message, $dto->numeroOr, false);

@@ -218,7 +218,7 @@ class CdeSoumissionModel extends Model
             AND slor_succ = seor_succ
         JOIN {$this->dbIps}.sav_itv
             ON sitv_numor = slor_numor
-            AND sitv_interv = slor_nogrp / 100
+            AND sitv_interv = TRUNC(slor_nogrp / 100)
             AND sitv_soc = seor_soc 
             AND sitv_succ = seor_succ
         LEFT JOIN (

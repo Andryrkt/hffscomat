@@ -57,7 +57,7 @@ class AcBcSoumisModel extends Model
                 CROSS JOIN cst
                 CROSS JOIN first_itv
                 CROSS JOIN all_itv";
-// dd($statement);
+
         $result = $this->connect->executeQuery($statement);
 
         $data = $this->convertirEnUtf8($this->connect->fetchScalarResults($result));
@@ -114,14 +114,14 @@ class AcBcSoumisModel extends Model
     private function getQueryNbrIntervention(string $codeSociete, string $aliasDevisSoumisValide): string
     {
         return "SELECT 
-                    COUNT(DISTINCT l.slor_nogrp) AS nb
+                    COUNT(DISTINCT TRUNC(l.slor_nogrp/100)) AS nb
                 FROM {$this->dbIps}.sav_lor l
                 JOIN (
                     SELECT DISTINCT numeroDevis
                     FROM $aliasDevisSoumisValide
                 ) d
                 ON d.numeroDevis = l.slor_numor
-                WHERE l.slor_nogrp <> 100
+                WHERE TRUNC(l.slor_nogrp/100) <> 1
                 AND l.slor_soc = '$codeSociete'";
     }
 
@@ -135,7 +135,7 @@ class AcBcSoumisModel extends Model
                     FROM $aliasDevisSoumisValide
                 ) d
                 ON d.numeroDevis = l.slor_numor
-                WHERE l.slor_nogrp = 100
+                WHERE TRUNC(l.slor_nogrp/100) = 1
                 AND l.slor_soc = '$codeSociete'
                 ORDER BY l.slor_nolign";
     }
