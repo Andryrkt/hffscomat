@@ -158,14 +158,14 @@ class DevisNegModel extends Model
             $result = $this->connect->executeQuery($statement);
             $rows = $this->connect->fetchResults($result);
 
-            return $rows;
+            return $this->convertirEnUtf8($rows);
         } finally {
             $this->connect->close();
         }
     }
 
     /**
-     * Cette Methode permet de récupérer les données à exporter 
+     * Cette Methode permet de récupérer les données à exporter
      * pour une fichier Excel
      * 
      * @param array $criteria
@@ -313,7 +313,7 @@ class DevisNegModel extends Model
             $result = $this->connect->executeQuery($statement);
             $rows = $this->connect->fetchResults($result);
 
-            return $rows;
+            return $this->convertirEnUtf8($rows);
         } finally {
             $this->connect->close();
         }
