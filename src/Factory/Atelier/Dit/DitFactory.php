@@ -46,7 +46,7 @@ class DitFactory
         $dto->heureDemande = date('H:i');
         $dto->dateDemande = date('Y-m-d');
         $dto->mailDemandeur = $this->securityService->getDataService()->getUserMail();
-        $dto->statutDemande = StatutDitConstant::STATUT_A_AFFECTER;
+        $dto->statutDemande = StatutDitConstant::STATUT_AFFECTEE_SECTION;
         $dto->numeroDemandeIntervention = $this->genererNumeroDit();
         $dto->clientSousContrat = $dto->clientSousContrat === null ? 'NON' : $dto->clientSousContrat;
         $dto->demandeDevis = $dto->demandeDevis === null ? 'NON' : $dto->demandeDevis;
