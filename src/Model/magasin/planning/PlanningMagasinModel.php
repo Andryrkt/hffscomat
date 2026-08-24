@@ -3,13 +3,16 @@
 namespace App\Model\magasin\planning;
 
 use App\Model\Model;
+use App\Model\Informix\SelectWhereCondition;
 
 
 class PlanningMagasinModel extends Model
 {
-    public function getPlanningMagasin()
+    public function getPlanningMagasin(string $statut, bool $isEmptyQuery)
     {
-        $statement = "SELECT
+        $statement = "SELECT *
+        FROM(
+            SELECT
                 o.fcdl_numcde AS numero_commande,
                 o.fbse_numfou as numero_fournisseur,
                 o.fbse_nomfou as nom_fournisseur,
@@ -78,9 +81,11 @@ class PlanningMagasinModel extends Model
                 ) l
                 GROUP BY l.fcdl_constp, l.fcdl_numcde, l.fbse_numfou, l.fbse_nomfou, l.asuc_lib, l.atab_lib, l.asuc_num, l.atab_code, l.fcde_datec
             ) o
-            WHERE o.fcdl_constp IN (select distinct abse_constp from {$this->dbIps}.art_bse where abse_codg = 'ST')
-            ORDER BY o.fcdl_numcde
-            ";
+            WHERE o.fcdl_constp IN (select distinct abse_constp from {$this->dbIps}.art_bse where abse_codg = 'ST')            
+        ) t
+        WHERE 1=1  {$this->conditionStatut($statut,$isEmptyQuery)} 
+        ORDER BY t.numero_commande
+        ";
 
         $result = $this->connect->executeQuery($statement);
 
@@ -140,7 +145,8 @@ class PlanningMagasinModel extends Model
             NVL(res.qtedem, 0) AS qte_dem_ligne,
             res.type_doc,
             res.numcli,
-            res.nomcli
+            res.nomcli,
+            res.eta_magasin
         FROM
         (
             SELECT
@@ -166,6 +172,7 @@ class PlanningMagasinModel extends Model
         (
             SELECT DISTINCT
                 TRIM('OR')    AS type_doc,
+                o.slor_constp AS constp,
                 liv.refp      AS refp,
                 o.slor_numor  AS numero,
                 CASE
@@ -173,7 +180,8 @@ class PlanningMagasinModel extends Model
                     WHEN o.slor_typlig IN ('F','M','U','C') THEN o.slor_qterea
                 END AS qtedem,
                 o.slor_numcli AS numcli,
-                cb.cbse_nomcli AS nomcli
+                cb.cbse_nomcli AS nomcli,
+                cat.esd_date AS eta_magasin
             FROM
             (
                 SELECT DISTINCT
@@ -184,26 +192,39 @@ class PlanningMagasinModel extends Model
                     AND l.fllf_refp IN (SELECT refp FROM cdl_filtre)
             ) liv
             INNER JOIN {$this->dbIps}.sav_lor o
-                ON o.slor_numcf = liv.numliv AND o.slor_refp  = liv.refp
+                ON  o.slor_numcf = liv.numliv 
+                AND o.slor_refp  = liv.refp
             INNER JOIN {$this->dbIps}.cli_bse cb ON cb.cbse_numcli = o.slor_numcli
             INNER JOIN {$this->dbIps}.cli_soc cs ON cs.csoc_soc = o.slor_soc AND cs.csoc_numcli = o.slor_numcli
+            LEFT JOIN {$this->dbIrium}.gcot_acknow_cat cat 
+                ON  cat.numero_po = '$numCde' 
+                AND cat.parts_number = o.slor_refp 
+                AND cat.parts_cst = o.slor_constp
+                AND (cat.line_number = o.slor_nolign OR cat.line_number = o.slor_noligncm)
             WHERE o.slor_soc = '$codeSociete'
-            UNION ALL
+        UNION ALL
             SELECT DISTINCT
                 TRIM('VTEDIR') AS type_doc,
+                n.nlig_constp AS constp,
                 n.nlig_refp   AS refp,
                 n.nlig_numcde AS numero,
                 n.nlig_qtecde AS qtedem,
                 n.nlig_numcli AS numcli,
-                cb.cbse_nomcli AS nomcli
+                cb.cbse_nomcli AS nomcli,
+                cat.esd_date AS eta_magasin
             FROM {$this->dbIps}.neg_lig n
             INNER JOIN {$this->dbIps}.cli_bse cb ON cb.cbse_numcli = n.nlig_numcli
             INNER JOIN {$this->dbIps}.cli_soc cs ON cs.csoc_soc = n.nlig_soc AND cs.csoc_numcli = n.nlig_numcli
+            LEFT JOIN {$this->dbIrium}.gcot_acknow_cat cat 
+                ON  cat.numero_po = n.nlig_numcde 
+                AND cat.parts_number = n.nlig_refp 
+                AND cat.parts_cst = n.nlig_constp
+                AND cat.line_number = n.nlig_nolign
             WHERE n.nlig_numcde = '$numCde'
                 AND n.nlig_soc = '$codeSociete'
                 AND n.nlig_refp IN (SELECT refp FROM cdl_filtre)
         ) res
-        ON res.refp = cde.refp
+        ON res.refp = cde.refp AND cde.constp = res.constp
         ORDER BY cde.refp, res.numero;";
 
         $result = $this->connect->executeQuery($statement);
@@ -211,5 +232,27 @@ class PlanningMagasinModel extends Model
         $data = $this->connect->fetchResults($result);
 
         return $this->convertirEnUtf8($data);
+    }
+
+    private function conditionStatut(string $statut, bool $isEmptyQuery): string
+    {
+        $statutParCondition = [
+            'default'             => "default",
+            'partiel_facture'     => "Partiellement facturé",
+            'partiel_dispo'       => "Partiellement dispo",
+            'complet_non_facture' => "Complet non facturé",
+            'complet_facture'     => "Complet facturé",
+            'back_order'          => "Back Order", // TODO: Pas encore de moyen pour les récupérer
+        ];
+
+        if ($statut === "tous" || (!$isEmptyQuery && $statut === "default")) return "";
+
+        $selectWhereCondition = new SelectWhereCondition;
+
+        $statutCondition = $statutParCondition[$statut];
+
+        return ($statutCondition === "default")
+            ? $selectWhereCondition->ne('statut', $statutParCondition['complet_facture']) //*** Par défaut ne pas afficher les commandes complet facturés
+            : $selectWhereCondition->eq('statut', $statutCondition);
     }
 }

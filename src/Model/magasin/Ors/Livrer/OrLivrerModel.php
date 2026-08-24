@@ -120,7 +120,7 @@ class OrLivrerModel extends Model
             WHERE lorSit.slor_numor IN (SELECT numero_or FROM valid_or)
                 AND lorSit.slor_constp IN (SELECT abse_constp FROM const_st)
                 AND lorSit.slor_refp NOT LIKE '%-L' AND lorSit.slor_refp NOT LIKE '%-CTRL'
-            GROUP BY lorSit.slor_numor, TRUNC(lorSit.slor_nogrp/100)
+            GROUP BY lorSit.slor_numor, lorSit.slor_nogrp
         ) AS sit ON sit.numero_or = lor.slor_numor AND sit.num_groupe = TRUNC(lor.slor_nogrp/100)
         LEFT JOIN (
             SELECT

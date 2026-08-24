@@ -43,11 +43,11 @@ class PlanningMagasinController extends Controller
         $form->handleRequest($request);
         $dto = $form->getData() ?? new PlanningMagasinSearchDto();
 
-        $condition = $request->query->get('condition', 'tous');
+        $condition = $request->query->get('condition', 'default');
+        $allRequestQuery = $request->query->all();
 
-        $data = $this->planningMagasinModel->getPlanningMagasin();
+        $data = $this->planningMagasinModel->getPlanningMagasin($condition, empty($allRequestQuery));
         $data = $this->filtrerDonnees($data, $dto);
-        $data = $this->filtrerParStatut($data, $condition);
 
         $uniqueMonths = $this->genererMoisAffiches($dto->months ?? 3);
         $preparedData = $this->preparerDonnees($data, array_column($uniqueMonths, 'key'));
@@ -57,33 +57,8 @@ class PlanningMagasinController extends Controller
             'uniqueMonths' => $uniqueMonths,
             'preparedData' => $preparedData,
             'condition'    => $condition,
-            'currentQuery' => $request->query->all(),
+            'currentQuery' => $allRequestQuery,
         ]);
-    }
-
-    /**
-     * Filtre selon la légende cliquée (TOUT AFFICHER / statut). "back_order" ne peut pas
-     * encore être détecté par PlanningMagasinModel::getPlanningMagasin() (pas de flag
-     * back order/error dans les données) : il ne renverra donc aucune commande pour l'instant.
-     */
-    private function filtrerParStatut(array $data, string $condition): array
-    {
-        $statutParCondition = [
-            'partiel_facture'     => 'Partiellement facturé',
-            'partiel_dispo'       => 'Partiellement dispo',
-            'complet_non_facture' => 'Complet non facturé',
-            'complet_facture'     => 'Complet facturé',
-        ];
-
-        if (!isset($statutParCondition[$condition]) && $condition !== 'back_order') {
-            return $data;
-        }
-
-        $statutAttendu = $statutParCondition[$condition] ?? null;
-
-        return array_values(array_filter($data, function ($item) use ($statutAttendu) {
-            return $statutAttendu !== null && $this->normaliserStatut($item['statut']) === $statutAttendu;
-        }));
     }
 
     /**
@@ -172,6 +147,13 @@ class PlanningMagasinController extends Controller
     {
         $grouped = [];
 
+        $styleStatut = [
+            "Partiellement facturé" => "bg-warning text-white",
+            "Partiellement dispo"   => "bg-info text-white",
+            "Complet non facturé"   => "bg-primary text-white",
+            "Complet facturé"       => "bg-success text-white",
+        ];
+
         foreach ($data as $item) {
             $cle = $item['numero_fournisseur'] . '|' . $item['agence_service'];
             $timestamp = strtotime($item['date_commande']);
@@ -190,9 +172,11 @@ class PlanningMagasinController extends Controller
                 ];
             }
 
+            $statut = $this->normaliserStatut($item['statut']);
             $grouped[$cle]['commandes'][$moisCle][] = [
-                'numero' => $item['numero_commande'],
-                'statut' => $this->normaliserStatut($item['statut']),
+                'numero'       => $item['numero_commande'],
+                'statut'       => $statut,
+                'classeStatut' => $styleStatut[$statut] ?? '',
             ];
         }
 
