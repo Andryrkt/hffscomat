@@ -8,7 +8,7 @@ use App\Model\Informix\SelectWhereCondition;
 
 class PlanningMagasinModel extends Model
 {
-    public function getPlanningMagasin(string $statut)
+    public function getPlanningMagasin(string $statut, bool $isEmptyQuery)
     {
         $statement = "SELECT *
         FROM(
@@ -83,7 +83,7 @@ class PlanningMagasinModel extends Model
             ) o
             WHERE o.fcdl_constp IN (select distinct abse_constp from {$this->dbIps}.art_bse where abse_codg = 'ST')            
         ) t
-        WHERE 1=1  {$this->conditionStatut($statut)} 
+        WHERE 1=1  {$this->conditionStatut($statut,$isEmptyQuery)} 
         ORDER BY t.numero_commande
         ";
 
@@ -218,7 +218,7 @@ class PlanningMagasinModel extends Model
         return $this->convertirEnUtf8($data);
     }
 
-    private function conditionStatut(string $statut): string
+    private function conditionStatut(string $statut, bool $isEmptyQuery): string
     {
         $statutParCondition = [
             'default'             => "default",
@@ -229,7 +229,7 @@ class PlanningMagasinModel extends Model
             'back_order'          => "Back Order", // TODO: Pas encore de moyen pour les récupérer
         ];
 
-        if ($statut === "tous") return "";
+        if ($statut === "tous" || (!$isEmptyQuery && $statut === "default")) return "";
 
         $selectWhereCondition = new SelectWhereCondition;
 

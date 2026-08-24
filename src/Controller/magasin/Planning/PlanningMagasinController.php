@@ -44,8 +44,9 @@ class PlanningMagasinController extends Controller
         $dto = $form->getData() ?? new PlanningMagasinSearchDto();
 
         $condition = $request->query->get('condition', 'default');
+        $allRequestQuery = $request->query->all();
 
-        $data = $this->planningMagasinModel->getPlanningMagasin($condition);
+        $data = $this->planningMagasinModel->getPlanningMagasin($condition, empty($allRequestQuery));
         $data = $this->filtrerDonnees($data, $dto);
 
         $uniqueMonths = $this->genererMoisAffiches($dto->months ?? 3);
@@ -56,7 +57,7 @@ class PlanningMagasinController extends Controller
             'uniqueMonths' => $uniqueMonths,
             'preparedData' => $preparedData,
             'condition'    => $condition,
-            'currentQuery' => $request->query->all(),
+            'currentQuery' => $allRequestQuery,
         ]);
     }
 
