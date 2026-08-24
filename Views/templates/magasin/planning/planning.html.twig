@@ -1,7 +1,7 @@
 {% extends "baseTemplate.html.twig" %}
 
 {% block title %}
-	Planning de commande Magasin
+	Planning Commande Fournisseur
 {% endblock %}
 
 {% block stylesheets %}
@@ -138,17 +138,7 @@
 								{% set commandes = item.commandes[month.key] | default([]) %}
 								{% if commandes|length > 0 %}
 									{% for commande in commandes %}
-										{% set classe = '' %}
-										{% if commande.statut == 'Partiellement facturé' %}
-											{% set classe = 'bg-warning text-white' %}
-										{% elseif commande.statut == 'Partiellement dispo' %}
-											{% set classe = 'bg-info text-white' %}
-										{% elseif commande.statut == 'Complet non facturé' %}
-											{% set classe = 'bg-primary text-white' %}
-										{% elseif commande.statut == 'Complet facturé' %}
-											{% set classe = 'bg-success text-white' %}
-										{% endif %}
-										<a href="#" data-bs-toggle="modal" data-bs-target="#listeLigneCommandeMagasin" style="cursor: pointer;" data-id="{{ commande.numero }}" data-emetteur="{{ item.fournisseur }}" class="d-inline-block px-2 pt-1 my-1 rounded text-wrap {{ classe }}" title="{{ commande.statut }}">
+										<a href="#" data-bs-toggle="modal" data-bs-target="#listeLigneCommandeMagasin" style="cursor: pointer;" data-id="{{ commande.numero }}" data-emetteur="{{ item.fournisseur }}" class="d-inline-block px-2 pt-1 my-1 rounded text-wrap {{ commande.classeStatut }}" title="{{ commande.statut }}">
 											{{ commande.numero }}
 										</a><br>
 									{% endfor %}
