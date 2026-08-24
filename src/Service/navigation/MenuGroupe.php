@@ -95,11 +95,9 @@ class MenuGroupe
                     // ['label' => 'Liste des commandes à livrer', 'icon' => 'file-invoice', 'route' => 'magasinListe_commande_livrer'],
                     ['label' => 'Liste des commandes à traiter', 'icon' => 'file-invoice', 'route' => 'magasinListe_commande_traiter'],
                     ['label' => 'Soumission commandes fournisseur', 'icon' => 'plus-circle', 'route' => 'generer_commande_fournisseur'],
-                    ['label' => 'Planning Magasin', 'icon' => 'calendar-alt', 'route' => 'interface_planning_cde_frn_magasin'],
+                    ['label' => 'Planning Commande Fourniseur', 'icon' => 'calendar-alt', 'route' => 'interface_planning_cde_frn_magasin'],
                 ],
             ],
-
-
         ];
     }
 
