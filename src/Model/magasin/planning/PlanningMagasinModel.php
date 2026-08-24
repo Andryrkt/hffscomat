@@ -3,13 +3,16 @@
 namespace App\Model\magasin\planning;
 
 use App\Model\Model;
+use App\Model\Informix\SelectWhereCondition;
 
 
 class PlanningMagasinModel extends Model
 {
-    public function getPlanningMagasin()
+    public function getPlanningMagasin(string $statut)
     {
-        $statement = "SELECT
+        $statement = "SELECT *
+        FROM(
+            SELECT
                 o.fcdl_numcde AS numero_commande,
                 o.fbse_numfou as numero_fournisseur,
                 o.fbse_nomfou as nom_fournisseur,
@@ -78,9 +81,11 @@ class PlanningMagasinModel extends Model
                 ) l
                 GROUP BY l.fcdl_constp, l.fcdl_numcde, l.fbse_numfou, l.fbse_nomfou, l.asuc_lib, l.atab_lib, l.asuc_num, l.atab_code, l.fcde_datec
             ) o
-            WHERE o.fcdl_constp IN (select distinct abse_constp from {$this->dbIps}.art_bse where abse_codg = 'ST')
-            ORDER BY o.fcdl_numcde
-            ";
+            WHERE o.fcdl_constp IN (select distinct abse_constp from {$this->dbIps}.art_bse where abse_codg = 'ST')            
+        ) t
+        WHERE 1=1  {$this->conditionStatut($statut)} 
+        ORDER BY t.numero_commande
+        ";
 
         $result = $this->connect->executeQuery($statement);
 
@@ -211,5 +216,27 @@ class PlanningMagasinModel extends Model
         $data = $this->connect->fetchResults($result);
 
         return $this->convertirEnUtf8($data);
+    }
+
+    private function conditionStatut(string $statut): string
+    {
+        $statutParCondition = [
+            'default'             => "default",
+            'partiel_facture'     => "Partiellement facturé",
+            'partiel_dispo'       => "Partiellement dispo",
+            'complet_non_facture' => "Complet non facturé",
+            'complet_facture'     => "Complet facturé",
+            'back_order'          => "Back Order", // TODO: Pas encore de moyen pour les récupérer
+        ];
+
+        if ($statut === "tous") return "";
+
+        $selectWhereCondition = new SelectWhereCondition;
+
+        $statutCondition = $statutParCondition[$statut];
+
+        return ($statutCondition === "default")
+            ? $selectWhereCondition->ne('statut', $statutParCondition['complet_facture']) //*** Par défaut ne pas afficher les commandes complet facturés
+            : $selectWhereCondition->eq('statut', $statutCondition);
     }
 }
