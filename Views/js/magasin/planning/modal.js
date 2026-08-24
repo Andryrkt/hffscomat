@@ -10,9 +10,8 @@ const CELL_INDICES_LIGNE = {
   refp: 1,
   desi: 2,
   qteDem: 3,
-  qteExp: 4,
-  qteRest: 5,
-  statut: 6,
+  qteRest: 4,
+  statut: 5,
 };
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -147,8 +146,7 @@ document.addEventListener("DOMContentLoaded", function () {
                   <td class="text-start">${detail.constp || ""}</td>
                   <td class="text-start">${detail.refp || ""}</td>
                   <td class="text-start">${detail.desi || ""}</td>
-                  <td class="text-center">${parseInt(detail.qte_dem, 10)}</td>
-                  <td class="text-center">${qteAvecStyle(detail.qte_dispo, detail.statut, "livre")}</td>
+                  <td class="text-center">${qteAvecStyle(detail.qte_dem, detail.statut, "livre")}</td>
                   <td class="text-center">${qteAvecStyle(detail.qte_dem - detail.qte_dispo, detail.statut, "partiel")}</td>
                   <td class="text-start">${statutBadge(detail.statut)}</td>
                   <td class="text-center"> ${nameAndNumberDoc(detail.type_doc, detail.numero)}</td>
