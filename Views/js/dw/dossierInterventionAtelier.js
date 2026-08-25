@@ -53,7 +53,6 @@ document.addEventListener("DOMContentLoaded", function () {
                       <td class="text-center">${doc.numeroVersion}</td>
                       <td class="text-center">${doc.totalPage}</td>
                       <td class="text-end">${doc.tailleFichier}</td>
-                      <td class="text-center">${excelCell}</td>
                   `;
             row.classList.add("clickable-row");
 
