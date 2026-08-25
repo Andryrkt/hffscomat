@@ -146,11 +146,18 @@ class PlanningMagasinModel extends Model
             res.type_doc,
             res.numcli,
             res.nomcli,
-            res.eta_magasin,
-            res.eta_maurice
+            CASE 
+                WHEN cde.constp = 'CAT' THEN COALESCE(cat.esd_date, sl1.eta_magasin, sl2.eta_magasin)
+                ELSE COALESCE(sl1.eta_magasin, sl2.eta_magasin)
+            END AS eta_magasin,
+            CASE 
+                WHEN cde.constp <> 'CAT' THEN COALESCE(sl1.eta_maurice, sl2.eta_maurice)
+            END AS eta_maurice
         FROM
         (
             SELECT
+                cf.numcde,
+                cf.ligne,
                 cf.constp,
                 cf.refp,
                 cf.desi,
@@ -167,7 +174,7 @@ class PlanningMagasinModel extends Model
                 AND cf.succ   = l.fllf_succ
                 AND cf.numcde = l.fllf_numcde
                 AND cf.ligne  = l.fllf_ligne
-            GROUP BY 1,2,3
+            GROUP BY 1,2,3,4,5
         ) cde
         LEFT JOIN
         (
@@ -181,14 +188,7 @@ class PlanningMagasinModel extends Model
                     WHEN o.slor_typlig IN ('F','M','U','C') THEN o.slor_qterea
                 END AS qtedem,
                 o.slor_numcli AS numcli,
-                cb.cbse_nomcli AS nomcli,
-                CASE 
-                    WHEN o.slor_constp = 'CAT' THEN COALESCE(cat.esd_date, sl1.eta_magasin, sl2.eta_magasin)
-                    ELSE COALESCE(sl1.eta_magasin, sl2.eta_magasin)
-                END AS eta_magasin,
-                CASE 
-                    WHEN o.slor_constp <> 'CAT' THEN COALESCE(sl1.eta_maurice, sl2.eta_maurice)
-                END AS eta_maurice
+                cb.cbse_nomcli AS nomcli
             FROM
             (
                 SELECT DISTINCT
@@ -204,34 +204,6 @@ class PlanningMagasinModel extends Model
                 AND o.slor_refp  = liv.refp
             INNER JOIN {$this->dbIps}.cli_bse cb ON cb.cbse_numcli = o.slor_numcli
             INNER JOIN {$this->dbIps}.cli_soc cs ON cs.csoc_soc = o.slor_soc AND cs.csoc_numcli = o.slor_numcli
-            LEFT JOIN {$this->dbIrium}.gcot_acknow_cat cat 
-                ON  cat.numero_po = '$numCde'
-                AND cat.parts_number = o.slor_refp 
-                AND cat.parts_cst = o.slor_constp
-                AND (cat.line_number = o.slor_nolign OR cat.line_number = o.slor_noligncm)
-            LEFT JOIN (
-                SELECT
-                    slnk_pk1 AS numcde,
-                    slnk_pk2 AS nolign,
-                    slnk_date1 AS eta_magasin,
-                    slnk_alpha1 AS eta_maurice
-                FROM {$this->dbIpsRegix}.sip_lnk
-                WHERE slnk_tabname IN ('frn_cdl', 'frn_cde')
-                    AND slnk_pk1 = '$numCde'
-                    AND slnk_pk2 IS NOT NULL
-                ORDER BY slnk_id
-            ) sl1 ON sl1.numcde = '$numCde' AND sl1.nolign = o.slor_nolign
-            LEFT JOIN (
-                SELECT
-                    slnk_pk1 AS numcde,
-                    slnk_date1 AS eta_magasin,
-                    slnk_alpha1 AS eta_maurice
-                FROM {$this->dbIpsRegix}.sip_lnk
-                WHERE slnk_tabname IN ('frn_cdl', 'frn_cde')
-                    AND slnk_pk1 = '$numCde'
-                    AND slnk_pk2 IS NULL
-                ORDER BY slnk_id
-            ) sl2 ON sl2.numcde = '$numCde'
             WHERE o.slor_soc = '$codeSociete'
         UNION ALL
             SELECT DISTINCT
@@ -241,50 +213,44 @@ class PlanningMagasinModel extends Model
                 n.nlig_numcde AS numero,
                 n.nlig_qtecde AS qtedem,
                 n.nlig_numcli AS numcli,
-                cb.cbse_nomcli AS nomcli,
-                CASE 
-                    WHEN n.nlig_constp = 'CAT' THEN COALESCE(cat.esd_date, sl1.eta_magasin, sl2.eta_magasin)
-                    ELSE COALESCE(sl1.eta_magasin, sl2.eta_magasin)
-                END AS eta_magasin,
-                CASE 
-                    WHEN n.nlig_constp <> 'CAT' THEN COALESCE(sl1.eta_maurice, sl2.eta_maurice)
-                END AS eta_maurice
+                cb.cbse_nomcli AS nomcli
             FROM {$this->dbIps}.neg_lig n
             INNER JOIN {$this->dbIps}.cli_bse cb ON cb.cbse_numcli = n.nlig_numcli
             INNER JOIN {$this->dbIps}.cli_soc cs ON cs.csoc_soc = n.nlig_soc AND cs.csoc_numcli = n.nlig_numcli
-            LEFT JOIN {$this->dbIrium}.gcot_acknow_cat cat 
-                ON  cat.numero_po = n.nlig_numcde 
-                AND cat.parts_number = n.nlig_refp 
-                AND cat.parts_cst = n.nlig_constp
-                AND cat.line_number = n.nlig_nolign
-            LEFT JOIN (
-                SELECT
-                    slnk_pk1 AS numcde,
-                    slnk_pk2 AS nolign,
-                    slnk_date1 AS eta_magasin,
-                    slnk_alpha1 AS eta_maurice
-                FROM {$this->dbIpsRegix}.sip_lnk
-                WHERE slnk_tabname IN ('frn_cdl', 'frn_cde')
-                    AND slnk_pk1 = '$numCde'
-                    AND slnk_pk2 IS NOT NULL
-                ORDER BY slnk_id
-            ) sl1 ON sl1.numcde = n.nlig_numcde AND sl1.nolign = n.nlig_nolign
-            LEFT JOIN (
-                SELECT
-                    slnk_pk1 AS numcde,
-                    slnk_date1 AS eta_magasin,
-                    slnk_alpha1 AS eta_maurice
-                FROM {$this->dbIpsRegix}.sip_lnk
-                WHERE slnk_tabname IN ('frn_cdl', 'frn_cde')
-                    AND slnk_pk1 = '$numCde'
-                    AND slnk_pk2 IS NULL
-                ORDER BY slnk_id
-            ) sl2 ON sl2.numcde = n.nlig_numcde
             WHERE n.nlig_numcde = '$numCde'
                 AND n.nlig_soc = '$codeSociete'
                 AND n.nlig_refp IN (SELECT refp FROM cdl_filtre)
-        ) res
-        ON res.refp = cde.refp AND cde.constp = res.constp
+        ) res 
+            ON  res.refp   = cde.refp 
+            AND cde.constp = res.constp
+        LEFT JOIN {$this->dbIrium}.gcot_acknow_cat cat 
+            ON  cat.numero_po    = cde.numcde
+            AND cat.parts_number = cde.refp 
+            AND cat.parts_cst    = cde.constp
+            AND cat.line_number  = cde.ligne
+        LEFT JOIN (
+            SELECT
+                slnk_pk1    AS num_cde,
+                slnk_pk2    AS no_lign,
+                slnk_date1  AS eta_magasin,
+                slnk_alpha1 AS eta_maurice
+            FROM {$this->dbIpsRegix}.sip_lnk
+            WHERE slnk_tabname IN ('frn_cdl', 'frn_cde')
+                AND slnk_pk1 = '$numCde'
+                AND slnk_pk2 IS NOT NULL
+            ORDER BY slnk_id
+        ) sl1 ON sl1.numcde = cde.numcde AND sl1.nolign = cde.ligne
+        LEFT JOIN (
+            SELECT
+                slnk_pk1    AS num_cde,
+                slnk_date1  AS eta_magasin,
+                slnk_alpha1 AS eta_maurice
+            FROM {$this->dbIpsRegix}.sip_lnk
+            WHERE slnk_tabname IN ('frn_cdl', 'frn_cde')
+                AND slnk_pk1 = '$numCde'
+                AND slnk_pk2 IS NULL
+            ORDER BY slnk_id
+        ) sl2 ON sl2.numcde = cde.numcde
         ORDER BY cde.refp, res.numero;";
 
         $result = $this->connect->executeQuery($statement);
