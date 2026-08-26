@@ -113,7 +113,7 @@ class PlanningMagasinModel extends Model
         return $this->convertirEnUtf8($data);
     }
 
-    function recupLigneCommande(string $numCde, string $codeSociete)
+    public function recupLigneCommande(string $numCde, string $codeSociete)
     {
         $statement = "--sql
         WITH cdl_filtre AS (
@@ -239,7 +239,7 @@ class PlanningMagasinModel extends Model
                 AND slnk_pk1 = '$numCde'
                 AND slnk_pk2 IS NOT NULL
             ORDER BY slnk_id
-        ) sl1 ON sl1.numcde = cde.numcde AND sl1.nolign = cde.ligne
+        ) sl1 ON sl1.num_cde = cde.numcde AND sl1.no_lign = cde.ligne
         LEFT JOIN (
             SELECT
                 slnk_pk1    AS num_cde,
@@ -250,7 +250,7 @@ class PlanningMagasinModel extends Model
                 AND slnk_pk1 = '$numCde'
                 AND slnk_pk2 IS NULL
             ORDER BY slnk_id
-        ) sl2 ON sl2.numcde = cde.numcde
+        ) sl2 ON sl2.num_cde = cde.numcde
         ORDER BY cde.refp, res.numero;";
 
         $result = $this->connect->executeQuery($statement);

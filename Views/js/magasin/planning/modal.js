@@ -12,6 +12,8 @@ const CELL_INDICES_LIGNE = {
   qteDem: 3,
   qteRest: 4,
   statut: 5,
+  etaMagasin: 6,
+  etaMaurice: 7,
 };
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -149,11 +151,11 @@ document.addEventListener("DOMContentLoaded", function () {
                   <td class="text-center">${qteAvecStyle(detail.qte_dem, detail.statut, "livre")}</td>
                   <td class="text-center">${qteAvecStyle(detail.qte_dem - detail.qte_dispo, detail.statut, "partiel")}</td>
                   <td class="text-start">${statutBadge(detail.statut)}</td>
-                  <td class="text-center"> ${nameAndNumberDoc(detail.type_doc, detail.numero)}</td>
-                  <td class="text-start">${nameAndNumberDoc(detail.numcli, detail.nomcli)}</td>
-                  <td class="text-center">${qte(detail.qte_dem_ligne)}</td>
                   <td class="text-center">${detail.eta_magasin || ""}</td>
                   <td class="text-center">${detail.eta_maurice || ""}</td>
+                  <td class="text-center">${nameAndNumberDoc(detail.type_doc, detail.numero)}</td>
+                  <td class="text-start">${nameAndNumberDoc(detail.numcli, detail.nomcli)}</td>
+                  <td class="text-center">${qte(detail.qte_dem_ligne)}</td>
                 </tr>`
             )
             .join("");
