@@ -101,7 +101,10 @@ class DevisNegVerificationPrixController extends Controller
 
             // creation du page de garde 
             $generatePdfDevisMagasin = new GeneratePdfDeviMagasinVp();
-            $generatePdfDevisMagasin->genererPdf($dto, $nomAvecCheminFichier);
+            $tableauMarges = $this->tableauMarge($dto->numeroDevis, $dto->codeSociete);
+            $tableauMargeReference = $this->tableauMargeReference($dto->numeroDevis, $dto->codeSociete);
+            $generatePdfDevisMagasin->genererPdf($dto, $nomAvecCheminFichier, $tableauMarges, $tableauMargeReference);
+
             //insertion de la page de garde à la position 0
             $traitementDeFichier = new TraitementDeFichier();
             $nomEtCheminFichiersEnregistrer = $traitementDeFichier->insertFileAtPosition($nomEtCheminFichiersEnregistrer, $nomAvecCheminFichier, 0);
@@ -131,6 +134,65 @@ class DevisNegVerificationPrixController extends Controller
             $nomInputSearch = 'devis_neg_search'; // initialistion de nom de chaque champ ou input
             $this->historiqueOperationDeviMagasinService->sendNotificationSoumission($message, $dto->numeroDevis, $nomDeRoute, true, $criteria, $nomInputSearch);
         }
+    }
+
+    public function tableauMarge(string $numOr, string $codeSociete): array
+    {
+        $tableauMargeCat = [];
+        $tableauMargeMfn = [];
+        $tableauMargeAutres = [];
+
+        $soumissionModel = new SoumissionModel();
+        $tableauMarges = $soumissionModel->tableauDeMarge($codeSociete, $numOr);
+
+        foreach ($tableauMarges as $value) {
+            if ($value['constructeur'] == 'CAT') {
+                $tableauMargeCat[] = $value;
+            } elseif ($value['constructeur'] == 'MFN') {
+                $tableauMargeMfn[] = $value;
+            } else {
+                $tableauMargeAutres[] = $value;
+            }
+        }
+
+        return [
+            'tableauMargeCat' => $tableauMargeCat,
+            'tableauMargeMfn' => $tableauMargeMfn,
+            'tableauMargeAutres' => $tableauMargeAutres
+        ];
+    }
+
+    public function tableauMargeReference(string $numDevis, string $codeSociete): array
+    {
+        $soumissionModel = new SoumissionModel();
+
+        $infoDevis = $soumissionModel->getInfoDeviSansJointure($numDevis, $codeSociete);
+
+        $tableauMargeCat = [];
+        $tableauMargeMfn = [];
+        $tableauMargeAutres = [];
+
+        if (!empty($infoDevis)) {
+            foreach ($infoDevis as $infoDevis) {
+                $afficher = $soumissionModel->tableauDeMargeAvecReference($codeSociete, $numDevis, $infoDevis['ref'], $infoDevis['code_agence']);
+
+                foreach ($afficher as $value) {
+                    if ($value['constructeur'] == 'CAT') {
+                        $tableauMargeCat[] = $value;
+                    } elseif ($value['constructeur'] == 'MFN') {
+                        $tableauMargeMfn[] = $value;
+                    } else {
+                        $tableauMargeAutres[] = $value;
+                    }
+                }
+            }
+        }
+        // dd($tableauMargeCat, $tableauMargeMfn, $tableauMargeAutres);
+        return [
+            'tableauMargeCat' => $tableauMargeCat,
+            'tableauMargeMfn' => $tableauMargeMfn,
+            'tableauMargeAutres' => $tableauMargeAutres
+        ];
     }
 
     private function enregistrementFichierExcel(FormInterface $form, string $numDevis): array

@@ -249,4 +249,180 @@ class SoumissionModel extends Model
             $this->connect->close();
         }
     }
+
+    public function tableauDeMarge(string $numeroCde, string $codeSociete)
+    {
+        $statement = "SELECT
+                numero_cde                                               As numero_cde,
+                TRIM(categorie_constp)                                  As constructeur,
+                TRIM(disponibilite)                                     As disponibilite,
+                --SUM(astp_stock)                                                AS nb_ref,
+                COUNT(*)                                                AS nb_ref,
+                SUM(nlig_pmp)                                           AS somme_pmp,
+                SUM(nlig_pxvteht)                                       AS somme_pxvteht,
+                SUM(nlig_pxvteht - nlig_pxnreel)                   AS somme_remise,
+                SUM(nlig_pxnreel)               AS somme_pxvte_remise,
+                SUM(nlig_pxnreel - nlig_pmp)  AS somme_marge_brute,
+                ROUND(CASE
+                    WHEN SUM(nlig_pxnreel) = 0 THEN NULL
+                    ELSE SUM(nlig_pxnreel - nlig_pmp)
+                        / SUM(nlig_pxnreel) * 100
+                END)                                                      AS pct_marge_brute,
+                ROUND(MAX(CASE
+                    WHEN nlig_pxnreel <> 0
+                    THEN (nlig_pxnreel - nlig_pmp) / (nlig_pxnreel) * 100
+                END))                                                     AS pct_mb_max,
+                ROUND(MIN(CASE
+                    WHEN nlig_pxnreel <> 0
+                    THEN (nlig_pxnreel - nlig_pmp) / (nlig_pxnreel) * 100
+                END))                                                      AS pct_mb_min
+            FROM (
+                SELECT
+                    l.nlig_numcde AS numero_cde,
+                    CASE
+                        WHEN l.nlig_constp = 'MFN' THEN 'MFN'
+                        WHEN l.nlig_constp = 'CAT' THEN 'CAT'
+                        ELSE 'AUTRE'
+                    END AS categorie_constp,
+                    CASE WHEN s.astp_stock > 0 THEN 'DISPONIBLE' ELSE 'NON_DISPONIBLE' END AS disponibilite,
+                    l.nlig_pmp,
+                    l.nlig_pxvteht,
+                    l.nlig_pxnreel
+                    --l.nlig_remise
+                    --s.astp_stock AS astp_stock 
+                FROM neg_lig l
+                INNER JOIN art_stp s
+                    ON s.astp_constp = l.nlig_constp
+                    AND s.astp_refp = l.nlig_refp
+                    AND s.astp_soc = l.nlig_soc
+                INNER JOIN art_bse b
+                    ON b.abse_constp = l.nlig_constp
+                    AND b.abse_refp = l.nlig_refp
+                    AND b.abse_codg = 'ST'
+                WHERE l.nlig_numcde = $numeroCde
+                AND l.nlig_soc = '$codeSociete'
+            ) t
+            GROUP BY numero_cde, categorie_constp, disponibilite
+            ORDER BY categorie_constp, disponibilite DESC
+       ";
+
+        $result = $this->connect->executeQuery($statement);
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
+
+        return $data;
+    }
+
+    public function tableauDeMargeAvecReference(
+        string $numeroCde,
+        string $codeSociete,
+        string $references,
+        string $codeSuccursale = '1'
+    ) {
+        $statement = "WITH stats_max AS (
+                SELECT FIRST 1
+                    MAX(nlig_pxnreel - nlig_pmp) AS max_mb,
+                    CASE
+                        WHEN nlig_pxnreel = 0 THEN 0
+                        ELSE ROUND(((nlig_pxnreel - nlig_pmp) / nlig_pxnreel) * 100, 2)
+                    END AS max_mb_p
+                FROM Informix.neg_lig nlig
+                INNER JOIN Informix.neg_ent on nent_soc = nlig_soc and nent_succ = nlig_succ and nent_numcde = nlig_numcde
+                WHERE nlig_refp = '$references'
+                    AND nlig_soc = '$codeSociete'
+                    AND nlig_succ = '$codeSuccursale'
+                    AND nent_posf in ('CP','FC','PF','TF')
+                GROUP BY 2
+                ORDER BY MAX(nlig_pxnreel - nlig_pmp) DESC
+            ),
+            stats_min AS (
+                SELECT FIRST 1
+                    MIN(nlig_pxnreel - nlig_pmp) AS min_mb,
+                    CASE
+                        WHEN nlig_pxnreel = 0 THEN 0
+                        ELSE ROUND(((nlig_pxnreel - nlig_pmp) / nlig_pxnreel) * 100, 2)
+                    END AS min_mb_p
+                FROM Informix.neg_lig nlig
+                INNER JOIN Informix.neg_ent on nent_soc = nlig_soc and nent_succ = nlig_succ and nent_numcde = nlig_numcde
+                WHERE nlig_refp = '$references'
+                    AND nlig_soc = '$codeSociete'
+                    AND nlig_succ = '$codeSuccursale'
+                    AND nent_posf in ('CP','FC','PF','TF')
+                GROUP BY 2
+                ORDER BY MIN(nlig_pxnreel - nlig_pmp) ASC
+            )
+            SELECT
+                nlig_constp AS constructeur,
+                -- Stock
+                ROUND(CASE WHEN astp_stock IS NULL THEN 0 ELSE astp_stock END) AS nb_ref,
+                TRIM(nlig_refp) AS reference,
+                TRIM(nlig_desi) AS designation,
+                ROUND(nlig_qtecde) AS quantite_demander,
+
+                -- Prix et remises
+                ROUND(nlig_pmp, 2) AS pmp,
+                nlig_pxvteht AS pv_brut,
+                (nlig_pxvteht - nlig_pxnreel) AS mt_remise,
+                nlig_pxnreel AS pv_net_remise,
+
+                -- Marge brute
+                ROUND(nlig_pxnreel - ROUND(nlig_pmp, 2), 2) AS mb,
+
+                -- Marge brute en pourcentage
+                CASE
+                    WHEN nlig_pxnreel = 0 THEN 0
+                    ELSE ROUND(((nlig_pxnreel - ROUND(nlig_pmp, 2)) / nlig_pxnreel) * 100, 2)
+                END AS mb_p,
+
+                -- Maximum MB (issu de la ligne réelle correspondante)
+                COALESCE(stats_max.max_mb, 0) AS max_mb,
+                COALESCE(stats_max.max_mb_p, 0) AS max_mb_p,
+
+                -- Minimum MB (issu de la ligne réelle correspondante)
+                COALESCE(stats_min.min_mb, 0) AS min_mb,
+                COALESCE(stats_min.min_mb_p, 0) AS min_mb_p,
+
+                -- Famille
+                abse_fams1 || '-' || atab_lib as famille
+
+            FROM Informix.neg_lig
+            INNER JOIN Informix.art_stp
+                ON astp_refp = nlig_refp
+                AND astp_soc = nlig_soc
+                AND astp_succ = nlig_succ
+                AND astp_constp = nlig_constp
+            INNER JOIN Informix.art_bse on abse_refp = nlig_refp
+            INNER JOIN Informix.agr_tab on atab_nom = 'STA' and atab_code = abse_fams1
+            CROSS JOIN stats_max
+            CROSS JOIN stats_min
+            WHERE nlig_numcde = '$numeroCde'
+                AND nlig_succ = '$codeSuccursale'
+                AND nlig_soc = '$codeSociete'
+                AND nlig_refp = '$references';
+        ";
+
+        $result = $this->connect->executeQuery($statement);
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
+
+        return $data;
+    }
+
+    public function getInfoDeviSansJointure(string $numeroDevis, string $codeSociete)
+    {
+        $statement = "SELECT nlig_refp as ref, 
+                            nlig_succ as code_agence,
+                            nlig_soc as code_societe,
+                            nlig_numcde as numero_devis
+            FROM informix.neg_lig
+            WHERE nlig_numcde = '$numeroDevis'
+                and nlig_soc = '$codeSociete'
+                and nlig_codg = 'ST'
+                and nlig_natop = 'DEV'
+                and nlig_constp <> 'Nmc'
+        ";
+
+        $result = $this->connect->executeQuery($statement);
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
+
+        return $data;
+    }
 }
