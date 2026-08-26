@@ -50,6 +50,14 @@ class DevisNegMapper
             $dto->numeroPo = $item['numero_po'] ?? null;
             $dto->urlPo = isset($item['path']) ? ($_ENV["BASE_PATH_FICHIER_COURT"] . "/" . $item['path']) : null;
 
+            // Excel Marge Référence
+            $basePathFichier = rtrim($_ENV['BASE_PATH_FICHIER'] ?? '', '/\\');
+            $basePathFichierCourt = rtrim($_ENV['BASE_PATH_FICHIER_COURT'] ?? '', '/\\');
+            $cheminExcel = $basePathFichier . '/magasin/devis/' . $dto->numeroDevis . '/marge_ref_' . $dto->numeroDevis . '.xlsx';
+            if (!empty($dto->numeroDevis) && file_exists($cheminExcel)) {
+                $dto->urlMargeReferenceExcel = $basePathFichierCourt . '/magasin/devis/' . $dto->numeroDevis . '/marge_ref_' . $dto->numeroDevis . '.xlsx';
+            }
+
             //Blockage de soumission
             // $dto->pointagedevis = in_array($dto->statutDw, [StatutDevisNegContant::PRIX_VALIDER_TANA, StatutDevisNegContant::PRIX_MODIFIER_TANA, StatutDevisNegContant::VALIDE_AGENCE]);
 

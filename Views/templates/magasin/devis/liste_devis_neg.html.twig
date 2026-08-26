@@ -156,6 +156,13 @@
                                 row.numeroDevis
                             }">Pointer relance devis client</a>
                             <a class="dropdown-item fw-bold" href="${urlSoumissionBC}">Soumission BC client pour validation</a>
+                            ${
+                                row.urlMargeReferenceExcel ? `
+                                <a class="dropdown-item fw-bold text-success" href="${row.urlMargeReferenceExcel}" download>
+                                    <i class="fas fa-file-excel me-1"></i> Télécharger Marge Référence
+                                </a>
+                                ` : ''
+                            }
                             </li>
                             </ul>
                             </div>
