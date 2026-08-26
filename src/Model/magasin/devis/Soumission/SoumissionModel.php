@@ -250,7 +250,7 @@ class SoumissionModel extends Model
         }
     }
 
-    public function tableauDeMarge(string $numeroCde, string $codeSociete)
+    public function tableauDeMarge(string $codeSociete, string $numeroCde)
     {
         $statement = "SELECT
                 numero_cde                                               As numero_cde,
@@ -299,7 +299,7 @@ class SoumissionModel extends Model
                     ON b.abse_constp = l.nlig_constp
                     AND b.abse_refp = l.nlig_refp
                     AND b.abse_codg = 'ST'
-                WHERE l.nlig_numcde = $numeroCde
+                WHERE l.nlig_numcde = '$numeroCde'
                 AND l.nlig_soc = '$codeSociete'
             ) t
             GROUP BY numero_cde, categorie_constp, disponibilite
@@ -313,8 +313,8 @@ class SoumissionModel extends Model
     }
 
     public function tableauDeMargeAvecReference(
-        string $numeroCde,
         string $codeSociete,
+        string $numeroCde,
         string $references,
         string $codeSuccursale = '1'
     ) {

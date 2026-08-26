@@ -136,14 +136,14 @@ class DevisNegVerificationPrixController extends Controller
         }
     }
 
-    public function tableauMarge(string $numOr, string $codeSociete): array
+    public function tableauMarge(string $numDevis, string $codeSociete): array
     {
         $tableauMargeCat = [];
         $tableauMargeMfn = [];
         $tableauMargeAutres = [];
 
         $soumissionModel = new SoumissionModel();
-        $tableauMarges = $soumissionModel->tableauDeMarge($codeSociete, $numOr);
+        $tableauMarges = $soumissionModel->tableauDeMarge($codeSociete, $numDevis);
 
         foreach ($tableauMarges as $value) {
             if ($value['constructeur'] == 'CAT') {
