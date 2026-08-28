@@ -118,14 +118,20 @@ class PlanningMagasinModel extends Model
         // Activer la jointure sur la table {$this->dbIrium}.sip_lnk pour la société SCOMAT
         $sipLnkActive = $codeSociete === "SO";
 
+        $asCdlFiltre = 'cdl_filtre';
+        $asCde       = 'cde';
+        $asCat       = 'cat';
+        $asSipLnk1   = 'sl1';
+        $asSipLnk2   = 'sl2';
+
         $statement = "--sql
         WITH
-            cdl_filtre AS ({$this->getQueryCdlFiltre($numCde,$codeSociete)}),
-            cde AS ({$this->getQueryCdeAgrege()}),
+            $asCdlFiltre AS ({$this->getQueryCdlFiltre($numCde,$codeSociete)}),
+            $asCde AS ({$this->getQueryCdeAgrege($asCdlFiltre)}),
             res AS (
-                {$this->getQueryResOr($numCde,$codeSociete)}
+                {$this->getQueryResOr($numCde,$codeSociete,$asCdlFiltre)}
                 UNION ALL
-                {$this->getQueryResVenteDirecte($numCde,$codeSociete)}
+                {$this->getQueryResVenteDirecte($numCde,$codeSociete,$asCdlFiltre)}
             )
         SELECT
             cde.constp,
@@ -149,17 +155,17 @@ class PlanningMagasinModel extends Model
             res.type_doc,
             res.numcli,
             res.nomcli,
-            {$this->getColonnesEta($sipLnkActive)}
-        FROM cde
+            {$this->getColonnesEta($sipLnkActive,$asCde,$asCat,$asSipLnk1,$asSipLnk2)}
+        FROM $asCde
         LEFT JOIN res
-            ON  res.refp   = cde.refp
-            AND cde.constp = res.constp
-        LEFT JOIN {$this->dbIrium}.gcot_acknow_cat cat
-            ON  cat.numero_po    = cde.numcde
-            AND cat.parts_number = cde.refp
-            AND cat.parts_cst    = cde.constp
-            AND cat.line_number  = cde.ligne
-        {$this->getJoinSipLnk($numCde,$sipLnkActive)}
+            ON  res.refp   = $asCde.refp
+            AND $asCde.constp = res.constp
+        LEFT JOIN {$this->dbIrium}.gcot_acknow_cat $asCat
+            ON  $asCat.numero_po    = $asCde.numcde
+            AND $asCat.parts_number = $asCde.refp
+            AND $asCat.parts_cst    = $asCde.constp
+            AND $asCat.line_number  = $asCde.ligne
+        {$this->getJoinSipLnk($sipLnkActive,$numCde,$asCde,$asSipLnk1,$asSipLnk2)}
         ORDER BY cde.refp, res.numero;";
 
         $result = $this->connect->executeQuery($statement);
@@ -188,7 +194,7 @@ class PlanningMagasinModel extends Model
                     AND c.fcdl_soc = '$codeSociete'";
     }
 
-    private function getQueryCdeAgrege(): string
+    private function getQueryCdeAgrege(string $asCdlFiltre): string
     {
         return "SELECT 
                     cf.numcde,
@@ -206,7 +212,7 @@ class PlanningMagasinModel extends Model
                         END
                     ) AS qte_dispo,
                     SUM(cf.qte_fact) as qte_fact
-                FROM cdl_filtre cf
+                FROM $asCdlFiltre cf
                 LEFT JOIN {$this->dbIps}.frn_llf l
                     ON cf.soc     = l.fllf_soc
                     AND cf.succ   = l.fllf_succ
@@ -215,7 +221,7 @@ class PlanningMagasinModel extends Model
                 GROUP BY 1,2,3,4,5";
     }
 
-    private function getQueryResOr(string $numCde, string $codeSociete): string
+    private function getQueryResOr(string $numCde, string $codeSociete, string $asCdlFiltre): string
     {
         return "SELECT DISTINCT
                     TRIM('OR')    AS type_doc,
@@ -236,7 +242,7 @@ class PlanningMagasinModel extends Model
                         l.fllf_numliv AS numliv
                     FROM {$this->dbIps}.frn_llf l
                     WHERE l.fllf_numcde = '$numCde'
-                        AND l.fllf_refp IN (SELECT refp FROM cdl_filtre)
+                        AND l.fllf_refp IN (SELECT refp FROM $asCdlFiltre)
                 ) liv
                 INNER JOIN {$this->dbIps}.sav_lor o
                     ON  o.slor_numcf = liv.numliv
@@ -246,7 +252,7 @@ class PlanningMagasinModel extends Model
                 WHERE o.slor_soc = '$codeSociete'";
     }
 
-    private function getQueryResVenteDirecte(string $numCde, string $codeSociete): string
+    private function getQueryResVenteDirecte(string $numCde, string $codeSociete, string $asCdlFiltre): string
     {
         return "SELECT DISTINCT
                     TRIM('VTEDIR') AS type_doc,
@@ -261,7 +267,7 @@ class PlanningMagasinModel extends Model
                 INNER JOIN {$this->dbIps}.cli_soc cs ON cs.csoc_soc = n.nlig_soc AND cs.csoc_numcli = n.nlig_numcli
                 WHERE n.nlig_numcde = '$numCde'
                     AND n.nlig_soc = '$codeSociete'
-                    AND n.nlig_refp IN (SELECT refp FROM cdl_filtre)";
+                    AND n.nlig_refp IN (SELECT refp FROM $asCdlFiltre)";
     }
 
     /**
@@ -269,49 +275,52 @@ class PlanningMagasinModel extends Model
      * Si sip_lnk est désactivée pour l'environnement courant, ces colonnes
      * retombent sur cat.esd_date / NULL au lieu d'échouer sur des alias absents.
      */
-    private function getColonnesEta(bool $sipLnkActive): string
+    private function getColonnesEta(bool $sipLnkActive, string $asCde, string $asCat, string $asSipLnk1, string $asSipLnk2): string
     {
         if (!$sipLnkActive) {
-            return "cat.esd_date AS eta_magasin,
-                    CAST(NULL AS CHAR(1)) AS eta_maurice";
+            return "--sql
+            $asCat.esd_date AS eta_magasin,
+            CAST(NULL AS CHAR(1)) AS eta_maurice";
         }
 
-        return "CASE
-                    WHEN cde.constp = 'CAT' THEN COALESCE(cat.esd_date, sl1.eta_magasin, sl2.eta_magasin)
-                    ELSE COALESCE(sl1.eta_magasin, sl2.eta_magasin)
-                END AS eta_magasin,
-                CASE
-                    WHEN cde.constp <> 'CAT' THEN COALESCE(sl1.eta_maurice, sl2.eta_maurice)
-                END AS eta_maurice";
+        return "--sql
+            CASE
+                WHEN $asCde.constp = 'CAT' THEN COALESCE($asCat.esd_date, $asSipLnk1.eta_magasin, $asSipLnk2.eta_magasin)
+                ELSE COALESCE($asSipLnk1.eta_magasin, $asSipLnk2.eta_magasin)
+            END AS eta_magasin,
+            CASE
+                WHEN $asCde.constp <> 'CAT' THEN COALESCE($asSipLnk1.eta_maurice, $asSipLnk2.eta_maurice)
+            END AS eta_maurice";
     }
 
-    private function getJoinSipLnk(string $numCde, bool $sipLnkActive): string
+    private function getJoinSipLnk(bool $sipLnkActive, string $numCde, string $asCde, string $asSipLnk1, string $asSipLnk2): string
     {
         if (!$sipLnkActive) return "";
 
-        return "LEFT JOIN (
-                    SELECT
-                        slnk_pk1    AS num_cde,
-                        slnk_pk2    AS no_lign,
-                        slnk_date1  AS eta_magasin,
-                        slnk_alpha1 AS eta_maurice
-                    FROM {$this->dbIpsRegix}.sip_lnk
-                    WHERE slnk_tabname IN ('frn_cdl', 'frn_cde')
-                        AND slnk_pk1 = '$numCde'
-                        AND slnk_pk2 IS NOT NULL
-                    ORDER BY slnk_id
-                ) sl1 ON sl1.num_cde = cde.numcde AND sl1.no_lign = cde.ligne
-                LEFT JOIN (
-                    SELECT
-                        slnk_pk1    AS num_cde,
-                        slnk_date1  AS eta_magasin,
-                        slnk_alpha1 AS eta_maurice
-                    FROM {$this->dbIpsRegix}.sip_lnk
-                    WHERE slnk_tabname IN ('frn_cdl', 'frn_cde')
-                        AND slnk_pk1 = '$numCde'
-                        AND slnk_pk2 IS NULL
-                    ORDER BY slnk_id
-                ) sl2 ON sl2.num_cde = cde.numcde";
+        return "--sql
+            LEFT JOIN (
+                SELECT
+                    slnk_pk1    AS num_cde,
+                    slnk_pk2    AS no_lign,
+                    slnk_date1  AS eta_magasin,
+                    slnk_alpha1 AS eta_maurice
+                FROM {$this->dbIpsRegix}.sip_lnk
+                WHERE slnk_tabname IN ('frn_cdl', 'frn_cde')
+                    AND slnk_pk1 = '$numCde'
+                    AND slnk_pk2 IS NOT NULL
+                ORDER BY slnk_id
+            ) $asSipLnk1 ON $asSipLnk1.num_cde = $asCde.numcde AND $asSipLnk1.no_lign = $asCde.ligne
+            LEFT JOIN (
+                SELECT
+                    slnk_pk1    AS num_cde,
+                    slnk_date1  AS eta_magasin,
+                    slnk_alpha1 AS eta_maurice
+                FROM {$this->dbIpsRegix}.sip_lnk
+                WHERE slnk_tabname IN ('frn_cdl', 'frn_cde')
+                    AND slnk_pk1 = '$numCde'
+                    AND slnk_pk2 IS NULL
+                ORDER BY slnk_id
+            ) $asSipLnk2 ON $asSipLnk2.num_cde = $asCde.numcde";
     }
 
     private function conditionStatut(string $statut, bool $isEmptyQuery): string
