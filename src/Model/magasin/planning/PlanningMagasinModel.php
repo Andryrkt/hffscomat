@@ -121,7 +121,10 @@ class PlanningMagasinModel extends Model
                 c.fcdl_constp   AS constp,
                 c.fcdl_refp     AS refp,
                 c.fcdl_desi     AS desi,
-                c.fcdl_qte      AS qte,
+                c.fcdl_qte      AS qte_dem,
+                c.fcdl_solde    AS qte_rest,
+                c.fcdl_qteli    AS qte_recept,
+                c.fcdl_qtefa    AS qte_fact,
                 c.fcdl_soc      AS soc,
                 c.fcdl_succ     AS succ,
                 c.fcdl_numcde   AS numcde,
@@ -135,10 +138,16 @@ class PlanningMagasinModel extends Model
             TRIM(cde.refp) AS refp,
             TRIM(cde.desi) AS desi,
             cde.qte_dem,
+            cde.qte_rest,
+            cde.qte_recept,
             cde.qte_dispo,
+            cde.qte_fact,
             CASE
-                WHEN cde.qte_dispo > 0 AND cde.qte_dispo < cde.qte_dem THEN 'partiel'
-                WHEN cde.qte_dispo > 0 AND cde.qte_dispo = cde.qte_dem THEN 'livre'
+                WHEN cde.qte_recept = 0 THEN 'En attente'
+                WHEN cde.qte_fact = cde.qte_dem THEN 'Complet facturé'
+                WHEN cde.qte_fact > 0 AND cde.qte_fact < cde.qte_dem THEN 'Partiellement facturé'
+                WHEN cde.qte_recept > 0 AND cde.qte_rest > 0 THEN 'Partiellement dispo'
+                WHEN cde.qte_rest = 0 AND cde.qte_fact = 0 THEN 'Complet non facturé'
                 ELSE ''
             END AS statut,
             res.numero,
@@ -161,13 +170,16 @@ class PlanningMagasinModel extends Model
                 cf.constp,
                 cf.refp,
                 cf.desi,
-                SUM(cf.qte) AS qte_dem,
+                SUM(cf.qte_dem) AS qte_dem,
+                SUM(cf.qte_rest) as qte_rest,
+                SUM(cf.qte_recept) as qte_recept,
                 SUM(
                     CASE
-                        WHEN l.fllf_majstk = 'O' THEN NVL(l.fllf_qteaff, 0)
+                        WHEN l.fllf_majstk = 'O' THEN NVL(l.fllf_qteliv, 0)
                         ELSE 0
                     END
-                ) AS qte_dispo
+                ) AS qte_dispo,
+                SUM(cf.qte_fact) as qte_fact
             FROM cdl_filtre cf
             LEFT JOIN {$this->dbIps}.frn_llf l
                 ON cf.soc     = l.fllf_soc
