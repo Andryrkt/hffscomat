@@ -258,11 +258,17 @@ class GenererPdfDevisSoumisAValidation extends GeneratePdf
         $pdf->Output($filePath, 'F');
     }
 
-    public function genererPdfVerificationPrix(array $tableauMarge, array $tableauMargeReference, string $nomFichierCtrl, string $email)
-    {
+    public function genererPdfVerificationPrix(
+        array $tableauMarge,
+        array $tableauMargeReference,
+        string $nomFichierCtrl,
+        string $email,
+        string $observation
+    ) {
         $mail = 'email : ' . $email;
 
         $pdf = new HeaderPdf($mail);
+        $font2 = "helvetica";
 
         $tableGenerator = new PdfTableGeneratorFlexible();
         $tableGenerator->setOptions([
@@ -281,6 +287,11 @@ class GenererPdfDevisSoumisAValidation extends GeneratePdf
         //Titre: Tableaux de marge avec reference (CAT, MFN, Autres)
         $this->renderTableauxMargeReference($pdf, $tableGenerator, $tableauMargeReference);
         //==========================================================================================================
+        //Titre: Observation
+        $pdf->setFont($font2, 'B', 10);
+        $pdf->Cell(30, 6, 'Observation', 0, 0, 'L', false, '', 0, false, 'T', 'M');
+        $pdf->setFont($font2, '', 10);
+        $pdf->MultiCell(164, 100, ': ' . $observation, 0, '', 0, 0, '', '', true);
 
         $Dossier = $_ENV['BASE_PATH_FICHIER'] . '/dit/dev/';
 

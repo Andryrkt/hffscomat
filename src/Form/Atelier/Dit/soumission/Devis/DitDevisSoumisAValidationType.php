@@ -7,12 +7,14 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\File;
-use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Constraints\File;
+use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Validator\Constraints\NotBlank;
 
 class DitDevisSoumisAValidationType extends AbstractType
 {
@@ -86,6 +88,24 @@ class DitDevisSoumisAValidationType extends AbstractType
                     'attr' => [
                         'data-error-message' => 'le pièce jointe est obligatoire, veillez ajouter un fichier PDF.', // Message d'erreur personnalisé pour le champ
                     ]
+                ]
+            )
+            ->add(
+                'observation',
+                TextareaType::class,
+                [
+                    'label' => 'Observation',
+                    'required' => false,
+                    'attr' => [
+                        'rows' => 5,
+                        'maxlength' => 5000,
+                    ],
+                    'constraints' => [
+                        new Length([
+                            'max' => 5000,
+                            'maxMessage' => 'L\'observation ne doit pas dépasser {{ limit }} caractères.',
+                        ]),
+                    ],
                 ]
             )
         ;

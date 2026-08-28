@@ -84,6 +84,8 @@ class DitDevisSoumisAValidationDto
 
     public string $langue = 'EN';
 
+    public ?string $observation = null;
+
     // Comparaison des objets par leur numero d'intervention
     public function estEgalParNumero(self $autre)
     {

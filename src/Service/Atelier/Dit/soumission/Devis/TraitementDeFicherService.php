@@ -50,7 +50,13 @@ class TraitementDeFicherService
             $tableauMarge = $this->tableauMarge($dto->numeroDevis, $dto->codeSociete);
             $tableauMargeReference = $this->tableauMargeReference($dto->numeroDevis, $dto->codeSociete, $dto->numeroVersion);
             $mailUtilisateur = $this->securityService->getDataService()->getUserMail();
-            $generePdfDevis->genererPdfVerificationPrix($tableauMarge, $tableauMargeReference, $nomFichierCtrl, $mailUtilisateur);
+            $generePdfDevis->genererPdfVerificationPrix(
+                $tableauMarge,
+                $tableauMargeReference,
+                $nomFichierCtrl,
+                $mailUtilisateur,
+                $dto->observation
+            );
 
             // fusion du pdf de verification de prix avec le fichier ajouter par l'utilisateur en le mettant à la dernière position
             $fichierConvertis = $this->ConvertirLesPdf([$chemin . 'fichiers/' . $nomFichierGenererSansTache, $chemin . $nomFichierCtrl]);
