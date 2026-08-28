@@ -143,11 +143,11 @@ class PlanningMagasinModel extends Model
             cde.qte_dispo,
             cde.qte_fact,
             CASE
-                WHEN cde.qte_recept = 0 THEN 'En attente'
-                WHEN cde.qte_fact = cde.qte_dem THEN 'Complet facturé'
-                WHEN cde.qte_fact > 0 AND cde.qte_fact < cde.qte_dem THEN 'Partiellement facturé'
-                WHEN cde.qte_recept > 0 AND cde.qte_rest > 0 THEN 'Partiellement dispo'
-                WHEN cde.qte_rest = 0 AND cde.qte_fact = 0 THEN 'Complet non facturé'
+                WHEN cde.qte_recept = 0 THEN 'en_attente'
+                WHEN cde.qte_fact = cde.qte_dem THEN 'complet_facture'
+                WHEN cde.qte_fact > 0 AND cde.qte_fact < cde.qte_dem THEN 'partiel_facture'
+                WHEN cde.qte_recept > 0 AND cde.qte_rest > 0 THEN 'partiel_dispo'
+                WHEN cde.qte_rest = 0 AND cde.qte_fact = 0 THEN 'complet_non_facture'
                 ELSE ''
             END AS statut,
             res.numero,
