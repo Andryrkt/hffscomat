@@ -87,15 +87,21 @@ class MenuGroupe
                 ],
             ],
             [
-                'label'    => 'DEMATERIALISATION',
+                'label'    => 'VENTE NEGOCE',
                 'icon'     => 'cloud-arrow-up',
                 'subitems' => [
-                    ['label' => 'Devis',                        'icon' => 'file-invoice', 'route' => 'liste_devis_neg'],
-                    ['label' => 'Planning de commande Magasin', 'icon' => 'calendar-alt', 'route' => 'interface_planningMag'],
-                    // ['label' => 'Liste des commandes à livrer', 'icon' => 'file-invoice', 'route' => 'magasinListe_commande_livrer'],
-                    ['label' => 'Liste des commandes à traiter', 'icon' => 'file-invoice', 'route' => 'magasinListe_commande_traiter'],
+                    ['label' => 'Liste devis',                        'icon' => 'file-invoice', 'route' => 'liste_devis_neg'],
+                    ['label' => 'Liste commandes à traiter', 'icon' => 'file-invoice', 'route' => 'magasinListe_commande_traiter'],
+                    ['label' => 'Planning commande négoces', 'icon' => 'calendar-alt', 'route' => 'interface_planningMag'],
+                ],
+            ],
+            [
+                'label'    => 'COMMANDE FOURNISSEUR',
+                'icon'     => 'cloud-arrow-up',
+                'subitems' => [
                     ['label' => 'Soumission commandes fournisseur', 'icon' => 'plus-circle', 'route' => 'generer_commande_fournisseur'],
                     ['label' => 'Planning Commande Fourniseur', 'icon' => 'calendar-alt', 'route' => 'interface_planning_cde_frn_magasin'],
+
                 ],
             ],
         ];
