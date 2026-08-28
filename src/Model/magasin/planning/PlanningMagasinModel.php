@@ -115,24 +115,18 @@ class PlanningMagasinModel extends Model
 
     public function recupLigneCommande(string $numCde, string $codeSociete)
     {
+        // Activer la jointure sur la table {$this->dbIrium}.sip_lnk pour la société SCOMAT
+        $sipLnkActive = $codeSociete === "SO";
+
         $statement = "--sql
-        WITH cdl_filtre AS (
-            SELECT
-                c.fcdl_constp   AS constp,
-                c.fcdl_refp     AS refp,
-                c.fcdl_desi     AS desi,
-                c.fcdl_qte      AS qte_dem,
-                c.fcdl_solde    AS qte_rest,
-                c.fcdl_qteli    AS qte_recept,
-                c.fcdl_qtefa    AS qte_fact,
-                c.fcdl_soc      AS soc,
-                c.fcdl_succ     AS succ,
-                c.fcdl_numcde   AS numcde,
-                c.fcdl_ligne    AS ligne
-            FROM {$this->dbIps}.frn_cdl c
-            WHERE c.fcdl_numcde = '$numCde'
-                AND c.fcdl_soc = '$codeSociete'
-        )
+        WITH
+            cdl_filtre AS ({$this->getQueryCdlFiltre($numCde,$codeSociete)}),
+            cde AS ({$this->getQueryCdeAgrege()}),
+            res AS (
+                {$this->getQueryResOr($numCde,$codeSociete)}
+                UNION ALL
+                {$this->getQueryResVenteDirecte($numCde,$codeSociete)}
+            )
         SELECT
             cde.constp,
             TRIM(cde.refp) AS refp,
@@ -155,114 +149,17 @@ class PlanningMagasinModel extends Model
             res.type_doc,
             res.numcli,
             res.nomcli,
-            CASE 
-                WHEN cde.constp = 'CAT' THEN COALESCE(cat.esd_date, sl1.eta_magasin, sl2.eta_magasin)
-                ELSE COALESCE(sl1.eta_magasin, sl2.eta_magasin)
-            END AS eta_magasin,
-            CASE 
-                WHEN cde.constp <> 'CAT' THEN COALESCE(sl1.eta_maurice, sl2.eta_maurice)
-            END AS eta_maurice
-        FROM
-        (
-            SELECT
-                cf.numcde,
-                cf.ligne,
-                cf.constp,
-                cf.refp,
-                cf.desi,
-                SUM(cf.qte_dem) AS qte_dem,
-                SUM(cf.qte_rest) as qte_rest,
-                SUM(cf.qte_recept) as qte_recept,
-                SUM(
-                    CASE
-                        WHEN l.fllf_majstk = 'O' THEN NVL(l.fllf_qteliv, 0)
-                        ELSE 0
-                    END
-                ) AS qte_dispo,
-                SUM(cf.qte_fact) as qte_fact
-            FROM cdl_filtre cf
-            LEFT JOIN {$this->dbIps}.frn_llf l
-                ON cf.soc     = l.fllf_soc
-                AND cf.succ   = l.fllf_succ
-                AND cf.numcde = l.fllf_numcde
-                AND cf.ligne  = l.fllf_ligne
-            GROUP BY 1,2,3,4,5
-        ) cde
-        LEFT JOIN
-        (
-            SELECT DISTINCT
-                TRIM('OR')    AS type_doc,
-                o.slor_constp AS constp,
-                liv.refp      AS refp,
-                o.slor_numor  AS numero,
-                CASE
-                    WHEN o.slor_typlig = 'P' THEN (o.slor_qterel + o.slor_qterea + o.slor_qteres + o.slor_qtewait - o.slor_qrec)
-                    WHEN o.slor_typlig IN ('F','M','U','C') THEN o.slor_qterea
-                END AS qtedem,
-                o.slor_numcli AS numcli,
-                cb.cbse_nomcli AS nomcli
-            FROM
-            (
-                SELECT DISTINCT
-                    l.fllf_numcde AS numcde,
-                    l.fllf_refp   AS refp,
-                    l.fllf_numliv AS numliv
-                FROM {$this->dbIps}.frn_llf l
-                WHERE l.fllf_numcde = '$numCde'
-                    AND l.fllf_refp IN (SELECT refp FROM cdl_filtre)
-            ) liv
-            INNER JOIN {$this->dbIps}.sav_lor o
-                ON  o.slor_numcf = liv.numliv 
-                AND o.slor_refp  = liv.refp
-            INNER JOIN {$this->dbIps}.cli_bse cb ON cb.cbse_numcli = o.slor_numcli
-            INNER JOIN {$this->dbIps}.cli_soc cs ON cs.csoc_soc = o.slor_soc AND cs.csoc_numcli = o.slor_numcli
-            WHERE o.slor_soc = '$codeSociete'
-        UNION ALL
-            SELECT DISTINCT
-                TRIM('VTEDIR') AS type_doc,
-                n.nlig_constp AS constp,
-                n.nlig_refp   AS refp,
-                n.nlig_numcde AS numero,
-                n.nlig_qtecde AS qtedem,
-                n.nlig_numcli AS numcli,
-                cb.cbse_nomcli AS nomcli
-            FROM {$this->dbIps}.neg_lig n
-            INNER JOIN {$this->dbIps}.cli_bse cb ON cb.cbse_numcli = n.nlig_numcli
-            INNER JOIN {$this->dbIps}.cli_soc cs ON cs.csoc_soc = n.nlig_soc AND cs.csoc_numcli = n.nlig_numcli
-            WHERE n.nlig_numcde = '$numCde'
-                AND n.nlig_soc = '$codeSociete'
-                AND n.nlig_refp IN (SELECT refp FROM cdl_filtre)
-        ) res 
-            ON  res.refp   = cde.refp 
+            {$this->getColonnesEta($sipLnkActive)}
+        FROM cde
+        LEFT JOIN res
+            ON  res.refp   = cde.refp
             AND cde.constp = res.constp
-        LEFT JOIN {$this->dbIrium}.gcot_acknow_cat cat 
+        LEFT JOIN {$this->dbIrium}.gcot_acknow_cat cat
             ON  cat.numero_po    = cde.numcde
-            AND cat.parts_number = cde.refp 
+            AND cat.parts_number = cde.refp
             AND cat.parts_cst    = cde.constp
             AND cat.line_number  = cde.ligne
-        LEFT JOIN (
-            SELECT
-                slnk_pk1    AS num_cde,
-                slnk_pk2    AS no_lign,
-                slnk_date1  AS eta_magasin,
-                slnk_alpha1 AS eta_maurice
-            FROM {$this->dbIpsRegix}.sip_lnk
-            WHERE slnk_tabname IN ('frn_cdl', 'frn_cde')
-                AND slnk_pk1 = '$numCde'
-                AND slnk_pk2 IS NOT NULL
-            ORDER BY slnk_id
-        ) sl1 ON sl1.num_cde = cde.numcde AND sl1.no_lign = cde.ligne
-        LEFT JOIN (
-            SELECT
-                slnk_pk1    AS num_cde,
-                slnk_date1  AS eta_magasin,
-                slnk_alpha1 AS eta_maurice
-            FROM {$this->dbIpsRegix}.sip_lnk
-            WHERE slnk_tabname IN ('frn_cdl', 'frn_cde')
-                AND slnk_pk1 = '$numCde'
-                AND slnk_pk2 IS NULL
-            ORDER BY slnk_id
-        ) sl2 ON sl2.num_cde = cde.numcde
+        {$this->getJoinSipLnk($numCde,$sipLnkActive)}
         ORDER BY cde.refp, res.numero;";
 
         $result = $this->connect->executeQuery($statement);
@@ -270,6 +167,151 @@ class PlanningMagasinModel extends Model
         $data = $this->connect->fetchResults($result);
 
         return $this->convertirEnUtf8($data);
+    }
+
+    private function getQueryCdlFiltre(string $numCde, string $codeSociete): string
+    {
+        return "SELECT 
+                    c.fcdl_constp   AS constp,
+                    c.fcdl_refp     AS refp,
+                    c.fcdl_desi     AS desi,
+                    c.fcdl_qte      AS qte_dem,
+                    c.fcdl_solde    AS qte_rest,
+                    c.fcdl_qteli    AS qte_recept,
+                    c.fcdl_qtefa    AS qte_fact,
+                    c.fcdl_soc      AS soc,
+                    c.fcdl_succ     AS succ,
+                    c.fcdl_numcde   AS numcde,
+                    c.fcdl_ligne    AS ligne
+                FROM {$this->dbIps}.frn_cdl c
+                WHERE c.fcdl_numcde = '$numCde'
+                    AND c.fcdl_soc = '$codeSociete'";
+    }
+
+    private function getQueryCdeAgrege(): string
+    {
+        return "SELECT 
+                    cf.numcde,
+                    cf.ligne,
+                    cf.constp,
+                    cf.refp,
+                    cf.desi,
+                    SUM(cf.qte_dem) AS qte_dem,
+                    SUM(cf.qte_rest) as qte_rest,
+                    SUM(cf.qte_recept) as qte_recept,
+                    SUM(
+                        CASE
+                            WHEN l.fllf_majstk = 'O' THEN NVL(l.fllf_qteliv, 0)
+                            ELSE 0
+                        END
+                    ) AS qte_dispo,
+                    SUM(cf.qte_fact) as qte_fact
+                FROM cdl_filtre cf
+                LEFT JOIN {$this->dbIps}.frn_llf l
+                    ON cf.soc     = l.fllf_soc
+                    AND cf.succ   = l.fllf_succ
+                    AND cf.numcde = l.fllf_numcde
+                    AND cf.ligne  = l.fllf_ligne
+                GROUP BY 1,2,3,4,5";
+    }
+
+    private function getQueryResOr(string $numCde, string $codeSociete): string
+    {
+        return "SELECT DISTINCT
+                    TRIM('OR')    AS type_doc,
+                    o.slor_constp AS constp,
+                    liv.refp      AS refp,
+                    o.slor_numor  AS numero,
+                    CASE
+                        WHEN o.slor_typlig = 'P' THEN (o.slor_qterel + o.slor_qterea + o.slor_qteres + o.slor_qtewait - o.slor_qrec)
+                        WHEN o.slor_typlig IN ('F','M','U','C') THEN o.slor_qterea
+                    END AS qtedem,
+                    o.slor_numcli AS numcli,
+                    cb.cbse_nomcli AS nomcli
+                FROM
+                (
+                    SELECT DISTINCT
+                        l.fllf_numcde AS numcde,
+                        l.fllf_refp   AS refp,
+                        l.fllf_numliv AS numliv
+                    FROM {$this->dbIps}.frn_llf l
+                    WHERE l.fllf_numcde = '$numCde'
+                        AND l.fllf_refp IN (SELECT refp FROM cdl_filtre)
+                ) liv
+                INNER JOIN {$this->dbIps}.sav_lor o
+                    ON  o.slor_numcf = liv.numliv
+                    AND o.slor_refp  = liv.refp
+                INNER JOIN {$this->dbIps}.cli_bse cb ON cb.cbse_numcli = o.slor_numcli
+                INNER JOIN {$this->dbIps}.cli_soc cs ON cs.csoc_soc = o.slor_soc AND cs.csoc_numcli = o.slor_numcli
+                WHERE o.slor_soc = '$codeSociete'";
+    }
+
+    private function getQueryResVenteDirecte(string $numCde, string $codeSociete): string
+    {
+        return "SELECT DISTINCT
+                    TRIM('VTEDIR') AS type_doc,
+                    n.nlig_constp AS constp,
+                    n.nlig_refp   AS refp,
+                    n.nlig_numcde AS numero,
+                    n.nlig_qtecde AS qtedem,
+                    n.nlig_numcli AS numcli,
+                    cb.cbse_nomcli AS nomcli
+                FROM {$this->dbIps}.neg_lig n
+                INNER JOIN {$this->dbIps}.cli_bse cb ON cb.cbse_numcli = n.nlig_numcli
+                INNER JOIN {$this->dbIps}.cli_soc cs ON cs.csoc_soc = n.nlig_soc AND cs.csoc_numcli = n.nlig_numcli
+                WHERE n.nlig_numcde = '$numCde'
+                    AND n.nlig_soc = '$codeSociete'
+                    AND n.nlig_refp IN (SELECT refp FROM cdl_filtre)";
+    }
+
+    /**
+     * Colonnes eta_magasin/eta_maurice, dépendantes de la jointure sip_lnk.
+     * Si sip_lnk est désactivée pour l'environnement courant, ces colonnes
+     * retombent sur cat.esd_date / NULL au lieu d'échouer sur des alias absents.
+     */
+    private function getColonnesEta(bool $sipLnkActive): string
+    {
+        if (!$sipLnkActive) {
+            return "cat.esd_date AS eta_magasin,
+                    CAST(NULL AS CHAR(1)) AS eta_maurice";
+        }
+
+        return "CASE
+                    WHEN cde.constp = 'CAT' THEN COALESCE(cat.esd_date, sl1.eta_magasin, sl2.eta_magasin)
+                    ELSE COALESCE(sl1.eta_magasin, sl2.eta_magasin)
+                END AS eta_magasin,
+                CASE
+                    WHEN cde.constp <> 'CAT' THEN COALESCE(sl1.eta_maurice, sl2.eta_maurice)
+                END AS eta_maurice";
+    }
+
+    private function getJoinSipLnk(string $numCde, bool $sipLnkActive): string
+    {
+        if (!$sipLnkActive) return "";
+
+        return "LEFT JOIN (
+                    SELECT
+                        slnk_pk1    AS num_cde,
+                        slnk_pk2    AS no_lign,
+                        slnk_date1  AS eta_magasin,
+                        slnk_alpha1 AS eta_maurice
+                    FROM {$this->dbIpsRegix}.sip_lnk
+                    WHERE slnk_tabname IN ('frn_cdl', 'frn_cde')
+                        AND slnk_pk1 = '$numCde'
+                        AND slnk_pk2 IS NOT NULL
+                    ORDER BY slnk_id
+                ) sl1 ON sl1.num_cde = cde.numcde AND sl1.no_lign = cde.ligne
+                LEFT JOIN (
+                    SELECT
+                        slnk_pk1    AS num_cde,
+                        slnk_date1  AS eta_magasin,
+                        slnk_alpha1 AS eta_maurice
+                    FROM {$this->dbIpsRegix}.sip_lnk
+                    WHERE slnk_tabname IN ('frn_cdl', 'frn_cde')
+                        AND slnk_pk1 = '$numCde'
+                        AND slnk_pk2 IS NULL
+                    ORDER BY slnk_id
+                ) sl2 ON sl2.num_cde = cde.numcde";
     }
 
     private function conditionStatut(string $statut, bool $isEmptyQuery): string
