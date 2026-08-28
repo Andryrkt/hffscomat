@@ -22,11 +22,11 @@ class PlanningMagasinModel extends Model
                 o.fcde_datec as date_commande,
                 TRIM(
                     CASE
+                        WHEN o.total_facture = o.total_qte THEN 'Complet facturé'
                         WHEN o.total_facture > 0 AND o.total_facture < o.total_qte THEN 'Partiellement facturé'
                         WHEN o.total_dispo > 0 AND o.total_dispo < o.total_qte THEN 'Partiellement dispo'
                         WHEN o.total_dispo = o.total_qte AND o.total_facture = 0 THEN 'Complet non facturé'
                         WHEN o.total_recu = 0 THEN 'Aucune reception'
-                        WHEN o.total_facture = o.total_qte THEN 'Complet facturé'
                         ELSE 'Autre'
                     END
                 ) AS statut
