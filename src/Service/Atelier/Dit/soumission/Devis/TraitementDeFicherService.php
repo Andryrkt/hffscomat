@@ -55,7 +55,7 @@ class TraitementDeFicherService
                 $tableauMargeReference,
                 $nomFichierCtrl,
                 $mailUtilisateur,
-                $dto->observation
+                $dto->observation ?? "-"
             );
 
             // fusion du pdf de verification de prix avec le fichier ajouter par l'utilisateur en le mettant à la dernière position
