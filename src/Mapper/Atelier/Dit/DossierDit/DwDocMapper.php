@@ -19,8 +19,8 @@ class DwDocMapper
         $dto->iconRaw          = $this->getIconRaw($item['extension_fichier']);
         $dto->nomDoc           = $item['nom_doc'] ?? '-';
         $dto->numeroDoc        = $item['numero_doc'] ?? '-';
-        $dto->dateCreation     = $this->convertToUtc($item['date_creation'], $item['heure_creation'], "+04:00", 'd/m/Y H:i');
-        $dto->dateModification = $this->convertToUtc($item['date_derniere_modification'], $item['heure_derniere_modification'], "+04:00", 'd/m/Y H:i');
+        $dto->dateCreation     = $this->convertToLocalTime($item['date_creation'], $item['heure_creation']);
+        $dto->dateModification = $this->convertToLocalTime($item['date_derniere_modification'], $item['heure_derniere_modification']);
 
         $dto->numeroVersion    = $item['numero_version'] ?? '-';
         $dto->totalPage        = $item['total_page'] ?? '-';
@@ -57,11 +57,12 @@ class DwDocMapper
      *
      * @return string Date/heure en UTC formatée, ou '-' en cas d'erreur
      */
-    private function convertToUtc(
+    private function convertToLocalTime(
         ?string $date,
         ?string $time,
-        string $sourceTz = 'Indian/Antananarivo',
-        string $outputFormat = 'd/m/Y H:i:s'
+        string $sourceTz = 'UTC',
+        string $targetTz = '+04:00',
+        string $outputFormat = 'd/m/Y H:i'
     ): string {
         if (empty($date)) {
             return '-';
@@ -69,7 +70,7 @@ class DwDocMapper
         try {
             $time = $time ?? '00:00:00';
             $datetime = new \DateTime($date . ' ' . $time, new \DateTimeZone($sourceTz));
-            $datetime->setTimezone(new \DateTimeZone('UTC'));
+            $datetime->setTimezone(new \DateTimeZone($targetTz));
             return $datetime->format($outputFormat);
         } catch (\Exception $e) {
             return '-';
