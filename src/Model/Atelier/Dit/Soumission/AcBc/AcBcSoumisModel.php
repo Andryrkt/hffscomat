@@ -108,7 +108,8 @@ class AcBcSoumisModel extends Model
                 ) b
                     ON b.numerodit = d.numeroDit
                     AND b.code_societe = d.code_societe
-                WHERE d.statut LIKE 'Valid%' AND d.statut LIKE '%atelier'";
+                --WHERE d.statut LIKE 'Valid%' AND d.statut LIKE '%atelier'
+                ";
     }
 
     private function getQueryNbrIntervention(string $codeSociete, string $aliasDevisSoumisValide): string
