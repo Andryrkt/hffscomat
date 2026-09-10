@@ -34,7 +34,12 @@ class FiltreService
         $this->addCondition($conditions, $selectWhereCondition->eq('d0_.internet_externe', $ditSearchdto->internetExterne));
         $this->addCondition($conditions, $selectWhereCondition->eq('d0_.numero_demande_dit', $ditSearchdto->numDit));
         $this->addCondition($conditions, $selectWhereCondition->eq('d0_.numero_or', $ditSearchdto->numOr));
-        $this->addCondition($conditions, $selectWhereCondition->eq('d0_.statut_or', $ditSearchdto->statutOr));
+        if($ditSearchdto->statutOr === 'Validé') {
+            $this->addCondition($conditions, "AND d0_.statut_or  LIKE 'Valid%'");
+        } else {
+
+            $this->addCondition($conditions, $selectWhereCondition->eq('d0_.statut_or', $ditSearchdto->statutOr));
+        }
         $this->addCondition($conditions, $selectWhereCondition->eq('c4_.libelle_categorie_ate_app', $ditSearchdto->categorie));
         $this->addCondition($conditions, $selectWhereCondition->eq('d0_.utilisateur_demandeur', $ditSearchdto->utilisateur));
         $this->addCondition($conditions, $selectWhereCondition->eq('d0_.section_affectee', $ditSearchdto->sectionAffectee));
