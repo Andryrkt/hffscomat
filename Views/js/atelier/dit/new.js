@@ -8,6 +8,7 @@ const numParcInput = document.querySelector("#dit_numParc");
 const numSerieInput = document.querySelector("#dit_numSerie");
 const numClientInput = document.querySelector("#dit_numeroClient");
 const nomClientInput = document.querySelector("#dit_nomClient");
+const toggleInterventionMateriel = document.querySelector("#toggleInterventionMateriel");
 
 const containerInfoMateriel = document.querySelector("#containerInfoMateriel");
 
@@ -22,6 +23,79 @@ const erreurClient = document.querySelector("#erreurClient");
  * obliger d'ecrire des chiffre dans le champ id materiel
  */
 allowOnlyNumbers(idMaterielInput);
+
+/** ===================================================================
+ * Gestion du toggle "Intervention avec matériel"
+ * ==================================================================*/
+async function handleToggleMateriel() {
+  if (!toggleInterventionMateriel) return;
+
+  if (toggleInterventionMateriel.checked) {
+    idMaterielInput.removeAttribute("disabled");
+    numParcInput.removeAttribute("disabled");
+    numSerieInput.removeAttribute("disabled");
+
+    if (idMaterielInput.value === "99999") idMaterielInput.value = "";
+    if (numParcInput.value === "99999") numParcInput.value = "";
+    if (numSerieInput.value === "99999") numSerieInput.value = "";
+
+    containerInfoMateriel.innerHTML = "";
+    lastSelectedItem = null;
+  } else {
+    idMaterielInput.value = "99999";
+    numParcInput.value = "99999";
+    numSerieInput.value = "99999";
+
+    idMaterielInput.setAttribute("disabled", "true");
+    numParcInput.setAttribute("disabled", "true");
+    numSerieInput.setAttribute("disabled", "true");
+
+    try {
+      const data = await fetchMateriels();
+      const match = data ? data.find(
+        (item) =>
+          (item.num_matricule && String(item.num_matricule).trim() === "99999") ||
+          (item.num_parc && String(item.num_parc).trim() === "99999") ||
+          (item.num_serie && String(item.num_serie).trim() === "99999")
+      ) : null;
+
+      const item99999 = match || {
+        num_matricule: "99999",
+        num_parc: "99999",
+        num_serie: "99999",
+        constructeur: "99999",
+        designation: "99999",
+        modele: "99999",
+        casier_emetteur: "99999",
+        heure: "0",
+        km: "0",
+      };
+
+      onSelectMateriels(item99999);
+    } catch (error) {
+      console.error("Erreur lors de la recherche du matériel 99999:", error);
+      const fallbackItem = {
+        num_matricule: "99999",
+        num_parc: "99999",
+        num_serie: "99999",
+        constructeur: "99999",
+        designation: "99999",
+        modele: "99999",
+        casier_emetteur: "99999",
+        heure: "0",
+        km: "0",
+      };
+      onSelectMateriels(fallbackItem);
+    }
+  }
+}
+
+if (toggleInterventionMateriel) {
+  toggleInterventionMateriel.addEventListener("change", handleToggleMateriel);
+  if (!toggleInterventionMateriel.checked) {
+    handleToggleMateriel();
+  }
+}
 
 /** ===================================================================
  * recupère l'idMateriel et afficher les information du matériel
@@ -382,6 +456,9 @@ ditForm.addEventListener("submit", intExtEnvoier);
 function intExtEnvoier() {
   agenceDebiteurInput.removeAttribute("disabled");
   serviceDebiteurInput.removeAttribute("disabled");
+  idMaterielInput.removeAttribute("disabled");
+  numParcInput.removeAttribute("disabled");
+  numSerieInput.removeAttribute("disabled");
 }
 
 /**=========================================================================================================

@@ -40,7 +40,7 @@ class DitFactory
         return $dto;
     }
 
-    public function apresSoumission(DitDto $dto): DitDto
+    public function apresSoumission(DitDto $dto, bool $avecMateriel = true): DitDto
     {
         $dto->utilisateurDemandeur = $this->securityService->getDataService()->getUserName();
         $dto->heureDemande = date('H:i');
@@ -56,21 +56,32 @@ class DitFactory
         $dto->agenceServiceDebiteur = $dto->agence !== null && $dto->service !== null ? $dto->agence->getCodeAgence() . '-' . $dto->service->getCodeService() : null;
 
         // info materiel
+        if (!$avecMateriel && ((empty($dto->idMateriel) || $dto->idMateriel === '99999' || $dto->numParc === '99999' || $dto->numSerie === '99999' || (string)$dto->idMateriel === '99999'))) {
+            $dto->idMateriel = '99999';
+            $dto->numParc = '99999';
+            $dto->numSerie = '99999';
+        }
+
         $ditModel = new DitModel();
         $infoMaterielEtBilanFinancier = $ditModel->findAll($dto->idMateriel, $dto->numParc, $dto->numSerie)[0] ?? [];
-        $dto->designation = $infoMaterielEtBilanFinancier['designation'];
-        $dto->modele = $infoMaterielEtBilanFinancier['modele'];
-        $dto->constructeur = $infoMaterielEtBilanFinancier['constructeur'];
-        $dto->casier = $infoMaterielEtBilanFinancier['casier_emetteur'];
-        $dto->heure = $infoMaterielEtBilanFinancier['heure'];
-        $dto->km = $infoMaterielEtBilanFinancier['km'];
+
+        if (empty($infoMaterielEtBilanFinancier) && $dto->idMateriel === '99999') {
+            $infoMaterielEtBilanFinancier = $ditModel->findAll('99999')[0] ?? $ditModel->findAll('0', '99999')[0] ?? [];
+        }
+
+        $dto->designation = $infoMaterielEtBilanFinancier['designation'] ?? '99999';
+        $dto->modele = $infoMaterielEtBilanFinancier['modele'] ?? '99999';
+        $dto->constructeur = $infoMaterielEtBilanFinancier['constructeur'] ?? '99999';
+        $dto->casier = $infoMaterielEtBilanFinancier['casier_emetteur'] ?? '99999';
+        $dto->heure = $infoMaterielEtBilanFinancier['heure'] ?? '0';
+        $dto->km = $infoMaterielEtBilanFinancier['km'] ?? '0';
         // Bilan Financiere
-        $dto->coutAcquisition = (float)$infoMaterielEtBilanFinancier['prix_achat'];
-        $dto->amortissement = (float)$infoMaterielEtBilanFinancier['amortissement'];
+        $dto->coutAcquisition = (float)($infoMaterielEtBilanFinancier['prix_achat'] ?? 0);
+        $dto->amortissement = (float)($infoMaterielEtBilanFinancier['amortissement'] ?? 0);
         $dto->valeurNetComptable = $dto->coutAcquisition - $dto->amortissement;
-        $dto->chargeEntretient = (float)$infoMaterielEtBilanFinancier['chargeentretien'];
-        $dto->chargeLocative = (float)$infoMaterielEtBilanFinancier['chargelocative'];
-        $dto->chiffreAffaire = (float)$infoMaterielEtBilanFinancier['chiffreaffaires'];
+        $dto->chargeEntretient = (float)($infoMaterielEtBilanFinancier['chargeentretien'] ?? 0);
+        $dto->chargeLocative = (float)($infoMaterielEtBilanFinancier['chargelocative'] ?? 0);
+        $dto->chiffreAffaire = (float)($infoMaterielEtBilanFinancier['chiffreaffaires'] ?? 0);
         $dto->resultatExploitation = $dto->chiffreAffaire - ($dto->chargeEntretient + $dto->chargeLocative);
 
         return $dto;
