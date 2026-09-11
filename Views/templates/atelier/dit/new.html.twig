@@ -100,6 +100,10 @@
 							<span id="erreurClient"></span>
 						</div>
 						{{ macroForm.sousTitre('Information Matériel', {class: 'sousTitre'})}}
+						<div class="form-check form-switch my-2 ms-1">
+							<input class="form-check-input" type="checkbox" role="switch" id="toggleInterventionMateriel" name="interventionAvecMateriel" value="1" checked>
+							<label class="form-check-label fw-bold" for="toggleInterventionMateriel" style="color: #212529 !important; cursor: pointer;">Intervention avec matériel</label>
+						</div>
 						<div class="row">
 							<div class="col-12 col-md-4">
 								{{ form_row(form.idMateriel)}}
