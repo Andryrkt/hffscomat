@@ -208,6 +208,19 @@ class DitOrSoumisAValidationModel extends Model
         return  $data[0]['type_or'] ?? 0;
     }
 
+    public function recupIdMatDansOr(?string $numor): int
+    {
+        if ($numor === null) return 0;
+
+        $statement = " SELECT seor_nummat as num_mat from informix.sav_eor where seor_numor = '$numor'";
+
+        $result = $this->connect->executeQuery($statement);
+
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
+
+        return  (int) ($data[0]['num_mat'] ?? 0);
+    }
+
     public function recupNbPieceMagasin(string $numOr, string $codeSociete)
     {
         $statement = " SELECT

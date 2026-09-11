@@ -95,6 +95,7 @@ class OrSoumissionDto
 
     public int $idCategorieDemande = 0;
     public int $typeOr = 0;
+    public int $numMatOr = 0;
 
     public $id_materiel_ips;
 
