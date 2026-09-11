@@ -73,8 +73,8 @@ class ValidationService
         }
 
         // vérifier si le type de l'OR est 230 et l'id Materiel de l'OR <> 0
-        if ($dto->typeOr === 230 && $dto->numMatOr === 0) {
-            $message = "Merci de vérifier l'OR car l'id Matériel de l'OR n'est pas 0 alors que le type de l'OR est 230";
+        if ($dto->typeOr === 230 && $dto->numMatOr <> 0) {
+            $message = "Merci de vérifier l’OR : il s’agit d’une DIT sans machine, alors qu’un matériel est rattaché à l’OR.";
             $this->sendNotificationOR($message, $dto->numeroOr, false);
             return true;
         }
