@@ -79,7 +79,7 @@ class PlanningService
 
             return [
                 'commercial'     => $item->commercial ?? '',
-                'libsuc'         => $item->libsuc ?? '',
+                'libsuc'         => $item->libSuc ?? '',
                 'libserv'        => $item->libServ ?? '',
                 'client'         => $item->client ?? '',
                 'idmat'          => $item->idMat ?? '',
