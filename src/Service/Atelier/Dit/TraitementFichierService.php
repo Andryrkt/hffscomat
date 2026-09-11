@@ -33,7 +33,7 @@ class TraitementFichierService
         /** 1. CREATION DE LA PAGE DE GARDE*/
         $ditModel = new DitModel();
         $idMateriel = (int)$dto->idMateriel;
-        if (!in_array($idMateriel, $ditModel->getNumeroMatriculePasMateriel()) && $dto->internetExterne !== "EXTERNE") {
+        if (!in_array($idMateriel, $ditModel->getNumeroMatriculePasMateriel()) && $dto->internetExterne !== "EXTERNE" ) {
             //récupération des historique de materiel (informix)
             $historiqueMateriel = $this->historiqueInterventionMateriel($idMateriel);
         } else {

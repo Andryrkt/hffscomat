@@ -49,7 +49,11 @@ class DitListeModel extends Model
                     d0_.numero_devis_rattache AS numero_devis,
                     d0_.statut_devis AS statut_devis,
                     d0_.numero_or AS numero_or,
-                    osv_or.statut AS statut_or,
+                    CASE
+                        WHEN d0_.statut_or IS NOT NULL AND d0_.statut_or <> '' AND d0_.statut_or <> ' ' THEN d0_.statut_or
+                        WHEN osv_or.statut LIKE 'Valid%' THEN 'Validé'
+                        ELSE osv_or.statut
+                    END AS statut_or,
                     COALESCE(osv_or.montantitv, osv_dit.montantitv) AS montantitv,
                     COALESCE(osv_or.datesoumission, osv_dit.datesoumission) AS datesoumission,
                     d0_.etat_facturation AS statut_facture,
@@ -155,7 +159,7 @@ class DitListeModel extends Model
         ";
         // dd($statement);
         $result = $this->connect->executeQuery($statement);
-        $data = $this->connect->fetchResults($result);
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
 
         // Compter le total d'items
         $totalItems = $this->compteNombreItem($codeSociete, $conditions, $conditionsMultisucursal);
