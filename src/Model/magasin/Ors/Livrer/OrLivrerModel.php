@@ -35,7 +35,7 @@ class OrLivrerModel extends Model
         ";
 
         if ($dtoSearch->orCompletude !== MagasinOrConstant::TOUS) $conditions .= $selectCond->eq('sit.situation', $dtoSearch->orCompletude);
-
+// dd($conditions);
         $statement = "--sql
         WITH
             valid_or AS ({$this->getQueryOrValide()}),
@@ -142,7 +142,7 @@ class OrLivrerModel extends Model
         GROUP BY 1,2,3,4,5,6,7,8,9,10,11,12,13,14,18,19,20,21,22,23,24,25,26,27
         ORDER BY eor.seor_numor ASC, itv.sitv_interv ASC, lor.slor_nolign ASC;
         ";
-
+// dd($statement);
         $result = $this->connect->executeQuery($statement);
 
         $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
@@ -220,8 +220,9 @@ class OrLivrerModel extends Model
         }, $dataUtf8);
     }
 
-    public function agenceUser(string $codeAgence, string $codeSociete)
+    public function agenceUser(?string $codeAgence, string $codeSociete): array
     {
+        // if($codeAgence === null) return [];
         $statement = "  SELECT DISTINCT
                             slor_succdeb||'-'||(select trim(asuc_lib) from informix.agr_succ where asuc_numsoc = slor_soc and asuc_num = slor_succdeb) as agence
                         FROM {$this->dbIps}.sav_lor
@@ -229,7 +230,7 @@ class OrLivrerModel extends Model
                         AND slor_soc = '$codeSociete'
                     ";
 
-        if ($codeAgence <> "''") {
+        if ($codeAgence <> "''" && $codeAgence <> null) {
             $statement .= " AND slor_succdeb IN ($codeAgence) ";
         }
 
