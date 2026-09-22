@@ -46,6 +46,8 @@ class MaterielALivrerFactory
         $dto->marque             = $data['marque'];
         $dto->casier             = $data['casier'];
         $dto->numeroCommande     = $data['numero_commande'];
+        $dto->nomClient          = $data['nomClient'];
+        $dto->numeroClient       = $data['numClient'];
 
         return $dto;
     }

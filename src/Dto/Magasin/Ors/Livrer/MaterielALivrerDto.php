@@ -31,6 +31,8 @@ class MaterielALivrerDto
     public ?string $marque = null;
     public ?string $casier = null;
     public ?string $numeroCommande = null;
+    public ?string $nomClient = null;
+    public ?string $numeroClient = null;
 
     /**
      * Indique si la quantité demandée n'est pas totalement couverte par ce qui est déjà à livrer/livré
