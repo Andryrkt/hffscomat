@@ -50,7 +50,13 @@ class TraitementDeFicherService
             $tableauMarge = $this->tableauMarge($dto->numeroDevis, $dto->codeSociete);
             $tableauMargeReference = $this->tableauMargeReference($dto->numeroDevis, $dto->codeSociete, $dto->numeroVersion);
             $mailUtilisateur = $this->securityService->getDataService()->getUserMail();
-            $generePdfDevis->genererPdfVerificationPrix($tableauMarge, $tableauMargeReference, $nomFichierCtrl, $mailUtilisateur);
+            $generePdfDevis->genererPdfVerificationPrix(
+                $tableauMarge,
+                $tableauMargeReference,
+                $nomFichierCtrl,
+                $mailUtilisateur,
+                $dto->observation ?? "-"
+            );
 
             // fusion du pdf de verification de prix avec le fichier ajouter par l'utilisateur en le mettant à la dernière position
             $fichierConvertis = $this->ConvertirLesPdf([$chemin . 'fichiers/' . $nomFichierGenererSansTache, $chemin . $nomFichierCtrl]);
@@ -261,7 +267,7 @@ class TraitementDeFicherService
         ];
 
         // 1. Définir le chemin où enregistrer le fichier Excel
-        $cheminFichier = $_ENV['BASE_PATH_FICHIER'] . '/dit/dev/fichiers/marge_ref_' . $numOr . '-' . $numeroVersion . '.xlsx';
+        $cheminFichier = $_ENV['BASE_PATH_FICHIER'] . '/dit/dev/fichiers/marge_ref_' . $numOr . '.xlsx';
         // 2. Appel de la fonction de génération Excel
         $this->genererExcelTableauMargeReference($tableauMargeReference, $cheminFichier);
 

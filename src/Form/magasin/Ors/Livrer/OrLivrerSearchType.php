@@ -32,7 +32,7 @@ class OrLivrerSearchType extends AbstractType
         return array_combine($this->OrLivrerModel->agence($codeSociete), $this->OrLivrerModel->agence($codeSociete));
     }
 
-    private function agenceAutoriserUser(string $codeAgence, string $codeSociete)
+    private function agenceAutoriserUser(?string $codeAgence, string $codeSociete)
     {
         return array_combine($this->OrLivrerModel->agenceUser($codeAgence, $codeSociete), $this->OrLivrerModel->agenceUser($codeAgence, $codeSociete));
     }

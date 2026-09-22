@@ -19,7 +19,7 @@ class OrLivrerSearchFactory
 
     public function initialisationSearch(): OrLivrerSearchDto
     {
-        $agenceUser = "''";
+        $agenceUser = null;
 
         // Vérifier la permission de voir tous les données
         $multisuccursale = $this->securityService->verifierPermission(SecurityService::PERMISSION_MULTI_SUCCURSALE);

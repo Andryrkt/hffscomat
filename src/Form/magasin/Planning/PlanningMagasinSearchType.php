@@ -18,9 +18,6 @@ class PlanningMagasinSearchType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            // Champ texte + autocomplétion JS (liste alimentée par
-            // PlanningMagasinModel::recupListeFournissseur() via l'API) : recherche
-            // par nom OU par code fournisseur dans un seul et même champ.
             ->add('fournisseur', TextType::class, [
                 'label' => 'Fournisseur',
                 'required' => false,

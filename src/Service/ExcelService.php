@@ -100,24 +100,17 @@ class ExcelService
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Marge Reference');
 
-        $sections = [
-            'tableauMargeCat'    => 'CAT',
-            'tableauMargeMfn'    => 'MFN',
-            'tableauMargeAutres' => 'AUTRES',
-        ];
-
         $formatterPourcentage = function ($value) {
             return ($value == 0.0 || $value === null || $value === '') ? '-' : round((float) $value) . '%';
         };
 
-        $formatterDispoStock = function ($row) {
-            return (int) ($row['nb_ref'] ?? 0) === 0 ? 'Non dispo stock' : 'Dispo stock';
-        };
-
         $headers = [
+            'Constructeur',
+            'Référence',
+            'Designation',
+            'Famille',
             'Qte stock',
             'Qte dem',
-            'Ref',
             'PMP',
             'PV Brut',
             'Mt Remise',
@@ -128,64 +121,62 @@ class ExcelService
 
         $currentRow = 1;
 
-        foreach ($sections as $key => $label) {
-            $lignes = $tableauMargeReference[$key] ?? [];
+        // En-tête du tableau
+        foreach ($headers as $colIndex => $headerText) {
+            $cellCoordinate = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex + 1) . $currentRow;
+            $sheet->setCellValue($cellCoordinate, $headerText);
+        }
 
-            // En-tête avec le label de la catégorie en première colonne
-            $headerRow = array_merge([$label], $headers);
+        // Style de l'en-tête (Gras + Aligné au centre + couleur de fond)
+        $lastColLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(count($headers));
+        $headerRange = "A{$currentRow}:{$lastColLetter}{$currentRow}";
+        $sheet->getStyle($headerRange)->getFont()->setBold(true);
+        $sheet->getStyle($headerRange)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle($headerRange)->getFill()
+            ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+            ->getStartColor()->setRGB('EAEAEA');
 
-            foreach ($headerRow as $colIndex => $headerText) {
-                $cellCoordinate = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex + 1) . $currentRow;
-                $sheet->setCellValue($cellCoordinate, $headerText);
-            }
+        $currentRow++;
 
-            // Style de l'en-tête (Gras + Aligné au centre + couleur de fond)
-            $lastColLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(count($headerRow));
-            $headerRange = "A{$currentRow}:{$lastColLetter}{$currentRow}";
-            $sheet->getStyle($headerRange)->getFont()->setBold(true);
-            $sheet->getStyle($headerRange)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-            $sheet->getStyle($headerRange)->getFill()
-                ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
-                ->getStartColor()->setRGB('EAEAEA');
+        $toutesLesLignes = array_merge(
+            $tableauMargeReference['tableauMargeCat'] ?? [],
+            $tableauMargeReference['tableauMargeMfn'] ?? [],
+            $tableauMargeReference['tableauMargeAutres'] ?? []
+        );
 
-            $currentRow++;
+        if (!empty($toutesLesLignes)) {
+            foreach ($toutesLesLignes as $item) {
+                $constructeur = $item['constructeur'] ?? '';
+                $ref          = $item['reference'] ?? '';
+                $designation  = $item['designation'] ?? '';
+                $famille      = $item['famille'] ?? '';
+                $nbRef        = $item['nb_ref'] ?? 0;
+                $qteDem       = $item['quantite_demander'] ?? 0;
+                $pmp          = (isset($item['pmp']) && $item['pmp'] !== '') ? $item['pmp'] : '-';
+                $pvBrut       = (isset($item['pv_brut']) && $item['pv_brut'] !== '') ? $item['pv_brut'] : '-';
+                $mtRemise     = (isset($item['mt_remise']) && $item['mt_remise'] !== '') ? $item['mt_remise'] : '-';
+                $pvNet        = (isset($item['pv_net_remise']) && $item['pv_net_remise'] !== '') ? $item['pv_net_remise'] : '-';
+                $mb           = (isset($item['mb']) && $item['mb'] !== '') ? $item['mb'] : '-';
+                $mbP          = isset($item['mb_p']) ? $formatterPourcentage($item['mb_p']) : '-';
 
-            if (!empty($lignes)) {
-                foreach ($lignes as $item) {
-                    $dispoStock = $formatterDispoStock($item);
-                    $nbRef      = $item['nb_ref'] ?? 0;
-                    $qteDem     = $item['quantite_demander'] ?? 0;
-                    $ref        = $item['reference'] ?? '';
-                    $pmp        = (isset($item['pmp']) && $item['pmp'] !== '') ? $item['pmp'] : '-';
-                    $pvBrut     = (isset($item['pv_brut']) && $item['pv_brut'] !== '') ? $item['pv_brut'] : '-';
-                    $mtRemise   = (isset($item['mt_remise']) && $item['mt_remise'] !== '') ? $item['mt_remise'] : '-';
-                    $pvNet      = (isset($item['pv_net_remise']) && $item['pv_net_remise'] !== '') ? $item['pv_net_remise'] : '-';
-                    $mb         = (isset($item['mb']) && $item['mb'] !== '') ? $item['mb'] : '-';
-                    $mbP        = isset($item['mb_p']) ? $formatterPourcentage($item['mb_p']) : '-';
+                $rowValues = [$constructeur, $ref, $designation, $famille, $nbRef, $qteDem, $pmp, $pvBrut, $mtRemise, $pvNet, $mb, $mbP];
 
-                    $rowValues = [$dispoStock, $nbRef, $qteDem, $ref, $pmp, $pvBrut, $mtRemise, $pvNet, $mb, $mbP];
-
-                    foreach ($rowValues as $colIndex => $val) {
-                        $cellCoordinate = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex + 1) . $currentRow;
-                        $sheet->setCellValue($cellCoordinate, $val);
-                    }
-
-                    // Alignements par cellule
-                    $sheet->getStyle("A{$currentRow}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
-                    $sheet->getStyle("B{$currentRow}:C{$currentRow}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-                    $sheet->getStyle("D{$currentRow}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
-                    $sheet->getStyle("E{$currentRow}:J{$currentRow}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
-
-                    $currentRow++;
+                foreach ($rowValues as $colIndex => $val) {
+                    $cellCoordinate = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex + 1) . $currentRow;
+                    $sheet->setCellValue($cellCoordinate, $val);
                 }
-            }
 
-            // Espace d'une ligne entre les tableaux
-            $currentRow += 1;
+                // Alignements par cellule
+                $sheet->getStyle("A{$currentRow}:B{$currentRow}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+                $sheet->getStyle("C{$currentRow}:D{$currentRow}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+                $sheet->getStyle("E{$currentRow}:L{$currentRow}")->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+
+                $currentRow++;
+            }
         }
 
         // Auto-fit des colonnes
-        for ($col = 1; $col <= 10; $col++) {
+        for ($col = 1; $col <= count($headers); $col++) {
             $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col);
             $sheet->getColumnDimension($colLetter)->setAutoSize(true);
         }
@@ -206,4 +197,3 @@ class ExcelService
         $writer->save('php://output');
     }
 }
-

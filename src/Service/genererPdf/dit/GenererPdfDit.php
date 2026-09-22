@@ -255,7 +255,7 @@ class GenererPdfDit extends GeneratePdf
 
         //=================================================================================================
         /**DEUXIEME PAGE */
-        if (!in_array((int)$dto->idMateriel, [14571, 7669, 7670, 7671, 7672, 7673, 7674, 7675, 7677, 9863, 7711])) {
+        if (!in_array((int)$dto->idMateriel, [14571, 7669, 7670, 7671, 7672, 7673, 7674, 7675, 7677, 9863, 7711]) && $dto->internetExterne !== "EXTERNE") {
             $this->affichageHistoriqueMateriel($pdf, $historiqueMateriel);
         }
 

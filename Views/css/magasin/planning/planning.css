@@ -1,0 +1,41 @@
+.spinner-border {
+  width: 2rem;
+  height: 2rem;
+  margin: 10px auto;
+  display: block;
+}
+
+#dataContent thead th {
+  position: sticky;
+  top: 15px;
+}
+
+/* Marque le début d'un nouveau groupe de lignes fusionnées (bordure doublée) */
+.group-start > td {
+  border-top: 2px solid #212529;
+}
+
+#commandesTableBody tr:last-child td,
+.group-start > td.rowspan-cell {
+  border-bottom: 2px solid #212529;
+}
+
+.badge-livre {
+  background-color: #d4edda;
+  color: #2e7d4f;
+  border-radius: 6px;
+  padding: 4px 14px 1px;
+  font-weight: 700;
+  font-size: 0.7rem !important;
+  display: inline-block;
+}
+
+.badge-partiel {
+  background-color: #fdf3d0;
+  color: #9c7a1a;
+  border-radius: 6px;
+  padding: 4px 14px 1px;
+  font-weight: 700;
+  font-size: 0.7rem !important;
+  display: inline-block;
+}

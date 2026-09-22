@@ -15,13 +15,12 @@ class DwDocMapper
     {
         $dto = new DwDocDto();
 
+
         $dto->iconRaw          = $this->getIconRaw($item['extension_fichier']);
         $dto->nomDoc           = $item['nom_doc'] ?? '-';
         $dto->numeroDoc        = $item['numero_doc'] ?? '-';
-         $dto->dateCreation     = $this->convertToLocalTime($item['date_creation'], $item['heure_creation']);
+        $dto->dateCreation     = $this->convertToLocalTime($item['date_creation'], $item['heure_creation']);
         $dto->dateModification = $this->convertToLocalTime($item['date_derniere_modification'], $item['heure_derniere_modification']);
-
-     
 
         $dto->numeroVersion    = $item['numero_version'] ?? '-';
         $dto->totalPage        = $item['total_page'] ?? '-';
@@ -30,11 +29,10 @@ class DwDocMapper
         $dto->chemin           = $item['chemin'] ?? '-';
 
         $numOr = $item['numero_doc'] ?? '';
-        $numeroVersion = $item['numero_version'] ?? '';
-        if (!empty($numOr) && !empty($numeroVersion)) {
-            $cheminFichier = ($_ENV['BASE_PATH_FICHIER'] ?? '') . '/dit/dev/fichiers/marge_ref_' . $numOr . '-' . $numeroVersion . '.xlsx';
+        if (!empty($numOr)) {
+            $cheminFichier = ($_ENV['BASE_PATH_FICHIER'] ?? '') . '/dit/dev/fichiers/marge_ref_' . $numOr . '.xlsx';
             if (file_exists($cheminFichier)) {
-                $dto->lienMargeRef = ($_ENV['BASE_PATH_FICHIER_COURT'] ?? '') . '/dit/dev/fichiers/marge_ref_' . $numOr . '-' . $numeroVersion . '.xlsx';
+                $dto->lienMargeRef = ($_ENV['BASE_PATH_FICHIER_COURT'] ?? '') . '/dit/dev/fichiers/marge_ref_' . $numOr . '.xlsx';
             }
         }
 
@@ -48,6 +46,7 @@ class DwDocMapper
 
         return new Markup("<i class='fas fa-file$icon fs-4'></i>", 'UTF-8');
     }
+
     /**
      * Convertit une date/heure depuis un fuseau source vers UTC.
      *

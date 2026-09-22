@@ -27,13 +27,7 @@ class PlanningModel extends Model
                 trim(asuc_lib)              as asuc_lib
             from agr_succ
             where asuc_codsoc = '$codeSociete'
-            and (
-                asuc_num like '01'
-                or asuc_num like '20'
-                or asuc_num like '30'
-                or asuc_num like '40'
-                or asuc_num like '50'
-            )
+            and asuc_num = 1
         ";
 
         $results = $this->connect->executeQuery($statement);
@@ -52,8 +46,8 @@ class PlanningModel extends Model
             FROM  agr_succ , sav_itv 
             WHERE asuc_num = sitv_succdeb 
             AND asuc_codsoc = '$codeSociete'
-            AND asuc_lib <> 'ANTALAHA'
-            AND asuc_num <> '10'
+            --AND asuc_lib <> 'ANTALAHA'
+            AND asuc_num  = 1
             group by 1,2
             order by 1
         ";

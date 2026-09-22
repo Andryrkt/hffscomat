@@ -33,6 +33,7 @@ class DevisNegDto
 
     // Url
     public $url = [];
+    public ?string $urlMargeReferenceExcel = null;
 
     // Relance
     public ?string $statutRelance1 = null;

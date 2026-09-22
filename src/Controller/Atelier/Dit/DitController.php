@@ -77,7 +77,8 @@ class DitController extends Controller
             $dto = $form->getData();
 
             //  1. Enrichir le DTO avec les informations système (initialisation ou ajout des info par defaut)
-            $dto = $this->ditFactory->apresSoumission($dto);
+            $avecMateriel = $request->request->has('interventionAvecMateriel');
+            $dto = $this->ditFactory->apresSoumission($dto, $avecMateriel);
 
             // 2. Traitement de Fichier 
             [$nomFichierEnregistrer, $nomFichier] = (new TraitementFichierService)->traitementDeFichier($form, $dto);

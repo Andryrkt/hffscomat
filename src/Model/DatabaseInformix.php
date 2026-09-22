@@ -78,10 +78,12 @@ class DatabaseInformix implements DatabaseConnectionInterface
                         if (is_bool($value)) {
                             $value = $value ? 1 : 0;
                         } elseif (is_array($value)) {
-                            $value = "['" . implode("','", $value) . "']";
+                            $value = json_encode($value, JSON_UNESCAPED_UNICODE);
                         } elseif ($value instanceof \DateTimeInterface) {
                             $value = $value->format('Y-m-d H:i:s');
-                        } elseif (is_string($value)) {
+                        }
+
+                        if (is_string($value)) {
                             $value = mb_convert_encoding($value, 'ISO-8859-1', 'UTF-8');
                         }
 
@@ -101,7 +103,7 @@ class DatabaseInformix implements DatabaseConnectionInterface
                     throw new \Exception("ODBC Prepare failed: " . odbc_errormsg());
                 }
 
-                $result = odbc_execute($stmt, $orderedParams);
+                $result = @odbc_execute($stmt, $orderedParams);
                 if (!$result) {
                     throw new \Exception("ODBC Execute failed: " . odbc_errormsg());
                 }

@@ -20,7 +20,7 @@ trait PlanningModelTrait
             case "FACTURE":
                 return $this->selectCond->in('sitv_pos', $noEc);
             case "ENCOURS":
-                return $this->selectCond->ni('sitv_pos', $all);
+                return $this->selectCond->ni('sitv_pos', $noEc);
         }
         return '';
     }
