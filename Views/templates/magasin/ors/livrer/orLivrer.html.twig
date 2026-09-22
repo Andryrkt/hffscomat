@@ -20,7 +20,7 @@
 		<div class="container">
 			<div class="d-flex justify-content-between">
 				<div>
-					<a href="{{path("export_liste_or_livrer")}}" class="btn btn bg-success text-white my-3 fw-bold">
+					<a href="{{ path("export_liste_or_livrer") }}" class="btn btn bg-success text-white my-3 fw-bold">
 						<i class="fas fa-table"></i>
 						Excel
 					</a>
@@ -41,6 +41,7 @@
 							<th>Date planning</th>
 							<th>Niv. d'urg</th>
 							<th>Date  OR</th>
+							<th class="text-center">Client</th>
 							<th class="text-center">Agence Emetteur</th>
 							<th class="text-center">Service Emetteur</th>
 							<th class="text-center">Agence débiteur</th>
@@ -80,6 +81,7 @@
 								<td>{{ item.datePlanningFormatee }}</td>
 								<td class="">{{ item.niveauUrgence }}</td>
 								<td class="">{{ item.dateCreationFormatee }}</td>
+								<td class="">{{ item.numclient ?: '' }}{{ item.numclient and item.nomclient ? ' - ' : '' }}{{ item.nomclient ?: '' }}</td>
 								<td class="text-center">{{ item.agenceCrediteur }}</td>
 								<td class="text-center">{{ item.serviceCrediteur }}</td>
 								<td class="text-center">{{ item.agenceDebiteur }}</td>
@@ -101,7 +103,7 @@
 		</div>
 
 		<!-- FIN tableau -->
-		{% include "/partials/_modalNiveauUrgence.html.twig"  %}
+		{% include "/partials/_modalNiveauUrgence.html.twig" %}
 	</div>
 {% endblock %}
 {% block javascript %}

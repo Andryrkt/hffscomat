@@ -35,7 +35,7 @@ class OrLivrerModel extends Model
         ";
 
         if ($dtoSearch->orCompletude !== MagasinOrConstant::TOUS) $conditions .= $selectCond->eq('sit.situation', $dtoSearch->orCompletude);
-// dd($conditions);
+        // dd($conditions);
         $statement = "--sql
         WITH
             valid_or AS ({$this->getQueryOrValide()}),
@@ -72,7 +72,9 @@ class OrLivrerModel extends Model
             TRIM(mat.mmat_recalph) AS numero_parc ,
             TRIM(mat.mmat_marqmat) AS marque,
             TRIM(mat.mmat_numparc) AS casier,
-            mat.mmat_numcdec AS numero_commande
+            mat.mmat_numcdec AS numero_commande,
+            mmat_numCli as numClient,
+            nom_client as nomClient
         FROM {$this->dbIps}.sav_lor AS lor
         INNER JOIN {$this->dbIps}.sav_eor AS eor ON eor.seor_numor = lor.slor_numor AND eor.seor_soc = lor.slor_soc AND eor.seor_succ = lor.slor_succ
         INNER JOIN {$this->dbIps}.mat_mat AS mat ON mat.mmat_nummat = eor.seor_nummat
@@ -139,10 +141,10 @@ class OrLivrerModel extends Model
             AND lor.slor_constp IN (SELECT abse_constp FROM const_st)
             AND (lor.slor_refp NOT LIKE '%-L' AND lor.slor_refp NOT LIKE '%-CTRL')
             $conditions
-        GROUP BY 1,2,3,4,5,6,7,8,9,10,11,12,13,14,18,19,20,21,22,23,24,25,26,27
+        GROUP BY 1,2,3,4,5,6,7,8,9,10,11,12,13,14,18,19,20,21,22,23,24,25,26,27,28,29
         ORDER BY eor.seor_numor ASC, itv.sitv_interv ASC, lor.slor_nolign ASC;
         ";
-// dd($statement);
+        // dd($statement);
         $result = $this->connect->executeQuery($statement);
 
         $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
