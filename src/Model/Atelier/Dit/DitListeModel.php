@@ -156,7 +156,7 @@ class DitListeModel extends Model
         // dd($statement);
         $result = $this->connect->executeQuery($statement);
         $data = $this->connect->fetchResults($result);
-
+// dd($data);
         // Compter le total d'items
         $totalItems = $this->compteNombreItem($codeSociete, $conditions, $conditionsMultisucursal);
 
