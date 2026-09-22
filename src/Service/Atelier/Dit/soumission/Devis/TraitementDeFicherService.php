@@ -18,9 +18,9 @@ class TraitementDeFicherService
     use PdfConversionTrait;
 
     private DitDevisSoumisAValidationModel $ditDevisSoumisAValidationModel;
-    private SecurityService $securityService;
+    private ?SecurityService $securityService = null;
 
-    public function __construct(SecurityService $securityService)
+    public function __construct(?SecurityService $securityService = null)
     {
         $this->securityService = $securityService;
         $this->ditDevisSoumisAValidationModel = new DitDevisSoumisAValidationModel();
@@ -48,7 +48,7 @@ class TraitementDeFicherService
 
             // creation du pdf de verification de prix
             $tableauMarge = $this->tableauMarge($dto->numeroDevis, $dto->codeSociete);
-            $tableauMargeReference = $this->tableauMargeReference($dto->numeroDevis, $dto->codeSociete, $dto->numeroVersion);
+            $tableauMargeReference = $this->tableauMargeReference($dto->numeroDevis, $dto->codeSociete, $dto->numeroVersion); // recupération des donnée et creation de ficher excel
             $mailUtilisateur = $this->securityService->getDataService()->getUserMail();
             $generePdfDevis->genererPdfVerificationPrix(
                 $tableauMarge,
