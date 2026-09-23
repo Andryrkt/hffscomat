@@ -408,7 +408,7 @@ class SoumissionModel extends Model
 
     public function getInfoDeviSansJointure(string $numeroDevis, string $codeSociete)
     {
-        $statement = "SELECT nlig_refp as ref, 
+        $statement = "SELECT distinct nlig_refp as ref, 
                             nlig_succ as code_agence,
                             nlig_soc as code_societe,
                             nlig_numcde as numero_devis

@@ -77,6 +77,9 @@ class TraitementDeFicherService
             // création du pdf pour devis forfait
             //$this->creationPdf($dto, $generePdfDevis, $nomFichierCtrl, $dto->codeSociete);
 
+            // recupération des donnée et creation de ficher excel pour le tableau de marge (les données n'est pas nécessaire ici pour le devis atelier)
+            $tableauMargeReference = $this->tableauMargeReference($dto->numeroDevis, $dto->codeSociete, $dto->numeroVersion);
+
             // création pdf pour devis vente
             $mailUtilisateur = $this->securityService->getDataService()->getUserMail();
             $generePdfDevis->genererPdfDevis($nomFichierCtrl, $mailUtilisateur);
