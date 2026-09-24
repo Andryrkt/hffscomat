@@ -51,10 +51,49 @@ trait TableauMargeReferenceTableTrait
             unset($col);
 
             if (!empty($lignes)) {
-                $html = $tableGenerator->generateTable($headerConfig, $lignes, []);
+                $totals = $this->calculerTotalsMargeReference($lignes);
+                $html = $tableGenerator->generateTable($headerConfig, $lignes, $totals);
                 $pdf->writeHTML($html, true, false, true, false, '');
             }
         }
+    }
+
+    /**
+     * Calcule le footer (totaux des quantités, prix, MB et %MB) pour le tableau de marge par référence.
+     */
+    private function calculerTotalsMargeReference(array $lignes): array
+    {
+        $totalNbRef = 0;
+        $totalQteDemander = 0;
+        $totalPmp = 0.0;
+        $totalPvBrut = 0.0;
+        $totalMtRemise = 0.0;
+        $totalPvNetRemise = 0.0;
+
+        foreach ($lignes as $ligne) {
+            $totalNbRef += (int) ($ligne['nb_ref'] ?? 0);
+            $totalQteDemander += (float) ($ligne['quantite_demander'] ?? 0);
+            $totalPmp += (float) ($ligne['pmp'] ?? 0);
+            $totalPvBrut += (float) ($ligne['pv_brut'] ?? 0);
+            $totalMtRemise += (float) ($ligne['mt_remise'] ?? 0);
+            $totalPvNetRemise += (float) ($ligne['pv_net_remise'] ?? 0);
+        }
+
+        $totalMb = $totalPvNetRemise - $totalPmp;
+        $totalMbP = $totalPvNetRemise != 0.0 ? ($totalMb / $totalPvNetRemise) * 100 : 0.0;
+
+        return [
+            ''                  => 'TOTAL',
+            'nb_ref'            => $totalNbRef,
+            'quantite_demander' => $totalQteDemander,
+            'reference'         => '',
+            'pmp'               => $totalPmp,
+            'pv_brut'           => $totalPvBrut,
+            'mt_remise'         => $totalMtRemise,
+            'pv_net_remise'     => $totalPvNetRemise,
+            'mb'                => $totalMb,
+            'mb_p'              => $totalMbP,
+        ];
     }
 
     private function headerTableauMargeReference(string $label = 'CAT'): array
@@ -64,6 +103,9 @@ trait TableauMargeReferenceTableTrait
         };
 
         $formatterDispoStock = function ($value, $row) {
+            if ($value === 'TOTAL') {
+                return 'TOTAL';
+            }
             return (int) ($row['nb_ref'] ?? 0) === 0 ? 'Non dispo stock' : 'Dispo stock';
         };
 
@@ -75,7 +117,7 @@ trait TableauMargeReferenceTableTrait
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center;',
                 'cell_style'   => 'text-align: left; ',
-                'footer_style' => 'font-weight: 900;',
+                'footer_style' => 'font-weight: 900; text-align: center;',
                 'formatter'    => $formatterDispoStock
             ],
             [
@@ -85,7 +127,7 @@ trait TableauMargeReferenceTableTrait
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => 'text-align: center; ',
-                'footer_style' => 'font-weight: 900;'
+                'footer_style' => 'font-weight: 900; text-align: center;'
             ],
             [
                 'key'          => 'quantite_demander',
@@ -94,7 +136,7 @@ trait TableauMargeReferenceTableTrait
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => 'text-align: center; ',
-                'footer_style' => 'font-weight: 900;'
+                'footer_style' => 'font-weight: 900; text-align: center;'
             ],
             [
                 'key'          => 'reference',
@@ -112,7 +154,7 @@ trait TableauMargeReferenceTableTrait
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => 'text-align: right;  padding-right:6px;',
-                'footer_style' => 'font-weight: 900;',
+                'footer_style' => 'font-weight: 900; text-align: right; padding-right:6px;',
                 'type'         => 'number',
                 'default_value' => '-',
             ],
@@ -123,7 +165,7 @@ trait TableauMargeReferenceTableTrait
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => 'text-align: right;  margin-right:2px;',
-                'footer_style' => 'font-weight: 900;',
+                'footer_style' => 'font-weight: 900; text-align: right; margin-right:2px;',
                 'type'         => 'number',
                 'default_value' => '-',
             ],
@@ -134,7 +176,7 @@ trait TableauMargeReferenceTableTrait
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => 'text-align: right;  margin-right:2px;',
-                'footer_style' => 'font-weight: 900;',
+                'footer_style' => 'font-weight: 900; text-align: right; margin-right:2px;',
                 'type'         => 'number',
                 'default_value' => '-',
             ],
@@ -145,7 +187,7 @@ trait TableauMargeReferenceTableTrait
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => 'text-align: right;  margin-right:2px;',
-                'footer_style' => 'font-weight: 900;',
+                'footer_style' => 'font-weight: 900; text-align: right; margin-right:2px;',
                 'type'         => 'number',
                 'default_value' => '-',
             ],
@@ -156,7 +198,7 @@ trait TableauMargeReferenceTableTrait
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => 'text-align: right;  margin-right:2px;',
-                'footer_style' => 'font-weight: 900;',
+                'footer_style' => 'font-weight: 900; text-align: right; margin-right:2px;',
                 'type'         => 'number',
                 'default_value' => '-',
             ],
@@ -167,7 +209,7 @@ trait TableauMargeReferenceTableTrait
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => 'text-align: right;  margin-right:2px;',
-                'footer_style' => 'font-weight: 900;',
+                'footer_style' => 'font-weight: 900; text-align: right; margin-right:2px;',
                 'type'         => 'number',
                 'formatter' => $formatterPourcentage,
             ],
