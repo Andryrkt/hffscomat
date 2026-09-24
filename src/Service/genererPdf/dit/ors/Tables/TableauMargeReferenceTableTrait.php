@@ -35,7 +35,7 @@ trait TableauMargeReferenceTableTrait
             $tableGenerator->setOptions([
                 'table_attributes' => 'border="0" cellpadding="3" cellspacing="0" align="center" style="font-size: 9px; font-family:helvetica;"',
                 'header_row_style' => 'background-color: #ffffff;',
-                'footer_row_style' => 'background-color: #ffffff;',
+                'footer_row_style' => 'background-color: #ffffff; font-weight: bold;',
             ]);
 
             $headerConfig = $this->headerTableauMargeReference($label);
@@ -46,7 +46,7 @@ trait TableauMargeReferenceTableTrait
 
                 // Ajouter les bordures pour le footer
                 $colFooterStyle = $col['footer_style'] ?? $col['style'] ?? '';
-                $col['footer_style'] = rtrim($colFooterStyle, '; ') . '; border-top: 0.5px solid #000000;';
+                $col['footer_style'] = rtrim($colFooterStyle, '; ') . '; border-top: 0.5px solid #000000; border-bottom: 0.5px solid #000000; font-weight: bold;';
             }
             unset($col);
 
@@ -117,7 +117,7 @@ trait TableauMargeReferenceTableTrait
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center;',
                 'cell_style'   => 'text-align: left; ',
-                'footer_style' => 'font-weight: 900; text-align: center;',
+                'footer_style' => 'font-weight: bold; text-align: center;',
                 'formatter'    => $formatterDispoStock
             ],
             [
@@ -127,7 +127,7 @@ trait TableauMargeReferenceTableTrait
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => 'text-align: center; ',
-                'footer_style' => 'font-weight: 900; text-align: center;'
+                'footer_style' => 'font-weight: bold; text-align: center;'
             ],
             [
                 'key'          => 'quantite_demander',
@@ -136,7 +136,7 @@ trait TableauMargeReferenceTableTrait
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => 'text-align: center; ',
-                'footer_style' => 'font-weight: 900; text-align: center;'
+                'footer_style' => 'font-weight: bold; text-align: center;'
             ],
             [
                 'key'          => 'reference',
@@ -145,7 +145,7 @@ trait TableauMargeReferenceTableTrait
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => '',
-                'footer_style' => 'font-weight: 900;'
+                'footer_style' => 'font-weight: bold;'
             ],
             [
                 'key'          => 'pmp',
@@ -154,7 +154,7 @@ trait TableauMargeReferenceTableTrait
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => 'text-align: right;  padding-right:6px;',
-                'footer_style' => 'font-weight: 900; text-align: right; padding-right:6px;',
+                'footer_style' => 'font-weight: bold; text-align: right; padding-right:6px;',
                 'type'         => 'number',
                 'default_value' => '-',
             ],
@@ -165,7 +165,7 @@ trait TableauMargeReferenceTableTrait
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => 'text-align: right;  margin-right:2px;',
-                'footer_style' => 'font-weight: 900; text-align: right; margin-right:2px;',
+                'footer_style' => 'font-weight: bold; text-align: right; margin-right:2px;',
                 'type'         => 'number',
                 'default_value' => '-',
             ],
@@ -176,7 +176,7 @@ trait TableauMargeReferenceTableTrait
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => 'text-align: right;  margin-right:2px;',
-                'footer_style' => 'font-weight: 900; text-align: right; margin-right:2px;',
+                'footer_style' => 'font-weight: bold; text-align: right; margin-right:2px;',
                 'type'         => 'number',
                 'default_value' => '-',
             ],
@@ -187,7 +187,7 @@ trait TableauMargeReferenceTableTrait
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => 'text-align: right;  margin-right:2px;',
-                'footer_style' => 'font-weight: 900; text-align: right; margin-right:2px;',
+                'footer_style' => 'font-weight: bold; text-align: right; margin-right:2px;',
                 'type'         => 'number',
                 'default_value' => '-',
             ],
@@ -198,7 +198,7 @@ trait TableauMargeReferenceTableTrait
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => 'text-align: right;  margin-right:2px;',
-                'footer_style' => 'font-weight: 900; text-align: right; margin-right:2px;',
+                'footer_style' => 'font-weight: bold; text-align: right; margin-right:2px;',
                 'type'         => 'number',
                 'default_value' => '-',
             ],
@@ -209,7 +209,7 @@ trait TableauMargeReferenceTableTrait
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => 'text-align: right;  margin-right:2px;',
-                'footer_style' => 'font-weight: 900; text-align: right; margin-right:2px;',
+                'footer_style' => 'font-weight: bold; text-align: right; margin-right:2px;',
                 'type'         => 'number',
                 'formatter' => $formatterPourcentage,
             ],
