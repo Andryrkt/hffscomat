@@ -257,7 +257,7 @@ class SoumissionModel extends Model
                 TRIM(categorie_constp)                                  As constructeur,
                 TRIM(disponibilite)                                     As disponibilite,
                 --SUM(astp_stock)                                                AS nb_ref,
-                COUNT(*)                                                AS nb_ref,
+                (astp_stock - astp_reserv)                              AS nb_ref,
                 SUM(nlig_pmp)                                           AS somme_pmp,
                 SUM(nlig_pxvteht)                                       AS somme_pxvteht,
                 SUM(nlig_pxvteht - nlig_pxnreel)                   AS somme_remise,
@@ -353,7 +353,7 @@ class SoumissionModel extends Model
             SELECT
                 nlig_constp AS constructeur,
                 -- Stock
-                ROUND(CASE WHEN astp_stock IS NULL THEN 0 ELSE astp_stock END) AS nb_ref,
+                ROUND(CASE WHEN astp_stock IS NULL THEN 0 ELSE astp_stock - astp_reserv END) AS nb_ref,
                 TRIM(nlig_refp) AS reference,
                 TRIM(nlig_desi) AS designation,
                 ROUND(nlig_qtecde) AS quantite_demander,

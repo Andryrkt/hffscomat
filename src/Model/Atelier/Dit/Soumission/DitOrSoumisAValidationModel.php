@@ -840,7 +840,7 @@ class DitOrSoumisAValidationModel extends Model
                 TRIM(categorie_constp)                                  As constructeur,
                 TRIM(disponibilite)                                     As disponibilite,
                 --SUM(astp_stock)                                                AS nb_ref,
-                COUNT(*)                                                AS nb_ref,
+                (astp_stock - astp_reserv)                              AS nb_ref,
                 SUM(slor_pmp)                                           AS somme_pmp,
                 SUM(slor_pxvteht)                                       AS somme_pxvteht,
                 SUM(slor_pxvteht * (slor_remise/100))                   AS somme_remise,
@@ -931,7 +931,7 @@ class DitOrSoumisAValidationModel extends Model
             SELECT
                 slor_constp AS constructeur,
                 -- Stock
-                ROUND(CASE WHEN astp_stock IS NULL THEN 0 ELSE astp_stock END) AS nb_ref,
+                ROUND(CASE WHEN astp_stock IS NULL THEN 0 ELSE astp_stock - astp_reserv END) AS nb_ref,
                 TRIM(slor_refp) AS reference,
                 TRIM(slor_desi) AS designation,
                 ROUND(slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) AS quantite_demander,
