@@ -388,7 +388,7 @@ class SoumissionModel extends Model
                 AND astp_soc = nlig_soc
                 AND astp_succ = nlig_succ
                 AND astp_constp = nlig_constp
-            INNER JOIN Informix.art_bse on abse_refp = nlig_refp
+            INNER JOIN Informix.art_bse on abse_refp = nlig_refp AND abse_constp = nlig_constp
             INNER JOIN Informix.agr_tab on atab_nom = 'STA' and atab_code = abse_fams1
             CROSS JOIN stats_max
             CROSS JOIN stats_min

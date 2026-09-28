@@ -967,7 +967,7 @@ class DitOrSoumisAValidationModel extends Model
                 AND astp_soc = slor_soc 
                 AND astp_succ = slor_succ
                 AND astp_constp = slor_constp
-            INNER JOIN Informix.art_bse on abse_refp = slor_refp
+            INNER JOIN Informix.art_bse on abse_refp = slor_refp AND abse_constp = slor_constp
             INNER JOIN Informix.agr_tab on atab_nom = 'STA' and atab_code = abse_fams1
             CROSS JOIN stats_max
             CROSS JOIN stats_min
