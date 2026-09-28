@@ -246,7 +246,15 @@ class TraitementDeFicherService
         $tableauMargeAutres = [];
 
         if (!empty($infoOrs)) {
+            // la requête par référence ramène déjà toutes les lignes de cette référence : on ne l'appelle qu'une fois par référence
+            $referencesTraitees = [];
             foreach ($infoOrs as $infoOr) {
+                $cle = $infoOr['reference'] . '|' . $infoOr['code_agence'];
+                if (isset($referencesTraitees[$cle])) {
+                    continue;
+                }
+                $referencesTraitees[$cle] = true;
+
                 $afficher = $ditOrsoumisAValidationModel->tableauDeMargeAvecReference($codeSociete, $numOr, $infoOr['reference'], $infoOr['code_agence']);
 
                 foreach ($afficher as $value) {
