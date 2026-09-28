@@ -839,8 +839,7 @@ class DitOrSoumisAValidationModel extends Model
                 numero_or                                               As numero_or,
                 TRIM(categorie_constp)                                  As constructeur,
                 TRIM(disponibilite)                                     As disponibilite,
-                --SUM(astp_stock)                                                AS nb_ref,
-                (s.astp_stock - s.astp_reserv)                              AS nb_ref,
+                SUM(stock_dispo)                                        AS nb_ref,
                 SUM(slor_pmp)                                           AS somme_pmp,
                 SUM(slor_pxvteht)                                       AS somme_pxvteht,
                 SUM(slor_pxvteht * (slor_remise/100))                   AS somme_remise,
@@ -870,8 +869,8 @@ class DitOrSoumisAValidationModel extends Model
                     CASE WHEN s.astp_stock > 0 THEN 'DISPONIBLE' ELSE 'NON_DISPONIBLE' END AS disponibilite,
                     l.slor_pmp,
                     l.slor_pxvteht,
-                    l.slor_remise
-                    --s.astp_stock AS astp_stock 
+                    l.slor_remise,
+                    (s.astp_stock - s.astp_reserv) AS stock_dispo
                 FROM sav_lor l
                 INNER JOIN art_stp s
                     ON s.astp_constp = l.slor_constp

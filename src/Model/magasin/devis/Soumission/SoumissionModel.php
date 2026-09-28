@@ -256,8 +256,7 @@ class SoumissionModel extends Model
                 numero_cde                                               As numero_cde,
                 TRIM(categorie_constp)                                  As constructeur,
                 TRIM(disponibilite)                                     As disponibilite,
-                --SUM(astp_stock)                                                AS nb_ref,
-                (s.astp_stock - s.astp_reserv)                              AS nb_ref,
+                SUM(stock_dispo)                                        AS nb_ref,
                 SUM(nlig_pmp)                                           AS somme_pmp,
                 SUM(nlig_pxvteht)                                       AS somme_pxvteht,
                 SUM(nlig_pxvteht - nlig_pxnreel)                   AS somme_remise,
@@ -287,9 +286,8 @@ class SoumissionModel extends Model
                     CASE WHEN s.astp_stock > 0 THEN 'DISPONIBLE' ELSE 'NON_DISPONIBLE' END AS disponibilite,
                     l.nlig_pmp,
                     l.nlig_pxvteht,
-                    l.nlig_pxnreel
-                    --l.nlig_remise
-                    --s.astp_stock AS astp_stock 
+                    l.nlig_pxnreel,
+                    (s.astp_stock - s.astp_reserv) AS stock_dispo
                 FROM neg_lig l
                 INNER JOIN art_stp s
                     ON s.astp_constp = l.nlig_constp
