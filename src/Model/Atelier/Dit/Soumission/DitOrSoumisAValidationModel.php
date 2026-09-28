@@ -840,7 +840,7 @@ class DitOrSoumisAValidationModel extends Model
                 TRIM(categorie_constp)                                  As constructeur,
                 TRIM(disponibilite)                                     As disponibilite,
                 --SUM(astp_stock)                                                AS nb_ref,
-                (astp_stock - astp_reserv)                              AS nb_ref,
+                (s.astp_stock - s.astp_reserv)                              AS nb_ref,
                 SUM(slor_pmp)                                           AS somme_pmp,
                 SUM(slor_pxvteht)                                       AS somme_pxvteht,
                 SUM(slor_pxvteht * (slor_remise/100))                   AS somme_remise,
