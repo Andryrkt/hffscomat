@@ -65,7 +65,7 @@ class GeneratePdfDeviMagasinVp extends GeneratePdf
         $pdf->Ln(5, true);
         //==========================================================================================================
         //Titre: Tableaux de marge (CAT, MFN, Autres)
-        $this->renderTableauxMarge($pdf, $tableGenerator, $tableauMarges);
+        $this->renderTableauxMarge($pdf, $tableGenerator, $tableauMarges, false);
 
         //==========================================================================================================
         //Titre: Tableaux de marge avec reference (CAT, MFN, Autres)

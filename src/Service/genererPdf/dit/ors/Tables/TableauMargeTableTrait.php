@@ -12,8 +12,9 @@ trait TableauMargeTableTrait
 {
     /**
      * Affiche les tableaux de marge (CAT, MFN, Autres) s'ils contiennent des lignes.
+     * $avecTotal = false : pas de ligne TOTAL en bas de chaque tableau.
      */
-    private function renderTableauxMarge(TCPDF $pdf, PdfTableGeneratorFlexible $tableGenerator, array $tableauMarge): void
+    private function renderTableauxMarge(TCPDF $pdf, PdfTableGeneratorFlexible $tableGenerator, array $tableauMarge, bool $avecTotal = true): void
     {
         if (empty($tableauMarge)) {
             return;
@@ -46,12 +47,14 @@ trait TableauMargeTableTrait
 
                 // Ajouter les bordures pour le footer
                 $colFooterStyle = $col['footer_style'] ?? $col['style'] ?? '';
-                $col['footer_style'] = rtrim($colFooterStyle, '; ') . '; border-top: 0.5px solid #000000; border-bottom: 0.5px solid #000000; font-weight: bold;';
+                $col['footer_style'] = $avecTotal
+                    ? rtrim($colFooterStyle, '; ') . '; border-top: 0.5px solid #000000; border-bottom: 0.5px solid #000000; font-weight: bold;'
+                    : 'border-top: 0.5px solid #000000;';
             }
             unset($col);
 
             $lignesNormalisees = $this->normaliserLignesMarge($lignes);
-            $totals = $this->calculerTotalsMargeGlobale($lignes);
+            $totals = $avecTotal ? $this->calculerTotalsMargeGlobale($lignes) : [];
             $html = $tableGenerator->generateTable($headerConfig, $lignesNormalisees, $totals);
             $pdf->writeHTML($html, true, false, true, false, '');
         }

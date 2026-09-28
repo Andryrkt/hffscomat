@@ -159,7 +159,7 @@ class GenererPdfOrSoumisAValidation extends GeneratePdf
         $this->renderPieceFaibleActivite($pdf, $tableGenerator, $pieceFaibleAchat);
         //==========================================================================================================
         //Titre: Tableaux de marge (CAT, MFN, Autres)
-        $this->renderTableauxMarge($pdf, $tableGenerator, $tableauMarge);
+        $this->renderTableauxMarge($pdf, $tableGenerator, $tableauMarge, false);
         //==========================================================================================================
         //Titre: Tableaux de marge avec reference (CAT, MFN, Autres)
         $this->renderTableauxMargeReference($pdf, $tableGenerator, $tableauMargeReference);
