@@ -52,9 +52,16 @@ class ModalPlanningMagasinModel extends Model
                         trim('DISPO STOCK')
                       WHEN A.NLIG_QTELIV =  A.NLIG_QTECDE THEN
                          trim('LIVRE')
-                   END as Statut,
+                      when A.NLIG_natcm = 'C' then
+                      	(SELECT libelle_type
+                                  FROM  {$this->dbIrium}.gcot_acknow_cat
+                                  WHERE CAST( Numero_PO as varchar(10)) = CAST(A.NLIG_numcf  as varchar(10))
+                                  AND Parts_Number = A.NLIG_refp  
+                                  AND Parts_CST = A.NLIG_constp
+                                  AND Line_Number = A.NLIG_noligncm)
+        END as Statut,
 
-CASE WHEN A.NLIG_QTEALIV = A.NLIG_QTECDE AND (CASE WHEN nvl(A.NLIG_numcf,0) > 0 THEN (A.NLIG_QTECDE - A.NLIG_QTEALIV) ELSE 0 END) > 0 THEN
+        CASE WHEN A.NLIG_QTEALIV = A.NLIG_QTECDE AND (CASE WHEN nvl(A.NLIG_numcf,0) > 0 THEN (A.NLIG_QTECDE - A.NLIG_QTEALIV) ELSE 0 END) > 0 THEN
                     TO_CHAR((
                                 SELECT npic_date
                                      FROM (
@@ -62,21 +69,29 @@ CASE WHEN A.NLIG_QTEALIV = A.NLIG_QTECDE AND (CASE WHEN nvl(A.NLIG_numcf,0) > 0 
                                          ROW_NUMBER() OVER (ORDER BY npic_date ASC) AS rn
                                          FROM neg_pic, neg_pil
                                          WHERE npic_numcde = A.NLIG_NUMCDE
-AND npic_numcde = npil_numcde
-                                        AND npil_refp = A.NLIG_refp
-                                        AND npil_nolign = A.NLIG_nolign
+                                          AND npic_numcde = npil_numcde
+                                          AND npil_refp = A.NLIG_refp
+                                          AND npil_nolign = A.NLIG_nolign
                                            ) AS ranked_dates
                                        WHERE rn = 1
                              ), '%Y-%m-%d')
-                 WHEN A.NLIG_QTEALIV = A.NLIG_QTECDE THEN
-TO_CHAR(A.NLIG_DATEALLOC,'%Y-%m-%d')
-WHEN A.NLIG_QTELIV = A.NLIG_QTECDE THEN
+              WHEN A.NLIG_QTEALIV = A.NLIG_QTECDE THEN TO_CHAR(A.NLIG_DATEALLOC,'%Y-%m-%d')
+              WHEN A.NLIG_QTELIV = A.NLIG_QTECDE THEN
                   TO_CHAR((
                        (SELECT (select nliv_datexp from neg_liv where nliv_soc = nllf_soc and nliv_numliv = nllf_numliv)
                        FROM neg_llf
                             WHERE nllf_numcde = A.NLIG_numcde
                        AND nllf_nolign = A.NLIG_nolign)), '%Y-%m-%d')
-                 END AS dateStatut,
+              WHEN A.NLIG_natcm = 'C' THEN
+                    TO_CHAR(( SELECT date_creation
+                                    FROM  {$this->dbIrium}.gcot_acknow_cat
+                                    WHERE CAST( Numero_PO as varchar(10)) = CAST(A.NLIG_numcf  as varchar(10))
+                                    AND Parts_Number = A.NLIG_refp  
+                                    AND Parts_CST = A.NLIG_constp
+                                    AND (Line_Number = A.NLIG_noligncm OR Line_Number = A.NLIG_nolign)
+                             ),
+                                 '%Y-%m-%d')
+        END AS dateStatut,
 
    CASE  
                       WHEN B.nlig_natcm = 'C' THEN 'COMMANDE'
