@@ -26,3 +26,10 @@
 .spinner-border.text-primary {
   color: #ffee00;
 }
+
+/* Entête des tableaux du modal "Listes lignes de l'intervention" en fond blanc */
+#listeCommande .table thead th,
+#listeCommande .table thead tr {
+  background-color: #fff !important;
+  color: #000;
+}
