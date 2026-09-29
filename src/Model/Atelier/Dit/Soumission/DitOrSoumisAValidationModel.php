@@ -543,7 +543,7 @@ class DitOrSoumisAValidationModel extends Model
 
     public function getInformationOr(string $numOr, string $codeSociete): array
     {
-        $statement = " SELECT
+        $statement = " SELECT DISTINCT
         slor_numor as numero_or,
         trim(seor_refdem) as numero_dit,
         sitv_interv as numero_itv,
@@ -573,7 +573,7 @@ class DitOrSoumisAValidationModel extends Model
 
     public function getInformationDevis(string $numOr, string $codeSociete): array
     {
-        $statement = " SELECT
+        $statement = " SELECT DISTINCT
         slor_numor as numero_or,
         trim(seor_refdem) as numero_dit,
         sitv_interv as numero_itv,
