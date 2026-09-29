@@ -162,12 +162,18 @@ class PlanningMaterielModel extends Model
                     WHEN slor_qterea =  (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) 
                         THEN trim('LIVRE')
                     WHEN slor_natcm = 'C' THEN
-                                ( SELECT libelle_type 
-                                  FROM  gcot_acknow_cat 
-                                  WHERE CAST( Numero_PO as varchar(10)) = CAST(slor_numcf  as varchar(10)) 
+                                ( SELECT libelle_type
+                                  FROM  {$this->dbIrium}.gcot_acknow_cat
+                                  WHERE CAST( Numero_PO as varchar(10)) = CAST(slor_numcf  as varchar(10))
                                   AND Parts_Number = slor_refp  
                                   AND Parts_CST = slor_constp 
-                                  AND Line_Number = slor_noligncm )
+                                  AND Line_Number = slor_noligncm
+                                  AND id_gcot_acknow_cat = ( SELECT MAX(id_gcot_acknow_cat)
+                                                             FROM {$this->dbIrium}.gcot_acknow_cat
+                                                             WHERE CAST( Numero_PO as varchar(10)) = CAST(slor_numcf  as varchar(10))
+                                                             AND Parts_Number = slor_refp
+                                                             AND Parts_CST = slor_constp
+                                                             AND Line_Number = slor_noligncm ) )
                 END                                                 as statut,
                 CASE 
                     WHEN slor_qteres = (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec)
