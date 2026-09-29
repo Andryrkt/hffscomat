@@ -44,7 +44,7 @@
 
 .rowspan-cell {
   vertical-align: middle; /* Centrer verticalement */
-  text-align: center; /* Centrer horizontalement */
+  /* text-align: center; Centrer horizontalement */
 }
 
 #suggestions {

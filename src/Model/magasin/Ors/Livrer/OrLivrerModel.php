@@ -73,8 +73,8 @@ class OrLivrerModel extends Model
             TRIM(mat.mmat_marqmat) AS marque,
             TRIM(mat.mmat_numparc) AS casier,
             mat.mmat_numcdec AS numero_commande,
-            mmat_numCli as numClient,
-            nom_client as nomClient
+            mmat_numCli as num_client,
+            nom_client as nom_client
         FROM {$this->dbIps}.sav_lor AS lor
         INNER JOIN {$this->dbIps}.sav_eor AS eor ON eor.seor_numor = lor.slor_numor AND eor.seor_soc = lor.slor_soc AND eor.seor_succ = lor.slor_succ
         INNER JOIN {$this->dbIps}.mat_mat AS mat ON mat.mmat_nummat = eor.seor_nummat
