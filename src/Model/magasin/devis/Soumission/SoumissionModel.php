@@ -256,8 +256,7 @@ class SoumissionModel extends Model
                 numero_cde                                               As numero_cde,
                 TRIM(categorie_constp)                                  As constructeur,
                 TRIM(disponibilite)                                     As disponibilite,
-                --SUM(astp_stock)                                                AS nb_ref,
-                COUNT(*)                                                AS nb_ref,
+                SUM(stock_dispo)                                        AS nb_ref,
                 SUM(nlig_pmp)                                           AS somme_pmp,
                 SUM(nlig_pxvteht)                                       AS somme_pxvteht,
                 SUM(nlig_pxvteht - nlig_pxnreel)                   AS somme_remise,
@@ -287,9 +286,8 @@ class SoumissionModel extends Model
                     CASE WHEN s.astp_stock > 0 THEN 'DISPONIBLE' ELSE 'NON_DISPONIBLE' END AS disponibilite,
                     l.nlig_pmp,
                     l.nlig_pxvteht,
-                    l.nlig_pxnreel
-                    --l.nlig_remise
-                    --s.astp_stock AS astp_stock 
+                    l.nlig_pxnreel,
+                    (s.astp_stock - s.astp_reserv) AS stock_dispo
                 FROM neg_lig l
                 INNER JOIN art_stp s
                     ON s.astp_constp = l.nlig_constp
@@ -349,55 +347,73 @@ class SoumissionModel extends Model
                     AND nent_posf in ('CP','FC','PF','TF')
                 GROUP BY 2
                 ORDER BY MIN(nlig_pxnreel - nlig_pmp) ASC
+            ),
+            lignes AS (
+                SELECT
+                    nlig_constp                                   AS constructeur,
+                    TRIM(nlig_refp)                               AS reference,
+                    TRIM(nlig_desi)                               AS designation,
+                    CASE WHEN astp_stock IS NULL THEN 0
+                         ELSE astp_stock - astp_reserv END        AS stock_dispo,
+                    nlig_qtecde                                   AS qte,
+                    ROUND(nlig_pmp, 2)                            AS pmp,
+                    nlig_pxvteht                                  AS pv_brut,
+                    nlig_pxnreel                                  AS pv_net,
+                    abse_fams1 || '-' || fam.atab_lib             AS famille
+                FROM Informix.neg_lig
+                INNER JOIN Informix.art_stp
+                    ON astp_refp = nlig_refp
+                    AND astp_soc = nlig_soc
+                    AND astp_succ = nlig_succ
+                    AND astp_constp = nlig_constp
+                INNER JOIN Informix.art_bse
+                    ON abse_refp = nlig_refp
+                    AND abse_constp = nlig_constp
+                INNER JOIN (
+                    SELECT atab_code, MAX(atab_lib) AS atab_lib
+                    FROM Informix.agr_tab
+                    WHERE atab_nom = 'STA'
+                    GROUP BY atab_code
+                ) fam ON fam.atab_code = abse_fams1
+                WHERE nlig_numcde = '$numeroCde'
+                    AND nlig_succ = '$codeSuccursale'
+                    AND nlig_soc = '$codeSociete'
+                    AND nlig_refp = '$references'
             )
             SELECT
-                nlig_constp AS constructeur,
-                -- Stock
-                ROUND(CASE WHEN astp_stock IS NULL THEN 0 ELSE astp_stock END) AS nb_ref,
-                TRIM(nlig_refp) AS reference,
-                TRIM(nlig_desi) AS designation,
-                ROUND(nlig_qtecde) AS quantite_demander,
+                MAX(l.constructeur)                                   AS constructeur,
+                ROUND(MAX(l.stock_dispo))                             AS nb_ref,
+                l.reference                                           AS reference,
+                MAX(l.designation)                                    AS designation,
+                ROUND(SUM(l.qte))                                     AS quantite_demander,
 
-                -- Prix et remises
-                ROUND(nlig_pmp, 2) AS pmp,
-                nlig_pxvteht AS pv_brut,
-                (nlig_pxvteht - nlig_pxnreel) AS mt_remise,
-                nlig_pxnreel AS pv_net_remise,
+                -- Prix pondérés par la quantité demandée
+                COALESCE(ROUND(SUM(l.pmp     * l.qte) / NULLIF(SUM(l.qte), 0), 2), 0) AS pmp,
+                COALESCE(ROUND(SUM(l.pv_brut * l.qte) / NULLIF(SUM(l.qte), 0), 2), 0) AS pv_brut,
+                COALESCE(ROUND(SUM((l.pv_brut - l.pv_net) * l.qte)
+                               / NULLIF(SUM(l.qte), 0), 2), 0)                        AS mt_remise,
+                COALESCE(ROUND(SUM(l.pv_net  * l.qte) / NULLIF(SUM(l.qte), 0), 2), 0) AS pv_net_remise,
 
-                -- Marge brute
-                ROUND(nlig_pxnreel - ROUND(nlig_pmp, 2), 2) AS mb,
+                -- Marge brute pondérée
+                COALESCE(ROUND(SUM((l.pv_net - l.pmp) * l.qte)
+                               / NULLIF(SUM(l.qte), 0), 2), 0)                        AS mb,
 
-                -- Marge brute en pourcentage
-                CASE
-                    WHEN nlig_pxnreel = 0 THEN 0
-                    ELSE ROUND(((nlig_pxnreel - ROUND(nlig_pmp, 2)) / nlig_pxnreel) * 100, 2)
-                END AS mb_p,
+                -- Marge brute % = marge totale / CA net total
+                COALESCE(ROUND(SUM((l.pv_net - l.pmp) * l.qte)
+                               / NULLIF(SUM(l.pv_net * l.qte), 0) * 100, 2), 0)       AS mb_p,
 
-                -- Maximum MB (issu de la ligne réelle correspondante)
-                COALESCE(stats_max.max_mb, 0) AS max_mb,
-                COALESCE(stats_max.max_mb_p, 0) AS max_mb_p,
+                -- Min / Max
+                COALESCE(MAX(stats_max.max_mb), 0)   AS max_mb,
+                COALESCE(MAX(stats_max.max_mb_p), 0) AS max_mb_p,
+                COALESCE(MAX(stats_min.min_mb), 0)   AS min_mb,
+                COALESCE(MAX(stats_min.min_mb_p), 0) AS min_mb_p,
 
-                -- Minimum MB (issu de la ligne réelle correspondante)
-                COALESCE(stats_min.min_mb, 0) AS min_mb,
-                COALESCE(stats_min.min_mb_p, 0) AS min_mb_p,
+                MAX(l.famille)                        AS famille
 
-                -- Famille
-                abse_fams1 || '-' || atab_lib as famille
-
-            FROM Informix.neg_lig
-            INNER JOIN Informix.art_stp
-                ON astp_refp = nlig_refp
-                AND astp_soc = nlig_soc
-                AND astp_succ = nlig_succ
-                AND astp_constp = nlig_constp
-            INNER JOIN Informix.art_bse on abse_refp = nlig_refp
-            INNER JOIN Informix.agr_tab on atab_nom = 'STA' and atab_code = abse_fams1
+            FROM lignes l
             CROSS JOIN stats_max
             CROSS JOIN stats_min
-            WHERE nlig_numcde = '$numeroCde'
-                AND nlig_succ = '$codeSuccursale'
-                AND nlig_soc = '$codeSociete'
-                AND nlig_refp = '$references';
+            GROUP BY l.reference
         ";
 
         $result = $this->connect->executeQuery($statement);
@@ -408,7 +424,7 @@ class SoumissionModel extends Model
 
     public function getInfoDeviSansJointure(string $numeroDevis, string $codeSociete)
     {
-        $statement = "SELECT nlig_refp as ref, 
+        $statement = "SELECT distinct nlig_refp as ref, 
                             nlig_succ as code_agence,
                             nlig_soc as code_societe,
                             nlig_numcde as numero_devis

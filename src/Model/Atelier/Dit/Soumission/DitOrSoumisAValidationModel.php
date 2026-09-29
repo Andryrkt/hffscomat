@@ -543,7 +543,7 @@ class DitOrSoumisAValidationModel extends Model
 
     public function getInformationOr(string $numOr, string $codeSociete): array
     {
-        $statement = " SELECT
+        $statement = " SELECT DISTINCT
         slor_numor as numero_or,
         trim(seor_refdem) as numero_dit,
         sitv_interv as numero_itv,
@@ -573,7 +573,7 @@ class DitOrSoumisAValidationModel extends Model
 
     public function getInformationDevis(string $numOr, string $codeSociete): array
     {
-        $statement = " SELECT
+        $statement = " SELECT DISTINCT
         slor_numor as numero_or,
         trim(seor_refdem) as numero_dit,
         sitv_interv as numero_itv,
@@ -839,8 +839,7 @@ class DitOrSoumisAValidationModel extends Model
                 numero_or                                               As numero_or,
                 TRIM(categorie_constp)                                  As constructeur,
                 TRIM(disponibilite)                                     As disponibilite,
-                --SUM(astp_stock)                                                AS nb_ref,
-                COUNT(*)                                                AS nb_ref,
+                SUM(stock_dispo)                                        AS nb_ref,
                 SUM(slor_pmp)                                           AS somme_pmp,
                 SUM(slor_pxvteht)                                       AS somme_pxvteht,
                 SUM(slor_pxvteht * (slor_remise/100))                   AS somme_remise,
@@ -870,8 +869,8 @@ class DitOrSoumisAValidationModel extends Model
                     CASE WHEN s.astp_stock > 0 THEN 'DISPONIBLE' ELSE 'NON_DISPONIBLE' END AS disponibilite,
                     l.slor_pmp,
                     l.slor_pxvteht,
-                    l.slor_remise
-                    --s.astp_stock AS astp_stock 
+                    l.slor_remise,
+                    (s.astp_stock - s.astp_reserv) AS stock_dispo
                 FROM sav_lor l
                 INNER JOIN art_stp s
                     ON s.astp_constp = l.slor_constp
@@ -927,55 +926,74 @@ class DitOrSoumisAValidationModel extends Model
                     AND slor_succ = '$codeSuccursale'
                 GROUP BY 2
                 ORDER BY MIN(slor_pxnreel - slor_pmp) ASC
+            ),
+            lignes AS (
+                SELECT
+                    slor_constp                                   AS constructeur,
+                    TRIM(slor_refp)                               AS reference,
+                    TRIM(slor_desi)                               AS designation,
+                    CASE WHEN astp_stock IS NULL THEN 0 
+                         ELSE astp_stock - astp_reserv END        AS stock_dispo,
+                    (slor_qterel + slor_qterea + slor_qteres 
+                     + slor_qtewait - slor_qrec)                  AS qte,
+                    ROUND(slor_pmp, 2)                            AS pmp,
+                    slor_pxvteht                                  AS pv_brut,
+                    slor_pxnreel                                  AS pv_net,
+                    abse_fams1 || '-' || fam.atab_lib             AS famille
+                FROM Informix.sav_lor
+                INNER JOIN Informix.art_stp 
+                    ON astp_refp = slor_refp 
+                    AND astp_soc = slor_soc 
+                    AND astp_succ = slor_succ
+                    AND astp_constp = slor_constp
+                INNER JOIN Informix.art_bse 
+                    ON abse_refp = slor_refp 
+                    AND abse_constp = slor_constp
+                INNER JOIN (
+                    SELECT atab_code, MAX(atab_lib) AS atab_lib
+                    FROM Informix.agr_tab
+                    WHERE atab_nom = 'STA'
+                    GROUP BY atab_code
+                ) fam ON fam.atab_code = abse_fams1
+                WHERE slor_numor = '$numeroOr' 
+                    AND slor_succ = '$codeSuccursale'
+                    AND slor_soc = '$codeSociete'
+                    AND slor_refp = '$ref'
             )
             SELECT
-                slor_constp AS constructeur,
-                -- Stock
-                ROUND(CASE WHEN astp_stock IS NULL THEN 0 ELSE astp_stock END) AS nb_ref,
-                TRIM(slor_refp) AS reference,
-                TRIM(slor_desi) AS designation,
-                ROUND(slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) AS quantite_demander,
+                MAX(l.constructeur)                                   AS constructeur,
+                ROUND(MAX(l.stock_dispo))                             AS nb_ref,
+                l.reference                                           AS reference,
+                MAX(l.designation)                                    AS designation,
+                ROUND(SUM(l.qte))                                     AS quantite_demander,
 
-                -- Prix et remises
-                ROUND(slor_pmp, 2) AS pmp,
-                slor_pxvteht AS pv_brut,
-                (slor_pxvteht - slor_pxnreel) AS mt_remise,
-                slor_pxnreel AS pv_net_remise,
+                -- Prix pondérés par la quantité demandée
+                COALESCE(ROUND(SUM(l.pmp     * l.qte) / NULLIF(SUM(l.qte), 0), 2), 0) AS pmp,
+                COALESCE(ROUND(SUM(l.pv_brut * l.qte) / NULLIF(SUM(l.qte), 0), 2), 0) AS pv_brut,
+                COALESCE(ROUND(SUM((l.pv_brut - l.pv_net) * l.qte) 
+                               / NULLIF(SUM(l.qte), 0), 2), 0)                        AS mt_remise,
+                COALESCE(ROUND(SUM(l.pv_net  * l.qte) / NULLIF(SUM(l.qte), 0), 2), 0) AS pv_net_remise,
 
-                -- Marge brute
-                ROUND(slor_pxnreel - ROUND(slor_pmp, 2), 2) AS mb,
+                -- Marge brute pondérée
+                COALESCE(ROUND(SUM((l.pv_net - l.pmp) * l.qte) 
+                               / NULLIF(SUM(l.qte), 0), 2), 0)                        AS mb,
 
-                -- Marge brute en pourcentage
-                CASE 
-                    WHEN slor_pxnreel = 0 THEN 0 
-                    ELSE ROUND(((slor_pxnreel - ROUND(slor_pmp, 2)) / slor_pxnreel) * 100, 2) 
-                END AS mb_p,
+                -- Marge brute % = marge totale / CA net total
+                COALESCE(ROUND(SUM((l.pv_net - l.pmp) * l.qte) 
+                               / NULLIF(SUM(l.pv_net * l.qte), 0) * 100, 2), 0)       AS mb_p,
 
-                -- Maximum MB (issu de la ligne réelle correspondante)
-                COALESCE(stats_max.max_mb, 0) AS max_mb,
-                COALESCE(stats_max.max_mb_p, 0) AS max_mb_p,
+                -- Min / Max
+                COALESCE(MAX(stats_max.max_mb), 0)   AS max_mb,
+                COALESCE(MAX(stats_max.max_mb_p), 0) AS max_mb_p,
+                COALESCE(MAX(stats_min.min_mb), 0)   AS min_mb,
+                COALESCE(MAX(stats_min.min_mb_p), 0) AS min_mb_p,
 
-                -- Minimum MB (issu de la ligne réelle correspondante)
-                COALESCE(stats_min.min_mb, 0) AS min_mb,
-                COALESCE(stats_min.min_mb_p, 0) AS min_mb_p,
+                MAX(l.famille)                        AS famille
 
-                -- Famille
-                abse_fams1 || '-' || atab_lib as famille
-
-            FROM Informix.sav_lor
-            INNER JOIN Informix.art_stp 
-                ON astp_refp = slor_refp 
-                AND astp_soc = slor_soc 
-                AND astp_succ = slor_succ
-                AND astp_constp = slor_constp
-            INNER JOIN Informix.art_bse on abse_refp = slor_refp
-            INNER JOIN Informix.agr_tab on atab_nom = 'STA' and atab_code = abse_fams1
+            FROM lignes l
             CROSS JOIN stats_max
             CROSS JOIN stats_min
-            WHERE slor_numor = '$numeroOr' 
-                AND slor_succ = '$codeSuccursale'
-                AND slor_soc = '$codeSociete'
-                AND slor_refp = '$ref'
+            GROUP BY l.reference
         ";
 
         $result = $this->connect->executeQuery($statement);

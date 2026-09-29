@@ -12,8 +12,9 @@ trait TableauMargeTableTrait
 {
     /**
      * Affiche les tableaux de marge (CAT, MFN, Autres) s'ils contiennent des lignes.
+     * $avecTotal = false : pas de ligne TOTAL en bas de chaque tableau.
      */
-    private function renderTableauxMarge(TCPDF $pdf, PdfTableGeneratorFlexible $tableGenerator, array $tableauMarge): void
+    private function renderTableauxMarge(TCPDF $pdf, PdfTableGeneratorFlexible $tableGenerator, array $tableauMarge, bool $avecTotal = true): void
     {
         if (empty($tableauMarge)) {
             return;
@@ -35,7 +36,7 @@ trait TableauMargeTableTrait
             $tableGenerator->setOptions([
                 'table_attributes' => 'border="0" cellpadding="3" cellspacing="0" align="center" style="font-size: 9px; font-family:helvetica;"',
                 'header_row_style' => 'background-color: #ffffff;',
-                'footer_row_style' => 'background-color: #ffffff;',
+                'footer_row_style' => 'background-color: #ffffff; font-weight: bold;',
             ]);
 
             $headerConfig = $this->headerTableauMargeTable($label);
@@ -46,13 +47,53 @@ trait TableauMargeTableTrait
 
                 // Ajouter les bordures pour le footer
                 $colFooterStyle = $col['footer_style'] ?? $col['style'] ?? '';
-                $col['footer_style'] = rtrim($colFooterStyle, '; ') . '; border-top: 0.5px solid #000000;';
+                $col['footer_style'] = $avecTotal
+                    ? rtrim($colFooterStyle, '; ') . '; border-top: 0.5px solid #000000; border-bottom: 0.5px solid #000000; font-weight: bold;'
+                    : 'border-top: 0.5px solid #000000;';
             }
             unset($col);
 
-            $html = $tableGenerator->generateTable($headerConfig, $this->normaliserLignesMarge($lignes), []);
+            $lignesNormalisees = $this->normaliserLignesMarge($lignes);
+            $totals = $avecTotal ? $this->calculerTotalsMargeGlobale($lignes) : [];
+            $html = $tableGenerator->generateTable($headerConfig, $lignesNormalisees, $totals);
             $pdf->writeHTML($html, true, false, true, false, '');
         }
+    }
+
+    /**
+     * Calcule les totaux pour le tableau de marge globale.
+     */
+    private function calculerTotalsMargeGlobale(array $lignes): array
+    {
+        $totalNbRef = 0;
+        $totalPmp = 0.0;
+        $totalPxvteht = 0.0;
+        $totalRemise = 0.0;
+        $totalPxvteRemise = 0.0;
+
+        foreach ($lignes as $ligne) {
+            $totalNbRef += (int) ($ligne['nb_ref'] ?? 0);
+            $totalPmp += (float) ($ligne['somme_pmp'] ?? 0);
+            $totalPxvteht += (float) ($ligne['somme_pxvteht'] ?? 0);
+            $totalRemise += (float) ($ligne['somme_remise'] ?? 0);
+            $totalPxvteRemise += (float) ($ligne['somme_pxvte_remise'] ?? 0);
+        }
+
+        $totalMb = $totalPxvteRemise - $totalPmp;
+        $totalMbP = $totalPxvteRemise != 0.0 ? ($totalMb / $totalPxvteRemise) * 100 : 0.0;
+
+        return [
+            'disponibilite'      => 'TOTAL',
+            'nb_ref'            => $totalNbRef,
+            'somme_pmp'          => $totalPmp,
+            'somme_pxvteht'      => $totalPxvteht,
+            'somme_remise'       => $totalRemise,
+            'somme_pxvte_remise' => $totalPxvteRemise,
+            'somme_marge_brute'  => $totalMb,
+            'pct_marge_brute'    => $totalMbP,
+            'pct_mb_max'         => '',
+            'pct_mb_min'         => '',
+        ];
     }
 
     /**
@@ -91,6 +132,9 @@ trait TableauMargeTableTrait
         };
 
         $formatterDispoStock = function ($value, $row) {
+            if ($value === 'TOTAL') {
+                return 'TOTAL';
+            }
             return ($row['disponibilite'] ?? '') === 'DISPONIBLE' ? 'Dispo Stock' : 'Non dispo stock';
         };
 
@@ -107,7 +151,7 @@ trait TableauMargeTableTrait
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center;',
                 'cell_style'   => 'text-align: left;',
-                'footer_style' => 'font-weight: 900;',
+                'footer_style' => 'font-weight: bold; text-align: center;',
                 'formatter'    => $formatterDispoStock,
                 'styler'       => $stylerSeparateur
             ],
@@ -118,7 +162,7 @@ trait TableauMargeTableTrait
                 'style'        => '',
                 'header_style' => 'font-weight: bold; text-align: right;',
                 'cell_style'   => 'font-weight: normal; text-align: right;',
-                'footer_style' => 'font-weight: 900;',
+                'footer_style' => 'font-weight: bold; text-align: right;',
                 'default_value' => '-',
                 'styler'       => $stylerSeparateur
             ],
@@ -129,7 +173,7 @@ trait TableauMargeTableTrait
                 'style'        => '',
                 'header_style' => 'font-weight: bold; text-align: right; ',
                 'cell_style'   => 'font-weight: normal; text-align: right; ',
-                'footer_style' => 'font-weight: 900;',
+                'footer_style' => 'font-weight: bold; text-align: right;',
                 'type'         => 'number',
                 'default_value' => '-',
                 'styler'       => $stylerSeparateur
@@ -141,7 +185,7 @@ trait TableauMargeTableTrait
                 'style'        => '',
                 'header_style' => 'font-weight: bold; text-align: right; ',
                 'cell_style'   => 'font-weight: normal; text-align: right;',
-                'footer_style' => 'font-weight: 900;',
+                'footer_style' => 'font-weight: bold; text-align: right;',
                 'type'         => 'number',
                 'default_value' => '-',
                 'styler'       => $stylerSeparateur
@@ -153,7 +197,7 @@ trait TableauMargeTableTrait
                 'style'        => '',
                 'header_style' => 'font-weight: bold; text-align: right;',
                 'cell_style'   => 'font-weight: normal; text-align: right;',
-                'footer_style' => 'font-weight: 900;',
+                'footer_style' => 'font-weight: bold; text-align: right;',
                 'type'         => 'number',
                 'default_value' => '-',
                 'styler'       => $stylerSeparateur
@@ -165,7 +209,7 @@ trait TableauMargeTableTrait
                 'style'        => '',
                 'header_style' => 'font-weight: bold; text-align: right;',
                 'cell_style'   => 'font-weight: normal; text-align: right;',
-                'footer_style' => 'font-weight: 900;',
+                'footer_style' => 'font-weight: bold; text-align: right;',
                 'type'         => 'number',
                 'default_value' => '-',
                 'styler'       => $stylerSeparateur
@@ -177,7 +221,7 @@ trait TableauMargeTableTrait
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: right;',
                 'cell_style'   => 'text-align: right;',
-                'footer_style' => 'font-weight: 900;',
+                'footer_style' => 'font-weight: bold; text-align: right;',
                 'type'         => 'number',
                 'default_value' => '-',
                 'styler'       => $stylerSeparateur
@@ -189,7 +233,7 @@ trait TableauMargeTableTrait
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: right;',
                 'cell_style'   => 'font-weight: bold; text-align: right;',
-                'footer_style' => 'font-weight: 900;',
+                'footer_style' => 'font-weight: bold; text-align: right;',
                 'type'         => 'number',
                 'formatter'    => $formatterPourcentage,
                 'default_value' => '-',
@@ -202,7 +246,7 @@ trait TableauMargeTableTrait
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: right;',
                 'cell_style'   => 'font-weight: bold; text-align: right;',
-                'footer_style' => 'font-weight: 900;',
+                'footer_style' => 'font-weight: bold; text-align: right;',
                 'type'         => 'number',
                 'formatter'    => $formatterPourcentage,
                 'default_value' => '-',
@@ -215,7 +259,7 @@ trait TableauMargeTableTrait
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: right; ',
                 'cell_style'   => 'font-weight: bold; text-align: right;',
-                'footer_style' => 'font-weight: 900;',
+                'footer_style' => 'font-weight: bold; text-align: right;',
                 'type'         => 'number',
                 'formatter'    => $formatterPourcentage,
                 'default_value' => '-',

@@ -146,7 +146,7 @@ class PdfTableGeneratorFlexible
             $style = $config['footer_style'] ?? $config['style'];
             $value = $totals[$key] ?? '';
 
-            if (!empty($value)) {
+            if ($value !== '' && $value !== null) {
                 if (isset($config['formatter']) && is_callable($config['formatter'])) {
                     $value = $config['formatter']($value, $totals);
                 } else {
