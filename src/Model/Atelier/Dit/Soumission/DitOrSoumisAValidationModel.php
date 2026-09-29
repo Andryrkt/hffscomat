@@ -968,7 +968,13 @@ class DitOrSoumisAValidationModel extends Model
                 AND astp_succ = slor_succ
                 AND astp_constp = slor_constp
             INNER JOIN Informix.art_bse on abse_refp = slor_refp AND abse_constp = slor_constp
-            INNER JOIN Informix.agr_tab on atab_nom = 'STA' and atab_code = abse_fams1
+            -- un seul libellé par code famille pour ne pas dupliquer les lignes
+            INNER JOIN (
+                SELECT atab_code, MAX(atab_lib) AS atab_lib
+                FROM Informix.agr_tab
+                WHERE atab_nom = 'STA'
+                GROUP BY atab_code
+            ) fam ON fam.atab_code = abse_fams1
             CROSS JOIN stats_max
             CROSS JOIN stats_min
             WHERE slor_numor = '$numeroOr' 
