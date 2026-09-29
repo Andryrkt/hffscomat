@@ -50,17 +50,17 @@ document.addEventListener("DOMContentLoaded", (event) => {
 
   // Gestionnaire pour la fermeture du modal
   listeCommandeModal.addEventListener("hidden.bs.modal", function () {
-    const tableBody = document.getElementById("commandesTableBody");
-    const tableBodyOR = document.getElementById("commandesTableBodyOR");
-    const tableBodyLign = document.getElementById("commandesTableBodyLign");
-    const Ornum = document.getElementById("orIntv");
-    const planningTableHead = document.getElementById("planningTableHead");
-
-    tableBody.innerHTML = ""; // Vider le tableau
-    tableBodyLign.innerHTML = "";
-    tableBodyOR.innerHTML = "";
-    Ornum.innerHTML = "";
-    planningTableHead.innerHTML = "";
+    // Vider les tableaux (on ignore les éléments absents de la vue)
+    [
+      "commandesTableBody",
+      "commandesTableBodyORAte",
+      "commandesTableBodyLign",
+      "orIntv",
+      "planningTableHead",
+    ].forEach((id) => {
+      const element = document.getElementById(id);
+      if (element) element.innerHTML = "";
+    });
   });
 
   function masquerSpinner() {
@@ -115,18 +115,20 @@ document.addEventListener("DOMContentLoaded", (event) => {
 
   function fetchDetailModal(id, signal) {
     // Fetch request to get the data
-    console.log(id, signal);
     fetch(`${baseUrl}/${API_ENDPOINTS.getDetailModal(id)}`, { signal })
-      .then((response) => {
+      .then(async (response) => {
         if (!response.ok) {
-          console.log(response);
-          throw new Error("Network response was not ok");
+          // L'API renvoie { error: "..." } en cas d'exception côté serveur
+          const body = await response.json().catch(() => ({}));
+          throw new Error(
+            `HTTP ${response.status} ${response.statusText}${
+              body.error ? " - " + body.error : ""
+            }`
+          );
         }
         return response.json();
       })
       .then((data) => {
-        console.log(data.avecOnglet);
-
         displayOnglet(data.avecOnglet);
         const Ornum = document.getElementById("orIntv");
         const tableBody = document.getElementById("commandesTableBody");
@@ -146,7 +148,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
         planningTableHeadOR.innerHTML = "";
         planningTableHeadLign.innerHTML = "";
 
-        console.log(data.data, data.data.length);
         let rowHeader = `<th>N° OR</th>
                             <th>Intv</th>
                             <th>N° CIS</th>
@@ -168,8 +169,6 @@ document.addEventListener("DOMContentLoaded", (event) => {
           planningTableHead.innerHTML += rowHeader;
 
           data.data.forEach((detail) => {
-            console.log(detail);
-
             Ornum.innerHTML = `${detail.num_or} - ${detail.num_itv} | intitulé : ${detail.commentaire} | `;
             if (detail.planning == "PLANIFIE") {
               Ornum.innerHTML += `planifié le : ${formaterDate(

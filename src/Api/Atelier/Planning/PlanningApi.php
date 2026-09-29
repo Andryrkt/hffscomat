@@ -7,6 +7,7 @@ use App\Dto\Atelier\Planning\PlanningSearchDto;
 use App\Model\Atelier\Dit\DitModel;
 use App\Model\Atelier\Planning\PlanningMaterielModel;
 use App\Model\Atelier\Planning\PlanningModel;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
 class PlanningApi extends Controller
@@ -44,42 +45,30 @@ class PlanningApi extends Controller
      */
     public function detailModal(string $numOr)
     {
-        $dto = $this->getSessionService()->get('planning_search_criteria');
-        if (!$dto)
-            $dto = new PlanningSearchDto();
-        $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
-        if ($numOr === '')
-            $details = [];
-        else {
-            $details = $this->planningMaterielModel->getDetailPieceInformix($numOr, $dto);
-            $numDit = $this->ditModel->getNumDitByNumOr($numOr, $codeSociete);
-            $detailSize = count($details);
+        try {
+            $dto = $this->getSessionService()->get('planning_search_criteria');
+            if (!$dto instanceof PlanningSearchDto)
+                $dto = new PlanningSearchDto();
+            $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
 
-            $parts = [];
-            for ($i = 0; $i < $detailSize; $i++) {
-                $parts[] = [];
-                if ($details[$i]['num_cis'] != "") {
-                    $magasin = $this->planningModel->getEtaMagasin($details[$i]['num_cis'], $details[$i]['ref']);
-                    if (!empty($magasin) && !empty($magasin[0])) {
-                        $details[$i]['eta_magasin'] = $magasin[0]['eta_magasin'] != null ? (new \DateTime($magasin[0]['eta_magasin']))->format('d/m/Y') : "";
-                        $details[$i]['etat_pays'] = $magasin[0]['etat_pays'] != null ? (new \DateTime($magasin[0]['etat_pays']))->format('d/m/Y') : "";
+            $details = $this->convertirEnUtf8($this->planningMaterielModel->getDetailPieceInformix($numOr, $dto));
+            // $numOr vaut "numOr-numItv" : on ne garde que le numéro d'OR pour retrouver la DIT
+            $numDit = $this->ditModel->getNumDitByNumOr(explode('-', $numOr)[0], $codeSociete);
+
+            foreach ($details as $i => $detail) {
+                $details[$i]['eta_magasin'] = "";
+                $details[$i]['etat_pays'] = "";
+
+                if (!empty($detail['num_cis'])) {
+                    $magasin = $this->planningModel->getEtaMagasin((string) $detail['num_cis'], (string) ($detail['ref'] ?? ''));
+                    if (!empty($magasin[0])) {
+                        $details[$i]['eta_magasin'] = $this->formaterDate($magasin[0]['eta_magasin'] ?? null);
+                        $details[$i]['etat_pays'] = $this->formaterDate($magasin[0]['etat_pays'] ?? null);
                     }
                 }
 
-                if (!isset($details[$i]['eta_magasin']))
-                    $details[$i]['eta_magasin'] = "";
-                if (!isset($details[$i]['etat_pays']))
-                    $details[$i]['etat_pays'] = "";
-
-
-                if ($parts[$i]) {
-                    $details[$i]['qteSolde'] = $parts[$i]['0']['solde'];
-                    $details[$i]['qte'] = $parts[$i]['0']['qte'];
-                } else {
-                    $details[$i]['qteSolde'] = "";
-                    $details[$i]['qte'] = "";
-                }
-
+                $details[$i]['qteSolde'] = "";
+                $details[$i]['qte'] = "";
                 $details[$i]['Ord'] = "";
                 $details[$i]['date_liv'] = "";
                 $details[$i]['dateAllLIg'] = "";
@@ -90,13 +79,52 @@ class PlanningApi extends Controller
                 $details[$i]['migration'] = "";
                 $details[$i]['numDit'] = $numDit;
             }
-            header("Content-type:application/json");
 
-            echo json_encode([
+            return new JsonResponse([
                 'avecOnglet' => false,
                 'data' => $details,
             ]);
+        } catch (\Throwable $e) {
+            error_log("API detail-modal ($numOr) : " . $e->getMessage() . " in " . $e->getFile() . ":" . $e->getLine());
+
+            return new JsonResponse([
+                'avecOnglet' => false,
+                'data' => [],
+                'error' => $e->getMessage(),
+            ], 500);
         }
+    }
+
+    /**
+     * Formate une date en d/m/Y sans lever d'exception si la valeur est vide ou invalide.
+     */
+    private function formaterDate($date): string
+    {
+        if (empty($date)) {
+            return "";
+        }
+
+        try {
+            return (new \DateTime($date))->format('d/m/Y');
+        } catch (\Exception $e) {
+            $dateFr = \DateTime::createFromFormat('d/m/Y', (string) $date);
+            return $dateFr ? $dateFr->format('d/m/Y') : "";
+        }
+    }
+
+    /**
+     * Convertit récursivement les chaînes Informix (Windows-1252) en UTF-8 pour json_encode.
+     */
+    private function convertirEnUtf8($element)
+    {
+        if (is_array($element)) {
+            foreach ($element as $key => $value) {
+                $element[$key] = $this->convertirEnUtf8($value);
+            }
+        } elseif (is_string($element) && !mb_check_encoding($element, 'UTF-8')) {
+            return mb_convert_encoding($element, 'UTF-8', 'Windows-1252');
+        }
+        return $element;
     }
 
     /**
