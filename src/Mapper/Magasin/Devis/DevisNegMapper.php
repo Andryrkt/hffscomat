@@ -2,6 +2,7 @@
 
 namespace App\Mapper\Magasin\Devis;
 
+use App\Constants\Magasin\Devis\StatutBcNegConstant;
 use App\Constants\Magasin\Devis\StatutDevisNegContant;
 use App\Dto\Magasin\Devis\DevisNegDto;
 
@@ -13,7 +14,7 @@ class DevisNegMapper
         return array_map(function ($item) use ($urlGenerator) {
             $dto = new DevisNegDto();
             $dto->statutDw = $item['statut_dw'] ?? StatutDevisNegContant::A_TRAITER;
-            $dto->statutBc = $item['statut_bc'] ?? '';
+            $dto->statutBc = $this->normaliserStatutBc($item['statut_bc'] ?? '');
             $dto->numeroDevis = $item['numero_devis'] ?? '';
             $dto->dateCreation = $item['date_creation'] ?? '';
             $dto->emetteur = $item['emetteur'] ?? '';
@@ -63,5 +64,20 @@ class DevisNegMapper
 
             return $dto;
         }, $data);
+    }
+
+    /**
+     * Le statut BC "Validé" est parfois stocké avec l'accent perdu ("Valid?") :
+     * on le ramène à la valeur de la constante pour l'affichage et le style.
+     */
+    private function normaliserStatutBc(?string $statutBc): string
+    {
+        $statutBc = trim((string) $statutBc);
+
+        if (stripos($statutBc, 'Valid') === 0) {
+            return StatutBcNegConstant::VALIDER;
+        }
+
+        return $statutBc;
     }
 }
