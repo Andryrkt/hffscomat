@@ -154,7 +154,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
               )}`;
             }
             // Formater la date
-            let dateStatut = formaterDate(detail.datestatut);
+            let dateStatut = formaterDate(detail.statut_date);
             if (detail.cst && detail.cst.startsWith("Z")) {
               dateStatut = "";
             }

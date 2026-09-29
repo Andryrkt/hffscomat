@@ -91,7 +91,7 @@ class ModalPlanningMagasinModel extends Model
                                     AND (Line_Number = A.NLIG_noligncm OR Line_Number = A.NLIG_nolign)
                              ),
                                  '%Y-%m-%d')
-        END AS dateStatut,
+        END AS statut_date,
 
    CASE  
                       WHEN B.nlig_natcm = 'C' THEN 'COMMANDE'
@@ -113,7 +113,7 @@ WHERE A.NLIG_NATOP in ('DIR')
 --AND A.NLIG_QTEFAC = 0
 --AND A.NLIG_constp  not in ('ZDI','Nmc')
                 $numOr
-   GROUP BY 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,dateStatut,Statut_ctrmq_cis,numerocdecis
+   GROUP BY 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,statut_date,Statut_ctrmq_cis,numerocdecis
 ORDER BY 6,2, A.NLIG_NOLIGN
       ";
 
