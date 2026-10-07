@@ -146,9 +146,9 @@ document.addEventListener("DOMContentLoaded", function () {
           };
           const qteAvecStyle = (qte, statut, matchStatut) => {
             const style = matchStatut ? STYLES_QTE[statut] : "";
-            return `<span class="${style}">${parseInt(qte, 10)}</span>`;
+            return `<span class="${style}">${formatQte(qte)}</span>`;
           };
-          const qte = (val) => {
+          const formatQte = (val) => {
             const n = parseInt(val, 10);
             return n === 0 ? "-" : n;
           };
@@ -161,16 +161,16 @@ document.addEventListener("DOMContentLoaded", function () {
                   <td class="text-start">${detail.constp || ""}</td>
                   <td class="text-start">${detail.refp || ""}</td>
                   <td class="text-start">${detail.desi || ""}</td>
-                  <td class="text-center">${qte(detail.qte_dem)}</td>
+                  <td class="text-center">${formatQte(detail.qte_dem)}</td>
                   <td class="text-center">${qteAvecStyle(detail.qte_rest, detail.statut, detail.statut !== "complet_facture")}</td>
                   <td class="text-center">${qteAvecStyle(detail.qte_recept, detail.statut, detail.statut === "complet_facture")}</td>
-                  <td class="text-center">${qte(detail.qte_fact)}</td>
+                  <td class="text-center">${formatQte(detail.qte_fact)}</td>
                   <td class="text-start">${statutBadge(detail.statut)}</td>
                   <td class="text-center">${detail.eta_magasin || ""}</td>
                   <td class="text-center">${detail.eta_maurice || ""}</td>
                   <td class="text-center">${nameAndNumberDoc(detail.type_doc, detail.numero)}</td>
                   <td class="text-start">${nameAndNumberDoc(detail.numcli, detail.nomcli)}</td>
-                  <td class="text-center">${qte(detail.qte_dem_ligne)}</td>
+                  <td class="text-center">${formatQte(detail.qte_dem_ligne)}</td>
                 </tr>`
             )
             .join("");
