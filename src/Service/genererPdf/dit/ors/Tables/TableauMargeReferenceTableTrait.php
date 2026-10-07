@@ -29,33 +29,72 @@ trait TableauMargeReferenceTableTrait
         $this->addTitle($pdf, "TABLEAU DE MARGE PAR REFERENCE", 'helvetica', 'B', 10, 'L', 0);
         $pdf->setFont('helvetica', '', 9);
 
+        $totauxParConstructeur = [];
+
         foreach ($sections as $key => $label) {
             $lignes = $tableauMarge[$key] ?? [];
 
-            $tableGenerator->setOptions([
-                'table_attributes' => 'border="0" cellpadding="3" cellspacing="0" align="center" style="font-size: 9px; font-family:helvetica;"',
-                'header_row_style' => 'background-color: #ffffff;',
-                'footer_row_style' => 'background-color: #ffffff; font-weight: bold;',
-            ]);
-
-            $headerConfig = $this->headerTableauMargeReference($label);
-            foreach ($headerConfig as &$col) {
-                // Ajouter les bordures pour le header
-                $colHeaderStyle = $col['header_style'] ?? $col['style'] ?? '';
-                $col['header_style'] = rtrim($colHeaderStyle, '; ') . '; border-top: 0.5px solid #000000; border-bottom: 0.5px solid #000000;';
-
-                // Ajouter les bordures pour le footer
-                $colFooterStyle = $col['footer_style'] ?? $col['style'] ?? '';
-                $col['footer_style'] = rtrim($colFooterStyle, '; ') . '; border-top: 0.5px solid #000000; border-bottom: 0.5px solid #000000; font-weight: bold;';
-            }
-            unset($col);
-
             if (!empty($lignes)) {
+                $this->setOptionsTableauMarge($tableGenerator);
+                $headerConfig = $this->ajouterBorduresHeaderFooter($this->headerTableauMargeReference($label));
                 $totals = $this->calculerTotalsMargeReference($lignes);
                 $html = $tableGenerator->generateTable($headerConfig, $lignes, $totals);
                 $pdf->writeHTML($html, true, false, true, false, '');
+
+                // Conserver le total de la section pour le total général
+                $totauxParConstructeur[] = $totals;
             }
         }
+
+        // Tableau du total général (tous constructeurs confondus)
+        if (!empty($totauxParConstructeur)) {
+            $headerConfig = $this->headerTableauMargeReference('');
+            $headerConfig[0]['formatter'] = function ($value) {
+                return $value;
+            };
+            $headerConfig = $this->ajouterBorduresHeaderFooter($headerConfig);
+
+            $totalGeneral = array_merge(
+                $this->calculerTotalsMargeReference($totauxParConstructeur),
+                ['' => 'TOTAL GENERAL']
+            );
+
+            $this->setOptionsTableauMarge($tableGenerator);
+            $html = $tableGenerator->generateTable($headerConfig, [], $totalGeneral, true);
+            $pdf->writeHTML($html, true, false, true, false, '');
+        }
+    }
+
+    /**
+     * Options d'affichage communes aux tableaux de marge
+     * (le générateur réinitialise ses options après chaque tableau).
+     */
+    private function setOptionsTableauMarge(PdfTableGeneratorFlexible $tableGenerator): void
+    {
+        $tableGenerator->setOptions([
+            'table_attributes' => 'border="0" cellpadding="3" cellspacing="0" align="center" style="font-size: 9px; font-family:helvetica;"',
+            'header_row_style' => 'background-color: #ffffff;',
+            'footer_row_style' => 'background-color: #ffffff; font-weight: bold;',
+        ]);
+    }
+
+    /**
+     * Ajoute les bordures haut/bas sur les cellules du header et du footer.
+     */
+    private function ajouterBorduresHeaderFooter(array $headerConfig): array
+    {
+        foreach ($headerConfig as &$col) {
+            // Ajouter les bordures pour le header
+            $colHeaderStyle = $col['header_style'] ?? $col['style'] ?? '';
+            $col['header_style'] = rtrim($colHeaderStyle, '; ') . '; border-top: 0.5px solid #000000; border-bottom: 0.5px solid #000000;';
+
+            // Ajouter les bordures pour le footer
+            $colFooterStyle = $col['footer_style'] ?? $col['style'] ?? '';
+            $col['footer_style'] = rtrim($colFooterStyle, '; ') . '; border-top: 0.5px solid #000000; border-bottom: 0.5px solid #000000; font-weight: bold;';
+        }
+        unset($col);
+
+        return $headerConfig;
     }
 
     /**
