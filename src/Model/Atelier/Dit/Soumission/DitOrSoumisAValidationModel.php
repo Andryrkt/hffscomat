@@ -934,6 +934,8 @@ class DitOrSoumisAValidationModel extends Model
                     TRIM(slor_desi)                               AS designation,
                     CASE WHEN astp_stock IS NULL THEN 0 
                          ELSE astp_stock - astp_reserv END        AS stock_dispo,
+                    COALESCE(astp_stock, 0)                       AS qte_stock,
+                    COALESCE(astp_reserv, 0)                      AS qte_reserv,
                     (slor_qterel + slor_qterea + slor_qteres 
                      + slor_qtewait - slor_qrec)                  AS qte,
                     ROUND(slor_pmp, 2)                            AS pmp,
@@ -962,10 +964,12 @@ class DitOrSoumisAValidationModel extends Model
             )
             SELECT
                 MAX(l.constructeur)                                   AS constructeur,
-                ROUND(MAX(l.stock_dispo))                             AS nb_ref,
+                ROUND(MAX(l.stock_dispo))                             AS nb_ref, -- Qte dispo
                 l.reference                                           AS reference,
                 MAX(l.designation)                                    AS designation,
-                ROUND(SUM(l.qte))                                     AS quantite_demander,
+                ROUND(SUM(l.qte))                                     AS quantite_demander, -- Qte dem
+                ROUND(MAX(l.qte_stock))                               AS qte_stock, -- Qte Stock
+                ROUND(MAX(l.qte_reserv))                              AS qte_reserv, -- Qte res
 
                 -- Prix pondérés par la quantité demandée
                 COALESCE(ROUND(SUM(l.pmp     * l.qte) / NULLIF(SUM(l.qte), 0), 2), 0) AS pmp,

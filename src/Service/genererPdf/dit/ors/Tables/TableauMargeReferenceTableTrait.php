@@ -107,6 +107,8 @@ trait TableauMargeReferenceTableTrait
     {
         $totalNbRef = 0;
         $totalQteDemander = 0;
+        $totalQteStock = 0;
+        $totalQteReserv = 0;
         $totalPmp = 0.0;
         $totalPvBrut = 0.0;
         $totalMtRemise = 0.0;
@@ -115,6 +117,8 @@ trait TableauMargeReferenceTableTrait
         foreach ($lignes as $ligne) {
             $totalNbRef += (int) ($ligne['nb_ref'] ?? 0);
             $totalQteDemander += (float) ($ligne['quantite_demander'] ?? 0);
+            $totalQteStock += (float) ($ligne['qte_stock'] ?? 0);
+            $totalQteReserv += (float) ($ligne['qte_reserv'] ?? 0);
             $totalPmp += (float) ($ligne['pmp'] ?? 0);
             $totalPvBrut += (float) ($ligne['pv_brut'] ?? 0);
             $totalMtRemise += (float) ($ligne['mt_remise'] ?? 0);
@@ -126,8 +130,10 @@ trait TableauMargeReferenceTableTrait
 
         return [
             ''                  => 'TOTAL',
-            'nb_ref'            => $totalNbRef,
             'quantite_demander' => $totalQteDemander,
+            'qte_stock'         => $totalQteStock,
+            'qte_reserv'        => $totalQteReserv,
+            'nb_ref'            => $totalNbRef,
             'reference'         => '',
             'pmp'               => $totalPmp,
             'pv_brut'           => $totalPvBrut,
@@ -155,7 +161,7 @@ trait TableauMargeReferenceTableTrait
             [
                 'key'          => '',
                 'label'        => $label,
-                'width'        => 80,
+                'width'        => 70,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center;',
                 'cell_style'   => 'text-align: left; ',
@@ -163,18 +169,36 @@ trait TableauMargeReferenceTableTrait
                 'formatter'    => $formatterDispoStock
             ],
             [
-                'key'          => 'nb_ref',
-                'label'        => 'Qte stock',
-                'width'        => 50,
+                'key'          => 'quantite_demander',
+                'label'        => 'Qte dem',
+                'width'        => 35,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => 'text-align: center; ',
                 'footer_style' => 'font-weight: bold; text-align: center;'
             ],
             [
-                'key'          => 'quantite_demander',
-                'label'        => 'Qte dem',
-                'width'        => 50,
+                'key'          => 'qte_stock',
+                'label'        => 'Qte stock',
+                'width'        => 35,
+                'style'        => 'font-weight: bold;',
+                'header_style' => 'font-weight: bold; text-align: center; ',
+                'cell_style'   => 'text-align: center; ',
+                'footer_style' => 'font-weight: bold; text-align: center;'
+            ],
+            [
+                'key'          => 'qte_reserv',
+                'label'        => 'Qte res',
+                'width'        => 35,
+                'style'        => 'font-weight: bold;',
+                'header_style' => 'font-weight: bold; text-align: center; ',
+                'cell_style'   => 'text-align: center; ',
+                'footer_style' => 'font-weight: bold; text-align: center;'
+            ],
+            [
+                'key'          => 'nb_ref',
+                'label'        => 'Qte dispo',
+                'width'        => 35,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => 'text-align: center; ',
@@ -183,7 +207,7 @@ trait TableauMargeReferenceTableTrait
             [
                 'key'          => 'reference',
                 'label'        => 'Ref',
-                'width'        => 90,
+                'width'        => 75,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => '',
