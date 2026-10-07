@@ -56,8 +56,11 @@ trait TableauMargeReferenceTableTrait
 
             $totalGeneral = array_merge(
                 $this->calculerTotalsMargeReference($totauxParConstructeur),
-                ['' => 'TOTAL GENERAL']
+                ['' => 'TOTAL']
             );
+
+            $this->addTitle($pdf, "TOTAL GENERAL", 'helvetica', 'B', 10, 'L', 0);
+            $pdf->setFont('helvetica', '', 9);
 
             $this->setOptionsTableauMarge($tableGenerator);
             $html = $tableGenerator->generateTable($headerConfig, [], $totalGeneral, true);
