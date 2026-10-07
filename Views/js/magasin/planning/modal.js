@@ -12,11 +12,10 @@ const CELL_INDICES_LIGNE = {
   qteDem: 3,
   qteRest: 4,
   qteRecept: 5,
-  qteDispo: 6,
-  qteFact: 7,
-  statut: 8,
-  etaMagasin: 9,
-  etaMaurice: 10,
+  qteFact: 6,
+  statut: 7,
+  etaMagasin: 8,
+  etaMaurice: 9,
 };
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -149,9 +148,9 @@ document.addEventListener("DOMContentLoaded", function () {
             const style = matchStatut ? STYLES_QTE[statut] : "";
             return `<span class="${style}">${parseInt(qte, 10)}</span>`;
           };
-          const qte = (val, notRender0 = false) => {
+          const qte = (val) => {
             const n = parseInt(val, 10);
-            return n === 0 && notRender0 ? "" : n;
+            return n === 0 ? "-" : n;
           };
           const nameAndNumberDoc = (number, name) =>
             number ? `${number} - ${name}` : "";
@@ -163,16 +162,15 @@ document.addEventListener("DOMContentLoaded", function () {
                   <td class="text-start">${detail.refp || ""}</td>
                   <td class="text-start">${detail.desi || ""}</td>
                   <td class="text-center">${qte(detail.qte_dem)}</td>
-                  <td class="text-center">${qte(detail.qte_dispo)}</td>
-                  <td class="text-center">${qte(detail.qte_fact)}</td>
-                  <td class="text-center">${qteAvecStyle(detail.qte_recept, detail.statut, detail.statut === "complet_facture")}</td>
                   <td class="text-center">${qteAvecStyle(detail.qte_rest, detail.statut, detail.statut !== "complet_facture")}</td>
+                  <td class="text-center">${qteAvecStyle(detail.qte_recept, detail.statut, detail.statut === "complet_facture")}</td>
+                  <td class="text-center">${qte(detail.qte_fact)}</td>
                   <td class="text-start">${statutBadge(detail.statut)}</td>
                   <td class="text-center">${detail.eta_magasin || ""}</td>
                   <td class="text-center">${detail.eta_maurice || ""}</td>
                   <td class="text-center">${nameAndNumberDoc(detail.type_doc, detail.numero)}</td>
                   <td class="text-start">${nameAndNumberDoc(detail.numcli, detail.nomcli)}</td>
-                  <td class="text-center">${qte(detail.qte_dem_ligne, true)}</td>
+                  <td class="text-center">${qte(detail.qte_dem_ligne)}</td>
                 </tr>`
             )
             .join("");
@@ -182,8 +180,7 @@ document.addEventListener("DOMContentLoaded", function () {
           masquerSpinner();
         } else {
           // Si les données sont vides, afficher un message vide
-          tableBody.innerHTML =
-            '<tr><td colspan="14" class="text-center">Aucune donnée disponible.</td></tr>';
+          tableBody.innerHTML = `<tr><td colspan="${Object.keys(CELL_INDICES_LIGNE).length + 3}" class="text-center">Aucune donnée disponible.</td></tr>`;
           masquerSpinner();
         }
       })
