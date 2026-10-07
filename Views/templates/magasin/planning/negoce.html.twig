@@ -17,7 +17,7 @@
 {% block content %}
 	<div class="sticky-header-titre">
 		<div class="container">
-			{% include "/planningMagasin/_formulaire.html.twig" %}
+			{% include "/magasin/planning/_formulaire_negoce.html.twig" %}
 			<div class="d-flex justify-content-between">
 				{% include "/partials/_statutSituationPieceMagasin.html.twig" %}
 			</div>
@@ -101,7 +101,7 @@
 
 	<!-- FIN tableau -->
 	{# body modal #}
-	{% include "/planningMagasin/_modal.html.twig"  %}
+	{% include "/magasin/planning/_modal_negoce.html.twig"  %}
 	{# {% include "/dit/shared/_modalNiveauUrgence.html.twig"  %} #}
 {% endblock %}
 {% block javascript %}

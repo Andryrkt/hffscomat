@@ -1,21 +1,19 @@
 <?php
 
-namespace App\Api\planningMagasin;
+namespace App\Api\magasin\planning;
 
 use App\Controller\Controller;
-use App\Entity\dit\DemandeIntervention;
-use App\Model\planning\ModalPlanningModel;
-use App\Model\planningMagasin\PlanningMagasinModel;
+use App\Model\magasin\planning\PlanningNegoceModel;
 use Symfony\Component\Routing\Annotation\Route;
 
-class PlanningApi extends Controller
+class PlanningNegoceApi extends Controller
 {
-    private PlanningMagasinModel $planningMagasinModel;
+    private PlanningNegoceModel $planningMagasinModel;
 
     public function __construct()
     {
         parent::__construct();
-        $this->planningMagasinModel = new PlanningMagasinModel();
+        $this->planningMagasinModel = new PlanningNegoceModel();
     }
 
     /**

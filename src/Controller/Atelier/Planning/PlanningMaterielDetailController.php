@@ -4,7 +4,6 @@ namespace App\Controller\Atelier\Planning;
 
 use App\Controller\Controller;
 use App\Dto\Atelier\Planning\PlanningSearchDto;
-use App\Entity\planning\PlanningSearch;
 use App\Form\Atelier\Planning\PlanningSearchType;
 use App\Model\Atelier\Planning\PlanningMaterielModel;
 use App\Model\Atelier\Planning\PlanningModel;
@@ -17,7 +16,7 @@ use Symfony\Component\Routing\Annotation\Route;
 /**
  * @Route("/atelier")
  */
-class PlanningListController extends Controller
+class PlanningMaterielDetailController extends Controller
 {
 
     private PlanningModel $planningModel;

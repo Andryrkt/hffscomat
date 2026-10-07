@@ -100,7 +100,7 @@ class MenuGroupe
                 'icon'     => 'cloud-arrow-up',
                 'subitems' => [
                     ['label' => 'Soumission commandes fournisseur', 'icon' => 'plus-circle', 'route' => 'generer_commande_fournisseur'],
-                    ['label' => 'Planning Commande Fourniseur', 'icon' => 'calendar-alt', 'route' => 'interface_planning_cde_frn_magasin'],
+                    ['label' => 'Planning Commande Fournisseur', 'icon' => 'calendar-alt', 'route' => 'interface_planning_cde_frn_magasin'],
 
                 ],
             ],

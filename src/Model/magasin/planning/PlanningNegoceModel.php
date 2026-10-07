@@ -1,16 +1,15 @@
 <?php
 
-namespace App\Model\planningMagasin;
+namespace App\Model\magasin\planning;
 
 use App\Model\Model;
 use App\Service\GlobalVariablesService;
 use App\Service\TableauEnStringService;
-use App\Entity\planningMagasin\PlanningMagasinSearch;
+use App\Entity\planning\PlanningNegoceSearch;
 
-class PlanningMagasinModel extends Model
+class PlanningNegoceModel extends Model
 {
-    use planningMagasinModelTrait;
-
+    use PlanningNegoceModelTrait;
 
     public function recuperationAgenceDebite(string $codeSociete)
     {
@@ -94,7 +93,7 @@ class PlanningMagasinModel extends Model
     }
 
     public function recuperationCommadeplanifier(
-        PlanningMagasinSearch $criteria,
+        PlanningNegoceSearch $criteria,
         string $condition,
         string $codeAgence,
         string $codeSociete,

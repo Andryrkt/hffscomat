@@ -6,13 +6,13 @@ namespace App\Model\planningMagasin;
 use App\Model\Model;
 use App\Model\Traits\ConversionModel;
 use App\Controller\Traits\FormatageTrait;
-use App\Model\planningMagasin\planningMagasinModelTrait;
+use App\Model\magasin\planning\PlanningNegoceModelTrait;
 
 class ModalPlanningMagasinModel extends Model
 {
   use ConversionModel;
   use FormatageTrait;
-  use planningMagasinModelTrait;
+  use PlanningNegoceModelTrait;
 
   public function recupDetailPlanningMagasinInformix($numOrIntv)
   {

@@ -1,38 +1,34 @@
 <?php
 
-namespace App\Controller\planningMagasin;
+namespace App\Controller\magasin\Planning;
 
 use App\Controller\Controller;
-use App\Entity\magasin\bc\BcMagasin;
-use App\Service\TableauEnStringService;
 use App\Controller\Traits\PlanningTraits;
+use App\Service\security\SecurityService;
+use App\Entity\planning\PlanningNegoceSearch;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
-use App\Model\planningMagasin\PlanningMagasinModel;
-use App\Entity\planningMagasin\PlanningMagasinSearch;
-use App\Form\planningMagasin\PlanningMagasinSearchType;
-use App\Service\security\SecurityService;
+use App\Model\magasin\planning\PlanningNegoceModel;
+use App\Form\magasin\Planning\PlanningNegoceSearchType;
 
 /**
  * @Route("/magasin")
  */
-class planningMagasinController extends Controller
+class PlanningNegoceController extends Controller
 {
     use PlanningTraits;
 
-
-    private PlanningMagasinModel $planningMagasinModel;
-    private PlanningMagasinSearch $planningMagasinSearch;
-
+    private PlanningNegoceModel $planningMagasinModel;
+    private PlanningNegoceSearch $planningNegoceSearch;
 
     public function __construct()
     {
         parent::__construct();
-        $this->planningMagasinModel = new PlanningMagasinModel();
-        $this->planningMagasinSearch = new PlanningMagasinSearch();
+        $this->planningMagasinModel = new PlanningNegoceModel();
+        $this->planningNegoceSearch = new PlanningNegoceSearch();
     }
     /**
-     * @Route("/Planning", name = "interface_planningMag")
+     * @Route("/planning-negoce", name = "interface_planningMag")
      */
     public function headPlanning(Request $request)
     {
@@ -43,15 +39,15 @@ class planningMagasinController extends Controller
 
         $codeAgence = $multisuccursale ? "-0" : $this->getSecurityService()->getCodeAgenceUser();
         /** FIN AUtorisation acées */
-        
+
         // Tentative de récupération des critères depuis la session
         $sessionCriteria = $this->getSessionService()->get('criteria_for_search_planning_devis_neg');
-        
-        if ($sessionCriteria instanceof PlanningMagasinSearch && $sessionCriteria->getCodeSociete() === $codeSociete) {
-            $this->planningMagasinSearch = $sessionCriteria;
+
+        if ($sessionCriteria instanceof PlanningNegoceSearch && $sessionCriteria->getCodeSociete() === $codeSociete) {
+            $this->planningNegoceSearch = $sessionCriteria;
         } else {
             //initialisation par défaut si pas de session ou changement de société
-            $this->planningMagasinSearch
+            $this->planningNegoceSearch
                 ->setAnnee(date('Y'))
                 ->setFacture('ENCOURS')
                 ->setPlan('PLANIFIE')
@@ -64,8 +60,8 @@ class planningMagasinController extends Controller
         }
 
         $form = $this->getFormFactory()->createBuilder(
-            PlanningMagasinSearchType::class,
-            $this->planningMagasinSearch,
+            PlanningNegoceSearchType::class,
+            $this->planningNegoceSearch,
             [
                 'method' => 'GET'
             ]
@@ -73,8 +69,8 @@ class planningMagasinController extends Controller
 
         $form->handleRequest($request);
         //initialisation criteria
-        $criteria = $this->planningMagasinSearch;
-        
+        $criteria = $this->planningNegoceSearch;
+
         if ($form->isSubmitted() && $form->isValid()) {
             $criteria =  $form->getData();
             $this->getSessionService()->set('criteria_for_search_planning_devis_neg', $criteria);
@@ -89,7 +85,7 @@ class planningMagasinController extends Controller
         $tabObjetPlanning = $this->creationTableauObjetPlanningMagasin($data);
         $fusionResult = $this->ajoutMoiDetailMagasin($tabObjetPlanning);
         $forDisplay = $this->prepareDataForDisplay($fusionResult, $criteria->getMonths() == null ? 3 : $criteria->getMonths());
-        return $this->render('planningMagasin/planning.html.twig', [
+        return $this->render('magasin/planning/negoce.html.twig', [
             'form'           => $form->createView(),
             'criteria'       => $criteria->toArray(),
             'uniqueMonths'   => $forDisplay['uniqueMonths'],

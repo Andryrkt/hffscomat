@@ -6,7 +6,7 @@ use App\Model\Model;
 use App\Model\Informix\SelectWhereCondition;
 
 
-class PlanningMagasinModel extends Model
+class PlanningCommandeFournisseurModel extends Model
 {
     public function getPlanningMagasin(string $statut, bool $isEmptyQuery)
     {

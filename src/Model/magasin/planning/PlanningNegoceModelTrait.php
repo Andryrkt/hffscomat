@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Model\planningMagasin;
+namespace App\Model\magasin\planning;
 
 use App\Service\TableauEnStringService;
 
-trait planningMagasinModelTrait
+trait PlanningNegoceModelTrait
 {
     private function numcommande($criteria)
     {

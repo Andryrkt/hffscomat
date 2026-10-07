@@ -1,22 +1,22 @@
 <?php
 
 
-namespace App\Form\planningMagasin;
+namespace App\Form\magasin\Planning;
 
 
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Form\AbstractType;
 use App\Controller\Traits\Transformation;
-use App\Entity\planningMagasin\PlanningMagasinSearch;
-use App\Model\planningMagasin\PlanningMagasinModel;
+use App\Entity\planning\PlanningNegoceSearch;
 use Symfony\Component\Form\FormBuilderInterface;
+use App\Model\magasin\planning\PlanningNegoceModel;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 
-class PlanningMagasinSearchType extends AbstractType
+class PlanningNegoceSearchType extends AbstractType
 {
     use Transformation;
 
@@ -54,7 +54,7 @@ class PlanningMagasinSearchType extends AbstractType
 
     public function __construct()
     {
-        $this->planningMagasinModel = new PlanningMagasinModel();
+        $this->planningMagasinModel = new PlanningNegoceModel();
     }
 
     private function serviceDebiteur(string $codeAgence = "-0")
@@ -166,8 +166,17 @@ class PlanningMagasinSearchType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'data_class' => PlanningMagasinSearch::class,
+            'data_class' => PlanningNegoceSearch::class,
             'planningDetaille' => false,
         ]);
+    }
+
+    /**
+     * Garde l'ancien préfixe : les ids/names des champs sont utilisés par Views/js/planningMagasin/*.js
+     * et par les URLs GET déjà enregistrées.
+     */
+    public function getBlockPrefix(): string
+    {
+        return 'planning_magasin_search';
     }
 }

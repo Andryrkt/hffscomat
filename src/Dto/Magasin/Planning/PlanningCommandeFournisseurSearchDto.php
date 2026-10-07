@@ -2,7 +2,7 @@
 
 namespace App\Dto\Magasin\Planning;
 
-class PlanningMagasinSearchDto
+class PlanningCommandeFournisseurSearchDto
 {
     public ?string $fournisseur = null;
 

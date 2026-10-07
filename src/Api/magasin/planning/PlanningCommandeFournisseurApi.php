@@ -3,18 +3,18 @@
 namespace App\Api\magasin\planning;
 
 use App\Controller\Controller;
-use App\Model\magasin\planning\PlanningMagasinModel;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use App\Model\magasin\planning\PlanningCommandeFournisseurModel;
 
-class PlanningApi extends Controller
+class PlanningCommandeFournisseurApi extends Controller
 {
-    private PlanningMagasinModel $planningMagasinModel;
+    private PlanningCommandeFournisseurModel $planningMagasinModel;
 
     public function __construct()
     {
         parent::__construct();
-        $this->planningMagasinModel = new PlanningMagasinModel();
+        $this->planningMagasinModel = new PlanningCommandeFournisseurModel();
     }
 
     /**

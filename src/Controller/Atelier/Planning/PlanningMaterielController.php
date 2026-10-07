@@ -14,7 +14,7 @@ use Symfony\Component\Routing\Annotation\Route;
 /**
  * @Route("/atelier")
  */
-class PlanningController extends Controller
+class PlanningMaterielController extends Controller
 {
     use Transformation;
     private PlanningSearchDto $searchDto;

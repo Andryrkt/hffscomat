@@ -1,39 +1,39 @@
 <?php
 
-namespace App\Controller\magasin\planning;
+namespace App\Controller\magasin\Planning;
 
 use App\Controller\Controller;
 use App\Controller\Traits\PlanningTraits;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
-use App\Model\magasin\planning\PlanningMagasinModel;
-use App\Form\magasin\Planning\PlanningMagasinSearchType;
-use App\Dto\Magasin\Planning\PlanningMagasinSearchDto;
+use App\Model\magasin\planning\PlanningCommandeFournisseurModel;
+use App\Form\magasin\Planning\PlanningCommandeFournisseurSearchType;
+use App\Dto\Magasin\Planning\PlanningCommandeFournisseurSearchDto;
 
 /**
- * @Route("/magasin/planning-commande-fournisseur")
+ * @Route("/magasin")
  */
-class PlanningMagasinController extends Controller
+class PlanningCommandeFournisseurController extends Controller
 {
     use PlanningTraits;
 
-    private PlanningMagasinModel $planningMagasinModel;
+    private PlanningCommandeFournisseurModel $planningMagasinModel;
 
     public function __construct()
     {
         parent::__construct();
-        $this->planningMagasinModel = new PlanningMagasinModel();
+        $this->planningMagasinModel = new PlanningCommandeFournisseurModel();
     }
 
     /**
-     * @Route("", name = "interface_planning_cde_frn_magasin")
+     * @Route("/planning-commande-fournisseur", name = "interface_planning_cde_frn_magasin")
      */
     public function headPlanning(Request $request)
     {
         $form = $this->getFormFactory()->createNamedBuilder(
             'planning_magasin_frn_search',
-            PlanningMagasinSearchType::class,
-            new PlanningMagasinSearchDto(),
+            PlanningCommandeFournisseurSearchType::class,
+            new PlanningCommandeFournisseurSearchDto(),
             [
                 'method' => 'GET',
                 'em'     => $this->getEntityManager(),
@@ -41,7 +41,7 @@ class PlanningMagasinController extends Controller
         )->getForm();
 
         $form->handleRequest($request);
-        $dto = $form->getData() ?? new PlanningMagasinSearchDto();
+        $dto = $form->getData() ?? new PlanningCommandeFournisseurSearchDto();
 
         $condition = $request->query->get('condition', 'default');
         $allRequestQuery = $request->query->all();
@@ -52,7 +52,7 @@ class PlanningMagasinController extends Controller
         $uniqueMonths = $this->genererMoisAffiches($dto->months ?? 3);
         $preparedData = $this->preparerDonnees($data, array_column($uniqueMonths, 'key'));
 
-        return $this->render('magasin/planning/planning.html.twig', [
+        return $this->render('magasin/planning/commande_fournisseur.html.twig', [
             'form'         => $form->createView(),
             'uniqueMonths' => $uniqueMonths,
             'preparedData' => $preparedData,
@@ -64,7 +64,7 @@ class PlanningMagasinController extends Controller
     /**
      * Filtre les commandes selon les critères saisis dans le formulaire de recherche.
      */
-    private function filtrerDonnees(array $data, PlanningMagasinSearchDto $dto): array
+    private function filtrerDonnees(array $data, PlanningCommandeFournisseurSearchDto $dto): array
     {
         $fournisseur = trim((string) $dto->fournisseur);
         $numeroCommande = trim((string) $dto->numeroCommande);

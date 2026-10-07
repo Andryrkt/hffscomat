@@ -1,10 +1,8 @@
 <?php
 
-namespace App\Entity\planningMagasin;
+namespace App\Entity\planning;
 
-
-
-class PlanningMagasinSearch
+class PlanningNegoceSearch
 {
     private $agence;
     private $annee;
@@ -32,8 +30,6 @@ class PlanningMagasinSearch
     private $refCde;
     private $numeroDevis;
     private string $codeSociete;
-
-
 
     /**
      * Get the value of agence
