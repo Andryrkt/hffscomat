@@ -314,7 +314,8 @@ class SoumissionModel extends Model
         string $codeSociete,
         string $numeroCde,
         string $references,
-        string $codeSuccursale = '1'
+        string $codeSuccursale = '1',
+        string $constructeur = 'CAT'
     ) {
         $statement = "WITH lignes AS (
                 SELECT
@@ -349,9 +350,10 @@ class SoumissionModel extends Model
                     AND nlig_succ = '$codeSuccursale'
                     AND nlig_soc = '$codeSociete'
                     AND nlig_refp = '$references'
+                    AND nlig_constp = '$constructeur'
             )
             SELECT
-                MAX(l.constructeur)                                   AS constructeur,
+                l.constructeur                                  AS constructeur,
                 ROUND(MAX(l.stock_dispo))                             AS nb_ref, -- Qte dispo
                 l.reference                                           AS reference,
                 MAX(l.designation)                                    AS designation,
@@ -377,7 +379,7 @@ class SoumissionModel extends Model
                 MAX(l.famille)                        AS famille
 
             FROM lignes l
-            GROUP BY l.reference
+            GROUP BY l.reference, l.constructeur
         ";
 
         $result = $this->connect->executeQuery($statement);

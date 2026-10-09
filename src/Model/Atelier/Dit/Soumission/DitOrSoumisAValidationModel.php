@@ -897,7 +897,8 @@ class DitOrSoumisAValidationModel extends Model
         string $codeSociete,
         string $numeroOr,
         string $ref,
-        string $codeSuccursale = '1'
+        string $codeSuccursale = '1',
+        string $constructeur = 'CAT'
     ) {
         $statement = "WITH 
             lignes AS (
@@ -934,9 +935,10 @@ class DitOrSoumisAValidationModel extends Model
                     AND slor_succ = '$codeSuccursale'
                     AND slor_soc = '$codeSociete'
                     AND slor_refp = '$ref'
+                    AND slor_constp = '$constructeur'
             )
             SELECT
-                MAX(l.constructeur)                                   AS constructeur,
+                l.constructeur                                        AS constructeur,
                 ROUND(MAX(l.stock_dispo))                             AS nb_ref, -- Qte dispo
                 l.reference                                           AS reference,
                 MAX(l.designation)                                    AS designation,
@@ -962,7 +964,7 @@ class DitOrSoumisAValidationModel extends Model
                 MAX(l.famille)                        AS famille
 
             FROM lignes l
-            GROUP BY l.reference
+            GROUP BY l.reference, l.constructeur
         ";
 
         $result = $this->connect->executeQuery($statement);

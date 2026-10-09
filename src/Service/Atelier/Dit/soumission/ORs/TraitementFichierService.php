@@ -461,7 +461,7 @@ class TraitementFichierService
                 }
                 $referencesTraitees[$cle] = true;
 
-                $afficher = $ditOrsoumisAValidationModel->tableauDeMargeAvecReference($codeSociete, $numOr, $infoOr['reference'], $infoOr['code_agence']);
+                $afficher = $ditOrsoumisAValidationModel->tableauDeMargeAvecReference($codeSociete, $numOr, $infoOr['reference'], $infoOr['code_agence'], $infoOr['constructeur']);
 
                 foreach ($afficher as $value) {
                     if ($value['constructeur'] == 'CAT') {

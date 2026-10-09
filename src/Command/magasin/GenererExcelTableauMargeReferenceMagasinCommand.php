@@ -86,7 +86,7 @@ class GenererExcelTableauMargeReferenceMagasinCommand extends Command
         $tableauMargeAutres = [];
 
         foreach ($infoDevis ?: [] as $ligne) {
-            $afficher = $soumissionModel->tableauDeMargeAvecReference($codeSociete, $numDevis, $ligne['ref'], $ligne['code_agence']);
+            $afficher = $soumissionModel->tableauDeMargeAvecReference($codeSociete, $numDevis, $ligne['ref'], $ligne['code_agence'], $ligne['constructeur']);
 
             foreach ($afficher as $value) {
                 if ($value['constructeur'] == 'CAT') {
