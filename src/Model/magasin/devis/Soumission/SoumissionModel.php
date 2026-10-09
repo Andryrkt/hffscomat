@@ -316,45 +316,15 @@ class SoumissionModel extends Model
         string $references,
         string $codeSuccursale = '1'
     ) {
-        $statement = "WITH stats_max AS (
-                SELECT FIRST 1
-                    MAX(nlig_pxnreel - nlig_pmp) AS max_mb,
-                    CASE
-                        WHEN nlig_pxnreel = 0 THEN 0
-                        ELSE ROUND(((nlig_pxnreel - nlig_pmp) / nlig_pxnreel) * 100, 2)
-                    END AS max_mb_p
-                FROM Informix.neg_lig nlig
-                INNER JOIN Informix.neg_ent on nent_soc = nlig_soc and nent_succ = nlig_succ and nent_numcde = nlig_numcde
-                WHERE nlig_refp = '$references'
-                    AND nlig_soc = '$codeSociete'
-                    AND nlig_succ = '$codeSuccursale'
-                    AND nent_posf in ('CP','FC','PF','TF')
-                GROUP BY 2
-                ORDER BY MAX(nlig_pxnreel - nlig_pmp) DESC
-            ),
-            stats_min AS (
-                SELECT FIRST 1
-                    MIN(nlig_pxnreel - nlig_pmp) AS min_mb,
-                    CASE
-                        WHEN nlig_pxnreel = 0 THEN 0
-                        ELSE ROUND(((nlig_pxnreel - nlig_pmp) / nlig_pxnreel) * 100, 2)
-                    END AS min_mb_p
-                FROM Informix.neg_lig nlig
-                INNER JOIN Informix.neg_ent on nent_soc = nlig_soc and nent_succ = nlig_succ and nent_numcde = nlig_numcde
-                WHERE nlig_refp = '$references'
-                    AND nlig_soc = '$codeSociete'
-                    AND nlig_succ = '$codeSuccursale'
-                    AND nent_posf in ('CP','FC','PF','TF')
-                GROUP BY 2
-                ORDER BY MIN(nlig_pxnreel - nlig_pmp) ASC
-            ),
-            lignes AS (
+        $statement = "WITH lignes AS (
                 SELECT
                     nlig_constp                                   AS constructeur,
                     TRIM(nlig_refp)                               AS reference,
                     TRIM(nlig_desi)                               AS designation,
                     CASE WHEN astp_stock IS NULL THEN 0
                          ELSE astp_stock - astp_reserv END        AS stock_dispo,
+                    COALESCE(astp_stock, 0)                       AS qte_stock,
+                    COALESCE(astp_reserv, 0)                      AS qte_reserv,
                     nlig_qtecde                                   AS qte,
                     ROUND(nlig_pmp, 2)                            AS pmp,
                     nlig_pxvteht                                  AS pv_brut,
@@ -382,10 +352,12 @@ class SoumissionModel extends Model
             )
             SELECT
                 MAX(l.constructeur)                                   AS constructeur,
-                ROUND(MAX(l.stock_dispo))                             AS nb_ref,
+                ROUND(MAX(l.stock_dispo))                             AS nb_ref, -- Qte dispo
                 l.reference                                           AS reference,
                 MAX(l.designation)                                    AS designation,
-                ROUND(SUM(l.qte))                                     AS quantite_demander,
+                ROUND(SUM(l.qte))                                     AS quantite_demander, -- Qte dem
+                ROUND(MAX(l.qte_stock))                               AS qte_stock, -- Qte Stock
+                ROUND(MAX(l.qte_reserv))                              AS qte_reserv, -- Qte res
 
                 -- Prix pondérés par la quantité demandée
                 COALESCE(ROUND(SUM(l.pmp     * l.qte) / NULLIF(SUM(l.qte), 0), 2), 0) AS pmp,
@@ -402,17 +374,9 @@ class SoumissionModel extends Model
                 COALESCE(ROUND(SUM((l.pv_net - l.pmp) * l.qte)
                                / NULLIF(SUM(l.pv_net * l.qte), 0) * 100, 2), 0)       AS mb_p,
 
-                -- Min / Max
-                COALESCE(MAX(stats_max.max_mb), 0)   AS max_mb,
-                COALESCE(MAX(stats_max.max_mb_p), 0) AS max_mb_p,
-                COALESCE(MAX(stats_min.min_mb), 0)   AS min_mb,
-                COALESCE(MAX(stats_min.min_mb_p), 0) AS min_mb_p,
-
                 MAX(l.famille)                        AS famille
 
             FROM lignes l
-            CROSS JOIN stats_max
-            CROSS JOIN stats_min
             GROUP BY l.reference
         ";
 

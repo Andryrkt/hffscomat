@@ -899,34 +899,7 @@ class DitOrSoumisAValidationModel extends Model
         string $ref,
         string $codeSuccursale = '1'
     ) {
-        $statement = "WITH stats_max AS (
-                SELECT FIRST 1
-                    MAX(slor_pxnreel - slor_pmp) AS max_mb,
-                    CASE 
-                        WHEN slor_pxnreel = 0 THEN 0
-                        ELSE ROUND(((slor_pxnreel - slor_pmp) / slor_pxnreel) * 100, 2) 
-                    END AS max_mb_p
-                FROM Informix.sav_lor slor
-                WHERE slor_refp = '$ref'
-                    AND slor_soc = '$codeSociete'
-                    AND slor_succ = '$codeSuccursale'
-                GROUP BY 2
-                ORDER BY MAX(slor_pxnreel - slor_pmp) DESC
-            ),
-            stats_min AS (
-                SELECT FIRST 1
-                    MIN(slor_pxnreel - slor_pmp) AS min_mb,
-                    CASE 
-                        WHEN slor_pxnreel = 0 THEN 0
-                        ELSE ROUND(((slor_pxnreel - slor_pmp) / slor_pxnreel) * 100, 2) 
-                    END AS min_mb_p
-                FROM Informix.sav_lor slor
-                WHERE slor_refp = '$ref'
-                    AND slor_soc = '$codeSociete'
-                    AND slor_succ = '$codeSuccursale'
-                GROUP BY 2
-                ORDER BY MIN(slor_pxnreel - slor_pmp) ASC
-            ),
+        $statement = "WITH 
             lignes AS (
                 SELECT
                     slor_constp                                   AS constructeur,
@@ -986,17 +959,9 @@ class DitOrSoumisAValidationModel extends Model
                 COALESCE(ROUND(SUM((l.pv_net - l.pmp) * l.qte) 
                                / NULLIF(SUM(l.pv_net * l.qte), 0) * 100, 2), 0)       AS mb_p,
 
-                -- Min / Max
-                COALESCE(MAX(stats_max.max_mb), 0)   AS max_mb,
-                COALESCE(MAX(stats_max.max_mb_p), 0) AS max_mb_p,
-                COALESCE(MAX(stats_min.min_mb), 0)   AS min_mb,
-                COALESCE(MAX(stats_min.min_mb_p), 0) AS min_mb_p,
-
                 MAX(l.famille)                        AS famille
 
             FROM lignes l
-            CROSS JOIN stats_max
-            CROSS JOIN stats_min
             GROUP BY l.reference
         ";
 
