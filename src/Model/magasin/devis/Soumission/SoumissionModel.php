@@ -391,7 +391,8 @@ class SoumissionModel extends Model
         $statement = "SELECT distinct nlig_refp as ref, 
                             nlig_succ as code_agence,
                             nlig_soc as code_societe,
-                            nlig_numcde as numero_devis
+                            nlig_numcde as numero_devis,
+                            nlig_constp as constructeur
             FROM informix.neg_lig
             WHERE nlig_numcde = '$numeroDevis'
                 and nlig_soc = '$codeSociete'
