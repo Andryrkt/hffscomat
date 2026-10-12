@@ -15,16 +15,16 @@ class PlanningMapper
         $this->ditModel = new DitModel();
     }
 
-    public function toDtoArray(array $data, array $orItvBack): array
+    public function toDtoArray(array $data, array $back): array
     {
         $res = [];
         foreach ($data as $item) {
-            $res[] = $this->mapToMaterielDto($item, $orItvBack);
+            $res[] = $this->mapToMaterielDto($item, $back);
         }
         return $res;
     }
 
-    public function mapToMaterielDto(array $item, array $orItvBack): PlanningMaterielDto
+    public function mapToMaterielDto(array $item, array $back): PlanningMaterielDto
     {
 
         $dto = new PlanningMaterielDto();
@@ -34,7 +34,7 @@ class PlanningMapper
         $dto->codeServ    = $item['code_serv'] ?? '';
         $dto->libServ     = $item['lib_serv'] ?? '';
         $dto->commentaire = $item['commentaire'] ?? '';
-        $dto->client      = $item['client'] ??''; 
+        $dto->client      = $item['client'] ?? '';
 
         $dto->idMat       = $item['id_mat'] ?? '';
         $dto->markMat     = $item['mark_mat'] ?? '';
@@ -77,8 +77,8 @@ class PlanningMapper
             'qteCdm'     => $dto->qteCdm,
             'qteLiv'     => $dto->qteLiv,
             'qteAll'     => $dto->qteAll,
-            'commentaire'=> $dto->commentaire,
-            'back'       => false,
+            'commentaire' => $dto->commentaire,
+            'back'       => empty($back) ? false :  true,
             'statut'     => $dto->statut,
         ];
         $dto->addMoisDetails($detail);
@@ -104,5 +104,4 @@ class PlanningMapper
         }
         return $grouped;
     }
-
 }
