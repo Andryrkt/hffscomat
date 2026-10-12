@@ -63,6 +63,13 @@ class DitDevisSoumisAVAlidataionController extends Controller
             $fileName = $file->getClientOriginalName();
             $numDevisFile = explode("_", $fileName)[1] ?? null;
 
+            $historiqueOperationDEVService = new HistoriqueOperationDEVService($this->getEntityManager());
+            if($numDevisFile === null) {
+                $message = 'Le nom du fichier n\'est pas correct, veuillez vérifier le nom du fichier';
+                $historiqueOperationDEVService->sendNotificationCreation($message, $fileName, 'dit_liste', false);
+                return;
+            }
+
             // 
             $ditDevisSoumisAValidationFactory = new DitDevisSoumisAValidationFactory($this->getSecurityService());
             $dto = $ditDevisSoumisAValidationFactory->apresSoumission($dto, $numDit, $numDevisFile);
@@ -85,7 +92,6 @@ class DitDevisSoumisAVAlidataionController extends Controller
             $traitementDuFichier->traitementDeFicher($form, $dto);
 
             // historisation
-            $historiqueOperationDEVService = new HistoriqueOperationDEVService($this->getEntityManager());
             $message = 'Le devis a été soumis avec succès';
             $historiqueOperationDEVService->sendNotificationCreation($message, $dto->numeroDevis, 'dit_liste', true);
         }
