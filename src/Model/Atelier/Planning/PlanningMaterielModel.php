@@ -173,7 +173,9 @@ class PlanningMaterielModel extends Model
                                                              WHERE CAST( Numero_PO as varchar(10)) = CAST(slor_numcf  as varchar(10))
                                                              AND Parts_Number = slor_refp
                                                              AND Parts_CST = slor_constp
-                                                             AND Line_Number = slor_noligncm ) )
+                                                             AND Line_Number = slor_noligncm 
+                                                             AND quantity > 0) 
+                                )
                 END                                                 as statut,
                 CASE 
                     WHEN slor_qteres = (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec)
@@ -206,7 +208,9 @@ class PlanningMaterielModel extends Model
                                                                  WHERE Numero_PO = slor_numcf
                                                                  AND Parts_Number = slor_refp
                                                                  AND Parts_CST = slor_constp
-                                                                 AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign) )
+                                                                 AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign) 
+                                                                 AND quantity > 0)
+                                        
                                  ),
                                 '%Y-%m-%d')
                     END                                                             as dateStatut,
@@ -218,7 +222,8 @@ class PlanningMaterielModel extends Model
                                                              WHERE Numero_PO = slor_numcf
                                                              AND Parts_Number = slor_refp
                                                              AND Parts_CST = slor_constp
-                                                             AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign) )
+                                                             AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign) 
+                                                             AND quantity > 0)
 					        )
 					    ELSE
 					        ''
@@ -329,7 +334,8 @@ class PlanningMaterielModel extends Model
                                                              WHERE CAST(Numero_PO as varchar(10)) = CAST(slor_numcf  as varchar(10))  
                                                              AND Parts_Number = slor_refp  
                                                              AND Parts_CST = slor_constp 
-                                                             AND Line_Number = slor_noligncm )
+                                                             AND Line_Number = slor_noligncm 
+                                                             AND quantity > 0)
                             )
 	                  END as Statut,
 
@@ -363,7 +369,8 @@ class PlanningMaterielModel extends Model
                                                                WHERE CAST(Numero_PO as varchar(10)) = CAST(slor_numcf  as varchar(10))  
                                                                AND Parts_Number = slor_refp  
                                                                AND Parts_CST = slor_constp 
-                                                               AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign) )
+                                                               AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign) 
+                                                               AND quantity > 0)
                                   )
                                 ), '%Y-%m-%d')
 	                    END AS dateStatut,
@@ -379,7 +386,8 @@ class PlanningMaterielModel extends Model
                                                                 WHERE CAST(Numero_PO as varchar(10)) = CAST(slor_numcf  as varchar(10))  
                                                                 AND Parts_Number = slor_refp  
                                                                 AND Parts_CST = slor_constp 
-                                                                AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign))
+                                                                AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign)
+                                                                AND quantity > 0)
                                 )
                         END as Message
                 FROM {$this->dbIps}.sav_lor
