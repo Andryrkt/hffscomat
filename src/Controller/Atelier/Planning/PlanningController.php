@@ -57,6 +57,7 @@ class PlanningController extends Controller
         if ($request->query->get('action') !== 'oui')
             $data = $this->planningService->getPlanningMaterielData($dto, $codeSociete);
         $data = $this->planningService->getDataList($data, $dto->months);
+        // dd($data);
         $this->logUserVisit('planning_vue');
 
         return $this->render('atelier/planning/planning.html.twig', [
