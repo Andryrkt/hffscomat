@@ -27,9 +27,9 @@ class PlanningService
      * @param PlanningSearchDto $dto
      * @return PlanningMaterielDto[]
      */
-    public function getPlanningMaterielData(PlanningSearchDto $dto, string $codeSociete): array
+    public function getPlanningMaterielData(PlanningSearchDto $dto, array $back, string $codeSociete): array
     {
-        $orsValides= $this->planningModel->getNumeroOrValider($dto);
+        $orsValides = $this->planningModel->getNumeroOrValider($dto);
         $orsSoumis = $this->planningModel->getOrsSoumis();
 
         $rawData = $this->planningMaterielModel->getMaterielPlanifier(
@@ -40,8 +40,16 @@ class PlanningService
             $codeSociete
         );
 
-        $dtos = $this->mapper->toDtoArray($rawData, []);
+        $dtos = $this->mapper->toDtoArray($rawData, $back);
         return $this->mapper->groupByMateriel($dtos);
+    }
+
+    public function getBackOrderNotItv(PlanningSearchDto $dto)
+    {
+        $orsValides = $this->planningModel->getNumeroOrValider($dto);
+        $orsSoumis = $this->planningModel->getOrsSoumis();
+
+        return $this->planningModel->getBackOrderPlanningNoItv($orsValides, $orsSoumis,  $dto);
     }
 
     /**
@@ -75,7 +83,9 @@ class PlanningService
                 }
                 return null;
             }, $moisDetails));
-            if (empty($filteredMonths)) { return null; }
+            if (empty($filteredMonths)) {
+                return null;
+            }
 
             return [
                 'commercial'     => $item->commercial ?? '',
@@ -90,7 +100,6 @@ class PlanningService
                 'casier'         => $item->casier ?? '',
                 'filteredMonths' => array_values($filteredMonths),
             ];
-
         }, $data));
 
         return ['prepared_data' => $preparedData, 'months' => $month];
@@ -191,8 +200,7 @@ class PlanningService
                 }
                 if (in_array($orItv, $back)) {
                     $data[$i]['backOrder'] = $excelBack === false ? 'back' : '';
-                }
-                else {
+                } else {
                     $data[$i]['backOrder'] = $excelBack === false ? 'not' : '';
                 }
                 if ($data[$i]['statut'] == "" || $data[$i]['statut'] == null) {
@@ -242,7 +250,5 @@ class PlanningService
         }
 
         return ['data' => $res, 'data_excel' => $data_excel, 'nb_num_or' => count($itv_arr), 'nb_ligne' => $nb_ligne];
-
     }
-
 }
