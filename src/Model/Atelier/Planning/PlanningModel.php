@@ -259,8 +259,12 @@ class PlanningModel extends Model
                 select
                 S.slnk_alpha1
                 from sip_lnk S
-                where S.slnk_tabname in ('frn_cdl', 'frn_cde')
-                and S.slnk_pk1 = fcdl_numcde and S.slnk_pk2 is null
+                where S.slnk_id = (
+                    select max(S2.slnk_id)
+                    from sip_lnk S2
+                    where S2.slnk_tabname in ('frn_cdl', 'frn_cde')
+                    and S2.slnk_pk1 = fcdl_numcde and S2.slnk_pk2 is null
+                )
                 )
                 else
                 A.eta_maurice
@@ -271,8 +275,12 @@ class PlanningModel extends Model
                 select
                 S.slnk_date2
                 from sip_lnk S
-                where S.slnk_tabname in ('frn_cdl', 'frn_cde')
-                and S.slnk_pk1 = fcdl_numcde and S.slnk_pk2 is null
+                where S.slnk_id = (
+                    select max(S2.slnk_id)
+                    from sip_lnk S2
+                    where S2.slnk_tabname in ('frn_cdl', 'frn_cde')
+                    and S2.slnk_pk1 = fcdl_numcde and S2.slnk_pk2 is null
+                )
                 )
                 else
                 A.eta_magasin

@@ -200,21 +200,25 @@ class PlanningMaterielModel extends Model
                         ), '%Y-%m-%d')
                     WHEN slor_natcm = 'C' 
                     THEN TO_CHAR((select date_creation
-                                    FROM {$this->dbIrium}.gcot_acknow_cat 
-                                    WHERE Numero_PO = slor_numcf 
-                                    AND Parts_Number = slor_refp  
-                                    AND Parts_CST = slor_constp 
-                                    AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign)
-                                 ), 
+                                    FROM {$this->dbIrium}.gcot_acknow_cat
+                                    WHERE id_gcot_acknow_cat = ( SELECT MAX(id_gcot_acknow_cat)
+                                                                 FROM {$this->dbIrium}.gcot_acknow_cat
+                                                                 WHERE Numero_PO = slor_numcf
+                                                                 AND Parts_Number = slor_refp
+                                                                 AND Parts_CST = slor_constp
+                                                                 AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign) )
+                                 ),
                                 '%Y-%m-%d')
                     END                                                             as dateStatut,
-                    CASE  
+                    CASE
                         WHEN slor_qterea <> (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) THEN
-	                        ( SELECT message FROM {$this->dbIrium}.gcot_acknow_cat 
-                                WHERE Numero_PO = slor_numcf 
-                                AND Parts_Number = slor_refp  
-                                AND Parts_CST = slor_constp 
-                                AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign)
+	                        ( SELECT message FROM {$this->dbIrium}.gcot_acknow_cat
+                                WHERE id_gcot_acknow_cat = ( SELECT MAX(id_gcot_acknow_cat)
+                                                             FROM {$this->dbIrium}.gcot_acknow_cat
+                                                             WHERE Numero_PO = slor_numcf
+                                                             AND Parts_Number = slor_refp
+                                                             AND Parts_CST = slor_constp
+                                                             AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign) )
 					        )
 					    ELSE
 					        ''
