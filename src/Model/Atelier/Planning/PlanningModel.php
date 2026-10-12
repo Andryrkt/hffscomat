@@ -141,7 +141,7 @@ class PlanningModel extends Model
                 trunc(sav.slor_nogrp/100)                                                   as num_itv,
                 cast(sav.slor_numor || '-' || trunc(sav.slor_nogrp/100) as varchar(50))     as num_or_itvs
             from sav_lor as sav
-            inner join gcot_acknow_cat as cat
+            inner join {$this->dbIrium}.gcot_acknow_cat as cat
             on cast(sav.slor_numcf  as varchar(50))= cast(cat.numero_po as varchar(50))
             and (sav.slor_nolign = cat.line_number or  sav.slor_noligncm = cat.line_number)
             and sav.slor_refp = cat.parts_number
@@ -151,7 +151,7 @@ class PlanningModel extends Model
             ) 
             and cat.id_gcot_acknow_cat = (
                 select max(sub.id_gcot_acknow_cat )
-                from gcot_acknow_cat as sub
+                from {$this->dbIrium}.gcot_acknow_cat as sub
                 where sub.parts_number = cat.parts_number
                     and sub.numero_po = cat.numero_po
                     and sub.line_number = cat.line_number
@@ -183,14 +183,14 @@ class PlanningModel extends Model
         $statement = "SELECT distinct 
                 sav.slor_numor  AS intervention
             FROM sav_lor AS sav
-            INNER JOIN gcot_acknow_cat AS cat
+            INNER JOIN {$this->dbIrium}.gcot_acknow_cat AS cat
                 ON sav.slor_numcf = cat.numero_po
                 AND (sav.slor_nolign = cat.line_number OR  sav.slor_noligncm = cat.line_number)
                 AND sav.slor_refp = cat.parts_number
             WHERE cat.libelle_type = 'Back Order'
                 AND cat.id_gcot_acknow_cat  = (
                     SELECT MAX(sub.id_gcot_acknow_cat)
-                    FROM gcot_acknow_cat AS sub
+                    FROM {$this->dbIrium}.gcot_acknow_cat AS sub
                     WHERE sub.parts_number = cat.parts_number
                         AND sub.numero_po = cat.numero_po
                         AND sub.line_number = cat.line_number
