@@ -60,7 +60,7 @@ class PlanningMaterielModel extends Model
                     and B.sitv_interv = TRUNC(A.slor_nogrp/100)
                     and A.slor_numor = C.slor_numor
                     and B.sitv_interv  = D.sitv_interv   {$this->getTypeLigneCondition($searchDto)}
-                ),
+                )                                                              as qte_all,
                 (select cbse_numcli ||'-'|| TRIM(cbse_nomcli) from {$this->dbIps}.cli_bse where cbse_numcli = seor_numcli) as client
             FROM {$this->dbIps}.sav_eor, {$this->dbIps}.sav_lor as C,
                 {$this->dbIps}.sav_itv as D,
