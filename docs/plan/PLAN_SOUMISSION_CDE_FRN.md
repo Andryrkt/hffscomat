@@ -73,9 +73,9 @@ Dossier : `src/Dto/Magasin/Commande/Soumission/`
 - [x] `Views/js/api/apiEndpoints.js` : ajouter `generatePdfCdeFrnMag: "api/cde-frn/generate-pdf"` **sans écraser** les autres clés
 
 ### Étape 9 — À faire par vous (hors de mon périmètre)
-- [ ] Déclarer service/store/factory/API/controller avec leurs `arguments` (autowire: false)
-- [ ] Pool de cache `cache.cde_frn_soumission` (FilesystemAdapter, TTL 7200) dans `services_framework.yaml`
-- [ ] Éventuel import `services_magasin.yaml`
+- [x] Déclarer service/store/factory/API/controller avec leurs `arguments` (autowire: false)
+- [x] Pool de cache `cache.cde_frn_soumission` (FilesystemAdapter, TTL 7200) dans `services_framework.yaml`
+- [x] Éventuel import `services_magasin.yaml`
 
 ## Vérification (manuelle, par vous)
 1. Page `/magasin/commande/generer-commande-fournisseur` se charge.
