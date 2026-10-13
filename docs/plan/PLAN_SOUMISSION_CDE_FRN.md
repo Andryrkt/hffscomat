@@ -55,12 +55,12 @@ Dossier : `src/Dto/Magasin/Commande/Soumission/`
 
 ### Étape 6 — Store (cache) + Service
 `src/Service/magasin/Commande/Soumission/` (emplacement à confirmer)
-- [ ] `CdeFrnSoumissionStore` (cache PSR-6, TTL 7200 s, 1 jeton actif/utilisateur)
-- [ ] `CdeFrnSoumissionService` : `generatePdfForSubmission`, `soumettre($mail,$numCmde,$token,$pj)`, fusion des pièces jointes, jeton, contrôles fichier/numéro, notifications `HistoriqueOperationCdeFrnService`
+- [x] `CdeFrnSoumissionStore` (cache PSR-6, TTL 7200 s, 1 jeton actif/utilisateur)
+- [x] `CdeFrnSoumissionService` : `generatePdfForSubmission`, `soumettre($mail,$numCmde,$token,$pj)`, fusion des pièces jointes, jeton, contrôles fichier/numéro, notifications `HistoriqueOperationCdeFrnService`
   - Doctrine remplacé par : mapping DTO → `BcSoumisMagasinDTO` (`numCde→numeroCommande`, `pdfDeposerDw→deposerDw`, `operateur=getUserName`) puis `CdeSoumissionModel::enregistrerBcSoumisMagasin`
   - Contrôle de doublon par version : **retiré** (pas de colonne) — signalé
-  - Copie DocuWare : `copyToDOCUWARE` scomat
-- [ ] Écarts signalés (non portés) : `codeFrn/libelleFrn/numVersion/dateDepotDw/lignes OR-NEG` sans colonne dans `bc_soumis_magasin`
+  - Copie DocuWare : `GeneratePdf::copyToDWCdeFnrSoumis` (logique scomat). Opérateur : paramètre optionnel `$operateur` de `soumettre()` (le contrôleur passera `getUserName()`)
+- [x] Écarts signalés (non portés) : `codeFrn/libelleFrn/numVersion/dateDepotDw/lignes OR-NEG` sans colonne dans `bc_soumis_magasin`
 
 ### Étape 7 — Form, Controller, API
 - [ ] `src/Form/magasin/Commande/SoumissionCommande/SoumissionCommandeType.php` : champs `numCmde`, `piecesJointesPdf` (multiple, All(File 5M, pdf)), `generationToken` (hidden)
