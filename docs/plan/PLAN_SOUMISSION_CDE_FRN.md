@@ -19,10 +19,10 @@ Source : `C:\wamp64\www\Hffintranet` · Cible : `C:\wamp64\www\scomat` (branche 
 ## Étapes
 
 ### Étape 1 — Assets, CSS, partials twig (nouveaux fichiers)
-- [ ] `Views/css/magasin/soumissionCommande.css`
-- [ ] `Views/assets/info_HFF_1.png`, `info_HFF_2.png`
-- [ ] `Views/templates/partials/_dropZonePdfMultiple.html.twig`
-- [ ] `Views/js/utils/multiPdfDropzone.js`
+- [x] `Views/css/magasin/soumissionCommande.css`
+- [x] `Views/assets/info_HFF_1.png`, `info_HFF_2.png`
+- [x] `Views/templates/partials/_dropZonePdfMultiple.html.twig`
+- [x] `Views/js/utils/multiPdfDropzone.js`
 - [ ] (optionnel) `_dropZoneFileMultiple.html.twig` : `classBtn ?? 'btn-primary'` (diff d'une ligne)
 
 ### Étape 2 — DTO (fusion, existent déjà)
