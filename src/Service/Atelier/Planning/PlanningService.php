@@ -44,12 +44,12 @@ class PlanningService
         return $this->mapper->groupByMateriel($dtos);
     }
 
-    public function getBackOrderNotItv(PlanningSearchDto $dto)
+    public function getBackOrderItv(PlanningSearchDto $dto)
     {
         $orsValides = $this->planningModel->getNumeroOrValider($dto);
         $orsSoumis = $this->planningModel->getOrsSoumis();
 
-        return $this->planningModel->getBackOrderPlanningNoItv($orsValides, $orsSoumis,  $dto);
+        return $this->planningModel->getBackOrderPlanning($orsValides, $orsSoumis,  $dto);
     }
 
     /**

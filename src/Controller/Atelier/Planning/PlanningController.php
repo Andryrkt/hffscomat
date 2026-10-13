@@ -56,7 +56,7 @@ class PlanningController extends Controller
         $data = [];
         $back = [];
         if ($request->query->get('action') !== 'oui') {
-            $back = $this->planningService->getBackOrderNotItv($dto);
+            $back = $this->planningService->getBackOrderItv($dto);
             $data = $this->planningService->getPlanningMaterielData($dto, $back, $codeSociete);
         }
         $data = $this->planningService->getDataList($data, $dto->months);
