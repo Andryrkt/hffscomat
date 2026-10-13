@@ -6,7 +6,7 @@ use App\Controller\Controller;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use App\Service\genererPdf\magasin\GeneratePdfCdeMagasin;
-use App\Model\magasin\CommANDe\Soumission\CdeSoumissionModel;
+use App\Model\magasin\Commande\Soumission\CdeSoumissionModel;
 
 class GenerateCommandeFournisseurApi extends Controller
 {

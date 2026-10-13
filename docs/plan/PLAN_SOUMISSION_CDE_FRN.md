@@ -35,13 +35,13 @@ Dossier : `src/Dto/Magasin/Commande/Soumission/`
 
 ### Étape 3 — Model Informix (fusion de logique uniquement, sans écraser)
 `src/Model/magasin/Commande/Soumission/CdeSoumissionModel.php` + `src/Model/Informix/SelectWhereCondition.php`
-- [ ] `in()/ni()` via `createInConditionWithTemp` (échappement quotes)
-- [ ] Devise : `fbse_devise AS devise_code` + sous-select `adev_lib AS devise_libelle`
-- [ ] Nouvelles méthodes : `findLignesSavEtVenteNegoceParPieces`, `filterOrdresReparationValides`, `findAllValidatedPO`
-- [ ] Signature `findInfoCommande` : garder style scomat (succursale `SUC_NEG`), exposer `allValidatedOR/PO`
-- [ ] Vérifier que `bc_client_soumis_neg` existe en base (absente de `sql/`)
-- [ ] Corriger le `use ...CommANDe...` (typo de casse) dans controller/API
-- [ ] **Ne pas modifier** `enregistrerBcSoumisMagasin`
+- [x] `in()/ni()` : rien à faire, la version scomat est déjà plus complète
+- [x] Devise : `fbse_devise AS devise_code` + sous-select `adev_lib AS devise_libelle`
+- [x] Nouvelles méthodes : `findLignesSavEtVenteNegoceParPieces`, `filterOrdresReparationValides`, `findAllValidatedPO`
+- [x] Signature `findInfoCommande` : garder style scomat (succursale `SUC_NEG`), exposer `allValidatedOR/PO`
+- [x] Vérifier que `bc_client_soumis_neg` existe en base (absente de `sql/`)
+- [x] Corriger le `use ...CommANDe...` (typo de casse) dans controller/API
+- [x] **Ne pas modifier** `enregistrerBcSoumisMagasin`
 
 ### Étape 4 — Factories
 `src/Factory/magasin/Commande/Soumission/`

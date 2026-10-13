@@ -8,7 +8,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Service\genererPdf\magasin\GeneratePdfCdeMagasin;
 use App\Dto\Magasin\Commande\Soumission\BcSoumisMagasinDTO;
-use App\Model\magasin\CommANDe\Soumission\CdeSoumissionModel;
+use App\Model\magasin\Commande\Soumission\CdeSoumissionModel;
 use App\Form\magasin\Commande\SoumissionCommande\SoumissionCommandeType;
 use App\Service\historiqueOperation\magasin\commandeFrn\HistoriqueOperationCdeFrnService;
 
