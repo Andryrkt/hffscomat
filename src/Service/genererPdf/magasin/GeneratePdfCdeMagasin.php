@@ -112,8 +112,8 @@ class GeneratePdfCdeMagasin extends GeneratePdf
 
     private function renderHeader(): void
     {
-        $this->pdf->Image("{$this->basePathAssets}/info_HFF_1.png", $this->imgConfig['img1X'], $this->imgConfig['img1Y'], $this->imgConfig['img1W'], $this->imgConfig['img1H'], "PNG");
-        $this->pdf->Image("{$this->basePathAssets}/info_HFF_2.png", $this->imgConfig['img2X'], $this->imgConfig['img2Y'], $this->imgConfig['img2W'], $this->imgConfig['img2H'], "PNG");
+        $this->pdf->Image("{$this->basePathAssets}/logo_scomat.png", $this->imgConfig['img1X'], $this->imgConfig['img1Y'], $this->imgConfig['img1W'], $this->imgConfig['img1H'], "PNG");
+        $this->pdf->Image("{$this->basePathAssets}/info_scomat.png", $this->imgConfig['img2X'], $this->imgConfig['img2Y'], $this->imgConfig['img2W'], $this->imgConfig['img2H'], "PNG");
 
         $this->pdf->SetFont(self::FONT, "B", self::TITLE_SIZE);
         $this->pdf->Cell(0, self::TITLE_HEIGHT, "Cde Fournisseur", 0, 1);
@@ -423,11 +423,11 @@ class GeneratePdfCdeMagasin extends GeneratePdf
         $this->headerWidth['nomFrn'] = 45;
 
         $this->imgConfig['img1W'] = 44.852;
-        $this->imgConfig['img1H'] = $this->imgConfig['img1W'] * 434 / 1039;
+        $this->imgConfig['img1H'] = $this->imgConfig['img1W'] * 242 / 843;
         $this->imgConfig['img1X'] = $w100 / 2;
 
         $this->imgConfig['img2W'] = 25.588;
-        $this->imgConfig['img2H'] = $this->imgConfig['img2W'] * 223 / 460;
+        $this->imgConfig['img2H'] = $this->imgConfig['img2W'] * 287 / 949;
         $this->imgConfig['img2X'] = $w100 - $this->imgConfig['img2W'] + 5;
 
         $this->imgConfig['img1Y'] = $this->imgConfig['img2Y'] = self::MARGIN_TOP + 7;
