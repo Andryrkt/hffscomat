@@ -33,6 +33,14 @@ services:
     class: Symfony\Component\HttpFoundation\RequestStack
     public: true
 
+  # Services pour les caches
+  cache.cde_frn_soumission:
+    class: Symfony\Component\Cache\Adapter\FilesystemAdapter
+    arguments:
+      $namespace: "cde_frn_soumission"
+      $defaultLifetime: 7200
+      $directory: "%kernel.cache_dir%/pools"
+
   # Services de formulaire
   form.factory:
     public: true
