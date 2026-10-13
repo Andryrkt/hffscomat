@@ -34,6 +34,8 @@ class CdeSoumissionModel extends Model
         $startDate = (new \DateTime('first day of -6 months'))->format("Ym");
         $endDate   = (new \DateTime('last day of last month'))->format("Ym");
 
+        $ipsArtSta = ($codeSociete === 'CO') ? "{$this->dbIpsRegix}.art_sta" : "{$this->dbIps}.art_sta";
+
         $statement = "SELECT 
             fcde_numcde as num_cde,
             fcde_date AS date_cde,
@@ -122,7 +124,7 @@ class CdeSoumissionModel extends Model
             ) AS stock_max,
             (
                 SELECT NVL(SUM(asta_qtesor), 0)
-                FROM {$this->dbIpsRegix}.art_sta
+                FROM $ipsArtSta
                 WHERE asta_constp = fcdl_constp
                 AND asta_refp   = fcdl_refp
                 AND asta_per >= '$startDate'
@@ -130,7 +132,7 @@ class CdeSoumissionModel extends Model
             ) AS vte_der_mois,
             (
                 SELECT NVL(SUM(asta_nblign), 0)
-                FROM {$this->dbIpsRegix}.art_sta
+                FROM $ipsArtSta
                 WHERE asta_constp = fcdl_constp
                 AND asta_refp   = fcdl_refp
                 AND asta_per >= '$startDate'
