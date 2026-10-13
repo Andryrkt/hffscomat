@@ -49,9 +49,9 @@ Dossier : `src/Dto/Magasin/Commande/Soumission/`
 - [x] Nouvelle `CdeFrnSoumisAValidationFactory` : sans EntityManager ni `findNumeroVersionMax` (version non gérée en base scomat) ; chemins PDF (`BASE_PATH_FICHIER/magasin/commandes fournisseurs/$num/$num.pdf`), suppression de l'ancien fichier
 
 ### Étape 5 — Génération PDF
-- [ ] `src/Service/genererPdf/GeneratePdf.php` : ajouter `basePathAssets` + équivalent de `copyToDWCdeFnrSoumis` (sans renommer les props existantes)
-- [ ] `src/Service/genererPdf/magasin/GeneratePdfCdeMagasin.php` : DTO au constructeur, `generate($filePath)`, en-tête images, devise, pied de page (totaux, signature, OR/PO rattachés). `copyToDOCUWARE` façon scomat conservé.
-- [ ] Vérifier signature `TraitementDeFichier::fusionFichers($fichiers,$sortie)` (existe, diffère)
+- [x] `src/Service/genererPdf/GeneratePdf.php` : ajouter `basePathAssets` + équivalent de `copyToDWCdeFnrSoumis` (sans renommer les props existantes)
+- [x] `src/Service/genererPdf/magasin/GeneratePdfCdeMagasin.php` : DTO au constructeur, `generate($filePath)`, en-tête images, devise, pied de page (totaux, signature, OR/PO rattachés). `copyToDOCUWARE` retiré de la classe : remplacé par `GeneratePdf::copyToDWCdeFnrSoumis` (même chemin DocuWare et même `copyFile` scomat).
+- [x] `TraitementDeFichier::fusionFichers(array, string)` : identique dans les deux projets, rien à faire
 
 ### Étape 6 — Store (cache) + Service
 `src/Service/magasin/Commande/Soumission/` (emplacement à confirmer)
