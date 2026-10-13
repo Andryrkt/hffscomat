@@ -45,8 +45,8 @@ Dossier : `src/Dto/Magasin/Commande/Soumission/`
 
 ### Étape 4 — Factories
 `src/Factory/magasin/Commande/Soumission/`
-- [ ] `CommandeSoumissionFactory` : `hydrate($data,$details,$allValidatedOR,$allValidatedPO,$email)`, `devise`, `hydrateLignes($dto,…)` avec poids/montant totaux
-- [ ] Nouvelle `CdeFrnSoumisAValidationFactory` : sans EntityManager ni `findNumeroVersionMax` (version non gérée en base scomat) ; chemins PDF (`BASE_PATH_FICHIER/magasin/commandes fournisseurs/$num/$num.pdf`), suppression de l'ancien fichier
+- [x] `CommandeSoumissionFactory` : `hydrate($data,$details,$allValidatedOR,$allValidatedPO,$email)`, `devise`, `hydrateLignes($dto,…)` avec poids/montant totaux
+- [x] Nouvelle `CdeFrnSoumisAValidationFactory` : sans EntityManager ni `findNumeroVersionMax` (version non gérée en base scomat) ; chemins PDF (`BASE_PATH_FICHIER/magasin/commandes fournisseurs/$num/$num.pdf`), suppression de l'ancien fichier
 
 ### Étape 5 — Génération PDF
 - [ ] `src/Service/genererPdf/GeneratePdf.php` : ajouter `basePathAssets` + équivalent de `copyToDWCdeFnrSoumis` (sans renommer les props existantes)
