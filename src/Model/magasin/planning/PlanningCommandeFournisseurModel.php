@@ -129,9 +129,15 @@ class PlanningCommandeFournisseurModel extends Model
             $asCdlFiltre AS ({$this->getQueryCdlFiltre($numCde,$codeSociete)}),
             $asCde AS ({$this->getQueryCdeAgrege($asCdlFiltre)}),
             res AS (
-                {$this->getQueryResOr($numCde,$codeSociete,$asCdlFiltre)}
-                UNION ALL
-                {$this->getQueryResVenteDirecte($numCde,$codeSociete,$asCdlFiltre)}
+                SELECT type_doc, constp, refp, numero, numcli, nomcli, SUM(NVL(qtedem, 0)) AS qtedem
+                FROM (
+                    {$this->getQueryResOrViaLivraison($numCde,$codeSociete,$asCdlFiltre)}
+                    UNION ALL
+                    {$this->getQueryResOrNonLivre($codeSociete,$asCdlFiltre)}
+                    UNION ALL
+                    {$this->getQueryResVenteDirecte($numCde,$codeSociete,$asCdlFiltre)}
+                ) u
+                GROUP BY type_doc, constp, refp, numero, numcli, nomcli
             )
         SELECT
             cde.constp,
@@ -221,7 +227,8 @@ class PlanningCommandeFournisseurModel extends Model
                 GROUP BY 1,2,3,4,5";
     }
 
-    private function getQueryResOr(string $numCde, string $codeSociete, string $asCdlFiltre): string
+    /** OR déjà livrés : lien commande -> livraison fournisseur (frn_llf.numliv) -> sav_lor.slor_numcf */
+    private function getQueryResOrViaLivraison(string $numCde, string $codeSociete, string $asCdlFiltre): string
     {
         return "SELECT DISTINCT
                     TRIM('OR')    AS type_doc,
@@ -247,6 +254,32 @@ class PlanningCommandeFournisseurModel extends Model
                 INNER JOIN {$this->dbIps}.sav_lor o
                     ON  o.slor_numcf = liv.numliv
                     AND o.slor_refp  = liv.refp
+                INNER JOIN {$this->dbIps}.cli_bse cb ON cb.cbse_numcli = o.slor_numcli
+                INNER JOIN {$this->dbIps}.cli_soc cs ON cs.csoc_soc = o.slor_soc AND cs.csoc_numcli = o.slor_numcli
+                WHERE o.slor_soc = '$codeSociete'";
+    }
+
+    /** OR non livrés : pièces en commande (slor_natcm = 'C'), liées à la ligne de commande par slor_noligncm */
+    private function getQueryResOrNonLivre(string $codeSociete, string $asCdlFiltre): string
+    {
+        return "SELECT DISTINCT
+                    TRIM('OR')    AS type_doc,
+                    o.slor_constp AS constp,
+                    c.refp        AS refp,
+                    o.slor_numor  AS numero,
+                    CASE
+                        WHEN o.slor_typlig = 'P' THEN (o.slor_qterel + o.slor_qterea + o.slor_qteres + o.slor_qtewait - o.slor_qrec)
+                        WHEN o.slor_typlig IN ('F','M','U','C') THEN o.slor_qterea
+                    END AS qtedem,
+                    o.slor_numcli AS numcli,
+                    cb.cbse_nomcli AS nomcli
+                FROM $asCdlFiltre c
+                INNER JOIN {$this->dbIps}.sav_lor o
+                    ON  o.slor_constp   = c.constp
+                    AND o.slor_refp     = c.refp
+                    AND TRIM(o.slor_desi) = TRIM(c.desi)
+                    AND o.slor_noligncm = c.ligne
+                    AND o.slor_natcm    = 'C'
                 INNER JOIN {$this->dbIps}.cli_bse cb ON cb.cbse_numcli = o.slor_numcli
                 INNER JOIN {$this->dbIps}.cli_soc cs ON cs.csoc_soc = o.slor_soc AND cs.csoc_numcli = o.slor_numcli
                 WHERE o.slor_soc = '$codeSociete'";
