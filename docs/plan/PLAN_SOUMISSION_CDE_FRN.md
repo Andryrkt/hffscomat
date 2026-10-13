@@ -23,15 +23,15 @@ Source : `C:\wamp64\www\Hffintranet` · Cible : `C:\wamp64\www\scomat` (branche 
 - [x] `Views/assets/info_HFF_1.png`, `info_HFF_2.png`
 - [x] `Views/templates/partials/_dropZonePdfMultiple.html.twig`
 - [x] `Views/js/utils/multiPdfDropzone.js`
-- [ ] (optionnel) `_dropZoneFileMultiple.html.twig` : `classBtn ?? 'btn-primary'` (diff d'une ligne)
+- [x] (optionnel) `_dropZoneFileMultiple` : non appliqué (décision utilisateur)
 
 ### Étape 2 — DTO (fusion, existent déjà)
 Dossier : `src/Dto/Magasin/Commande/Soumission/`
-- [ ] `CommandeSoumissionDTO` : + `devise`, `poidsTotal`, `montantTotal`, `allValidatedOR/PO` + getters ; retrait `getFournisseur()` ; `getDelaiExpedition()` sans garde
-- [ ] `CommandeSoumissionLigneDTO` : prix sans suffixe " Ar"
-- [ ] `CommandeSoumissionDetailDTO` : gardes `"-"` et null `numClient/nomClient`
-- [ ] Nouveau DTO équivalent à `CdeFrnSoumisAValidationDTO` (numCde, codeFrn, libelleFrn, numVersion, statut, urlPDFCourt/Long, token, pdfDeposerDw, dateDepotDw) — mis en cache. `BcSoumisMagasinDTO` inchangé.
-- [ ] `CdeFrnSoumisAValidationLigneDTO` : uniquement si utile (aucune table lignes dans scomat → à confirmer, sinon sauté)
+- [x] `CommandeSoumissionDTO` : + `devise`, `poidsTotal`, `montantTotal`, `allValidatedOR/PO` + getters ; retrait `getFournisseur()` ; `getDelaiExpedition()` sans garde
+- [x] `CommandeSoumissionLigneDTO` : prix sans suffixe " Ar"
+- [x] `CommandeSoumissionDetailDTO` : gardes `"-"` et null `numClient/nomClient`
+- [x] Nouveau DTO équivalent à `CdeFrnSoumisAValidationDTO` (numCde, codeFrn, libelleFrn, numVersion, statut, urlPDFCourt/Long, token, pdfDeposerDw, dateDepotDw) — mis en cache. `BcSoumisMagasinDTO` inchangé.
+- [x] `CdeFrnSoumisAValidationLigneDTO` : non créé (pas de table lignes dans scomat), `lignes` retiré du DTO principal
 
 ### Étape 3 — Model Informix (fusion de logique uniquement, sans écraser)
 `src/Model/magasin/Commande/Soumission/CdeSoumissionModel.php` + `src/Model/Informix/SelectWhereCondition.php`
