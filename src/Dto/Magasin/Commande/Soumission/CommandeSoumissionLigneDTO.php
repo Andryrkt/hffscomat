@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Dto\Magasin\cdeFrn;
+namespace App\Dto\Magasin\Commande\Soumission;
 
 class CommandeSoumissionLigneDTO
 {
