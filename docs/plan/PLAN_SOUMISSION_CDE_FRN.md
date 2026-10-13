@@ -68,9 +68,9 @@ Dossier : `src/Dto/Magasin/Commande/Soumission/`
 - [x] `src/Api/magasin/GenerateCommandeFournisseurApi.php` : `POST /api/cde-frn/generate-pdf` (corps JSON `numCde`), réponse `{data:{urlPDFCourt, generationToken}, message}`
 
 ### Étape 8 — Twig + JS (fusion)
-- [ ] `soumissionCommandeFournisseur.html.twig` : CSS, `multipart/form-data`, `#pj-section`, viewer à onglets, `#validationBtn`
-- [ ] `Views/js/magasin/commande/soumissionCommandeFournisseur.js` : dropzone, `generationToken`, POST, `urlPDFCourt`
-- [ ] `Views/js/api/apiEndpoints.js` : ajouter `generatePdfCdeFrnMag: "api/cde-frn/generate-pdf"` **sans écraser** les autres clés
+- [x] `soumissionCommandeFournisseur.html.twig` : CSS, `multipart/form-data`, `#pj-section`, viewer à onglets, `#validationBtn`
+- [x] `Views/js/magasin/commande/soumissionCommandeFournisseur.js` : dropzone, `generationToken`, POST, `urlPDFCourt`
+- [x] `Views/js/api/apiEndpoints.js` : ajouter `generatePdfCdeFrnMag: "api/cde-frn/generate-pdf"` **sans écraser** les autres clés
 
 ### Étape 9 — À faire par vous (hors de mon périmètre)
 - [ ] Déclarer service/store/factory/API/controller avec leurs `arguments` (autowire: false)

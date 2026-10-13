@@ -4,8 +4,7 @@ export const API_ENDPOINTS = {
     `atelier/demande-intervention/dw-intervention-atelier-avec-dit/${numDit}`,
 
   /** Commande Fournissuer Magasin */
-  generatePdfCdeFrnMag: (numCde) =>
-    `api/cmde-fournisseur/${numCde}/generate-pdf`,
+  generatePdfCdeFrnMag: "api/cde-frn/generate-pdf",
 
   /** Planning Atelier + Magasin */
   getTechnicienIntervenant: (numOr, numItv) =>
