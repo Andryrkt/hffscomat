@@ -398,7 +398,7 @@ class GeneratePdfCdeMagasin extends GeneratePdf
     private function newPage(): void
     {
         $this->pdf->AddPage();
-        $this->renderHeader($this->dto);
+        $this->renderHeader();
         $this->pdf->Ln(3);
         $this->renderTableHeader();
     }
@@ -422,11 +422,11 @@ class GeneratePdfCdeMagasin extends GeneratePdf
         $this->headerWidth['numCde'] = $this->headerWidth['numFrn'] = 15;
         $this->headerWidth['nomFrn'] = 45;
 
-        $this->imgConfig['img1W'] = 44.852;
+        $this->imgConfig['img1W'] = 51.852;
         $this->imgConfig['img1H'] = $this->imgConfig['img1W'] * 242 / 843;
         $this->imgConfig['img1X'] = $w100 / 2;
 
-        $this->imgConfig['img2W'] = 25.588;
+        $this->imgConfig['img2W'] = 30.588;
         $this->imgConfig['img2H'] = $this->imgConfig['img2W'] * 287 / 949;
         $this->imgConfig['img2X'] = $w100 - $this->imgConfig['img2W'] + 5;
 
