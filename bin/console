@@ -2,7 +2,6 @@
 <?php
 
 require dirname(__DIR__) . DIRECTORY_SEPARATOR . 'vendor/autoload.php';
-require_once dirname(__DIR__) . '/config/dotenv.php';
 $entitymanager = require_once dirname(__DIR__) . "/doctrineBootstrap.php";
 
 

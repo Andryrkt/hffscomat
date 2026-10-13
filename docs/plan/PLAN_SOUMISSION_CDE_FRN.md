@@ -83,3 +83,10 @@ Dossier : `src/Dto/Magasin/Commande/Soumission/`
 3. Ajout de pièces jointes PDF (≤10 fichiers, 5 Mo/fichier, 7 Mo total).
 4. Soumission → ligne dans `bc_soumis_magasin`, PDF fusionné déposé dans DocuWare, notification visible.
 5. Erreurs (jeton expiré, fichier absent, copie DW en échec) : mêmes messages que Hffintranet.
+
+## Étape 10 — Nettoyage config (commits Hffintranet e33bf17, f51a9be, f5812e8)
+- [x] Supprimés : `config/{config.yaml,console.php,doctrine-migrations.php,doctrine.yaml,dotenv.php,form.yaml,migrations-config.php,migrations.php,session_config.php,twig.yaml}`
+- [x] Références corrigées : `doctrineBootstrap.php` (chargement `.env` inline), `src/Doctrine/EntityManagerFactory.php` (require_once retiré), `bin/console` (require dotenv retiré)
+- [x] `bootstrap_build.php` : retrait de request_stack, cache.security, cache.menu, userData.service, security.service, menu.service
+- [x] `services_framework.yaml` : ajout de ces services/caches ; retrait des définitions `session` / `session.storage.native` (la session reste définie dans bootstrap_build.php)
+- [ ] Non fait (index.php non touché, demandé) : suppression de `config/environment.yaml` + retrait de sa lecture dans `index.php`
