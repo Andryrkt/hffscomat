@@ -63,9 +63,9 @@ Dossier : `src/Dto/Magasin/Commande/Soumission/`
 - [x] Écarts signalés (non portés) : `codeFrn/libelleFrn/numVersion/dateDepotDw/lignes OR-NEG` sans colonne dans `bc_soumis_magasin`
 
 ### Étape 7 — Form, Controller, API
-- [ ] `src/Form/magasin/Commande/SoumissionCommande/SoumissionCommandeType.php` : champs `numCmde`, `piecesJointesPdf` (multiple, All(File 5M, pdf)), `generationToken` (hidden)
-- [ ] `SoumissionCommandeController` : constructeur avec `CdeFrnSoumissionService`, appel `soumettre($this->getUserMail(), …)`
-- [ ] `src/Api/magasin/GenerateCommandeFournisseurApi.php` : `POST /api/cde-frn/generate-pdf` (corps JSON `numCde`), réponse `{data:{urlPDFCourt, generationToken}, message}`
+- [x] `src/Form/magasin/Commande/SoumissionCommande/SoumissionCommandeType.php` : champs `numCmde`, `piecesJointesPdf` (multiple, All(File 5M, pdf)), `generationToken` (hidden)
+- [x] `SoumissionCommandeController` : constructeur avec `CdeFrnSoumissionService`, appel `soumettre($this->getUserMail(), …)`
+- [x] `src/Api/magasin/GenerateCommandeFournisseurApi.php` : `POST /api/cde-frn/generate-pdf` (corps JSON `numCde`), réponse `{data:{urlPDFCourt, generationToken}, message}`
 
 ### Étape 8 — Twig + JS (fusion)
 - [ ] `soumissionCommandeFournisseur.html.twig` : CSS, `multipart/form-data`, `#pj-section`, viewer à onglets, `#validationBtn`
