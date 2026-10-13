@@ -60,7 +60,7 @@ class PlanningMaterielModel extends Model
                     and B.sitv_interv = TRUNC(A.slor_nogrp/100)
                     and A.slor_numor = C.slor_numor
                     and B.sitv_interv  = D.sitv_interv   {$this->getTypeLigneCondition($searchDto)}
-                ),
+                )                                                              as qte_all,
                 (select cbse_numcli ||'-'|| TRIM(cbse_nomcli) from {$this->dbIps}.cli_bse where cbse_numcli = seor_numcli) as client
             FROM {$this->dbIps}.sav_eor, {$this->dbIps}.sav_lor as C,
                 {$this->dbIps}.sav_itv as D,
@@ -173,7 +173,9 @@ class PlanningMaterielModel extends Model
                                                              WHERE CAST( Numero_PO as varchar(10)) = CAST(slor_numcf  as varchar(10))
                                                              AND Parts_Number = slor_refp
                                                              AND Parts_CST = slor_constp
-                                                             AND Line_Number = slor_noligncm ) )
+                                                             AND Line_Number = slor_noligncm 
+                                                             AND quantity > 0) 
+                                )
                 END                                                 as statut,
                 CASE 
                     WHEN slor_qteres = (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec)
@@ -200,21 +202,28 @@ class PlanningMaterielModel extends Model
                         ), '%Y-%m-%d')
                     WHEN slor_natcm = 'C' 
                     THEN TO_CHAR((select date_creation
-                                    FROM {$this->dbIrium}.gcot_acknow_cat 
-                                    WHERE Numero_PO = slor_numcf 
-                                    AND Parts_Number = slor_refp  
-                                    AND Parts_CST = slor_constp 
-                                    AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign)
-                                 ), 
+                                    FROM {$this->dbIrium}.gcot_acknow_cat
+                                    WHERE id_gcot_acknow_cat = ( SELECT MAX(id_gcot_acknow_cat)
+                                                                 FROM {$this->dbIrium}.gcot_acknow_cat
+                                                                 WHERE Numero_PO = slor_numcf
+                                                                 AND Parts_Number = slor_refp
+                                                                 AND Parts_CST = slor_constp
+                                                                 AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign) 
+                                                                 AND quantity > 0)
+                                        
+                                 ),
                                 '%Y-%m-%d')
                     END                                                             as dateStatut,
-                    CASE  
+                    CASE
                         WHEN slor_qterea <> (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) THEN
-	                        ( SELECT message FROM {$this->dbIrium}.gcot_acknow_cat 
-                                WHERE Numero_PO = slor_numcf 
-                                AND Parts_Number = slor_refp  
-                                AND Parts_CST = slor_constp 
-                                AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign)
+	                        ( SELECT message FROM {$this->dbIrium}.gcot_acknow_cat
+                                WHERE id_gcot_acknow_cat = ( SELECT MAX(id_gcot_acknow_cat)
+                                                             FROM {$this->dbIrium}.gcot_acknow_cat
+                                                             WHERE Numero_PO = slor_numcf
+                                                             AND Parts_Number = slor_refp
+                                                             AND Parts_CST = slor_constp
+                                                             AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign) 
+                                                             AND quantity > 0)
 					        )
 					    ELSE
 					        ''
@@ -325,7 +334,8 @@ class PlanningMaterielModel extends Model
                                                              WHERE CAST(Numero_PO as varchar(10)) = CAST(slor_numcf  as varchar(10))  
                                                              AND Parts_Number = slor_refp  
                                                              AND Parts_CST = slor_constp 
-                                                             AND Line_Number = slor_noligncm )
+                                                             AND Line_Number = slor_noligncm 
+                                                             AND quantity > 0)
                             )
 	                  END as Statut,
 
@@ -359,7 +369,8 @@ class PlanningMaterielModel extends Model
                                                                WHERE CAST(Numero_PO as varchar(10)) = CAST(slor_numcf  as varchar(10))  
                                                                AND Parts_Number = slor_refp  
                                                                AND Parts_CST = slor_constp 
-                                                               AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign) )
+                                                               AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign) 
+                                                               AND quantity > 0)
                                   )
                                 ), '%Y-%m-%d')
 	                    END AS dateStatut,
@@ -375,7 +386,8 @@ class PlanningMaterielModel extends Model
                                                                 WHERE CAST(Numero_PO as varchar(10)) = CAST(slor_numcf  as varchar(10))  
                                                                 AND Parts_Number = slor_refp  
                                                                 AND Parts_CST = slor_constp 
-                                                                AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign))
+                                                                AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign)
+                                                                AND quantity > 0)
                                 )
                         END as Message
                 FROM {$this->dbIps}.sav_lor

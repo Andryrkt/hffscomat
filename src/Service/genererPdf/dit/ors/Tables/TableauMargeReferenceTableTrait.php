@@ -29,33 +29,75 @@ trait TableauMargeReferenceTableTrait
         $this->addTitle($pdf, "TABLEAU DE MARGE PAR REFERENCE", 'helvetica', 'B', 10, 'L', 0);
         $pdf->setFont('helvetica', '', 9);
 
+        $totauxParConstructeur = [];
+
         foreach ($sections as $key => $label) {
             $lignes = $tableauMarge[$key] ?? [];
 
-            $tableGenerator->setOptions([
-                'table_attributes' => 'border="0" cellpadding="3" cellspacing="0" align="center" style="font-size: 9px; font-family:helvetica;"',
-                'header_row_style' => 'background-color: #ffffff;',
-                'footer_row_style' => 'background-color: #ffffff; font-weight: bold;',
-            ]);
-
-            $headerConfig = $this->headerTableauMargeReference($label);
-            foreach ($headerConfig as &$col) {
-                // Ajouter les bordures pour le header
-                $colHeaderStyle = $col['header_style'] ?? $col['style'] ?? '';
-                $col['header_style'] = rtrim($colHeaderStyle, '; ') . '; border-top: 0.5px solid #000000; border-bottom: 0.5px solid #000000;';
-
-                // Ajouter les bordures pour le footer
-                $colFooterStyle = $col['footer_style'] ?? $col['style'] ?? '';
-                $col['footer_style'] = rtrim($colFooterStyle, '; ') . '; border-top: 0.5px solid #000000; border-bottom: 0.5px solid #000000; font-weight: bold;';
-            }
-            unset($col);
-
             if (!empty($lignes)) {
+                $this->setOptionsTableauMarge($tableGenerator);
+                $headerConfig = $this->ajouterBorduresHeaderFooter($this->headerTableauMargeReference($label));
                 $totals = $this->calculerTotalsMargeReference($lignes);
                 $html = $tableGenerator->generateTable($headerConfig, $lignes, $totals);
                 $pdf->writeHTML($html, true, false, true, false, '');
+
+                // Conserver le total de la section pour le total général
+                $totauxParConstructeur[] = $totals;
             }
         }
+
+        // Tableau du total général (tous constructeurs confondus)
+        if (!empty($totauxParConstructeur)) {
+            $headerConfig = $this->headerTableauMargeReference('');
+            $headerConfig[0]['formatter'] = function ($value) {
+                return $value;
+            };
+            $headerConfig = $this->ajouterBorduresHeaderFooter($headerConfig);
+
+            $totalGeneral = array_merge(
+                $this->calculerTotalsMargeReference($totauxParConstructeur),
+                ['' => 'TOTAL']
+            );
+
+            $this->addTitle($pdf, "TOTAL GENERAL", 'helvetica', 'B', 10, 'L', 0);
+            $pdf->setFont('helvetica', '', 9);
+
+            $this->setOptionsTableauMarge($tableGenerator);
+            $html = $tableGenerator->generateTable($headerConfig, [], $totalGeneral, true);
+            $pdf->writeHTML($html, true, false, true, false, '');
+        }
+    }
+
+    /**
+     * Options d'affichage communes aux tableaux de marge
+     * (le générateur réinitialise ses options après chaque tableau).
+     */
+    private function setOptionsTableauMarge(PdfTableGeneratorFlexible $tableGenerator): void
+    {
+        $tableGenerator->setOptions([
+            'table_attributes' => 'border="0" cellpadding="3" cellspacing="0" align="center" style="font-size: 9px; font-family:helvetica;"',
+            'header_row_style' => 'background-color: #ffffff;',
+            'footer_row_style' => 'background-color: #ffffff; font-weight: bold;',
+        ]);
+    }
+
+    /**
+     * Ajoute les bordures haut/bas sur les cellules du header et du footer.
+     */
+    private function ajouterBorduresHeaderFooter(array $headerConfig): array
+    {
+        foreach ($headerConfig as &$col) {
+            // Ajouter les bordures pour le header
+            $colHeaderStyle = $col['header_style'] ?? $col['style'] ?? '';
+            $col['header_style'] = rtrim($colHeaderStyle, '; ') . '; border-top: 0.5px solid #000000; border-bottom: 0.5px solid #000000;';
+
+            // Ajouter les bordures pour le footer
+            $colFooterStyle = $col['footer_style'] ?? $col['style'] ?? '';
+            $col['footer_style'] = rtrim($colFooterStyle, '; ') . '; border-top: 0.5px solid #000000; border-bottom: 0.5px solid #000000; font-weight: bold;';
+        }
+        unset($col);
+
+        return $headerConfig;
     }
 
     /**
@@ -65,6 +107,8 @@ trait TableauMargeReferenceTableTrait
     {
         $totalNbRef = 0;
         $totalQteDemander = 0;
+        $totalQteStock = 0;
+        $totalQteReserv = 0;
         $totalPmp = 0.0;
         $totalPvBrut = 0.0;
         $totalMtRemise = 0.0;
@@ -73,6 +117,8 @@ trait TableauMargeReferenceTableTrait
         foreach ($lignes as $ligne) {
             $totalNbRef += (int) ($ligne['nb_ref'] ?? 0);
             $totalQteDemander += (float) ($ligne['quantite_demander'] ?? 0);
+            $totalQteStock += (float) ($ligne['qte_stock'] ?? 0);
+            $totalQteReserv += (float) ($ligne['qte_reserv'] ?? 0);
             $totalPmp += (float) ($ligne['pmp'] ?? 0);
             $totalPvBrut += (float) ($ligne['pv_brut'] ?? 0);
             $totalMtRemise += (float) ($ligne['mt_remise'] ?? 0);
@@ -84,8 +130,10 @@ trait TableauMargeReferenceTableTrait
 
         return [
             ''                  => 'TOTAL',
-            'nb_ref'            => $totalNbRef,
             'quantite_demander' => $totalQteDemander,
+            'qte_stock'         => $totalQteStock,
+            'qte_reserv'        => $totalQteReserv,
+            'nb_ref'            => $totalNbRef,
             'reference'         => '',
             'pmp'               => $totalPmp,
             'pv_brut'           => $totalPvBrut,
@@ -113,7 +161,7 @@ trait TableauMargeReferenceTableTrait
             [
                 'key'          => '',
                 'label'        => $label,
-                'width'        => 80,
+                'width'        => 70,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center;',
                 'cell_style'   => 'text-align: left; ',
@@ -121,18 +169,36 @@ trait TableauMargeReferenceTableTrait
                 'formatter'    => $formatterDispoStock
             ],
             [
-                'key'          => 'nb_ref',
-                'label'        => 'Qte stock',
-                'width'        => 50,
+                'key'          => 'quantite_demander',
+                'label'        => 'Qte dem',
+                'width'        => 35,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => 'text-align: center; ',
                 'footer_style' => 'font-weight: bold; text-align: center;'
             ],
             [
-                'key'          => 'quantite_demander',
-                'label'        => 'Qte dem',
-                'width'        => 50,
+                'key'          => 'qte_stock',
+                'label'        => 'Qte stock',
+                'width'        => 35,
+                'style'        => 'font-weight: bold;',
+                'header_style' => 'font-weight: bold; text-align: center; ',
+                'cell_style'   => 'text-align: center; ',
+                'footer_style' => 'font-weight: bold; text-align: center;'
+            ],
+            [
+                'key'          => 'qte_reserv',
+                'label'        => 'Qte res',
+                'width'        => 35,
+                'style'        => 'font-weight: bold;',
+                'header_style' => 'font-weight: bold; text-align: center; ',
+                'cell_style'   => 'text-align: center; ',
+                'footer_style' => 'font-weight: bold; text-align: center;'
+            ],
+            [
+                'key'          => 'nb_ref',
+                'label'        => 'Qte dispo',
+                'width'        => 35,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => 'text-align: center; ',
@@ -141,7 +207,7 @@ trait TableauMargeReferenceTableTrait
             [
                 'key'          => 'reference',
                 'label'        => 'Ref',
-                'width'        => 90,
+                'width'        => 75,
                 'style'        => 'font-weight: bold;',
                 'header_style' => 'font-weight: bold; text-align: center; ',
                 'cell_style'   => '',
@@ -213,50 +279,6 @@ trait TableauMargeReferenceTableTrait
                 'type'         => 'number',
                 'formatter' => $formatterPourcentage,
             ],
-            // [
-            //     'key'          => 'max_mb',
-            //     'label'        => 'MB+',
-            //     'width'        => 45,
-            //     'style'        => 'font-weight: bold;',
-            //     'header_style' => 'font-weight: bold; text-align: center; ',
-            //     'cell_style'   => 'text-align: right;  margin-right:2px;',
-            //     'footer_style' => 'font-weight: 900;',
-            //     'type'         => 'number',
-            //     'default_value' => '-',
-            // ],
-            // [
-            //     'key'          => 'max_mb_p',
-            //     'label'        => '%MB+',
-            //     'width'        => 30,
-            //     'style'        => 'font-weight: bold;',
-            //     'header_style' => 'font-weight: bold; text-align: center; ',
-            //     'cell_style'   => 'text-align: right;  margin-right:2px;',
-            //     'footer_style' => 'font-weight: 900;',
-            //     'type'         => 'number',
-            //     'formatter' => $formatterPourcentage,
-            // ],
-            // [
-            //     'key'          => 'min_mb',
-            //     'label'        => 'MB-',
-            //     'width'        => 45,
-            //     'style'        => 'font-weight: bold;',
-            //     'header_style' => 'font-weight: bold; text-align: center;',
-            //     'cell_style'   => 'text-align: right; margin-right:2px;',
-            //     'footer_style' => 'font-weight: 900;',
-            //     'type'         => 'number',
-            //     'default_value' => '-',
-            // ],
-            // [
-            //     'key'          => 'min_mb_p',
-            //     'label'        => '%MB-',
-            //     'width'        => 30,
-            //     'style'        => 'font-weight: bold;',
-            //     'header_style' => 'font-weight: bold; text-align: center;',
-            //     'cell_style'   => 'text-align: right; margin-right:2px;',
-            //     'footer_style' => 'font-weight: 900;',
-            //     'type'         => 'number',
-            //     'formatter' => $formatterPourcentage,
-            // ],
 
         ];
     }

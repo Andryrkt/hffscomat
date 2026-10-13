@@ -54,8 +54,7 @@ trait PlanningModelTrait
 
     private function getTypeLignePieceCondition(PlanningSearchDto $dto): string
     {
-        switch ($dto->typeLigne)
-        {
+        switch ($dto->typeLigne) {
             case "PIECES_MAGASIN":
                 return "and slor_constp <> 'LUB' and slor_constp not like 'Z%' and slor_typlig = 'P'";
             case "ACHAT_LOCAUX":
@@ -213,8 +212,7 @@ trait PlanningModelTrait
 
     private function getOrValidBackOrderCondition(PlanningSearchDto $dto, array $orItvBack, array $orsValides, array $orsSoumis): string
     {
-        if (!empty($orsValides))
-        {
+        if (!empty($orsValides)) {
             if ($dto->orNonValiderDw)
                 return $this->selectCond->ni('cast(seor_numor as varchar(10))', $orsSoumis);
             return $this->selectCond->in('cast(seor_numor as varchar(10))', $orsValides);
@@ -247,18 +245,19 @@ trait PlanningModelTrait
                 THEN 'LIVRE'
             ELSE COALESCE((
                 SELECT libelle_type 
-                FROM gcot_acknow_cat 
+                FROM {$this->dbIrium}.gcot_acknow_cat 
                 WHERE Numero_PO = slor_numcf 
                   AND Parts_Number = slor_refp 
                   AND Parts_CST = slor_constp 
                   AND Line_Number = slor_noligncm 
                   AND id_gcot_acknow_cat = (
                       SELECT MAX(id_gcot_acknow_cat)
-                      FROM gcot_acknow_cat 
+                      FROM {$this->dbIrium}.gcot_acknow_cat 
                       WHERE Numero_PO = slor_numcf 
                         AND Parts_Number = slor_refp 
                         AND Parts_CST = slor_constp 
                         AND Line_Number = slor_noligncm
+                        AND quantity > 0
                   )
             ), '')
         END
@@ -290,36 +289,38 @@ trait PlanningModelTrait
                 WHEN slor_natcm = 'C' THEN
                     TO_CHAR((
                         SELECT date_creation
-                        FROM gcot_acknow_cat 
+                        FROM {$this->dbIrium}.gcot_acknow_cat 
                         WHERE CAST(Numero_PO as varchar(10)) = CAST(slor_numcf as varchar(10))
                           AND Parts_Number = slor_refp  
                           AND Parts_CST = slor_constp 
                           AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign)
                           AND id_gcot_acknow_cat = (
                               SELECT MAX(id_gcot_acknow_cat) 
-                              FROM gcot_acknow_cat 
+                              FROM {$this->dbIrium}.gcot_acknow_cat 
                               WHERE CAST(Numero_PO as varchar(10)) = CAST(slor_numcf as varchar(10))
                                 AND Parts_Number = slor_refp  
                                 AND Parts_CST = slor_constp 
                                 AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign)
+                                AND quantity > 0
                           )
                     ), '%Y-%m-%d')
                 
                 WHEN slor_typcf = 'CIS' THEN
                     TO_CHAR((
                         SELECT date_creation
-                        FROM gcot_acknow_cat 
+                        FROM {$this->dbIrium}.gcot_acknow_cat 
                         WHERE CAST(Numero_PO as varchar(10)) = CAST(nlig_numcf as varchar(10))
                           AND Parts_Number = slor_refp  
                           AND Parts_CST = slor_constp 
                           AND (Line_Number = slor_nolign OR Line_Number = nlig_noligncm)
                           AND id_gcot_acknow_cat = (
                               SELECT MAX(id_gcot_acknow_cat) 
-                              FROM gcot_acknow_cat 
+                              FROM {$this->dbIrium}.gcot_acknow_cat 
                               WHERE CAST(Numero_PO as varchar(10)) = CAST(nlig_numcf as varchar(10))
                                 AND Parts_Number = slor_refp  
                                 AND Parts_CST = slor_constp 
                                 AND (Line_Number = slor_nolign OR Line_Number = nlig_noligncm)
+                                AND quantity > 0
                           )
                     ), '%Y-%m-%d')
                 ELSE NULL
@@ -337,40 +338,41 @@ trait PlanningModelTrait
                 WHEN slor_qterea <> (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) THEN 
                     (
                         SELECT message 
-                        FROM gcot_acknow_cat 
+                        FROM {$this->dbIrium}.gcot_acknow_cat 
                         WHERE CAST(Numero_PO as varchar(10)) = CAST(slor_numcf as varchar(10))
                           AND Parts_Number = slor_refp  
                           AND Parts_CST = slor_constp 
                           AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign)
                           AND id_gcot_acknow_cat = (
                               SELECT MAX(id_gcot_acknow_cat) 
-                              FROM gcot_acknow_cat 
+                              FROM {$this->dbIrium}.gcot_acknow_cat 
                               WHERE CAST(Numero_PO as varchar(10)) = CAST(slor_numcf as varchar(10))
                                 AND Parts_Number = slor_refp  
                                 AND Parts_CST = slor_constp 
                                 AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign)
+                                AND quantity > 0
                           )
                     )
                 WHEN slor_typcf = 'CIS' THEN 
                     (
                         SELECT message 
-                        FROM gcot_acknow_cat 
+                        FROM {$this->dbIrium}.gcot_acknow_cat 
                         WHERE CAST(Numero_PO as varchar(10)) = CAST(nlig_numcf as varchar(10))
                           AND Parts_Number = slor_refp  
                           AND Parts_CST = slor_constp 
                           AND (Line_Number = slor_nolign OR Line_Number = nlig_noligncm)
                           AND id_gcot_acknow_cat = (
                               SELECT MAX(id_gcot_acknow_cat) 
-                              FROM gcot_acknow_cat 
+                              FROM {$this->dbIrium}.gcot_acknow_cat 
                               WHERE CAST(Numero_PO as varchar(10)) = CAST(nlig_numcf as varchar(10))
                                 AND Parts_Number = slor_refp  
                                 AND Parts_CST = slor_constp 
                                 AND (Line_Number = slor_nolign OR Line_Number = nlig_noligncm)
+                                AND quantity > 0
                           )
                     )
                 ELSE ''
             END
         ";
     }
-
 }

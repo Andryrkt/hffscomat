@@ -12,6 +12,7 @@ use App\Command\cache\CacheWarmupSecurityCommand;
 use App\Command\cache\CacheWarmupMenuCommand;
 use App\Command\dit\GenererExcelTableauMargeReferenceCommand;
 use App\Command\informix\TransferTableCommand;
+use App\Command\magasin\GenererExcelTableauMargeReferenceMagasinCommand;
 use Symfony\Component\Console\Application;
 use App\Service\navigation\MenuService;
 use App\Service\UserData\UserDataService;
@@ -32,6 +33,7 @@ $application->add(new CacheWarmupAllCommand($entityManager, $userDataService, $m
 
 $application->add(new TransferTableCommand());
 $application->add(new GenererExcelTableauMargeReferenceCommand());
+$application->add(new GenererExcelTableauMargeReferenceMagasinCommand());
 
 // Exécuter la commande
 $application->run();

@@ -897,36 +897,10 @@ class DitOrSoumisAValidationModel extends Model
         string $codeSociete,
         string $numeroOr,
         string $ref,
-        string $codeSuccursale = '1'
+        string $codeSuccursale = '1',
+        string $constructeur = 'CAT'
     ) {
-        $statement = "WITH stats_max AS (
-                SELECT FIRST 1
-                    MAX(slor_pxnreel - slor_pmp) AS max_mb,
-                    CASE 
-                        WHEN slor_pxnreel = 0 THEN 0
-                        ELSE ROUND(((slor_pxnreel - slor_pmp) / slor_pxnreel) * 100, 2) 
-                    END AS max_mb_p
-                FROM Informix.sav_lor slor
-                WHERE slor_refp = '$ref'
-                    AND slor_soc = '$codeSociete'
-                    AND slor_succ = '$codeSuccursale'
-                GROUP BY 2
-                ORDER BY MAX(slor_pxnreel - slor_pmp) DESC
-            ),
-            stats_min AS (
-                SELECT FIRST 1
-                    MIN(slor_pxnreel - slor_pmp) AS min_mb,
-                    CASE 
-                        WHEN slor_pxnreel = 0 THEN 0
-                        ELSE ROUND(((slor_pxnreel - slor_pmp) / slor_pxnreel) * 100, 2) 
-                    END AS min_mb_p
-                FROM Informix.sav_lor slor
-                WHERE slor_refp = '$ref'
-                    AND slor_soc = '$codeSociete'
-                    AND slor_succ = '$codeSuccursale'
-                GROUP BY 2
-                ORDER BY MIN(slor_pxnreel - slor_pmp) ASC
-            ),
+        $statement = "WITH 
             lignes AS (
                 SELECT
                     slor_constp                                   AS constructeur,
@@ -934,6 +908,8 @@ class DitOrSoumisAValidationModel extends Model
                     TRIM(slor_desi)                               AS designation,
                     CASE WHEN astp_stock IS NULL THEN 0 
                          ELSE astp_stock - astp_reserv END        AS stock_dispo,
+                    COALESCE(astp_stock, 0)                       AS qte_stock,
+                    COALESCE(astp_reserv, 0)                      AS qte_reserv,
                     (slor_qterel + slor_qterea + slor_qteres 
                      + slor_qtewait - slor_qrec)                  AS qte,
                     ROUND(slor_pmp, 2)                            AS pmp,
@@ -959,13 +935,16 @@ class DitOrSoumisAValidationModel extends Model
                     AND slor_succ = '$codeSuccursale'
                     AND slor_soc = '$codeSociete'
                     AND slor_refp = '$ref'
+                    AND slor_constp = '$constructeur'
             )
             SELECT
-                MAX(l.constructeur)                                   AS constructeur,
-                ROUND(MAX(l.stock_dispo))                             AS nb_ref,
+                l.constructeur                                        AS constructeur,
+                ROUND(MAX(l.stock_dispo))                             AS nb_ref, -- Qte dispo
                 l.reference                                           AS reference,
                 MAX(l.designation)                                    AS designation,
-                ROUND(SUM(l.qte))                                     AS quantite_demander,
+                ROUND(SUM(l.qte))                                     AS quantite_demander, -- Qte dem
+                ROUND(MAX(l.qte_stock))                               AS qte_stock, -- Qte Stock
+                ROUND(MAX(l.qte_reserv))                              AS qte_reserv, -- Qte res
 
                 -- Prix pondérés par la quantité demandée
                 COALESCE(ROUND(SUM(l.pmp     * l.qte) / NULLIF(SUM(l.qte), 0), 2), 0) AS pmp,
@@ -982,18 +961,10 @@ class DitOrSoumisAValidationModel extends Model
                 COALESCE(ROUND(SUM((l.pv_net - l.pmp) * l.qte) 
                                / NULLIF(SUM(l.pv_net * l.qte), 0) * 100, 2), 0)       AS mb_p,
 
-                -- Min / Max
-                COALESCE(MAX(stats_max.max_mb), 0)   AS max_mb,
-                COALESCE(MAX(stats_max.max_mb_p), 0) AS max_mb_p,
-                COALESCE(MAX(stats_min.min_mb), 0)   AS min_mb,
-                COALESCE(MAX(stats_min.min_mb_p), 0) AS min_mb_p,
-
                 MAX(l.famille)                        AS famille
 
             FROM lignes l
-            CROSS JOIN stats_max
-            CROSS JOIN stats_min
-            GROUP BY l.reference
+            GROUP BY l.reference, l.constructeur
         ";
 
         $result = $this->connect->executeQuery($statement);

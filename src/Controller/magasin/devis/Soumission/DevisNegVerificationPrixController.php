@@ -174,7 +174,7 @@ class DevisNegVerificationPrixController extends Controller
 
         if (!empty($infoDevis)) {
             foreach ($infoDevis as $infoDevis) {
-                $afficher = $soumissionModel->tableauDeMargeAvecReference($codeSociete, $numDevis, $infoDevis['ref'], $infoDevis['code_agence']);
+                $afficher = $soumissionModel->tableauDeMargeAvecReference($codeSociete, $numDevis, $infoDevis['ref'], $infoDevis['code_agence'], $infoDevis['constructeur']);
 
                 foreach ($afficher as $value) {
                     if ($value['constructeur'] == 'CAT') {

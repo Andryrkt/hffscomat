@@ -54,9 +54,13 @@ class PlanningMaterielController extends Controller
         $this->getSessionService()->set('planning_search_criteria', $dto);
 
         $data = [];
-        if ($request->query->get('action') !== 'oui')
-            $data = $this->planningService->getPlanningMaterielData($dto, $codeSociete);
+        $back = [];
+        if ($request->query->get('action') !== 'oui') {
+            $back = $this->planningService->getBackOrderItv($dto);
+            $data = $this->planningService->getPlanningMaterielData($dto, $back, $codeSociete);
+        }
         $data = $this->planningService->getDataList($data, $dto->months);
+        // dd($data);
         $this->logUserVisit('planning_vue');
 
         return $this->render('atelier/planning/planning.html.twig', [

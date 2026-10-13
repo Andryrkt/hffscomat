@@ -488,7 +488,7 @@ class DitDevisSoumisAValidationModel extends Model
 
     public function recupNumeroVersion(?string $numDevis, string $codeSociete): int
     {
-        if ($numDevis === null) return 1;        // Récupérer le MAX actuel
+        if ($numDevis === null) return 0;        // Récupérer le MAX actuel
         $statement = "SELECT MAX(numeroversion) as max_version 
                     FROM {$this->dbIrium}.devis_soumis_a_validation 
                     WHERE numerodevis = '$numDevis'
