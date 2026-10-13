@@ -2,12 +2,12 @@
 
 namespace App\Model\magasin\Commande\Soumission;
 
-use App\Dto\Magasin\cdeFrn\CommandeSoumissionDTO;
-use App\Dto\Magasin\Commande\Soumission\BcSoumisMagasinDTO;
-use App\Model\Informix\InsertQueryBuilder;
 use App\Model\Model;
-use App\Factory\magasin\Commande\Soumission\CommandeSoumissionFactory;
+use App\Model\Informix\InsertQueryBuilder;
 use App\Model\Informix\SelectWhereCondition;
+use App\Dto\Magasin\Commande\Soumission\BcSoumisMagasinDTO;
+use App\Dto\Magasin\Commande\Soumission\CommandeSoumissionDTO;
+use App\Factory\magasin\Commande\Soumission\CommandeSoumissionFactory;
 
 class CdeSoumissionModel extends Model
 {
@@ -395,11 +395,11 @@ class CdeSoumissionModel extends Model
             // Construire la requête d'insertion et l'exécuter
             $builder = new InsertQueryBuilder("{$this->dbIrium}.bc_soumis_magasin");
             $builder->setData([
-                'numero_cde'                  => $bcSoumisMagasinDto->numeroCommande,
-                'statut'                    => $bcSoumisMagasinDto->statut,
-                'operateur'                 => $bcSoumisMagasinDto->operateur,
-                'date_heure_soumission'       => $bcSoumisMagasinDto->dateHeureSoumission,
-                'deposer_dw'                 => $bcSoumisMagasinDto->deposerDw,
+                'numero_cde'            => $bcSoumisMagasinDto->numeroCommande,
+                'statut'                => $bcSoumisMagasinDto->statut,
+                'operateur'             => $bcSoumisMagasinDto->operateur,
+                'date_heure_soumission' => $bcSoumisMagasinDto->dateHeureSoumission,
+                'deposer_dw'            => $bcSoumisMagasinDto->deposerDw,
             ]);
 
             $result = $builder->build();
