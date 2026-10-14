@@ -22,9 +22,9 @@ class GenererExcelTableauMargeReferenceMagasinCommand extends Command
             ->addArgument('code_societe', InputArgument::OPTIONAL, 'Code société (ex: HF, SCT...)', 'HF')
             ->setHelp(
                 "Cette commande permet de générer le fichier Excel du tableau de marge par référence d'un devis magasin.\n\n" .
-                "Exemples d'utilisation :\n" .
-                "  php bin/console app:magasin:generer-excel-marge-ref 12345\n" .
-                "  php bin/console app:magasin:generer-excel-marge-ref 12345 HF\n"
+                    "Exemples d'utilisation :\n" .
+                    "  php bin/console app:magasin:generer-excel-marge-ref 12345\n" .
+                    "  php bin/console app:magasin:generer-excel-marge-ref 12345 HF\n"
             );
     }
 
