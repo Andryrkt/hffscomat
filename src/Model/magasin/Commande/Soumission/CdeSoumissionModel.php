@@ -35,6 +35,7 @@ class CdeSoumissionModel extends Model
         $endDate   = (new \DateTime('last day of last month'))->format("Ym");
 
         $ipsArtSta = ($codeSociete === 'CO') ? "{$this->dbIpsRegix}.art_sta" : "{$this->dbIps}.art_sta";
+        $ipsAgrDev = ($codeSociete === 'CO') ? "{$this->dbIpsRegix}.agr_dev" : "{$this->dbIps}.agr_dev";
 
         $statement = "SELECT 
             fcde_numcde as num_cde,
@@ -49,7 +50,7 @@ class CdeSoumissionModel extends Model
             fbse_devise AS devise_code,
             (
                 SELECT TRIM(adev_lib)
-                FROM {$this->dbIps}.agr_dev
+                FROM $ipsAgrDev
                 WHERE adev_code = fbse_devise
             ) AS devise_libelle,
             (
