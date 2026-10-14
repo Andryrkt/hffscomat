@@ -328,7 +328,7 @@ class GeneratePdfCdeMagasin extends GeneratePdf
     /** Footer de chaque page : date de génération à gauche, "Page X / Y" au centre */
     private function renderPageFooters(): void
     {
-        $date  = (new \DateTime("now", new \DateTimeZone("Indian/Antananarivo")))->format('d/m/Y H:i:s');
+        $date  = (new \DateTime("now", new \DateTimeZone("Indian/Mauritius")))->format('d/m/Y H:i:s');
         $total = $this->pdf->getNumPages();
         $y     = $this->pdf->getPageHeight() - self::MARGIN_BOTTOM;
 
