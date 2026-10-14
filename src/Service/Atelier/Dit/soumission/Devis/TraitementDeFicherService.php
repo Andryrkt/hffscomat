@@ -48,7 +48,7 @@ class TraitementDeFicherService
 
             // creation du pdf de verification de prix
             $tableauMarge = $this->tableauMarge($dto->numeroDevis, $dto->codeSociete);
-            $tableauMargeReference = $this->tableauMargeReference($dto->numeroDevis, $dto->codeSociete, $dto->numeroVersion); // recupération des donnée et creation de ficher excel
+            $tableauMargeReference = $this->tableauMargeReference($dto->numeroDevis, $dto->codeSociete, $dto->numeroDevisDeux); // recupération des donnée et creation de ficher excel
             $mailUtilisateur = $this->securityService->getDataService()->getUserMail();
             $generePdfDevis->genererPdfVerificationPrix(
                 $tableauMarge,
@@ -78,7 +78,7 @@ class TraitementDeFicherService
             //$this->creationPdf($dto, $generePdfDevis, $nomFichierCtrl, $dto->codeSociete);
 
             // recupération des donnée et creation de ficher excel pour le tableau de marge (les données n'est pas nécessaire ici pour le devis atelier)
-            $tableauMargeReference = $this->tableauMargeReference($dto->numeroDevis, $dto->codeSociete, $dto->numeroVersion);
+            $tableauMargeReference = $this->tableauMargeReference($dto->numeroDevis, $dto->codeSociete, null);
 
             // création pdf pour devis vente
             $mailUtilisateur = $this->securityService->getDataService()->getUserMail();
@@ -235,7 +235,7 @@ class TraitementDeFicherService
         ];
     }
 
-    public function tableauMargeReference(string $numOr, string $codeSociete, string $numeroVersion): array
+    public function tableauMargeReference(string $numOr, string $codeSociete, ?string $numeroDevisDeux = null): array
     {
         $ditOrsoumisAValidationModel = new DitOrSoumisAValidationModel();
 
@@ -278,7 +278,8 @@ class TraitementDeFicherService
         ];
 
         // 1. Définir le chemin où enregistrer le fichier Excel
-        $cheminFichier = $_ENV['BASE_PATH_FICHIER'] . '/dit/dev/fichiers/marge_ref_' . $numOr . '.xlsx';
+        $numDevis = $numeroDevisDeux === null ? $numOr : $numeroDevisDeux;
+        $cheminFichier = $_ENV['BASE_PATH_FICHIER'] . '/dit/dev/fichiers/marge_ref_' . $numDevis . '.xlsx';
         // 2. Appel de la fonction de génération Excel
         $this->genererExcelTableauMargeReference($tableauMargeReference, $cheminFichier);
 

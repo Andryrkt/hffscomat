@@ -30,9 +30,9 @@ class GenererExcelTableauMargeReferenceCommand extends Command
             ->addArgument('numero_version', InputArgument::OPTIONAL, 'Numéro de version de devis', '1')
             ->setHelp(
                 "Cette commande permet de générer le fichier Excel du tableau de marge par référence.\n\n" .
-                "Exemples d'utilisation :\n" .
-                "  php bin/console app:dit:generer-excel-marge-ref 12345\n" .
-                "  php bin/console app:dit:generer-excel-marge-ref 12345 HF 1\n"
+                    "Exemples d'utilisation :\n" .
+                    "  php bin/console app:dit:generer-excel-marge-ref 12345\n" .
+                    "  php bin/console app:dit:generer-excel-marge-ref 12345 HF 1\n"
             );
     }
 
@@ -56,7 +56,7 @@ class GenererExcelTableauMargeReferenceCommand extends Command
             $io->text('Calcul du tableau de marge et génération du fichier Excel...');
 
             $service = $this->traitementDeFicherService ?? new TraitementDeFicherService();
-            $resultat = $service->tableauMargeReference($numOr, $codeSociete, $numeroVersion);
+            $resultat = $service->tableauMargeReference($numOr, $codeSociete, null);
 
             $cheminFichier = ($_ENV['BASE_PATH_FICHIER'] ?? '') . '/dit/dev/fichiers/marge_ref_' . $numOr . '.xlsx';
 
