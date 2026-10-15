@@ -34,6 +34,7 @@ class SuiviOperation
             $resultat = $traitement();
         } catch (\Throwable $e) {
             $this->ajouterEtape($nom, HistoriqueOperationEtape::STATUT_ECHEC, $debut, $e->getMessage());
+            error_log("Échec de l'étape « $nom » : " . $e->getMessage() . " (" . $e->getFile() . ":" . $e->getLine() . ")");
             throw new EtapeOperationException($nom, $e);
         }
 

@@ -11,6 +11,8 @@ use App\Dto\Magasin\Commande\Soumission\BcSoumisMagasinDTO;
 use App\Model\magasin\CommANDe\Soumission\CdeSoumissionModel;
 use App\Form\magasin\Commande\SoumissionCommande\SoumissionCommandeType;
 use App\Service\historiqueOperation\magasin\commandeFrn\HistoriqueOperationCdeFrnService;
+use App\Service\historiqueOperation\EtapeOperationException;
+use App\Service\historiqueOperation\SuiviOperation;
 
 /**
  * @Route("/magasin/commande")
@@ -64,17 +66,37 @@ class SoumissionCommandeController extends Controller
 
         $cheminDuFichier = $_ENV["BASE_PATH_FICHIER"] . str_replace('/Upload', '', $generatedFilePath);
 
-        if (!file_exists($cheminDuFichier)) {
-            throw new \Exception("Le fichier PDF n'existe pas : " . $generatedFilePath);
+        // suivi de chaque étape (durée, succès / échec) enregistré avec l'historique de l'opération
+        $suivi = new SuiviOperation();
+        $message = 'Votre demande a été enregistrée';
+
+        try {
+            $suivi->etape('Vérification du fichier PDF', function () use ($cheminDuFichier, $generatedFilePath) {
+                if (!file_exists($cheminDuFichier)) {
+                    throw new \RuntimeException("Le fichier PDF n'existe pas : " . $generatedFilePath);
+                }
+            });
+
+            // un échec de copie DocuWare ne bloque pas l'enregistrement : il est tracé par deposerDw = false
+            try {
+                $suivi->etape('Copie DocuWare', function () use ($cheminDuFichier, $numCommande) {
+                    $this->generatePdfCdeMagasin->exigerCopieReussie($this->generatePdfCdeMagasin->copyToDOCUWARE($cheminDuFichier, $numCommande));
+                });
+                $bcSoumisMagasinDto->deposerDw = true;
+            } catch (EtapeOperationException $e) {
+                $message .= ", mais la copie dans DocuWare a échoué";
+            }
+
+            $suivi->etape('Enregistrement base de données', function () use ($bcSoumisMagasinDto) {
+                $this->cdeSoumissionModel->enregistrerBcSoumisMagasin($bcSoumisMagasinDto);
+            });
+        } catch (EtapeOperationException $e) {
+            $message = "Echec de la soumission de la commande " . $numCommande . " à l'étape « " . $e->getEtape() . " ». Veuillez contacter l'administrateur.";
+            $this->historiqueOperation->setEtapes($suivi->getEtapes());
+            $this->historiqueOperation->sendNotificationSoumission($message, $numCommande ?? '-', 'profil_acceuil', false);
         }
 
-        $isCopiedToDWFilePath = $this->generatePdfCdeMagasin->copyToDOCUWARE($cheminDuFichier, $numCommande);
-
-        if ($isCopiedToDWFilePath) {
-            $bcSoumisMagasinDto->deposerDw = true;
-        };
-
-        $this->cdeSoumissionModel->enregistrerBcSoumisMagasin($bcSoumisMagasinDto);
-        $this->historiqueOperation->sendNotificationSoumission('Votre demande a été enregistrée', $bcSoumisMagasinDto->numeroCommande, 'profil_acceuil', true);
+        $this->historiqueOperation->setEtapes($suivi->getEtapes());
+        $this->historiqueOperation->sendNotificationSoumission($message, $bcSoumisMagasinDto->numeroCommande, 'profil_acceuil', true);
     }
 }

@@ -14,13 +14,13 @@ class GeneratePdfBcNeg extends GeneratePdf
      *
      * @param string $fileName
      * @param string $numeroDevis
-     * @return void
+     * @return bool true si le fichier est bien copié dans DocuWare
      */
-    public function copyToDWBcMagasin(string $fileName, string $numeroDevis): void
+    public function copyToDWBcMagasin(string $fileName, string $numeroDevis): bool
     {
         $cheminFichierDistant = $this->baseCheminDocuware . 'BC MAGASIN/' . $fileName;
         $cheminDestinationLocal = $this->baseCheminDuFichier . 'magasin/devis/' . $numeroDevis . '/' . $fileName;
-        $this->copyFile($cheminDestinationLocal, $cheminFichierDistant);
+        return $this->copyFile($cheminDestinationLocal, $cheminFichierDistant);
     }
 
     /**

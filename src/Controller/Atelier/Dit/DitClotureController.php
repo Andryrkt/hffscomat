@@ -7,6 +7,9 @@ use App\Controller\Traits\DitListeTrait;
 use App\Dto\Atelier\Dit\DitDto;
 use App\Model\Atelier\Dit\DitModel;
 use App\Service\docuware\CopyDocuwareService;
+use App\Service\historiqueOperation\Atelier\Dit\HistoriqueOperationDITService;
+use App\Service\historiqueOperation\EtapeOperationException;
+use App\Service\historiqueOperation\SuiviOperation;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -40,45 +43,70 @@ class DitClotureController extends Controller
             return $this->redirectToRoute("dit_liste");
         }
 
-        $this->modificationDit($ditInformations["numero_demande_dit"], $ditInformations["code_societe"]);
+        $numeroDit = $ditInformations["numero_demande_dit"];
+        $historiqueOperation = new HistoriqueOperationDITService($this->getEntityManager());
 
-        $fileNameUplode = 'fichier_cloturer_annuler_' . $ditInformations["numero_demande_dit"] . '.csv';
-        $basePath = rtrim($_ENV['BASE_PATH_FICHIER'], '/\\');
-
-        $dirPath = $basePath . '/dit/' . $ditInformations["numero_demande_dit"];
-
-        // create directory if not exists
-        if (!is_dir($dirPath)) {
-            mkdir($dirPath, 0777, true);
-        }
-
-        $filePathUplode = $dirPath . '/' . $fileNameUplode;
-
-        $fileNameDw = $fileNameUplode;
-        // $filePathDw = $_ENV['BASE_PATH_FICHIER'] . '/dit/csv/' . $fileNameDw;
-        $headers = ['Numéro DIT', 'statut'];
-        $numDits = (new DitModel())->recupDitAAnnuler();
-
-        $data = [];
-
-        foreach ($numDits as  $numDit) {
-            $data[] = [
-                $numDit["numero_demande_dit"],
-                'Clôturé annulé'
-            ];
-        }
-
-        if (file_exists($filePathUplode)) {
-            unlink($filePathUplode);
-        }
-
-        $this->ajouterDansCsv($filePathUplode, $data, $headers);
-        $copyDocuwareService = new CopyDocuwareService();
-        $copyDocuwareService->copyCsvToDw($fileNameDw, $filePathUplode);
-
+        // suivi de chaque étape (durée, succès / échec) enregistré avec l'historique de l'opération
+        $suivi = new SuiviOperation();
         $message = "La DIT a été clôturé avec succès.";
-        $this->notification($message);
-        $this->redirectToRoute("dit_liste");
+
+        try {
+            $suivi->etape('Mise à jour de la DIT', function () use ($numeroDit, $ditInformations) {
+                $this->modificationDit($numeroDit, $ditInformations["code_societe"]);
+            });
+
+            $fileNameUplode = 'fichier_cloturer_annuler_' . $numeroDit . '.csv';
+            $basePath = rtrim($_ENV['BASE_PATH_FICHIER'], '/\\');
+
+            $dirPath = $basePath . '/dit/' . $numeroDit;
+            $filePathUplode = $dirPath . '/' . $fileNameUplode;
+
+            $fileNameDw = $fileNameUplode;
+            // $filePathDw = $_ENV['BASE_PATH_FICHIER'] . '/dit/csv/' . $fileNameDw;
+
+            $suivi->etape('Génération fichier CSV', function () use ($dirPath, $filePathUplode) {
+                // create directory if not exists
+                if (!is_dir($dirPath)) {
+                    mkdir($dirPath, 0777, true);
+                }
+
+                $headers = ['Numéro DIT', 'statut'];
+                $numDits = (new DitModel())->recupDitAAnnuler();
+
+                $data = [];
+
+                foreach ($numDits as  $numDit) {
+                    $data[] = [
+                        $numDit["numero_demande_dit"],
+                        'Clôturé annulé'
+                    ];
+                }
+
+                if (file_exists($filePathUplode)) {
+                    unlink($filePathUplode);
+                }
+
+                $this->ajouterDansCsv($filePathUplode, $data, $headers);
+            });
+
+            // un échec de copie ne bloque pas la clôture (déjà enregistrée) : il est signalé dans le message
+            try {
+                $suivi->etape('Copie FTP DocuWare', function () use ($fileNameDw, $filePathUplode) {
+                    if (!(new CopyDocuwareService())->copyCsvToDw($fileNameDw, $filePathUplode)) {
+                        throw new \RuntimeException("copie du fichier $fileNameDw vers le FTP DocuWare échouée (voir le log)");
+                    }
+                });
+            } catch (EtapeOperationException $e) {
+                $message = "La DIT a été clôturé, mais l'envoi du fichier vers DocuWare a échoué.";
+            }
+        } catch (EtapeOperationException $e) {
+            $message = "Echec de la clôture de la DIT " . $numeroDit . " à l'étape « " . $e->getEtape() . " ». Veuillez contacter l'administrateur.";
+            $historiqueOperation->setEtapes($suivi->getEtapes());
+            $historiqueOperation->sendNotificationCloture($message, $numeroDit, 'dit_liste', false);
+        }
+
+        $historiqueOperation->setEtapes($suivi->getEtapes());
+        $historiqueOperation->sendNotificationCloture($message, $numeroDit, 'dit_liste', true);
     }
 
 

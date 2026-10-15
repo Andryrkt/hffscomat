@@ -6,7 +6,9 @@ use App\Controller\Controller;
 use App\Factory\magasin\devis\Pointage\EnvoyerAuClientFactory;
 use App\Form\magasin\devis\Pointage\EnvoyerAuClientType;
 use App\Model\magasin\devis\Pointage\PointageModel;
+use App\Service\historiqueOperation\EtapeOperationException;
 use App\Service\historiqueOperation\HistoriqueOperationDevisMagasinService;
+use App\Service\historiqueOperation\SuiviOperation;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -54,15 +56,27 @@ class EnvoyerAuClientController extends Controller
 
             $dto = (new EnvoyerAuClientFactory())->createFromDto($dto);
 
-            // Modification dans la base de données
-            $pointageModel = new PointageModel();
-            $pointageModel->updatePointage($dto);
-
-            //HISTORISATION DE L'OPERATION
-            $message = "Pointage enregistré avec succès .";
             $criteria = (array) ($this->getSessionService()->get('criteria_for_excel_liste_devis_neg') ?? []);
             $nomDeRoute = 'liste_devis_neg'; // route de redirection après soumission
             $nomInputSearch = 'devis_neg_search'; // initialistion de nom de chaque champ ou input
+
+            // suivi de chaque étape (durée, succès / échec) enregistré avec l'historique de l'opération
+            $suivi = new SuiviOperation();
+
+            try {
+                // Modification dans la base de données
+                $suivi->etape('Mise à jour du pointage', function () use ($dto) {
+                    (new PointageModel())->updatePointage($dto);
+                });
+            } catch (EtapeOperationException $e) {
+                $message = "Echec du pointage « envoyé au client » du devis numero : " . $dto->numeroDevis . ". Veuillez contacter l'administrateur.";
+                $this->historiqueOperationDeviMagasinService->setEtapes($suivi->getEtapes());
+                $this->historiqueOperationDeviMagasinService->sendNotificationSoumission($message, $dto->numeroDevis, $nomDeRoute, false, $criteria, $nomInputSearch);
+            }
+
+            //HISTORISATION DE L'OPERATION
+            $message = "Pointage enregistré avec succès .";
+            $this->historiqueOperationDeviMagasinService->setEtapes($suivi->getEtapes());
             $this->historiqueOperationDeviMagasinService->sendNotificationSoumission($message, $dto->numeroDevis, $nomDeRoute, true, $criteria, $nomInputSearch);
         }
     }

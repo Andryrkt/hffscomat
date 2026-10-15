@@ -26,6 +26,19 @@ class GeneratePdf
         return $this->derniereErreurCopie;
     }
 
+    /**
+     * Lève une exception avec la raison de l'échec si la copie n'a pas réussi
+     * (à utiliser dans une étape de SuiviOperation)
+     *
+     * @throws \RuntimeException
+     */
+    public function exigerCopieReussie(bool $copieReussie): void
+    {
+        if (!$copieReussie) {
+            throw new \RuntimeException($this->derniereErreurCopie ?? 'copie vers DocuWare échouée');
+        }
+    }
+
     protected function copyFile(string $sourcePath, string $destinationPath): bool
     {
         $this->derniereErreurCopie = null;

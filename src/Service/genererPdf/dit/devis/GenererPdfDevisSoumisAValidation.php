@@ -17,25 +17,25 @@ class GenererPdfDevisSoumisAValidation extends GeneratePdf
     use TableauMargeTableTrait;
     use TableauMargeReferenceTableTrait;
 
-    public function copyToDWDevisSoumis(string $fileName)
+    public function copyToDWDevisSoumis(string $fileName): bool
     {
         $cheminFichierDistant = $this->baseCheminDocuware . 'ORDRE_DE_MISSION/' . $fileName;
         $cheminDestinationLocal = $this->baseCheminDuFichier . 'dit/dev/' . $fileName;
-        $this->copyFile($cheminDestinationLocal, $cheminFichierDistant);
+        return $this->copyFile($cheminDestinationLocal, $cheminFichierDistant);
     }
 
-    public function copyToDWFichierDevisSoumis(string $fileName, string $langue)
+    public function copyToDWFichierDevisSoumis(string $fileName, string $langue): bool
     {
         $cheminFichierDistant = $langue === 'EN' ? $this->baseCheminDocuware . 'DEVIS ATELIER/' . $fileName : $this->baseCheminDocuware . 'DEVIS ATELIER - Fr/' . $fileName;
         $cheminDestinationLocal = $this->baseCheminDuFichier . 'dit/dev/fichiers/' . $fileName;
-        $this->copyFile($cheminDestinationLocal, $cheminFichierDistant);
+        return $this->copyFile($cheminDestinationLocal, $cheminFichierDistant);
     }
 
-    public function copyToDWFichierDevisSoumisVp(string $fileName, string $langue)
+    public function copyToDWFichierDevisSoumisVp(string $fileName, string $langue): bool
     {
         $cheminFichierDistant = $langue === 'EN' ? $this->baseCheminDocuware . 'VERIFICATION_PRIX/' . $fileName : $this->baseCheminDocuware . 'VERIFICATION_PRIX - Fr/' . $fileName;
         $cheminDestinationLocal = $this->baseCheminDuFichier . 'dit/dev/' . $fileName;
-        $this->copyFile($cheminDestinationLocal, $cheminFichierDistant);
+        return $this->copyFile($cheminDestinationLocal, $cheminFichierDistant);
     }
 
     /**

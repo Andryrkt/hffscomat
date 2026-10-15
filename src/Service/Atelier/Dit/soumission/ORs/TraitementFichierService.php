@@ -10,6 +10,8 @@ use App\Model\Atelier\Dit\Soumission\DitOrSoumisAValidationModel;
 use App\Service\fichier\TraitementDeFichier;
 use App\Service\fichier\UploderFileService;
 use App\Service\genererPdf\dit\ors\GenererPdfOrSoumisAValidation;
+use App\Service\historiqueOperation\EtapeOperationException;
+use App\Service\historiqueOperation\SuiviOperation;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -17,39 +19,57 @@ class TraitementFichierService
 {
     use PdfConversionTrait;
 
-    public function traitementDeFichier(FormInterface $form, OrSoumissionDto $dto, string $email): void
+    /**
+     * @param SuiviOperation|null $suivi suivi des étapes (enregistré avec l'historique de l'opération)
+     *
+     * @throws EtapeOperationException si une étape échoue
+     */
+    public function traitementDeFichier(FormInterface $form, OrSoumissionDto $dto, string $email, ?SuiviOperation $suivi = null): void
     {
+        $suivi = $suivi ?? new SuiviOperation();
         $ditOrsoumisAValidationModel = new DitOrSoumisAValidationModel();
 
         $numeroOr = $dto->numeroOr;
         $numeroDit = $dto->numeroDit;
         $langueIps = $dto->langueIps;
-        $suffix = $ditOrsoumisAValidationModel->constructeurPieceMagasin($numeroOr)[0]['retour'];
+        $suffix = $suivi->etape('Récupération du constructeur', function () use ($ditOrsoumisAValidationModel, $numeroOr) {
+            return $ditOrsoumisAValidationModel->constructeurPieceMagasin($numeroOr)[0]['retour'];
+        });
 
-        /** 
+        /**
          * 1. gestion des pieces jointes et generer le nom du fichier PDF
          * Enregistrement de fichier uploder
-         * @var array $nomEtCheminFichiersEnregistrer 
-         * @var array $nomFichierEnregistrer 
+         * @var array $nomEtCheminFichiersEnregistrer
+         * @var array $nomFichierEnregistrer
          * @var string $nomAvecCheminFichier
          * @var string $nomFichier
          */
-        [$nomEtCheminFichiersEnregistrer, $nomFichierEnregistrer, $nomAvecCheminFichier, $nomFichier] = $this->enregistrementFichier($form, $dto, $suffix);
+        [$nomEtCheminFichiersEnregistrer, $nomFichierEnregistrer, $nomAvecCheminFichier, $nomFichier] = $suivi->etape('Enregistrement fichiers joints', function () use ($form, $dto, $suffix) {
+            return $this->enregistrementFichier($form, $dto, $suffix);
+        });
 
         // 2. creation de la page de garde
         $genererPdfOrSoumisAValidation = new GenererPdfOrSoumisAValidation();
-        $this->creationPdf($dto, $nomAvecCheminFichier, $genererPdfOrSoumisAValidation, $email);
+        $suivi->etape('Génération page de garde', function () use ($dto, $nomAvecCheminFichier, $genererPdfOrSoumisAValidation, $email) {
+            $this->creationPdf($dto, $nomAvecCheminFichier, $genererPdfOrSoumisAValidation, $email);
+        });
 
         // 3. ajout du page de garde à la premier position
         $traitementDeFichier = new TraitementDeFichier();
         $nomEtCheminFichiersEnregistrer = $traitementDeFichier->insertFileAtPosition($nomEtCheminFichiersEnregistrer, $nomAvecCheminFichier, 0);
 
         // 4. fusion du page de garde et des pieces jointes (conversion avant la fusion)
-        $nomEtCheminFichierConvertie = $this->ConvertirLesPdf($nomEtCheminFichiersEnregistrer);
-        $traitementDeFichier->fusionFichers($nomEtCheminFichierConvertie, $nomAvecCheminFichier);
+        $nomEtCheminFichierConvertie = $suivi->etape('Conversion PDF (Ghostscript)', function () use ($nomEtCheminFichiersEnregistrer) {
+            return $this->ConvertirLesPdf($nomEtCheminFichiersEnregistrer);
+        });
+        $suivi->etape('Fusion PDF', function () use ($traitementDeFichier, $nomEtCheminFichierConvertie, $nomAvecCheminFichier) {
+            $traitementDeFichier->fusionFichers($nomEtCheminFichierConvertie, $nomAvecCheminFichier);
+        });
 
         // 5.  envoyer le pdf fusionner dans DW
-        $genererPdfOrSoumisAValidation->copyToDw($nomFichier, $numeroDit, $langueIps);
+        $suivi->etape('Copie DocuWare', function () use ($genererPdfOrSoumisAValidation, $nomFichier, $numeroDit, $langueIps) {
+            $genererPdfOrSoumisAValidation->exigerCopieReussie($genererPdfOrSoumisAValidation->copyToDw($nomFichier, $numeroDit, $langueIps));
+        });
     }
 
     private function enregistrementFichier(FormInterface $form, OrSoumissionDto $dto, string $suffix): array

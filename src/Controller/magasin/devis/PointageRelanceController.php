@@ -11,6 +11,9 @@ use App\Factory\magasin\devis\PointageRelanceFactory;
 use App\Form\magasin\devis\PointageRelanceType;
 use App\Model\magasin\devis\Pointage\PointageRelanceModel;
 use App\Service\autres\AutoIncDecService;
+use App\Service\historiqueOperation\EtapeOperationException;
+use App\Service\historiqueOperation\HistoriqueOperationDevisMagasinService;
+use App\Service\historiqueOperation\SuiviOperation;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -20,6 +23,8 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class PointageRelanceController extends Controller
 {
+    private const TYPE_OPERATION_CREATION = 5;
+
     /**
      * Affiche le formulaire de pointage relance dans un modal (appel AJAX)
      * @Route("/pointage-relance-form/{numeroDevis}", name="api_devis_magasin_relance_client_form")
@@ -59,21 +64,56 @@ class PointageRelanceController extends Controller
         if ($form->isSubmitted() && $form->isValid()) {
             // Code Société de l'utilisateur
             $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
+            $numeroDevis = (string) $data['numeroDevis'];
 
-            $pointageRelanceEntity = (new PointageRelanceFactory())->map($data, $this->getUserName(), $this->numeroRelance($data['numeroDevis'], $codeSociete), $codeSociete);
-            $pointageRelanceModel = new PointageRelanceModel();
-            $pointageRelanceModel->enregistrerPointageRelance($pointageRelanceEntity);
+            // suivi de chaque étape (durée, succès / échec) enregistré avec l'historique de l'opération
+            $suivi = new SuiviOperation();
 
-            // Mettre à jour le statut de relance du devis
-            $numeroVersionDevis = $pointageRelanceModel->getNumeroVersionDevis($pointageRelanceEntity->getNumeroDevis(), $codeSociete);
-            $pointageRelanceModel->updateDevis($pointageRelanceEntity, $numeroVersionDevis);
+            try {
+                $pointageRelanceModel = new PointageRelanceModel();
 
+                $pointageRelanceEntity = $suivi->etape('Enregistrement base de données', function () use ($data, $codeSociete, $pointageRelanceModel) {
+                    $pointageRelanceEntity = (new PointageRelanceFactory())->map($data, $this->getUserName(), $this->numeroRelance($data['numeroDevis'], $codeSociete), $codeSociete);
+                    $pointageRelanceModel->enregistrerPointageRelance($pointageRelanceEntity);
+                    return $pointageRelanceEntity;
+                });
+
+                // Mettre à jour le statut de relance du devis
+                $suivi->etape('Mise à jour du devis', function () use ($pointageRelanceModel, $pointageRelanceEntity, $codeSociete) {
+                    $numeroVersionDevis = $pointageRelanceModel->getNumeroVersionDevis($pointageRelanceEntity->getNumeroDevis(), $codeSociete);
+                    $pointageRelanceModel->updateDevis($pointageRelanceEntity, $numeroVersionDevis);
+                });
+            } catch (EtapeOperationException $e) {
+                $message = "Echec du pointage relance du devis numero : $numeroDevis à l'étape « " . $e->getEtape() . " ». Veuillez contacter l'administrateur.";
+                $this->historiser($numeroDevis, false, $message, $suivi);
+
+                return $this->jsonResponse(['success' => false, 'message' => $message], 500);
+            }
+
+            $this->historiser($numeroDevis, true, "Pointage relance du devis numero : $numeroDevis enregistré avec succès.", $suivi);
 
             return $this->jsonResponse(['success' => true, 'message' => 'Formulaire soumis avec succès.']);
         }
 
         // Si le formulaire n'est pas valide, renvoyer les erreurs.
         return $this->jsonResponse(['success' => false, 'message' => 'Erreurs de validation.', 'errors' => (string) $form->getErrors(true, false)], 400);
+    }
+
+    /**
+     * Enregistre l'historique de l'opération (CREATION) avec ses étapes, sans redirection (réponse JSON).
+     * Une erreur d'historisation ne doit pas faire échouer la réponse : elle est seulement loggée.
+     */
+    private function historiser(string $numeroDevis, bool $succes, string $message, SuiviOperation $suivi): void
+    {
+        try {
+            global $container;
+            /** @var HistoriqueOperationDevisMagasinService $historiqueOperation */
+            $historiqueOperation = $container->get(HistoriqueOperationDevisMagasinService::class);
+            $historiqueOperation->setEtapes($suivi->getEtapes());
+            $historiqueOperation->enregistrer($numeroDevis, self::TYPE_OPERATION_CREATION, $succes, $message);
+        } catch (\Throwable $e) {
+            error_log("Historisation du pointage relance du devis $numeroDevis impossible : " . $e->getMessage());
+        }
     }
 
     /**

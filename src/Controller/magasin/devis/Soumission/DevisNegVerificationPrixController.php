@@ -95,8 +95,6 @@ class DevisNegVerificationPrixController extends Controller
             try {
                 $this->traitementSoumission($form, $dto, $suivi);
             } catch (EtapeOperationException $e) {
-                error_log("Soumission vérification de prix devis {$dto->numeroDevis} en échec - " . $e->getMessage() . " | " . $e->getPrevious()->getFile() . ":" . $e->getPrevious()->getLine());
-
                 //HISTORISATION DE L'OPERATION EN ECHEC
                 $message = "Echec de la vérification de prix du devis numero : " . $dto->numeroDevis . " à l'étape « " . $e->getEtape() . " ». Veuillez contacter l'administrateur.";
                 $this->historiqueOperationDeviMagasinService->setEtapes($suivi->getEtapes());
@@ -164,9 +162,7 @@ class DevisNegVerificationPrixController extends Controller
 
         //envoie du fichier dans DW
         $suivi->etape('Copie DocuWare', function () use ($generatePdfDevisMagasin, $nomFichier, $dto) {
-            if (!$generatePdfDevisMagasin->copyToDWDevisVpMagasin($nomFichier, $dto->numeroDevis)) {
-                throw new \RuntimeException($generatePdfDevisMagasin->getDerniereErreurCopie() ?? "copie du fichier $nomFichier dans DocuWare échouée");
-            }
+            $generatePdfDevisMagasin->exigerCopieReussie($generatePdfDevisMagasin->copyToDWDevisVpMagasin($nomFichier, $dto->numeroDevis));
         });
 
         //envoie de mail au PM

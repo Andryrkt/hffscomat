@@ -11,6 +11,8 @@ use App\Service\atelier\dit\soumission\Ri\RiValidationService;
 use App\Service\atelier\dit\soumission\Ri\TraitementFichierService;
 use App\Service\genererPdf\dit\ri\GenererPdfRiSoumisAValidataion;
 use App\Service\historiqueOperation\Atelier\Dit\Ri\HistoriqueOperationRIService;
+use App\Service\historiqueOperation\EtapeOperationException;
+use App\Service\historiqueOperation\SuiviOperation;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -63,24 +65,40 @@ class DitRiSoumisAValidationController extends Controller
                 return;
             }
 
-            // Enregistrement dans la base de donnée
-            $datas = DitRiSoumisAValidationMapper::map($dto);
-            $ditRiSoumisAValidationModel = new DitRiSoumisAValidationModel();
-            $ditRiSoumisAValidationModel->enregistrementRi($datas);
+            $historiqueOperationRIService = new HistoriqueOperationRIService($this->getEntityManager());
 
-            // Traitement des fichiers
-            $traitementFichier = new TraitementFichierService($this->getEntityManager());
-            $nomDesFichiers = $traitementFichier->traiterFichierJoint($form, $dto);
+            // suivi de chaque étape (durée, succès / échec) enregistré avec l'historique de l'opération
+            $suivi = new SuiviOperation();
 
-            // copie des fichiers RI dans DOCUWARE
-            $genererPdfRiSoumisAValidataion = new GenererPdfRiSoumisAValidataion();
-            foreach ($nomDesFichiers as $fileName) {
-                $genererPdfRiSoumisAValidataion->copyToDw($fileName);
+            try {
+                // Enregistrement dans la base de donnée
+                $suivi->etape('Enregistrement base de données', function () use ($dto) {
+                    $datas = DitRiSoumisAValidationMapper::map($dto);
+                    (new DitRiSoumisAValidationModel())->enregistrementRi($datas);
+                });
+
+                // Traitement des fichiers
+                $nomDesFichiers = $suivi->etape('Enregistrement fichiers RI', function () use ($form, $dto) {
+                    $traitementFichier = new TraitementFichierService($this->getEntityManager());
+                    return $traitementFichier->traiterFichierJoint($form, $dto);
+                });
+
+                // copie des fichiers RI dans DOCUWARE
+                $suivi->etape('Copie DocuWare', function () use ($nomDesFichiers, $dto) {
+                    $genererPdfRiSoumisAValidataion = new GenererPdfRiSoumisAValidataion();
+                    foreach ($nomDesFichiers as $fileName) {
+                        $genererPdfRiSoumisAValidataion->exigerCopieReussie($genererPdfRiSoumisAValidataion->copyToDw($fileName, $dto->numeroDit));
+                    }
+                });
+            } catch (EtapeOperationException $e) {
+                $message = "Echec de la soumission du rapport d'intervention RI_{$dto->numeroOr} à l'étape « " . $e->getEtape() . " ». Veuillez contacter l'administrateur.";
+                $historiqueOperationRIService->setEtapes($suivi->getEtapes());
+                $historiqueOperationRIService->sendNotificationSoumission($message, $dto->numeroDit, 'dit_liste', false);
             }
 
             // notification reussi de soumission
-            $historiqueOperationRIService = new HistoriqueOperationRIService($this->getEntityManager());
             $message = "Le rapport d'intervention a été soumis avec succès, RI_{$dto->numeroOr}";
+            $historiqueOperationRIService->setEtapes($suivi->getEtapes());
             $historiqueOperationRIService->sendNotificationSoumission($message, $dto->numeroDit, 'dit_liste', true);
         }
     }

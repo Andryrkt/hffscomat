@@ -10,6 +10,8 @@ use App\Model\Atelier\Dit\Soumission\Devis\DitDevisSoumisAValidationModel;
 use App\Service\atelier\dit\soumission\Devis\DevisValidationService;
 use App\Service\atelier\dit\soumission\Devis\TraitementDeFicherService;
 use App\Service\historiqueOperation\Atelier\Dit\Devis\HistoriqueOperationDEVService;
+use App\Service\historiqueOperation\EtapeOperationException;
+use App\Service\historiqueOperation\SuiviOperation;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -80,19 +82,34 @@ class DitDevisSoumisAVAlidataionController extends Controller
 
             $ditDevisSoumisAValidationModel = new DitDevisSoumisAValidationModel();
 
-            // enregistrement dans la base de donnée
-            $datas = DitDevisSoumisAValidationMapper::enregistreDevis($dto);
-            $ditDevisSoumisAValidationModel->enregistrerDevis($datas);
-            // edit du table demande_itervention en modifiant les colonnes, numero_devis_rattache et statut_devis
-            $donnees = DitDevisSoumisAValidationMapper::updateDit($dto);
-            $ditDevisSoumisAValidationModel->updateNumeroEtStatuDevis($dto->numeroDit, $dto->codeSociete, $donnees);
+            // suivi de chaque étape (durée, succès / échec) enregistré avec l'historique de l'opération
+            $suivi = new SuiviOperation();
 
-            // traitement de fichier et copie dans DOCUWARE
-            $traitementDuFichier = new TraitementDeFicherService($this->getSecurityService());
-            $traitementDuFichier->traitementDeFicher($form, $dto);
+            try {
+                // enregistrement dans la base de donnée
+                $suivi->etape('Enregistrement base de données', function () use ($ditDevisSoumisAValidationModel, $dto) {
+                    $datas = DitDevisSoumisAValidationMapper::enregistreDevis($dto);
+                    $ditDevisSoumisAValidationModel->enregistrerDevis($datas);
+                });
+                // edit du table demande_itervention en modifiant les colonnes, numero_devis_rattache et statut_devis
+                $suivi->etape('Mise à jour de la DIT', function () use ($ditDevisSoumisAValidationModel, $dto) {
+                    $donnees = DitDevisSoumisAValidationMapper::updateDit($dto);
+                    $ditDevisSoumisAValidationModel->updateNumeroEtStatuDevis($dto->numeroDit, $dto->codeSociete, $donnees);
+                });
+
+                // traitement de fichier et copie dans DOCUWARE
+                $traitementDuFichier = new TraitementDeFicherService($this->getSecurityService());
+                $traitementDuFichier->traitementDeFicher($form, $dto, $suivi);
+            } catch (EtapeOperationException $e) {
+                // historisation de l'échec
+                $message = "Echec de la soumission du devis " . $dto->numeroDevis . " à l'étape « " . $e->getEtape() . " ». Veuillez contacter l'administrateur.";
+                $historiqueOperationDEVService->setEtapes($suivi->getEtapes());
+                $historiqueOperationDEVService->sendNotificationCreation($message, $dto->numeroDevis, 'dit_liste', false);
+            }
 
             // historisation
             $message = 'Le devis a été soumis avec succès';
+            $historiqueOperationDEVService->setEtapes($suivi->getEtapes());
             $historiqueOperationDEVService->sendNotificationCreation($message, $dto->numeroDevis, 'dit_liste', true);
         }
     }

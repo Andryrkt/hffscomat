@@ -12,32 +12,39 @@ class GenererPdfFactureAValidation extends GeneratePdf
 
     use FormatageTrait;
 
-    public function copyToDwFactureSoumis(int $numeroSoumission, ?string $numeroFact)
+    public function copyToDwFactureSoumis(int $numeroSoumission, ?string $numeroFact): bool
     {
         $nomFichier = "sctfactureValidation_{$numeroFact}_{$numeroSoumission}.pdf";
         $cheminFichierDistant = $this->baseCheminDocuware . "FACTURE OR/$nomFichier";
         $cheminDestinationLocal = $this->baseCheminDuFichier . "vfac/$nomFichier";
-        copy($cheminDestinationLocal, $cheminFichierDistant);
+        return $this->copyFile($cheminDestinationLocal, $cheminFichierDistant);
     }
 
 
-    public function copyToDwFacture(int $numeroSoumission, ?string $numeroFact)
+    public function copyToDwFacture(int $numeroSoumission, ?string $numeroFact): bool
     {
         $nomFichier = "sctvalidation_facture_client_{$numeroFact}_{$numeroSoumission}.pdf";
         $cheminFichierDistant = $this->baseCheminDocuware . "FACTURE OR/$nomFichier";
         $cheminDestinationLocal = $this->baseCheminDuFichier . "vfac/$nomFichier";
-        copy($cheminDestinationLocal, $cheminFichierDistant);
+        return $this->copyFile($cheminDestinationLocal, $cheminFichierDistant);
     }
 
 
-    public function copyToDwFactureFichier(int $numeroSoumission, ?string $numeroFact, array $pathFichiers)
+    /**
+     * @return bool true si tous les fichiers sont copiés (arrêt au premier échec)
+     */
+    public function copyToDwFactureFichier(int $numeroSoumission, ?string $numeroFact, array $pathFichiers): bool
     {
         for ($i = 0; $i < count($pathFichiers); $i++) {
             $nomFichier = "sctfacture_client_{$numeroFact}_{$numeroSoumission}_{$i}.pdf";
             $cheminFichierDistant = $this->baseCheminDocuware . "FACTURE OR/$nomFichier";
             $cheminDestinationLocal = $pathFichiers[$i];
-            $this->copyFile($cheminDestinationLocal, $cheminFichierDistant);
+            if (!$this->copyFile($cheminDestinationLocal, $cheminFichierDistant)) {
+                return false;
+            }
         }
+
+        return true;
     }
 
 

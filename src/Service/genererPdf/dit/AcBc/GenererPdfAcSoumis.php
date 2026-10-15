@@ -19,9 +19,9 @@ class GenererPdfAcSoumis extends GeneratePdf
         $this->baseDirDitFiles = $baseDirDitFiles;
     }
 
-    public function copyToDwAcSoumis(string $fileName)
+    public function copyToDwAcSoumis(string $fileName): bool
     {
-        $this->copyFile("{$this->baseDirDitFiles}/$fileName", "{$this->baseCheminDocuware}BC ATELIER/{$fileName}");
+        return $this->copyFile("{$this->baseDirDitFiles}/$fileName", "{$this->baseCheminDocuware}BC ATELIER/{$fileName}");
     }
 
     /** 

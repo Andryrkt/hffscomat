@@ -14,6 +14,8 @@ use App\Model\Atelier\Dit\Soumission\DitOrSoumisAValidationModel;
 use App\Service\atelier\dit\soumission\ORs\TraitementFichierService;
 use App\Service\atelier\dit\soumission\ORs\ValidationService;
 use App\Service\historiqueOperation\Atelier\Dit\ORs\HistoriqueOperationORService;
+use App\Service\historiqueOperation\EtapeOperationException;
+use App\Service\historiqueOperation\SuiviOperation;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -86,15 +88,29 @@ class DitOrsSoumisAValidationController extends Controller
             if ($this->validationService->validateSubmittedFile($form, null, $dto)) return;
 
 
-            /** ENVOIE des DONNEE dans BASE DE DONNEE */
-            $this->envoieDonnerDansBd($dto);
+            // suivi de chaque étape (durée, succès / échec) enregistré avec l'historique de l'opération
+            $suivi = new SuiviOperation();
 
-            /** CREATION , FUSION, ENVOIE DW du PDF */
-            (new TraitementFichierService())->traitementDeFichier($form, $dto, $this->getUserMail());
+            try {
+                /** ENVOIE des DONNEE dans BASE DE DONNEE */
+                $suivi->etape('Enregistrement base de données', function () use ($dto) {
+                    $this->envoieDonnerDansBd($dto);
+                });
 
-            /** modifier la colonne id_statut_demande, numero_or, statut_or dans la table demande_intervention */
-            $this->modificationDit($dto);
+                /** CREATION , FUSION, ENVOIE DW du PDF */
+                (new TraitementFichierService())->traitementDeFichier($form, $dto, $this->getUserMail(), $suivi);
 
+                /** modifier la colonne id_statut_demande, numero_or, statut_or dans la table demande_intervention */
+                $suivi->etape('Mise à jour de la DIT', function () use ($dto) {
+                    $this->modificationDit($dto);
+                });
+            } catch (EtapeOperationException $e) {
+                $message = "Echec de la soumission de l'OR " . $dto->numeroOr . " à l'étape « " . $e->getEtape() . " ». Veuillez contacter l'administrateur.";
+                $this->historiqueOperation->setEtapes($suivi->getEtapes());
+                $this->historiqueOperation->sendNotificationSoumission($message, $dto->numeroOr, 'dit_liste', false);
+            }
+
+            $this->historiqueOperation->setEtapes($suivi->getEtapes());
             $this->historiqueOperation->sendNotificationSoumission('Le document de controle a été généré et soumis pour validation', $dto->numeroOr, 'dit_liste', true);
         }
     }

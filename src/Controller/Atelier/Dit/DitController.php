@@ -13,6 +13,8 @@ use App\Model\Atelier\Dit\DitModel;
 use App\Service\atelier\dit\TraitementFichierService;
 use App\Service\genererPdf\dit\GenererPdfDit;
 use App\Service\historiqueOperation\Atelier\Dit\HistoriqueOperationDITService;
+use App\Service\historiqueOperation\EtapeOperationException;
+use App\Service\historiqueOperation\SuiviOperation;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -80,24 +82,46 @@ class DitController extends Controller
             $avecMateriel = $request->request->has('interventionAvecMateriel');
             $dto = $this->ditFactory->apresSoumission($dto, $avecMateriel);
 
-            // 2. Traitement de Fichier 
-            [$nomFichierEnregistrer, $nomFichier] = (new TraitementFichierService)->traitementDeFichier($form, $dto);
+            // suivi de chaque étape (durée, succès / échec) enregistré avec l'historique de l'opération
+            $suivi = new SuiviOperation();
+            $message = 'Votre demande a été enregistrée';
 
-            // 3. Enregistremenr dans la base de donnée
-            $data = DitMapper::DtoToArray($dto, $this->getEntityManager(), $nomFichierEnregistrer);
-            
-            $this->ditModel->enregistrementDit($data);
+            try {
+                // 2. Traitement de Fichier
+                [$nomFichierEnregistrer, $nomFichier] = (new TraitementFichierService)->traitementDeFichier($form, $dto, $suivi);
 
-            // 4. copie dans DOCUWARE
-            $genererPdfDit = new GenererPdfDit();
-            $reponse = $genererPdfDit->copyToDOCUWARE($nomFichier, $dto->numeroDemandeIntervention);
+                // 3. Enregistremenr dans la base de donnée
+                $suivi->etape('Enregistrement base de données', function () use ($dto, $nomFichierEnregistrer) {
+                    $data = DitMapper::DtoToArray($dto, $this->getEntityManager(), $nomFichierEnregistrer);
+                    $this->ditModel->enregistrementDit($data);
+                });
 
-            // 5. modification de la colonne pdf_deposer_dw et date_depot_pdf_dw
-            $donnees = DitMapper::updateDit($reponse);
-            $this->ditModel->updateDitDW($donnees, $dto);
+                // 4. copie dans DOCUWARE (un échec ne bloque pas : il est tracé dans pdf_deposer_dw)
+                $genererPdfDit = new GenererPdfDit();
+                try {
+                    $reponse = $suivi->etape('Copie DocuWare', function () use ($genererPdfDit, $nomFichier, $dto) {
+                        $genererPdfDit->exigerCopieReussie($genererPdfDit->copyToDOCUWARE($nomFichier, $dto->numeroDemandeIntervention));
+                        return true;
+                    });
+                } catch (EtapeOperationException $e) {
+                    $reponse = false;
+                    $message .= ", mais la copie dans DocuWare a échoué";
+                }
+
+                // 5. modification de la colonne pdf_deposer_dw et date_depot_pdf_dw
+                $suivi->etape('Mise à jour dépôt DocuWare', function () use ($reponse, $dto) {
+                    $donnees = DitMapper::updateDit($reponse);
+                    $this->ditModel->updateDitDW($donnees, $dto);
+                });
+            } catch (EtapeOperationException $e) {
+                $message = "Echec de l'enregistrement de la DIT " . $dto->numeroDemandeIntervention . " à l'étape « " . $e->getEtape() . " ». Veuillez contacter l'administrateur.";
+                $this->historiqueOperation->setEtapes($suivi->getEtapes());
+                $this->historiqueOperation->sendNotificationCreation($message, $dto->numeroDemandeIntervention, 'dit_liste', false);
+            }
 
             // 6. enregistrement dans l'historisation de la sucès de la demande
-            $this->historiqueOperation->sendNotificationCreation('Votre demande a été enregistrée', $dto->numeroDemandeIntervention, 'dit_liste', true);
+            $this->historiqueOperation->setEtapes($suivi->getEtapes());
+            $this->historiqueOperation->sendNotificationCreation($message, $dto->numeroDemandeIntervention, 'dit_liste', true);
         }
     }
 }

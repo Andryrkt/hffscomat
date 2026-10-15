@@ -10,6 +10,8 @@ use App\Service\atelier\dit\fichier\DitNameFileService;
 use App\Service\fichier\TraitementDeFichier;
 use App\Service\fichier\UploderFileService;
 use App\Service\genererPdf\dit\GenererPdfDit;
+use App\Service\historiqueOperation\EtapeOperationException;
+use App\Service\historiqueOperation\SuiviOperation;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -18,36 +20,51 @@ class TraitementFichierService
     use PdfConversionTrait;
     use FormatageTrait;
 
-    public function traitementDeFichier(FormInterface $form, DitDto $dto): array
+    /**
+     * @param SuiviOperation|null $suivi suivi des étapes (enregistré avec l'historique de l'opération)
+     *
+     * @throws EtapeOperationException si une étape échoue
+     */
+    public function traitementDeFichier(FormInterface $form, DitDto $dto, ?SuiviOperation $suivi = null): array
     {
-        /** 
+        $suivi = $suivi ?? new SuiviOperation();
+
+        /**
          * gestion des pieces jointes et generer le nom du fichier PDF
          * Enregistrement de fichier uploder
-         * @var array $nomEtCheminFichiersEnregistrer 
-         * @var array $nomFichierEnregistrer 
+         * @var array $nomEtCheminFichiersEnregistrer
+         * @var array $nomFichierEnregistrer
          * @var string $nomAvecCheminFichier
          * @var string $nomFichier
          */
-        [$nomEtCheminFichiersEnregistrer, $nomFichierEnregistrer, $nomAvecCheminFichier, $nomFichier] = $this->enregistrementFichier($form, $dto->numeroDemandeIntervention, str_replace("-", "", $dto->agenceServiceEmetteur));
+        [$nomEtCheminFichiersEnregistrer, $nomFichierEnregistrer, $nomAvecCheminFichier, $nomFichier] = $suivi->etape('Enregistrement fichiers joints', function () use ($form, $dto) {
+            return $this->enregistrementFichier($form, $dto->numeroDemandeIntervention, str_replace("-", "", $dto->agenceServiceEmetteur));
+        });
 
         /** 1. CREATION DE LA PAGE DE GARDE*/
-        $ditModel = new DitModel();
-        $idMateriel = (int)$dto->idMateriel;
-        if (!in_array($idMateriel, $ditModel->getNumeroMatriculePasMateriel()) && $dto->internetExterne !== "EXTERNE") {
-            //récupération des historique de materiel (informix)
-            $historiqueMateriel = $this->historiqueInterventionMateriel($idMateriel);
-        } else {
-            $historiqueMateriel = [];
-        }
-        $genererPdfDit = new GenererPdfDit();
-        $genererPdfDit->genererPdfDit($dto, $historiqueMateriel, $nomAvecCheminFichier);
+        $suivi->etape('Génération page de garde', function () use ($dto, $nomAvecCheminFichier) {
+            $ditModel = new DitModel();
+            $idMateriel = (int)$dto->idMateriel;
+            if (!in_array($idMateriel, $ditModel->getNumeroMatriculePasMateriel()) && $dto->internetExterne !== "EXTERNE") {
+                //récupération des historique de materiel (informix)
+                $historiqueMateriel = $this->historiqueInterventionMateriel($idMateriel);
+            } else {
+                $historiqueMateriel = [];
+            }
+            $genererPdfDit = new GenererPdfDit();
+            $genererPdfDit->genererPdfDit($dto, $historiqueMateriel, $nomAvecCheminFichier);
+        });
 
         // 2. ajout du page de garde à la premier position
         $traitementDeFichier = new TraitementDeFichier();
         $nomEtCheminFichiersEnregistrer = $traitementDeFichier->insertFileAtPosition($nomEtCheminFichiersEnregistrer, $nomAvecCheminFichier, 0);
         // 3. fusion du page de garde et des pieces jointes (conversion avant la fusion)
-        $nomEtCheminFichierConvertie = $this->ConvertirLesPdf($nomEtCheminFichiersEnregistrer);
-        $traitementDeFichier->fusionFichers($nomEtCheminFichierConvertie, $nomAvecCheminFichier);
+        $nomEtCheminFichierConvertie = $suivi->etape('Conversion PDF (Ghostscript)', function () use ($nomEtCheminFichiersEnregistrer) {
+            return $this->ConvertirLesPdf($nomEtCheminFichiersEnregistrer);
+        });
+        $suivi->etape('Fusion PDF', function () use ($traitementDeFichier, $nomEtCheminFichierConvertie, $nomAvecCheminFichier) {
+            $traitementDeFichier->fusionFichers($nomEtCheminFichierConvertie, $nomAvecCheminFichier);
+        });
 
         return [$nomFichierEnregistrer, $nomFichier];
     }
