@@ -1,0 +1,219 @@
+{% extends "baseTemplate.html.twig" %}
+
+{% block title %}
+	Suivi des étapes des opérations
+{% endblock %}
+
+{% block stylesheets %}
+	<link rel="stylesheet" href="{{ App.base_path }}/Views/css/list.css?v=2026.10.15.08.00">
+	<link rel="stylesheet" href="{{ App.base_path }}/Views/css/admin/historisation/operation-etape/index.css?v=2026.10.15.08.00">
+{% endblock %}
+
+{% block breadCrumb %}{% endblock %}
+
+{% macro duree(ms) %}
+	{%- if ms is null -%}
+		-
+	{%- elseif ms >= 1000 -%}
+		{{ (ms / 1000)|number_format(1, ',', ' ') }} s
+	{%- else -%}
+		{{ ms|number_format(0, ',', ' ') }} ms
+	{%- endif -%}
+{% endmacro %}
+
+{% block content %}
+	{% import _self as fmt %}
+
+	<div class="container-fluid my-4">
+		<h3 class="perso-titre">Suivi des étapes des opérations</h3>
+
+		{# ---------- Formulaire de recherche ---------- #}
+		<form method="get" action="{{ path('operation_etape_index') }}" class="card card-body mb-4">
+			<div class="row g-3 align-items-end">
+				<div class="col-6 col-md-2">
+					<label for="dateDebut" class="form-label">Date début</label>
+					<input type="date" id="dateDebut" name="dateDebut" class="form-control" value="{{ filtres.dateDebut ? filtres.dateDebut|date('Y-m-d') : '' }}">
+				</div>
+				<div class="col-6 col-md-2">
+					<label for="dateFin" class="form-label">Date fin</label>
+					<input type="date" id="dateFin" name="dateFin" class="form-control" value="{{ filtres.dateFin ? filtres.dateFin|date('Y-m-d') : '' }}">
+				</div>
+				<div class="col-6 col-md-2">
+					<label for="typeDocument" class="form-label">Type de document</label>
+					<select id="typeDocument" name="typeDocument" class="form-select">
+						<option value="">Tous</option>
+						{% for typeDocument in typesDocument %}
+							<option value="{{ typeDocument.id }}" {{ filtres.typeDocument == typeDocument.id ? 'selected' }}>{{ typeDocument.libelleDocument }}</option>
+						{% endfor %}
+					</select>
+				</div>
+				<div class="col-6 col-md-2">
+					<label for="numeroDocument" class="form-label">Numéro document</label>
+					<input type="text" id="numeroDocument" name="numeroDocument" class="form-control" value="{{ filtres.numeroDocument }}">
+				</div>
+				<div class="col-6 col-md-1">
+					<label for="statut" class="form-label">Statut</label>
+					<select id="statut" name="statut" class="form-select">
+						<option value="">Tous</option>
+						<option value="Succès" {{ filtres.statut == 'Succès' ? 'selected' }}>Succès</option>
+						<option value="Echec" {{ filtres.statut == 'Echec' ? 'selected' }}>Echec</option>
+					</select>
+				</div>
+				<div class="col-6 col-md-2">
+					<label for="etape" class="form-label">Étape</label>
+					<select id="etape" name="etape" class="form-select">
+						<option value="">Toutes</option>
+						{% for nomEtape in nomsEtapes %}
+							<option value="{{ nomEtape }}" {{ filtres.etape == nomEtape ? 'selected' }}>{{ nomEtape }}</option>
+						{% endfor %}
+					</select>
+				</div>
+				<div class="col-12 col-md-1 d-flex gap-2">
+					<button type="submit" class="btn btn-warning fw-bold w-100" title="Rechercher">
+						<i class="fas fa-search"></i>
+					</button>
+					<a href="{{ path('operation_etape_index') }}" class="btn btn-outline-secondary w-100" title="Réinitialiser (7 derniers jours)">
+						<i class="fas fa-rotate-left"></i>
+					</a>
+				</div>
+			</div>
+		</form>
+
+		{# ---------- Résumé par étape ---------- #}
+		<h5 class="fw-bold mb-2">Résumé par étape</h5>
+		{% if statistiques is empty %}
+			<p class="text-muted">Aucune étape enregistrée pour ces critères.</p>
+		{% else %}
+			<div class="table-responsive mb-4">
+				<table class="table table-sm table-bordered align-middle table-resume">
+					<thead class="table-dark">
+						<tr>
+							<th>Étape</th>
+							<th class="text-end">Exécutions</th>
+							<th class="text-end">Échecs</th>
+							<th class="taux">Taux d'échec</th>
+							<th class="text-end">Durée moyenne</th>
+							<th class="text-end">Durée max</th>
+							<th>Dernier passage</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for statistique in statistiques %}
+							{% set taux = statistique.nombreExecutions > 0 ? (statistique.nombreEchecs * 100 / statistique.nombreExecutions) : 0 %}
+							<tr>
+								<td>
+									<a href="{{ path('operation_etape_index', criteria|merge({'etape': statistique.etape, 'statut': statistique.nombreEchecs > 0 ? 'Echec' : ''})) }}" class="text-decoration-none fw-semibold">
+										{{ statistique.etape }}
+									</a>
+								</td>
+								<td class="text-end">{{ statistique.nombreExecutions }}</td>
+								<td class="text-end {{ statistique.nombreEchecs > 0 ? 'text-danger fw-bold' }}">{{ statistique.nombreEchecs }}</td>
+								<td class="taux">
+									<div class="d-flex align-items-center gap-2">
+										<div class="progress flex-grow-1" role="progressbar" aria-label="Taux d'échec {{ statistique.etape }}" aria-valuenow="{{ taux|round }}" aria-valuemin="0" aria-valuemax="100">
+											<div class="progress-bar {{ taux > 0 ? 'bg-danger' : 'bg-success' }}" style="width: {{ taux > 0 ? taux : 100 }}%"></div>
+										</div>
+										<span class="small text-nowrap">{{ taux|number_format(1, ',', ' ') }} %</span>
+									</div>
+								</td>
+								<td class="text-end">{{ fmt.duree(statistique.dureeMoyenneMs is not null ? statistique.dureeMoyenneMs|round : null) }}</td>
+								<td class="text-end">{{ fmt.duree(statistique.dureeMaxMs) }}</td>
+								<td>{{ statistique.dernierPassage ? statistique.dernierPassage|date('d/m/Y H:i') : '-' }}</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		{% endif %}
+
+		{# ---------- Pagination ---------- #}
+		<div class="d-flex justify-content-between align-items-center flex-wrap">
+			<h5 class="fw-bold mb-0">Opérations</h5>
+			<p class="fw-bold my-3">{{ resultat }} Résultats</p>
+			<p class="fw-bold my-3">{{ currentPage ~ ' / ' ~ max(totalPages, 1) }} pages</p>
+			<div class="navigation">
+				{% if currentPage > 1 %}
+					<a class="btn btn-dark my-3" href="{{ path('operation_etape_index', criteria|merge({'page': 1})) }}" title="Première page"><i class="fas fa-angle-double-left text-warning"></i></a>
+					<a class="btn btn-dark my-3" href="{{ path('operation_etape_index', criteria|merge({'page': currentPage - 1})) }}" title="Page précédente"><i class="fas fa-angle-left text-warning"></i></a>
+				{% endif %}
+				{% if currentPage < totalPages %}
+					<a class="btn btn-dark my-3" href="{{ path('operation_etape_index', criteria|merge({'page': currentPage + 1})) }}" title="Page suivante"><i class="fas fa-angle-right text-warning"></i></a>
+					<a class="btn btn-dark my-3" href="{{ path('operation_etape_index', criteria|merge({'page': totalPages})) }}" title="Dernière page"><i class="fas fa-angle-double-right text-warning"></i></a>
+				{% endif %}
+			</div>
+		</div>
+
+		{# ---------- Liste des opérations avec leurs étapes ---------- #}
+		<table class="table rounded table-operations">
+			<thead class="table-dark">
+				<tr>
+					<th></th>
+					<th>Date</th>
+					<th>Type de document</th>
+					<th>Numéro du document</th>
+					<th>Utilisateur</th>
+					<th>Type d’opération</th>
+					<th>Statut</th>
+					<th>Temps total</th>
+					<th>Étape en échec</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for item in data %}
+					{% set etapes = etapesParOperation[item.id] ?? [] %}
+					{% set etapesEnEchec = etapes|filter(e => e.statut == 'Echec') %}
+					{% set etapeEnEchec = etapesEnEchec|first %}
+					{% set enEchec = item.statutOperation in ['Echec', 'Erreur'] %}
+
+					<tr class="ligne-operation" data-bs-toggle="collapse" data-bs-target="#etapes-{{ item.id }}" aria-expanded="{{ enEchec and loop.first ? 'true' : 'false' }}" aria-controls="etapes-{{ item.id }}">
+						<td><i class="fas fa-chevron-right chevron"></i></td>
+						<td class="text-nowrap">{{ item.dateOperation|date('d/m/Y') }} {{ item.heureOperation }}</td>
+						<td>{{ item.idTypeDocument ? item.idTypeDocument.libelleDocument : '-' }}</td>
+						<td>{{ item.numeroDocument }}</td>
+						<td>{{ item.utilisateur }}</td>
+						<td>{{ item.idTypeOperation ? item.idTypeOperation.typeOperation : '-' }}</td>
+						<td><span class="badge {{ enEchec ? 'bg-danger' : 'bg-success' }}">{{ item.statutOperation }}</span></td>
+						<td class="text-nowrap">{{ item.tempsExecution ?? '-' }}</td>
+						<td>
+							{% if etapeEnEchec %}
+								<span class="text-danger fw-semibold">{{ etapeEnEchec.etape }}</span>
+							{% else %}
+								-
+							{% endif %}
+						</td>
+					</tr>
+					<tr class="ligne-etapes">
+						<td colspan="9" class="p-0 border-0">
+							<div class="collapse {{ enEchec and loop.first ? 'show' }}" id="etapes-{{ item.id }}">
+								<div class="p-3 bg-body-tertiary">
+									<p class="small text-muted mb-2">{{ item.libelleOperation }}</p>
+									<ol class="etapes list-unstyled mb-0">
+										{% for etape in etapes %}
+											{% set etapeEchec = etape.statut == 'Echec' %}
+											<li class="etape {{ etapeEchec ? 'etape-echec' : 'etape-succes' }}">
+												<span class="etape-icone">
+													<i class="fas {{ etapeEchec ? 'fa-circle-xmark text-danger' : 'fa-circle-check text-success' }}"></i>
+												</span>
+												<span class="etape-nom">{{ etape.ordre }}. {{ etape.etape }}</span>
+												<span class="etape-duree">{{ fmt.duree(etape.dureeMs) }}</span>
+												{% if etape.message %}
+													<div class="etape-message">{{ etape.message }}</div>
+												{% endif %}
+											</li>
+										{% endfor %}
+									</ol>
+								</div>
+							</div>
+						</td>
+					</tr>
+				{% else %}
+					<tr>
+						<td colspan="9" class="text-center text-muted py-4">Aucune opération suivie pour ces critères.</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+{% endblock %}
+
+{% block javascript %}{% endblock %}

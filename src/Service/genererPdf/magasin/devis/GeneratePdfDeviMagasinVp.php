@@ -20,13 +20,13 @@ class GeneratePdfDeviMagasinVp extends GeneratePdf
      * pour verification prix
      * @param string $fileName
      * @param string $numeroDevis
-     * @return void
+     * @return bool true si le fichier est bien copié dans DocuWare
      */
-    public function copyToDWDevisVpMagasin(string $fileName, string $numeroDevis): void
+    public function copyToDWDevisVpMagasin(string $fileName, string $numeroDevis): bool
     {
         $cheminFichierDistant = $this->baseCheminDocuware . 'VERIFICATION_PRIX_MAGASIN/' . $fileName;
         $cheminDestinationLocal = $this->baseCheminDuFichier . 'magasin/devis/' . $numeroDevis . '/' . $fileName;
-        $this->copyFile($cheminDestinationLocal, $cheminFichierDistant);
+        return $this->copyFile($cheminDestinationLocal, $cheminFichierDistant);
     }
 
     public function genererPdf(

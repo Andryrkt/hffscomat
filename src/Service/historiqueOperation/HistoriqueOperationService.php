@@ -9,6 +9,7 @@ use App\Service\SessionManagerService;
 use App\Entity\admin\historisation\documentOperation\TypeDocument;
 use App\Entity\admin\historisation\documentOperation\TypeOperation;
 use App\Entity\admin\historisation\documentOperation\HistoriqueOperationDocument;
+use App\Entity\admin\historisation\documentOperation\HistoriqueOperationEtape;
 
 class HistoriqueOperationService implements HistoriqueOperationInterface
 {
@@ -24,6 +25,7 @@ class HistoriqueOperationService implements HistoriqueOperationInterface
     private $typeDocumentRepository;
     protected $sessionService;
     private $typeDocumentId;
+    private array $etapes = [];
 
     /** 
      * Constructeur pour l'historique des opérations de document par type
@@ -87,12 +89,54 @@ class HistoriqueOperationService implements HistoriqueOperationInterface
             ->setIdTypeOperation($this->typeOperationRepository->find($typeOperationId))
             ->setIdTypeDocument($this->typeDocumentRepository->find($this->typeDocumentId))
             ->setStatutOperation($statutOperation ? 'Succès' : 'Echec')
-            ->setLibelleOperation($libelleOperation)
+            ->setLibelleOperation($libelleOperation === null ? null : mb_substr($libelleOperation, 0, 255))
         ;
 
         // Sauvegarder dans la base de données
         $this->em->persist($historique);
         $this->em->flush();
+
+        $this->enregistrerEtapes($historique);
+    }
+
+    /**
+     * Méthode pour définir les étapes (SuiviOperation::getEtapes()) à enregistrer
+     * avec le prochain historique
+     */
+    public function setEtapes(array $etapes): self
+    {
+        $this->etapes = $etapes;
+
+        return $this;
+    }
+
+    /**
+     * Méthode pour enregistrer le détail des étapes de l'opération.
+     * Une erreur ici ne doit pas bloquer l'opération : elle est seulement loggée.
+     */
+    private function enregistrerEtapes(HistoriqueOperationDocument $historique): void
+    {
+        if (empty($this->etapes)) return;
+
+        $etapes = $this->etapes;
+        $this->etapes = [];
+
+        try {
+            foreach ($etapes as $ordre => $etape) {
+                $historiqueEtape = (new HistoriqueOperationEtape())
+                    ->setHistoriqueOperation($historique)
+                    ->setOrdre($ordre + 1)
+                    ->setEtape($etape['etape'])
+                    ->setStatut($etape['statut'])
+                    ->setDureeMs($etape['dureeMs'])
+                    ->setMessage($etape['message']);
+
+                $this->em->persist($historiqueEtape);
+            }
+            $this->em->flush();
+        } catch (\Throwable $e) {
+            error_log("Enregistrement des étapes de l'historique {$historique->getId()} impossible : " . $e->getMessage() . " | étapes : " . json_encode($etapes, JSON_UNESCAPED_UNICODE));
+        }
     }
 
     /** 

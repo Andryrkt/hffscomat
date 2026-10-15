@@ -18,42 +18,62 @@ class GeneratePdf
         $this->baseCheminDocuware = $baseCheminDocuware ?? rtrim($_ENV['BASE_PATH_DOCUWARE'] ?? '', '/\\') . '/';
     }
 
+    /** Message de la dernière erreur de copie (null si la dernière copie a réussi) */
+    protected ?string $derniereErreurCopie = null;
+
+    public function getDerniereErreurCopie(): ?string
+    {
+        return $this->derniereErreurCopie;
+    }
+
     protected function copyFile(string $sourcePath, string $destinationPath): bool
     {
-        // Fonction interne pour tenter la copie
-        $attemptCopy = function ($attemptNumber) use ($sourcePath, $destinationPath) {
+        $this->derniereErreurCopie = null;
+
+        // Fonction interne pour tenter la copie, renvoie null si OK sinon le message d'erreur
+        $attemptCopy = function () use ($sourcePath, $destinationPath): ?string {
             try {
+                if (!file_exists($sourcePath)) {
+                    return "fichier source introuvable : $sourcePath";
+                }
+
                 $destinationDir = dirname($destinationPath);
-
-                if (!is_dir($destinationDir)) {
-                    mkdir($destinationDir, 0777, true);
+                if (!is_dir($destinationDir) && !@mkdir($destinationDir, 0777, true) && !is_dir($destinationDir)) {
+                    return "impossible de créer le dossier de destination : $destinationDir";
                 }
 
-                if (!file_exists($sourcePath) || !copy($sourcePath, $destinationPath)) {
-                    return false;
+                if (!@copy($sourcePath, $destinationPath)) {
+                    $erreur = error_get_last();
+                    return "copie impossible vers $destinationPath" . ($erreur ? " (" . $erreur['message'] . ")" : "");
                 }
 
-                // Vérification rapide
-                return file_exists($destinationPath) && filesize($destinationPath) > 0;
-            } catch (\Exception $e) {
-                return false;
+                // Vérification : le fichier copié doit avoir la même taille que la source
+                clearstatcache(true, $destinationPath);
+                $tailleSource = filesize($sourcePath);
+                $tailleDestination = file_exists($destinationPath) ? filesize($destinationPath) : false;
+                if (!$tailleDestination || $tailleDestination !== $tailleSource) {
+                    return "fichier copié incomplet vers $destinationPath (source : $tailleSource octets, destination : " . var_export($tailleDestination, true) . ")";
+                }
+
+                return null;
+            } catch (\Throwable $e) {
+                return $e->getMessage();
             }
         };
 
         // Première tentative
-        if ($attemptCopy(1)) {
-            echo "Fichier copié avec succès : $destinationPath\n";
+        if (($erreur = $attemptCopy()) === null) {
             return true;
         }
 
         // Deuxième tentative après un court délai
         usleep(50000); // 50ms
-        if ($attemptCopy(2)) {
-            echo "Fichier copié avec succès après retry : $destinationPath\n";
+        if (($erreur = $attemptCopy()) === null) {
             return true;
         }
 
-        error_log("Échec de copyFile après 2 tentatives : $sourcePath");
+        $this->derniereErreurCopie = $erreur;
+        error_log("Échec de copyFile après 2 tentatives : $sourcePath -> $destinationPath : $erreur");
         return false;
     }
 
