@@ -12,7 +12,9 @@ use App\Service\EmailService;
 use App\Service\fichier\TraitementDeFichier;
 use App\Service\fichier\UploderFileService;
 use App\Service\genererPdf\magasin\devis\GeneratePdfDeviMagasinVp;
+use App\Service\historiqueOperation\EtapeOperationException;
 use App\Service\historiqueOperation\HistoriqueOperationDevisMagasinService;
+use App\Service\historiqueOperation\SuiviOperation;
 use App\Service\magasin\devis\Fichier\DevisMagasinGenererNameFileService;
 use App\Service\magasin\devis\Validation\ValidationSoumissionVerificationPrix;
 use Symfony\Component\Form\FormInterface;
@@ -83,56 +85,101 @@ class DevisNegVerificationPrixController extends Controller
 
             if ((new ValidationSoumissionVerificationPrix())->validateSubmittedFile($form, $dto->remoteUrlCourt, $dto->numeroDevis)) return;
 
-            /** 
-             * Enregistrement de fichier excel
-             * @var array $nomEtCheminFichiersEnregistrerExcel 
-             * @var string $nomAvecCheminFichierExcel
-             * @var string $nomFichierExcel
-             */
-            [$nomEtCheminFichiersEnregistrerExcel, $nomAvecCheminFichierExcel, $nomFichierExcel] = $this->enregistrementFichierExcel($form, $dto->numeroDevis);
+            $criteria = (array) ($this->getSessionService()->get('criteria_for_excel_liste_devis_neg') ?? []);
+            $nomDeRoute = 'liste_devis_neg'; // route de redirection après soumission
+            $nomInputSearch = 'devis_neg_search'; // initialistion de nom de chaque champ ou input
 
-            /** 
-             * Enregistrement de fichier uploder
-             * @var array $nomEtCheminFichiersEnregistrer 
-             * @var string $nomAvecCheminFichier
-             * @var string $nomFichier
-             */
-            [$nomEtCheminFichiersEnregistrer, $nomAvecCheminFichier, $nomFichier] = $this->enregistrementFichier($form, $dto->numeroDevis, $dto->numeroVersion, $dto->suffix, explode('@', $dto->userMail)[0], $dto->remoteUrlCourt);
+            // suivi de chaque étape (durée, succès / échec) enregistré avec l'historique de l'opération
+            $suivi = new SuiviOperation();
 
-            // creation du page de garde 
-            $generatePdfDevisMagasin = new GeneratePdfDeviMagasinVp();
-            $tableauMarges = $this->tableauMarge($dto->numeroDevis, $dto->codeSociete);
-            $tableauMargeReference = $this->tableauMargeReference($dto->numeroDevis, $dto->codeSociete);
-            $generatePdfDevisMagasin->genererPdf($dto, $nomAvecCheminFichier, $tableauMarges, $tableauMargeReference);
+            try {
+                $this->traitementSoumission($form, $dto, $suivi);
+            } catch (EtapeOperationException $e) {
+                error_log("Soumission vérification de prix devis {$dto->numeroDevis} en échec - " . $e->getMessage() . " | " . $e->getPrevious()->getFile() . ":" . $e->getPrevious()->getLine());
 
-            //insertion de la page de garde à la position 0
-            $traitementDeFichier = new TraitementDeFichier();
-            $nomEtCheminFichiersEnregistrer = $traitementDeFichier->insertFileAtPosition($nomEtCheminFichiersEnregistrer, $nomAvecCheminFichier, 0);
-            /** @var array fusions des fichiers */
-            $nomEtCheminFichierConvertie = $this->ConvertirLesPdf($nomEtCheminFichiersEnregistrer);
-            $traitementDeFichier->fusionFichers($nomEtCheminFichierConvertie, $nomAvecCheminFichier);
-
-            // Enregistrement de la soumission en base de données
-            $soumissionModel = new SoumissionModel();
-            $soumissionModel->enregistrerSoumission($dto, $nomFichier, $nomFichierExcel);
-
-            //envoie du fichier dans DW
-            $generatePdfDevisMagasin->copyToDWDevisVpMagasin($nomFichier, $dto->numeroDevis);
-
-            //envoie de mail au PM
-            if (!empty($nomAvecCheminFichierExcel) && !empty($nomFichierExcel) && $this->estValidationPm($dto)) {
-                $this->envoyerMailDevisMagasin($dto->numeroDevis, [
-                    'filePath' => $nomAvecCheminFichierExcel,
-                    'fileName' => $nomFichierExcel,
-                ]);
+                //HISTORISATION DE L'OPERATION EN ECHEC
+                $message = "Echec de la vérification de prix du devis numero : " . $dto->numeroDevis . " à l'étape « " . $e->getEtape() . " ». Veuillez contacter l'administrateur.";
+                $this->historiqueOperationDeviMagasinService->setEtapes($suivi->getEtapes());
+                $this->historiqueOperationDeviMagasinService->sendNotificationSoumission($message, $dto->numeroDevis, $nomDeRoute, false, $criteria, $nomInputSearch);
             }
 
             //HISTORISATION DE L'OPERATION
             $message = "la vérification de prix du devis numero : " . $dto->numeroDevis . " a été envoyée avec succès .";
-            $criteria = (array) ($this->getSessionService()->get('criteria_for_excel_liste_devis_neg') ?? []);
-            $nomDeRoute = 'liste_devis_neg'; // route de redirection après soumission
-            $nomInputSearch = 'devis_neg_search'; // initialistion de nom de chaque champ ou input
+            $this->historiqueOperationDeviMagasinService->setEtapes($suivi->getEtapes());
             $this->historiqueOperationDeviMagasinService->sendNotificationSoumission($message, $dto->numeroDevis, $nomDeRoute, true, $criteria, $nomInputSearch);
+        }
+    }
+
+    /**
+     * Traitement de la soumission, découpé en étapes suivies
+     *
+     * @throws EtapeOperationException si une étape échoue
+     */
+    private function traitementSoumission(FormInterface $form, SoumissionDto $dto, SuiviOperation $suivi): void
+    {
+        /**
+         * Enregistrement de fichier excel
+         * @var array $nomEtCheminFichiersEnregistrerExcel
+         * @var string $nomAvecCheminFichierExcel
+         * @var string $nomFichierExcel
+         */
+        [$nomEtCheminFichiersEnregistrerExcel, $nomAvecCheminFichierExcel, $nomFichierExcel] = $suivi->etape('Enregistrement fichier Excel', function () use ($form, $dto) {
+            return $this->enregistrementFichierExcel($form, $dto->numeroDevis);
+        });
+
+        /**
+         * Enregistrement de fichier uploder
+         * @var array $nomEtCheminFichiersEnregistrer
+         * @var string $nomAvecCheminFichier
+         * @var string $nomFichier
+         */
+        [$nomEtCheminFichiersEnregistrer, $nomAvecCheminFichier, $nomFichier] = $suivi->etape('Enregistrement fichiers joints', function () use ($form, $dto) {
+            return $this->enregistrementFichier($form, $dto->numeroDevis, $dto->numeroVersion, $dto->suffix, explode('@', $dto->userMail)[0], $dto->remoteUrlCourt);
+        });
+
+        // creation du page de garde
+        $generatePdfDevisMagasin = new GeneratePdfDeviMagasinVp();
+        $suivi->etape('Génération page de garde', function () use ($generatePdfDevisMagasin, $dto, $nomAvecCheminFichier) {
+            $tableauMarges = $this->tableauMarge($dto->numeroDevis, $dto->codeSociete);
+            $tableauMargeReference = $this->tableauMargeReference($dto->numeroDevis, $dto->codeSociete);
+            $generatePdfDevisMagasin->genererPdf($dto, $nomAvecCheminFichier, $tableauMarges, $tableauMargeReference);
+        });
+
+        //insertion de la page de garde à la position 0
+        $traitementDeFichier = new TraitementDeFichier();
+        $nomEtCheminFichiersEnregistrer = $traitementDeFichier->insertFileAtPosition($nomEtCheminFichiersEnregistrer, $nomAvecCheminFichier, 0);
+
+        /** @var array fusions des fichiers */
+        $nomEtCheminFichierConvertie = $suivi->etape('Conversion PDF (Ghostscript)', function () use ($nomEtCheminFichiersEnregistrer) {
+            return $this->ConvertirLesPdf($nomEtCheminFichiersEnregistrer);
+        });
+        $suivi->etape('Fusion PDF', function () use ($traitementDeFichier, $nomEtCheminFichierConvertie, $nomAvecCheminFichier) {
+            $traitementDeFichier->fusionFichers($nomEtCheminFichierConvertie, $nomAvecCheminFichier);
+        });
+
+        // Enregistrement de la soumission en base de données
+        $suivi->etape('Enregistrement base de données', function () use ($dto, $nomFichier, $nomFichierExcel) {
+            (new SoumissionModel())->enregistrerSoumission($dto, $nomFichier, $nomFichierExcel);
+        });
+
+        //envoie du fichier dans DW
+        $suivi->etape('Copie DocuWare', function () use ($generatePdfDevisMagasin, $nomFichier, $dto) {
+            if (!$generatePdfDevisMagasin->copyToDWDevisVpMagasin($nomFichier, $dto->numeroDevis)) {
+                throw new \RuntimeException($generatePdfDevisMagasin->getDerniereErreurCopie() ?? "copie du fichier $nomFichier dans DocuWare échouée");
+            }
+        });
+
+        //envoie de mail au PM
+        if (!empty($nomAvecCheminFichierExcel) && !empty($nomFichierExcel) && $this->estValidationPm($dto)) {
+            $suivi->etape('Envoi mail PM', function () use ($dto, $nomAvecCheminFichierExcel, $nomFichierExcel) {
+                $envoye = $this->envoyerMailDevisMagasin($dto->numeroDevis, [
+                    'filePath' => $nomAvecCheminFichierExcel,
+                    'fileName' => $nomFichierExcel,
+                ]);
+                if (!$envoye) {
+                    throw new \RuntimeException("l'envoi du mail à " . $_ENV['MAIL_TO_NEG'] . " a échoué");
+                }
+            });
         }
     }
 
@@ -265,10 +312,11 @@ class DevisNegVerificationPrixController extends Controller
      * Méthode pour envoyer une email pour le PM
      * @param string $numDevis
      * @param array $resultatExport - nom et chemin du fichier excel
+     * @return bool true si le mail est envoyé
      */
-    public function envoyerMailDevisMagasin(string $numDevis,  array $resultatExport)
+    public function envoyerMailDevisMagasin(string $numDevis,  array $resultatExport): bool
     {
-        $this->envoyerEmail([
+        return $this->envoyerEmail([
             'to'          => $_ENV['MAIL_TO_NEG'],
             'variables'   => ['numDevis' => $numDevis],
             'attachments' => [
@@ -280,7 +328,7 @@ class DevisNegVerificationPrixController extends Controller
     /** 
      * Méthode pour envoyer un email
      */
-    public function envoyerEmail(array $content): void
+    public function envoyerEmail(array $content): bool
     {
         $emailTemplate = "magasin/devis/email/emailDevis.html.twig";
 
@@ -288,6 +336,6 @@ class DevisNegVerificationPrixController extends Controller
 
         $emailService->getMailer()->setFrom($_ENV['MAIL_FROM_ADDRESS'], 'noreply.scomat.neg');
 
-        $emailService->sendEmail($content['to'], $content['cc'] ?? [], $emailTemplate, $content['variables'] ?? [], $content['attachments'] ?? []);
+        return $emailService->sendEmail($content['to'], $content['cc'] ?? [], $emailTemplate, $content['variables'] ?? [], $content['attachments'] ?? []);
     }
 }

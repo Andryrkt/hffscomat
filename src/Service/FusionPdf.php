@@ -27,17 +27,27 @@ class FusionPdf
 
         // Boucle sur chaque fichier PDF à fusionner
         foreach ($files as $file) {
-            $pageCount = $pdf->setSourceFile($file);
-            for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
-                $tplIdx = $pdf->importPage($pageNo);
-                $specs = $pdf->getTemplateSize($tplIdx);
-                $pdf->AddPage($specs['orientation'], [$specs['width'], $specs['height']]);
-                $pdf->useTemplate($tplIdx);
+            $this->verifierFichierSource($file);
+            try {
+                $pageCount = $pdf->setSourceFile($file);
+                for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
+                    $tplIdx = $pdf->importPage($pageNo);
+                    $specs = $pdf->getTemplateSize($tplIdx);
+                    $pdf->AddPage($specs['orientation'], [$specs['width'], $specs['height']]);
+                    $pdf->useTemplate($tplIdx);
+                }
+            } catch (\Throwable $e) {
+                throw new \RuntimeException("Fusion impossible du fichier " . basename($file) . " : " . $e->getMessage(), 0, $e);
             }
         }
 
+        // nombre de pages lu avant Output(), qui libère le document TCPDF
+        $nombrePages = $pdf->getNumPages();
+
         // Enregistrer le fichier PDF fusionné
         $pdf->Output($outputFile, 'F');
+
+        $this->verifierFichierFusionne($outputFile, $nombrePages);
     }
 
     public function mergePdfsAndImages($files, $outputFile)
@@ -46,6 +56,7 @@ class FusionPdf
         $pdf = new Fpdi();
 
         foreach ($files as $file) {
+            $this->verifierFichierSource($file);
             $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
 
             if ($ext === 'pdf') {
@@ -83,7 +94,40 @@ class FusionPdf
             }
         }
 
+        // nombre de pages lu avant Output(), qui libère le document TCPDF
+        $nombrePages = $pdf->getNumPages();
+
         // Sauvegarder le fichier PDF fusionné
         $pdf->Output($outputFile, 'F');
+
+        $this->verifierFichierFusionne($outputFile, $nombrePages);
+    }
+
+    private function verifierFichierSource(string $file): void
+    {
+        if (!is_file($file) || !is_readable($file)) {
+            throw new \RuntimeException("Fichier à fusionner introuvable ou illisible : $file");
+        }
+        if (filesize($file) === 0) {
+            throw new \RuntimeException("Fichier à fusionner vide : $file");
+        }
+    }
+
+    /**
+     * Vérifie que le fichier fusionné a bien été écrit et contient des pages
+     */
+    private function verifierFichierFusionne(string $outputFile, int $nombrePages): void
+    {
+        clearstatcache(true, $outputFile);
+
+        if ($nombrePages < 1) {
+            throw new \RuntimeException("Le PDF fusionné ne contient aucune page : $outputFile");
+        }
+        if (!is_file($outputFile) || filesize($outputFile) === 0) {
+            throw new \RuntimeException("Le PDF fusionné n'a pas été écrit : $outputFile");
+        }
+        if (file_get_contents($outputFile, false, null, 0, 5) !== '%PDF-') {
+            throw new \RuntimeException("Le fichier fusionné n'est pas un PDF valide : $outputFile");
+        }
     }
 }

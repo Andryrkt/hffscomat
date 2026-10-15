@@ -31,8 +31,7 @@ trait PdfConversionTrait
         exec($command, $output, $returnVar);
 
         if ($returnVar !== 0) {
-            echo "Sortie Ghostscript : " . implode("\n", $output);
-            throw new \Exception("Erreur lors de la conversion du PDF avec Ghostscript");
+            throw new \Exception("Erreur lors de la conversion du PDF avec Ghostscript (code $returnVar) pour " . basename($filePath) . " : " . implode(" ", $output));
         }
 
         // Remplacement du fichier

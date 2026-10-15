@@ -70,9 +70,11 @@ try {
     $htmlContent = $twig->render('erreur/403.html.twig');
     $response->setContent($htmlContent);
     $response->setStatusCode(403);
-} catch (Exception $e) {
-    // Erreur générale - Ajouter plus de détails
+} catch (\Throwable $e) {
+    // Erreur générale (Exception et Error PHP : TypeError, appel sur null...) - Ajouter plus de détails
     $errorDetails = [
+        'error_id'       => uniqid('ERR_', true),
+        'class'          => get_class($e),
         'message'        => $e->getMessage(),
         'file'           => $e->getFile(),
         'line'           => $e->getLine(),
@@ -95,7 +97,7 @@ try {
         // En production, masquer les détails sensibles
         $htmlContent = $twig->render('erreur/500.html.twig', [
             'message'   => 'Une erreur interne est survenue. Veuillez contacter l\'administrateur.',
-            'error_id'  => uniqid('ERR_', true),
+            'error_id'  => $errorDetails['error_id'],
             'timestamp' => $errorDetails['timestamp']
         ]);
     }
@@ -103,8 +105,8 @@ try {
     $response->setContent($htmlContent);
     $response->setStatusCode(500);
 
-    // Logger l'erreur complète
-    error_log("Erreur 500 - " . json_encode($errorDetails));
+    // Logger l'erreur complète (l'error_id affiché à l'utilisateur permet de la retrouver)
+    error_log("Erreur 500 " . $errorDetails['error_id'] . " - " . json_encode($errorDetails, JSON_UNESCAPED_UNICODE));
 }
 
 // Envoyer la réponse
