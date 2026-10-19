@@ -71,17 +71,16 @@ class PlanningCommandeFournisseurModel extends Model
                     INNER JOIN {$this->dbIps}.agr_succ
                         ON asuc_num = fcde_succ
                     INNER JOIN {$this->dbIps}.agr_tab
-                        ON atab_code = fcde_serv
-                    AND atab_nom  = 'SER'
+                        ON atab_code = fcde_serv AND atab_nom  = 'SER'
                     LEFT JOIN {$this->dbIps}.frn_llf fllf
                         ON fllf.fllf_soc = fcdl.fcdl_soc AND fllf.fllf_numcde = fcdl.fcdl_numcde AND fllf.fllf_ligne = fcdl.fcdl_ligne
                     WHERE year(fcde_date) = 2026
-                    AND (fcde_cdeext NOT LIKE '%CIS%' OR fcde_cdeext IS NULL)
+                        AND (fcde_cdeext NOT LIKE '%CIS%' OR fcde_cdeext IS NULL)
                     GROUP BY fcdl.fcdl_constp, fcdl.fcdl_numcde, fcdl.fcdl_ligne, fcdl.fcdl_qte, fbse_numfou, fbse_nomfou, asuc_lib, atab_lib, asuc_num, atab_code, fcde_datec
                 ) l
                 GROUP BY l.fcdl_constp, l.fcdl_numcde, l.fbse_numfou, l.fbse_nomfou, l.asuc_lib, l.atab_lib, l.asuc_num, l.atab_code, l.fcde_datec
             ) o
-            WHERE o.fcdl_constp IN (select distinct abse_constp from {$this->dbIps}.art_bse where abse_codg = 'ST')            
+            WHERE o.fcdl_constp IN (select distinct abse_constp from {$this->dbIps}.art_bse where abse_codg = 'ST')
         ) t
         WHERE 1=1  {$this->conditionStatut($statut,$isEmptyQuery)} 
         ORDER BY t.numero_commande
@@ -150,10 +149,12 @@ class PlanningCommandeFournisseurModel extends Model
             cde.qte_fact,
             CASE
                 WHEN cde.qte_recept = 0 THEN 'en_attente'
-                WHEN cde.qte_fact = cde.qte_dem THEN 'complet_facture'
-                WHEN cde.qte_fact > 0 AND cde.qte_fact < cde.qte_dem THEN 'partiel_facture'
-                WHEN cde.qte_recept > 0 AND cde.qte_rest > 0 THEN 'partiel_dispo'
-                WHEN cde.qte_rest = 0 AND cde.qte_fact = 0 THEN 'complet_non_facture'
+                WHEN cde.qte_dem > 0 AND cde.qte_fact = cde.qte_dem THEN 'complet_facture'
+                WHEN cde.qte_dem > 0 AND cde.qte_fact > 0 AND cde.qte_fact < cde.qte_dem THEN 'partiel_facture'
+                WHEN cde.qte_dem > 0 AND cde.qte_recept > 0 AND cde.qte_rest > 0 THEN 'partiel_dispo'
+                WHEN cde.qte_dem > 0 AND cde.qte_rest = 0 AND cde.qte_fact = 0 THEN 'complet_non_facture'
+                when cde.qte_dem = 0 and cde.qte_rest > 0 then 'en_attente'
+                when cde.qte_dem = 0 and cde.qte_rest = 0 and cde.qte_recept = cde.qte_fact then 'complet_facture'
                 ELSE ''
             END AS statut,
             res.numero,
