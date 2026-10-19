@@ -78,6 +78,7 @@ class PlanningCommandeFournisseurModel extends Model
                         AND (fcde_cdeext NOT LIKE '%CIS%' OR fcde_cdeext IS NULL)
                     GROUP BY fcdl.fcdl_constp, fcdl.fcdl_numcde, fcdl.fcdl_ligne, fcdl.fcdl_qte, fbse_numfou, fbse_nomfou, asuc_lib, atab_lib, asuc_num, atab_code, fcde_datec
                 ) l
+                WHERE SUM(l.fcdl_qte) > 0
                 GROUP BY l.fcdl_constp, l.fcdl_numcde, l.fbse_numfou, l.fbse_nomfou, l.asuc_lib, l.atab_lib, l.asuc_num, l.atab_code, l.fcde_datec
             ) o
             WHERE o.fcdl_constp IN (select distinct abse_constp from {$this->dbIps}.art_bse where abse_codg = 'ST')
@@ -155,6 +156,7 @@ class PlanningCommandeFournisseurModel extends Model
                 WHEN cde.qte_dem > 0 AND cde.qte_rest = 0 AND cde.qte_fact = 0 THEN 'complet_non_facture'
                 when cde.qte_dem = 0 and cde.qte_rest > 0 then 'en_attente'
                 when cde.qte_dem = 0 and cde.qte_rest = 0 and cde.qte_recept = cde.qte_fact then 'complet_facture'
+                WHEN cde.qte_dem = 0 and cde.qte_rest = 0 and cde.qte_recept > 0 and cde.qte_recept > cde.qte_fact THEN 'complet_non_facture'
                 ELSE ''
             END AS statut,
             res.numero,
