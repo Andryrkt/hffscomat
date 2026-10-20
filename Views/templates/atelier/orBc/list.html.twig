@@ -14,7 +14,7 @@
     <div class="sticky-header-titre">
         <div class="container">
             {% include "/atelier/orBc/shared/_formulaireRecherche.html.twig" %}
-            {# {% include "/atelier/dit/shared/_pagination.html.twig" %} #}
+            {% include "/atelier/orBc/shared/_pagination.html.twig" %}
         </div>
     </div>
 
@@ -23,9 +23,8 @@
         <table class="table table-sticky">
             <thead class="table-dark align-middle">
                 <tr>
-                    <th>Type</th>
-                    <th>N°</th>
-                    <th>Date</th>
+                    <th>Type / N°</th>
+                    <th>Date OR / BC</th>
                     <th>Constructeur</th>
                     <th>Référence</th>
                     <th>Désignation</th>
@@ -44,25 +43,24 @@
                             {% else %}
                                 <span class="badge bg-info">BC négoce</span>
                             {% endif %}
+                            {{ item.numero_doc }}
                         </td>
-                        <td>{{ item.numero }}</td>
+
                         <td>{{ item.date|date('d/m/Y') }}</td>
                         <td>{{ item.constructeur }}</td>
                         <td>{{ item.reference }}</td>
                         <td>{{ item.designation }}</td>
-                        <td class="text-end">{{ item.qteDemandee|number_format(0, ',', ' ') }}</td>
-                        <td class="text-end">{{ item.qteReliquat|number_format(0, ',', ' ') }}</td>
-                        <td class="text-end">{{ item.qteReservee|number_format(0, ',', ' ') }}</td>
-                        <td>{{ item.dateAllocation is not null ? item.dateAllocation|date('d/m/Y') : '—' }}</td>
+                        <td>{{ item.qte_demandee|number_format(0, ',', ' ') }}</td>
+                        <td >{{ item.qte_reliquat|number_format(0, ',', ' ') }}</td>
+                        <td>{{ item.qte_reservee|number_format(0, ',', ' ') }}</td>
+                        <td>{{ item.date_alloc is not null ? item.date_alloc|date('d/m/Y') : '-' }}</td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
-    {# {% include "/partials/_pagination.html.twig" %} #}
+    {% include "/partials/_pagination.html.twig" %}
     <!-- FIN tableau -->
-
-
 {% endblock %}
 
 {% block javascript %}

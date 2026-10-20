@@ -22,15 +22,12 @@ class CmdeATraiterAtelierFiltreService
         // --- Recherche libre : N° OR/BC OU référence OU désignation ---
         if (!empty($dto->reference)) {
             $needle = strtoupper(addslashes(trim($dto->reference)));
-            $conditions[] = " AND (UPPER(numero_doc) LIKE '%$needle%'"
-                . " OR UPPER(reference)  LIKE '%$needle%'"
-                . " OR UPPER(designation) LIKE '%$needle%')";
-        }
 
-        // --- Désignation (filtre spécifique, optionnel) ---
-        if (!empty($dto->designation)) {
-            $desi = strtoupper(addslashes(trim($dto->designation)));
-            $conditions[] = " AND UPPER(designation) LIKE '%$desi%'";
+            $conditions[] = " AND ("
+                . "UPPER(CAST(numero_doc AS VARCHAR(50))) LIKE '%$needle%'"
+                . " OR UPPER(CAST(reference AS VARCHAR(100))) LIKE '%$needle%'"
+                . " OR UPPER(CAST(designation AS VARCHAR(255))) LIKE '%$needle%'"
+                . ")";
         }
 
         // --- Constructeur : ATC / CAT ---

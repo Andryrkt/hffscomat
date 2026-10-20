@@ -17,7 +17,7 @@ class CmdeATraiterAtelierModel extends Model
 
     public function __construct(SecurityService $securityService)
     {
-        parent::__construct(); 
+        parent::__construct();
         $this->cmdeATraiterAtelierFiltreService = new CmdeATraiterAtelierFiltreService($securityService);
     }
     public function findPaginatedAndFiltered(string $codeSociete, CmdeATraitrerAtelierSearchDto $cmdeATraiterAtelierSearchDto, int $page, int $perPage)
@@ -27,14 +27,12 @@ class CmdeATraiterAtelierModel extends Model
         $conditions = $this->cmdeATraiterAtelierFiltreService->filtre($cmdeATraiterAtelierSearchDto);
         $unionQuery = $this->creerJointureQuery();
 
-        $statement = "
-            SELECT SKIP $skip FIRST $perPage *
-            FROM ($unionQuery) t
+        $statement = "SELECT SKIP $skip FIRST $perPage *
+            FROM ($unionQuery) t 
             WHERE 1 = 1
-            $conditions
-            ORDER BY date_doc DESC, numero_doc ASC, numero_ligne ASC
-        ";
-
+             $conditions
+            ORDER BY date_doc DESC, numero_doc ASC, numero_ligne ASC;
+            ";
         $result = $this->connect->executeQuery($statement);
         $data   = $this->convertirEnUtf8($this->connect->fetchResults($result));
 
@@ -60,58 +58,65 @@ class CmdeATraiterAtelierModel extends Model
     private function creerJointureQuery(): string
     {
         return "
-            SELECT 'OR' AS type_doc,
-                   seor_dateor   AS date_doc,
-                   slor_numor    AS numero_doc,
-                   slor_nolign   AS numero_ligne,
-                   slor_constp   AS constructeur,
-                   slor_refp     AS reference,
-                   slor_desi     AS designation,
-                   CASE WHEN slor_typlig = 'P'
-                        THEN (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec)
-                        WHEN slor_typlig IN ('F','M','U','C') THEN slor_qterea
-                        ELSE 0 END AS qte_demandee,
-                   slor_qterel    AS qte_reliquat,
-                   slor_datealloc AS date_alloc,
-                   slor_qteres    AS qte_reservee
-            FROM sav_lor
-            INNER JOIN sav_eor
-                ON seor_soc  = slor_soc
-               AND seor_succ = slor_succ
-               AND seor_numor = slor_numor
-            WHERE NVL(slor_numcf, 0) = 0
-              AND slor_constp = 'ATC'
-              AND slor_qterel > 0
-              AND seor_serv <> 'DEV'
-              AND slor_nolign <> NVL(slor_nolmait, 0)
+            SELECT
+                    'OR-' || slor_nolign        AS id,
+                    'OR'                        AS type_doc,
+                    seor_dateor                 AS date_doc,
+                    slor_numor                  AS numero_doc,
+                    slor_nolign                 AS numero_ligne,
+                    slor_constp                 AS constructeur,
+                    slor_refp                   AS reference,
+                    slor_desi                   AS designation,
+                    CASE
+                        WHEN slor_typlig = 'P'
+                            THEN (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec)
+                        WHEN slor_typlig IN ('F','M','U','C')
+                            THEN slor_qterea
+                        ELSE 0
+                    END                         AS qte_demandee,
+                    slor_qterel                 AS qte_reliquat,
+                    slor_datealloc              AS date_alloc,
+                    slor_qteres                 AS qte_reservee
+                FROM sav_lor
+                INNER JOIN sav_eor
+                    ON seor_soc  = slor_soc
+                AND seor_succ = slor_succ
+                AND seor_numor = slor_numor
+                WHERE NVL(slor_numcf, 0) = 0
+                AND slor_constp = 'ATC'
+                AND slor_qterel > 0
+                AND seor_serv <> 'DEV'
+                AND slor_nolign <> NVL(slor_nolmait, 0)
 
-            UNION ALL
+                UNION ALL
 
-            SELECT 'BC' AS type_doc,
-                   nlig_datecde   AS date_doc,
-                   nlig_numcde    AS numero_doc,
-                   nlig_nolign    AS numero_ligne,
-                   nlig_constp    AS constructeur,
-                   nlig_refp      AS reference,
-                   nlig_desi      AS designation,
-                   nlig_qtecde    AS qte_demandee,
-                   nlig_qtecde - (nlig_qtealiv + nlig_qteliv + nlig_qtefac) AS qte_reliquat,
-                   nlig_datealloc AS date_alloc,
-                   nlig_qtealiv   AS qte_reservee
-            FROM neg_lig
-            INNER JOIN neg_ent
-                ON nent_soc  = nlig_soc
-               AND nent_succ = nlig_succ
-               AND nent_numcde = nlig_numcde
-            WHERE nlig_succ = '01'
-              AND nlig_constp = 'CAT'
-              AND nlig_qtecde > 0
-              AND nlig_qtecde > (nlig_qtealiv + nlig_qteliv + nlig_qtefac)
-              AND nlig_qtewait = 0
-              AND NVL(nlig_numcf, 0) = 0
-              AND nlig_numcli < 1990000
-              AND nlig_nolign <> NVL(nlig_nolmait, 0)
-              AND nlig_natop <> 'DEV'
+                SELECT
+                    'BC-' || nlig_nolign        AS id,
+                    'BC'                        AS type_doc,
+                    nlig_datecde                AS date_doc,
+                    nlig_numcde                 AS numero_doc,
+                    nlig_nolign                 AS numero_ligne,
+                    nlig_constp                 AS constructeur,
+                    nlig_refp                   AS reference,
+                    nlig_desi                   AS designation,
+                    nlig_qtecde                 AS qte_demandee,
+                    nlig_qtecde - (nlig_qtealiv + nlig_qteliv + nlig_qtefac) AS qte_reliquat,
+                    nlig_datealloc              AS date_alloc,
+                    nlig_qtealiv                AS qte_reservee
+                FROM neg_lig
+                INNER JOIN neg_ent
+                    ON nent_soc  = nlig_soc
+                AND nent_succ = nlig_succ
+                AND nent_numcde = nlig_numcde
+                WHERE nlig_succ = '01'
+                AND nlig_constp = 'CAT'
+                AND nlig_qtecde > 0
+                AND nlig_qtecde > (nlig_qtealiv + nlig_qteliv + nlig_qtefac)
+                AND nlig_qtewait = 0
+                AND NVL(nlig_numcf, 0) = 0
+                AND nlig_numcli < 1990000
+                AND nlig_nolign <> NVL(nlig_nolmait, 0)
+                AND nlig_natop <> 'DEV'
         ";
     }
 }

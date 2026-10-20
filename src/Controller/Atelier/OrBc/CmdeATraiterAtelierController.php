@@ -41,11 +41,11 @@ class CmdeATraiterAtelierController extends Controller
         $dataCmde = $this->getDataEnDto($dtoSearch, $request);
         $criteria = [];
         return $this->render('atelier/orBc/list.html.twig', [
-            'data'        => $dataCmde['data'],         // ← tableau de DTO (pas $dataCmde)
+            'data'        => $dataCmde['data'],
             'currentPage' => $dataCmde['currentPage'],
             'totalPages'  => $dataCmde['lastPage'],
             'resultat'    => $dataCmde['totalItems'],
-            'criteria'    => [],
+            'criteria'    => $criteria,
             'form'        => $form->createView(),
         ]);
     }
@@ -61,7 +61,7 @@ class CmdeATraiterAtelierController extends Controller
         $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
         $page = (int) $request->query->get('page', 1);
         if ($page < 1) $page = 1;
-        $perPage = 20;
+        $perPage = 50;
 
         $result = $this->cmdeAtraiterAtelierModel->findPaginatedAndFiltered($codeSociete, $dtoSearch, $page, $perPage);
         $cmdListeAtraiterDto = (new CmdeATraiterAtelierListeMapper())
