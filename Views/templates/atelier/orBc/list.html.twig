@@ -38,10 +38,10 @@
                 {% for item in data %}
                     <tr>
                         <td>
-                            {% if item.source == 'OR' %}
-                                <span class="badge bg-primary">OR</span>
+                            {% if item.type_doc == 'OR' %}
+                                <span class="badge bg-primary">{{ item.type_doc }}</span>
                             {% else %}
-                                <span class="badge bg-info">BC négoce</span>
+                                <span class="badge bg-info"> {{ item.type_doc }}</span>
                             {% endif %}
                             {{ item.numero_doc }}
                         </td>
