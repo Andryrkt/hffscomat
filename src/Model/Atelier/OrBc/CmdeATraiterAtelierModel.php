@@ -54,6 +54,32 @@ class CmdeATraiterAtelierModel extends Model
             'lastPage'    => $lastPage,
         ];
     }
+    /**
+     * Récupération de toutes les données filtrées pour l'export Excel (sans pagination)
+     */
+    public function DonnerAAjouterExcel(CmdeATraitrerAtelierSearchDto $dto, string $codeSociete): array
+    {
+        // On récupère les conditions générées par ton service de filtre
+        $filtreService = new \App\Service\Atelier\OrBc\CmdeATraiterAtelierFiltreService();
+        $conditions = $filtreService->filtre($dto);
+
+        // On récupère la requête UNION ALL de base
+        $unionQuery = $this->creerJointureQuery();
+
+        // On applique les filtres sans pagination
+        $statement = "
+            SELECT * 
+            FROM ($unionQuery) t
+            WHERE 1 = 1
+            $conditions
+            ORDER BY date_doc DESC, numero_doc ASC, numero_ligne ASC
+        ";
+
+        $result = $this->connect->executeQuery($statement);
+        $data = $this->connect->fetchResults($result);
+
+        return $this->convertirEnUtf8($data);
+    }
 
     private function creerJointureQuery(): string
     {

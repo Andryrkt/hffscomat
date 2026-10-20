@@ -29,22 +29,15 @@
                     </div>
                 </div>
 
-                <div class="d-flex justify-content-between mb-2">
-                    <a href="{{ path('atelier_commande_a_traiter_liste') }}" class="btn btn-secondary fw-bold">
-                        <i class="fa-solid fa-rotate-left"></i>
-                        Réinitialiser
+                <div class="d-flex justify-content-end mb-2 gap-2">
+                    <a href="{{ path('atelier_commande_a_traiter_liste') }}" class="btn btn-secondary fw-bold" title="Effacer les filtres">
+                        <i class="fas fa-undo"></i>
+                        Effacer
                     </a>
-
-                    <div class="d-flex gap-2">
-                        {# <a href="{{ path('atelier_commande_a_traiter_export', app.request.query.all) }}" class="btn btn-success fw-bold">
-                        <i class="fa-solid fa-file-excel"></i>
-                        Exporter en Excel
-                        </a> #}
-                        <button class="btn btn-warning fw-bold" type="submit">
-                            <i class="fab fa-searchengin"></i>
-                            Recherche
-                        </button>
-                    </div>
+                    <button class="btn btn-warning fw-bold" type="submit">
+                        <i class="fab fa-searchengin"></i>
+                        Recherche
+                    </button>
                 </div>
 
                 {{ form_end(form) }}

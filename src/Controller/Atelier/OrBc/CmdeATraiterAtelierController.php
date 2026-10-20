@@ -17,6 +17,7 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class CmdeATraiterAtelierController extends Controller
 {
+    private const SESSION_KEY = 'criteria_for_excel_atelier_cmde_a_traiter_liste';
     private CmdeATraiterAtelierModel $cmdeAtraiterAtelierModel;
 
     public function __construct(CmdeATraiterAtelierModel $cmdeAtraiterAtelierModel)
@@ -25,27 +26,40 @@ class CmdeATraiterAtelierController extends Controller
         $this->cmdeAtraiterAtelierModel = $cmdeAtraiterAtelierModel;
     }
 
+
     /**
      * @Route("/commande-a-traiter-liste", name="atelier_commande_a_traiter_liste")
      */
     public function index(Request $request)
     {
+        if ($request->query->get('reset') === '1') {
+            $this->getSessionService()->remove(self::SESSION_KEY);
+            // On redirige vers la page propre (sans paramètres)
+            return $this->redirectToRoute('atelier_commande_a_traiter_liste');
+        }
 
-        $dtoSearch =  $this->getSessionService()->has('criteria_for_excel_atelier_cmde_a_traiter_liste') ? $this->getSessionService()->get('criteria_for_excel_atelier_cmde_a_traiter_liste') : new CmdeATraitrerAtelierSearchDto();
-        //création et initialisation du formulaire de la recherche
+
+        // 2. Récupération du DTO (depuis la session ou nouveau)
+        $dtoSearch = $this->getSessionService()->has(self::SESSION_KEY)
+            ? $this->getSessionService()->get(self::SESSION_KEY)
+            : new CmdeATraitrerAtelierSearchDto();
+        // 3. Création du formulaire
         $form = $this->getFormFactory()->createBuilder(CmdeATraiterAtelierSearchType::class, $dtoSearch, [
             'method' => 'GET',
         ])->getForm();
 
-        $dtoSearch  = $this->traitementFormulaireRecherhce($form, $request, $dtoSearch);
+        // 4. Traitement de la soumission du formulaire
+        $dtoSearch = $this->traitementFormulaireRecherche($form, $request, $dtoSearch);
+
+        // 5. Récupération des données
         $dataCmde = $this->getDataEnDto($dtoSearch, $request);
-        $criteria = [];
+
         return $this->render('atelier/orBc/list.html.twig', [
             'data'        => $dataCmde['data'],
             'currentPage' => $dataCmde['currentPage'],
             'totalPages'  => $dataCmde['lastPage'],
             'resultat'    => $dataCmde['totalItems'],
-            'criteria'    => $criteria,
+            'criteria'    => [],
             'form'        => $form->createView(),
         ]);
     }
@@ -74,15 +88,14 @@ class CmdeATraiterAtelierController extends Controller
         ];
     }
 
-    private function traitementFormulaireRecherhce(FormInterface $form, Request $request, CmdeATraitrerAtelierSearchDto $dtoSearch): CmdeATraitrerAtelierSearchDto
+    private function traitementFormulaireRecherche(FormInterface $form, Request $request, CmdeATraitrerAtelierSearchDto $dtoSearch): CmdeATraitrerAtelierSearchDto
     {
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $dtoSearch = $form->getData();
-
-            //recupères les données du criteria dans une session nommé dit_serch_criteria
-            $this->getSessionService()->set('criteria_for_excel_atelier_cmde_a_traiter_liste', $dtoSearch);
+            // Sauvegarde des critères en session
+            $this->getSessionService()->set(self::SESSION_KEY, $dtoSearch);
         }
 
         return $dtoSearch;
