@@ -1,4 +1,7 @@
 services:
   App\Model\Atelier\Dit\DitListeModel:
     arguments:
-    - '@security.service'
+      - "@security.service"
+  App\Model\Atelier\OrBc\CmdeATraiterAtelierModel:
+    arguments:
+      - "@security.service"

@@ -95,3 +95,7 @@ services:
       - '@App\Service\Atelier\Planning\PlanningAtelierService'
       - '@App\Model\Atelier\Planning\PlanningAtelierModel'
     public: true
+  App\Controller\Atelier\OrBc\CmdeATraiterAtelierController:
+    arguments:
+      - '@App\Model\Atelier\OrBc\CmdeATraiterAtelierModel'
+    public: true

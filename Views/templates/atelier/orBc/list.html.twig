@@ -1,0 +1,71 @@
+{% extends "baseTemplate.html.twig" %}
+
+{% block title %}
+    Liste des commandes à traiter
+{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ App.base_path }}/Views/css/list.css?v=2025.09.15.08.00">
+    {# <link rel="stylesheet" href="{{ App.base_path }}/Views/css/atelier/dit/liste.css?v=2025.09.15.08.00"> #}
+{% endblock %}
+
+
+{% block content %}
+    <div class="sticky-header-titre">
+        <div class="container">
+            {% include "/atelier/orBc/shared/_formulaireRecherche.html.twig" %}
+            {# {% include "/atelier/dit/shared/_pagination.html.twig" %} #}
+        </div>
+    </div>
+
+    <!-- DEBUT tableau -->
+    <div class="container-fluid">
+        <table class="table table-sticky">
+            <thead class="table-dark align-middle">
+                <tr>
+                    <th>Type</th>
+                    <th>N°</th>
+                    <th>Date</th>
+                    <th>Constructeur</th>
+                    <th>Référence</th>
+                    <th>Désignation</th>
+                    <th>Qté demandée</th>
+                    <th>Qté reliquat</th>
+                    <th>Qté réservée / à livrer</th>
+                    <th>Date allocation</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in data %}
+                    <tr>
+                        <td>
+                            {% if item.source == 'OR' %}
+                                <span class="badge bg-primary">OR</span>
+                            {% else %}
+                                <span class="badge bg-info">BC négoce</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ item.numero }}</td>
+                        <td>{{ item.date|date('d/m/Y') }}</td>
+                        <td>{{ item.constructeur }}</td>
+                        <td>{{ item.reference }}</td>
+                        <td>{{ item.designation }}</td>
+                        <td class="text-end">{{ item.qteDemandee|number_format(0, ',', ' ') }}</td>
+                        <td class="text-end">{{ item.qteReliquat|number_format(0, ',', ' ') }}</td>
+                        <td class="text-end">{{ item.qteReservee|number_format(0, ',', ' ') }}</td>
+                        <td>{{ item.dateAllocation is not null ? item.dateAllocation|date('d/m/Y') : '—' }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {# {% include "/partials/_pagination.html.twig" %} #}
+    <!-- FIN tableau -->
+
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="{{ App.base_path }}/Views/js/utils/positionSticky.js?v=2025.09.15.08.00"></script>
+    <script src="{{ App.base_path }}/Views/js/atelier/orBc/listCmdeATraiter.js?v=2025.09.15.08.00" type="module"></script>
+{% endblock %}
