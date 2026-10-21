@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Form\Atelier\Dit\OrBc;
+namespace App\Form\Atelier\OrBc;
 
 use App\Dto\Atelier\OrBc\CmdeATraitrerAtelierSearchDto;
 use App\Model\Atelier\OrBc\CmdeATraiterAtelierModel;
@@ -13,18 +13,24 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class CmdeATraiterAtelierSearchType extends AbstractType
 {
-    // private function constructeurChoices(): array
-    // {
-    //     $model        = new CmdeATraiterAtelierModel();
-    //     $constructeurs = $model->findConstructeurs();
+    private CmdeATraiterAtelierModel $cmdeAtraiterAtelierModel;
 
-    //     // Fallback si la requête ne renvoie rien : on garde au moins les 2 connus
-    //     if (empty($constructeurs)) {
-    //         $constructeurs = ['ATC', 'CAT'];
-    //     }
+    public function __construct(CmdeATraiterAtelierModel $cmdeAtraiterAtelierModel)
+    {
+        $this->cmdeAtraiterAtelierModel = $cmdeAtraiterAtelierModel;
+    }
 
-    //     return array_combine($constructeurs, $constructeurs);
-    // }
+    private function constructeurChoices(): array
+    {
+        $constructeurs = $this->cmdeAtraiterAtelierModel->findConstructeurs();
+
+        // Fallback si la requête ne renvoie rien (ex: base de dev vide)
+        if (empty($constructeurs)) {
+            $constructeurs = [];
+        }
+
+        return array_combine($constructeurs, $constructeurs);
+    }
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
@@ -43,18 +49,21 @@ class CmdeATraiterAtelierSearchType extends AbstractType
             ->add('constructeur', ChoiceType::class, [
                 'label'       => 'Constructeur',
                 'placeholder' => '-- Tous --',
-                'choices'     =>  ['ATC' => 'ATC', 'CAT' => 'CAT'],
+                'choices'     =>  $this->constructeurChoices(),
                 'required'    => false,
             ])
             ->add('dateDebut', DateType::class, [
                 'widget'   => 'single_text',
                 'label'    => 'Du',
                 'required' => false,
+                'data'     => $options['data']->dateDebut ?? new \DateTime('-30 days'),
+
             ])
             ->add('dateFin', DateType::class, [
                 'widget'   => 'single_text',
                 'label'    => 'Au',
                 'required' => false,
+                'data'     => $options['data']->dateFin ?? new \DateTime(),
             ])
         ;
     }

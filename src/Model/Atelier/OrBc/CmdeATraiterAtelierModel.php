@@ -83,6 +83,7 @@ class CmdeATraiterAtelierModel extends Model
 
     private function creerJointureQuery(): string
     {
+        $sucNeg = $_ENV['SUC_NEG'];
         return "
             SELECT
                     'OR-' || slor_nolign        AS id,
@@ -104,15 +105,18 @@ class CmdeATraiterAtelierModel extends Model
                     slor_datealloc              AS date_alloc,
                     slor_qteres                 AS qte_reservee
                 FROM sav_lor
-                INNER JOIN sav_eor
-                    ON seor_soc  = slor_soc
-                AND seor_succ = slor_succ
-                AND seor_numor = slor_numor
-                WHERE NVL(slor_numcf, 0) = 0
-                AND slor_constp = 'ATC'
-                AND slor_qterel > 0
-                AND seor_serv <> 'DEV'
-                AND slor_nolign <> NVL(slor_nolmait, 0)
+                    INNER JOIN sav_eor
+                                ON seor_soc  = slor_soc
+                            AND seor_succ = slor_succ
+                            AND seor_numor = slor_numor
+                    INNER JOIN art_bse a1 ON a1.abse_constp = slor_constp
+                         AND a1.abse_refp = slor_refp
+                WHERE 
+                    NVL(slor_numcf, 0) = 0
+                    AND a1.abse_codg = 'ST'
+                    AND slor_qterel > 0
+                    AND seor_serv <> 'DEV'
+                    AND slor_nolign <> NVL(slor_nolmait, 0)
 
                 UNION ALL
 
@@ -129,20 +133,44 @@ class CmdeATraiterAtelierModel extends Model
                     nlig_qtecde - (nlig_qtealiv + nlig_qteliv + nlig_qtefac) AS qte_reliquat,
                     nlig_datealloc              AS date_alloc,
                     nlig_qtealiv                AS qte_reservee
-                FROM neg_lig
-                INNER JOIN neg_ent
-                    ON nent_soc  = nlig_soc
-                AND nent_succ = nlig_succ
-                AND nent_numcde = nlig_numcde
-                WHERE nlig_succ = '01'
-                AND nlig_constp = 'CAT'
-                AND nlig_qtecde > 0
-                AND nlig_qtecde > (nlig_qtealiv + nlig_qteliv + nlig_qtefac)
-                AND nlig_qtewait = 0
-                AND NVL(nlig_numcf, 0) = 0
-                AND nlig_numcli < 1990000
-                AND nlig_nolign <> NVL(nlig_nolmait, 0)
-                AND nlig_natop <> 'DEV'
+                FROM 
+                        neg_lig
+                    INNER JOIN neg_ent
+                        ON nent_soc  = nlig_soc
+                    AND nent_succ = nlig_succ
+                    AND nent_numcde = nlig_numcde
+                    INNER JOIN art_bse a2 ON a2.abse_constp = nlig_constp
+                         AND a2.abse_refp = nlig_refp
+                WHERE
+                    nlig_succ = '$sucNeg'
+                    AND a2.abse_codg = 'ST'
+                    AND nlig_qtecde > 0
+                    AND nlig_qtecde > (nlig_qtealiv + nlig_qteliv + nlig_qtefac)
+                    AND nlig_qtewait = 0
+                    AND NVL(nlig_numcf, 0) = 0
+                    AND nlig_numcli < 1990000
+                    AND nlig_nolign <> NVL(nlig_nolmait,0)
+                    AND nlig_natop <> 'DEV'
         ";
+    }
+
+    /**
+     * Récupère les constructeurs uniquement depuis art_bse avec abse_codg = 'ST'
+     */
+    public function findConstructeurs(): array
+    {
+        $statement = "
+            SELECT DISTINCT abse_constp AS constructeur
+            FROM art_bse
+            WHERE abse_codg = 'ST'
+              AND abse_constp IS NOT NULL
+              AND TRIM(abse_constp) <> ''
+            ORDER BY abse_constp
+        ";
+
+        $result = $this->connect->executeQuery($statement);
+        $data   = $this->convertirEnUtf8($this->connect->fetchResults($result));
+
+        return array_column($data, 'constructeur');
     }
 }

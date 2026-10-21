@@ -4,7 +4,7 @@ namespace App\Controller\Atelier\OrBc;
 
 use App\Controller\Controller;
 use App\Dto\Atelier\OrBc\CmdeATraitrerAtelierSearchDto;
-use App\Form\Atelier\Dit\OrBc\CmdeATraiterAtelierSearchType;
+use App\Form\Atelier\OrBc\CmdeATraiterAtelierSearchType;
 use App\Mapper\Atelier\OrBc\CmdeATraiterAtelierListeMapper;
 use App\Model\Atelier\OrBc\CmdeATraiterAtelierModel;
 use Symfony\Component\Form\FormInterface;

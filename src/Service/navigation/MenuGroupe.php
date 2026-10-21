@@ -49,6 +49,13 @@ class MenuGroupe
                 ],
             ],
             [
+                'label'    => "OR / BC négoce",
+                'icon'     => 'list-squares',
+                'subitems' => [
+                    ['label' => 'Consultation',                'icon' => 'search',      'route' => 'atelier_commande_a_traiter_liste'],
+                ],
+            ],
+            [
                 'route'    => 'dit_new',
                 'label'    => 'Glossaire OR',
                 'icon'     => 'book',
