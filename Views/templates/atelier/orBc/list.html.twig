@@ -6,7 +6,7 @@
 
 {% block stylesheets %}
     <link rel="stylesheet" href="{{ App.base_path }}/Views/css/list.css?v=2025.09.15.08.00">
-    {# <link rel="stylesheet" href="{{ App.base_path }}/Views/css/atelier/dit/liste.css?v=2025.09.15.08.00"> #}
+    <link rel="stylesheet" href="{{ App.base_path }}/Views/css/atelier/orBc/list.css?v=2025.09.15.08.00">
 {% endblock %}
 
 
@@ -39,9 +39,9 @@
                     <tr>
                         <td>
                             {% if item.type_doc == 'OR' %}
-                                <span class="badge bg-primary">{{ item.type_doc }}</span>
+                                <span class="badge-type-or">{{ item.type_doc }}</span>
                             {% else %}
-                                <span class="badge bg-info"> {{ item.type_doc }}</span>
+                                <span class="badge-type-bc">{{ item.type_doc }}</span>
                             {% endif %}
                             {{ item.numero_doc }}
                         </td>

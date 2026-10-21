@@ -1,0 +1,26 @@
+/* Style pour le badge OR (Fond noir, texte jaune) */
+.badge-type-or {
+  background-color: #1a1a1a; /* Noir */
+  color: #ffcc00; /* Jaune */
+  font-weight: bold;
+  font-size: 0.8rem;
+  padding: 0.3em 0.6em;
+  border-radius: 0; /* Coins carrés */
+  display: inline-block;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Style pour le badge BC (Fond blanc, bordure épaisse noire, texte noir) */
+.badge-type-bc {
+  background-color: #ffffff; /* Blanc */
+  color: #1a1a1a; /* Noir */
+  border: 2px solid #1a1a1a; /* Bordure épaisse noire */
+  font-weight: bold;
+  font-size: 0.8rem;
+  padding: 0.2em 0.5em; /* Un peu moins de padding pour compenser la bordure */
+  border-radius: 0; /* Coins carrés */
+  display: inline-block;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
