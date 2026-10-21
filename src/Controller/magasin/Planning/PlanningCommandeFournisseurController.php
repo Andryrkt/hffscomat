@@ -43,7 +43,7 @@ class PlanningCommandeFournisseurController extends Controller
         $form->handleRequest($request);
         $dto = $form->getData() ?? new PlanningCommandeFournisseurSearchDto();
 
-        $condition = $request->query->get('condition', 'default');
+        $condition = $request->query->get('condition', 'en_cours');
         $allRequestQuery = $request->query->all();
 
         $data = $this->planningMagasinModel->getPlanningMagasin($condition, empty($allRequestQuery));
