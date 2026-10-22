@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Dto\Atelier\OrBc;
+namespace App\Dto\Magasin\OrBc;
 
 use DateTime;
 
-class CmdeATraitrerAtelierDto
+class CmdeATraitrerMagasinDto
 {
 
     public ?string $type_doc = null;

@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Service\Atelier\OrBc;
+namespace App\Service\magasin\OrBc;
 
-use App\Dto\Atelier\OrBc\CmdeATraitrerAtelierSearchDto;
+use App\Dto\Magasin\OrBc\CmdeATraitrerMagasinSearchDto;
 use App\Model\Informix\SelectWhereCondition;
 
-class CmdeATraiterAtelierFiltreService
+class CmdeATraiterMagasinFiltreService
 {
     /** Défaut si aucune date fournie : 30 derniers jours */
     private const DEFAULT_DAYS_BACK = 30;
 
-    public function filtre(CmdeATraitrerAtelierSearchDto $dto): string
+    public function filtre(CmdeATraitrerMagasinSearchDto $dto): string
     {
         $swc = new SelectWhereCondition();
         $conditions = [];

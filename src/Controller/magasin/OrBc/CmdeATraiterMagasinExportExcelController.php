@@ -1,26 +1,26 @@
 <?php
 
-namespace App\Controller\Atelier\OrBc;
+namespace App\Controller\Magasin\OrBc;
 
 ini_set('memory_limit', '512M');
 
 use App\Controller\Controller;
-use App\Dto\Atelier\OrBc\CmdeATraitrerAtelierSearchDto;
-use App\Model\Atelier\OrBc\CmdeATraiterAtelierModel;
+use App\Dto\Magasin\OrBc\CmdeATraitrerAtelierSearchDto;
+use App\Model\magasin\OrBc\CmdeATraiterAtelierModel;
 use App\Service\ExcelService;
 use DateTime;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
- * @Route("/atelier/or-bc-negoce")
+ * @Route("/magasin/or-bc-negoce")
  */
-class CmdeATraiterAtelierExportExcelController extends Controller
+class CmdeATraiterMagasinExportExcelController extends Controller
 {
 
 
 
     /**
-     * @Route("/export-excel", name="atelier_commande_a_traiter_export")
+     * @Route("/export-excel", name="magasin_commande_a_traiter_export")
      */
     public function exportExcel()
     {

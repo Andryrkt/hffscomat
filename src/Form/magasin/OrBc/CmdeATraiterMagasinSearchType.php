@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Form\Atelier\OrBc;
+namespace App\Form\magasin\OrBc;
 
-use App\Dto\Atelier\OrBc\CmdeATraitrerAtelierSearchDto;
-use App\Model\Atelier\OrBc\CmdeATraiterAtelierModel;
+use App\Dto\Magasin\OrBc\CmdeATraitrerMagasinSearchDto;
+use App\Model\magasin\OrBc\CmdeATraiterMagasinModel;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
@@ -11,11 +11,11 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
-class CmdeATraiterAtelierSearchType extends AbstractType
+class CmdeATraiterMagasinSearchType extends AbstractType
 {
-    private CmdeATraiterAtelierModel $cmdeAtraiterAtelierModel;
+    private CmdeATraiterMagasinModel $cmdeAtraiterAtelierModel;
 
-    public function __construct(CmdeATraiterAtelierModel $cmdeAtraiterAtelierModel)
+    public function __construct(CmdeATraiterMagasinModel $cmdeAtraiterAtelierModel)
     {
         $this->cmdeAtraiterAtelierModel = $cmdeAtraiterAtelierModel;
     }
@@ -54,14 +54,14 @@ class CmdeATraiterAtelierSearchType extends AbstractType
             ])
             ->add('dateDebut', DateType::class, [
                 'widget'   => 'single_text',
-                'label'    => 'Du',
+                'label'    => 'Période Du',
                 'required' => false,
                 'data'     => $options['data']->dateDebut ?? new \DateTime('-30 days'),
 
             ])
             ->add('dateFin', DateType::class, [
                 'widget'   => 'single_text',
-                'label'    => 'Au',
+                'label'    => 'Au période de',
                 'required' => false,
                 'data'     => $options['data']->dateFin ?? new \DateTime(),
             ])
@@ -71,7 +71,7 @@ class CmdeATraiterAtelierSearchType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class' => CmdeATraitrerAtelierSearchDto::class,
+            'data_class' => CmdeATraitrerMagasinSearchDto::class,
         ]);
     }
 }

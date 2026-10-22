@@ -1,26 +1,26 @@
 <?php
 
 
-namespace App\Model\Atelier\OrBc;
+namespace App\Model\magasin\OrBc;
 
 
-use App\Dto\Atelier\OrBc\CmdeATraitrerAtelierSearchDto;
+use App\Dto\Magasin\OrBc\CmdeATraitrerMagasinSearchDto;
 use App\Model\Model;
-use App\Service\Atelier\OrBc\CmdeATraiterAtelierFiltreService;
+use App\Service\magasin\OrBc\CmdeATraiterMagasinFiltreService;
 use App\Service\security\SecurityService;
 
-class CmdeATraiterAtelierModel extends Model
+class CmdeATraiterMagasinModel extends Model
 {
 
-    private CmdeATraiterAtelierFiltreService $cmdeATraiterAtelierFiltreService;
+    private CmdeATraiterMagasinFiltreService $cmdeATraiterAtelierFiltreService;
 
 
     public function __construct(SecurityService $securityService)
     {
         parent::__construct();
-        $this->cmdeATraiterAtelierFiltreService = new CmdeATraiterAtelierFiltreService($securityService);
+        $this->cmdeATraiterAtelierFiltreService = new CmdeATraiterMagasinFiltreService($securityService);
     }
-    public function findPaginatedAndFiltered(string $codeSociete, CmdeATraitrerAtelierSearchDto $cmdeATraiterAtelierSearchDto, int $page, int $perPage)
+    public function findPaginatedAndFiltered(string $codeSociete, CmdeATraitrerMagasinSearchDto $cmdeATraiterAtelierSearchDto, int $page, int $perPage)
     {
         $page  = max(1, $page);
         $skip  = ($page - 1) * $perPage;
@@ -57,10 +57,10 @@ class CmdeATraiterAtelierModel extends Model
     /**
      * Récupération de toutes les données filtrées pour l'export Excel (sans pagination)
      */
-    public function DonnerAAjouterExcel(CmdeATraitrerAtelierSearchDto $dto, string $codeSociete): array
+    public function DonnerAAjouterExcel(CmdeATraitrerMagasinSearchDto $dto, string $codeSociete): array
     {
         // On récupère les conditions générées par ton service de filtre
-        $filtreService = new \App\Service\Atelier\OrBc\CmdeATraiterAtelierFiltreService();
+        $filtreService = new CmdeATraiterMagasinFiltreService();
         $conditions = $filtreService->filtre($dto);
 
         // On récupère la requête UNION ALL de base

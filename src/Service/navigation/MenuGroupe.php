@@ -49,13 +49,6 @@ class MenuGroupe
                 ],
             ],
             [
-                'label'    => "OR / BC négoce",
-                'icon'     => 'list-squares',
-                'subitems' => [
-                    ['label' => 'Consultation',                'icon' => 'search',      'route' => 'atelier_commande_a_traiter_liste'],
-                ],
-            ],
-            [
                 'route'    => 'dit_new',
                 'label'    => 'Glossaire OR',
                 'icon'     => 'book',
@@ -109,6 +102,13 @@ class MenuGroupe
                     ['label' => 'Soumission commandes fournisseur', 'icon' => 'plus-circle', 'route' => 'generer_commande_fournisseur'],
                     ['label' => 'Planning Commande Fournisseur', 'icon' => 'calendar-alt', 'route' => 'interface_planning_cde_frn_magasin'],
 
+                ],
+            ],
+            [
+                'label'    => "OR / BC négoce",
+                'icon'     => 'list-squares',
+                'subitems' => [
+                    ['label' => 'Liste des commandes à traiter', 'icon' => 'search', 'route' => 'magasin_commande_a_traiter_liste'],
                 ],
             ],
         ];

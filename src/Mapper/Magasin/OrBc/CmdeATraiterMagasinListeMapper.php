@@ -1,15 +1,17 @@
 <?php
 
-namespace App\Mapper\Atelier\OrBc;
+namespace App\Mapper\Magasin\OrBc;
 
-use App\Dto\Atelier\OrBc\CmdeATraitrerAtelierDto;
+use App\Dto\Magasin\OrBc\CmdeATraitrerMagasinDto;
 
-class CmdeATraiterAtelierListeMapper
+
+
+class CmdeATraiterMagasinListeMapper
 {
     public function map(array $data): array
     {
         return array_map(function ($item) {
-            $dto = new CmdeATraitrerAtelierDto();
+            $dto = new CmdeATraitrerMagasinDto();
             $dto->type_doc      = $item['type_doc'] ?? null;
             $dto->numero_doc    = $item['numero_doc'] ?? null;
             $dto->numero_ligne  = $item['numero_ligne'] ?? null;

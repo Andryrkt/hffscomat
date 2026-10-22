@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Dto\Atelier\OrBc;
+namespace App\Dto\Magasin\OrBc;
 
-class CmdeATraitrerAtelierSearchDto
+class CmdeATraitrerMagasinSearchDto
 {
     public ?string $type_doc = null;
 

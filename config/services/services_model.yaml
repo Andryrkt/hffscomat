@@ -2,6 +2,6 @@ services:
   App\Model\Atelier\Dit\DitListeModel:
     arguments:
       - "@security.service"
-  App\Model\Atelier\OrBc\CmdeATraiterAtelierModel:
+  App\Model\magasin\OrBc\CmdeATraiterMagasinModel:
     arguments:
       - "@security.service"

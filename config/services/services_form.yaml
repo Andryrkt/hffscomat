@@ -102,7 +102,7 @@ services:
       - '@App\Model\Atelier\Dit\DitListeModel'
     public: true
 
-  App\Form\Atelier\OrBc\CmdeATraiterAtelierSearchType:
+  App\Form\magasin\OrBc\CmdeATraiterMagasinSearchType:
     arguments:
-      - '@App\Model\Atelier\OrBc\CmdeATraiterAtelierModel'
+      - '@App\Model\magasin\OrBc\CmdeATraiterMagasinModel'
     public: true
