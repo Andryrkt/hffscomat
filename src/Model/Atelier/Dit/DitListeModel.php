@@ -48,7 +48,7 @@ class DitListeModel extends Model
                     d0_.section_affectee AS section_affectee,
                     d0_.numero_devis_rattache AS numero_devis,
                     d0_.statut_devis AS statut_devis,
-                    d0_.numero_or AS numero_or,
+                    COALESCE(osv_or.numeroor, osv_dit.numeroor) AS numero_or,
                     CASE
                         WHEN d0_.statut_or IS NOT NULL AND d0_.statut_or <> '' AND d0_.statut_or <> ' ' THEN d0_.statut_or
                         WHEN osv_or.statut LIKE 'Valid%' THEN 'Validé'
@@ -138,19 +138,23 @@ class DitListeModel extends Model
                 ) osv_or
                 ON d0_.numero_or = osv_or.numeroor
                     
-                    
 
                 LEFT JOIN (
-                    SELECT osv.numeroor, osv.numerodit, osv.montantitv, osv.datesoumission
-                    FROM {$this->dbIrium}.ors_soumis_a_validation osv
-                    LEFT JOIN (
-                        SELECT id, MAX(numeroversion) AS max_version
-                        FROM {$this->dbIrium}.ors_soumis_a_validation
-                        GROUP BY id
-                    ) mv ON osv.id = mv.id AND osv.numeroversion = mv.max_version
-                ) osv_dit
-                    ON d0_.numero_demande_dit = osv_dit.numerodit
-                AND osv_or.numeroor IS NULL
+                        SELECT
+                            osv.numerodit,
+                            osv.numeroor,
+                            SUM(osv.montantitv)     AS montantitv,
+                            MAX(osv.datesoumission) AS datesoumission
+                        FROM ir_scomat:regix.ors_soumis_a_validation osv
+                        WHERE osv.numeroversion = (
+                            SELECT MAX(osvm.numeroversion)
+                            FROM ir_scomat:regix.ors_soumis_a_validation osvm
+                            WHERE osvm.numerodit = osv.numerodit
+                        )
+                        GROUP BY osv.numerodit, osv.numeroor
+                    ) osv_dit
+                        ON d0_.numero_demande_dit = osv_dit.numerodit
+                    AND osv_or.numeroor IS NULL
 
                 WHERE d0_.code_societe = '$codeSociete'
                 $conditions
