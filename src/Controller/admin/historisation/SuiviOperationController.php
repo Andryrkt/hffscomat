@@ -5,12 +5,13 @@ namespace App\Controller\admin\historisation;
 use App\Controller\Controller;
 use App\Entity\admin\historisation\documentOperation\HistoriqueOperationEtape;
 use App\Service\historiqueOperation\suivi\SuiviOperationService;
+use App\Service\security\SecurityService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
- * Suivi étape par étape des opérations (accessible uniquement aux administrateurs HFF-ADMIN)
+ * Suivi étape par étape des opérations (accès selon la permission de la page suivi_operation_index)
  */
 class SuiviOperationController extends Controller
 {
@@ -21,8 +22,7 @@ class SuiviOperationController extends Controller
      */
     public function index(Request $request)
     {
-        $this->verifierAcces();
-
+        // accès contrôlé par la permission "voir" de la route (SecurityService::controlerAcces)
         $recherche         = $request->query->get('recherche');
         $typeOperation    = $request->query->get('type');
         $problemeSeulement = $request->query->getBoolean('probleme');
@@ -52,13 +52,13 @@ class SuiviOperationController extends Controller
     /**
      * Marque une opération (toutes ses étapes) comme lue ou non lue
      *
-     * Préfixe api_ : contrôle de session uniquement (pas de permission par route), l'accès admin est vérifié ici
+     * Préfixe api_ : contrôle de session uniquement (pas de permission par route), on vérifie ici le droit de voir la page
      *
      * @Route("/api/admin/suivi-operation/{idSuivi}/lu", name="api_suivi_operation_marquer_lu", methods={"POST"})
      */
     public function marquerLu(Request $request, string $idSuivi)
     {
-        if (!$this->estAdmin()) {
+        if (!$this->getSecurityService()->verifierPermission(SecurityService::PERMISSION_VOIR, 'suivi_operation_index')) {
             return new JsonResponse(['message' => 'Accès refusé'], 403);
         }
 
@@ -82,15 +82,5 @@ class SuiviOperationController extends Controller
         if (!$date) return null;
         $dateTime = \DateTime::createFromFormat('Y-m-d', $date);
         return $dateTime ?: null;
-    }
-
-    /**
-     * Redirige vers l'accueil si l'utilisateur connecté n'est pas administrateur (profil HFF-ADMIN)
-     */
-    private function verifierAcces(): void
-    {
-        if (!$this->estAdmin()) {
-            $this->redirectToRoute('profil_acceuil');
-        }
     }
 }
