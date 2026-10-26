@@ -1,0 +1,31 @@
+services:
+  # Commande fournisseur magasin (soumission)
+  App\Service\historiqueOperation\magasin\commandeFrn\HistoriqueOperationCdeFrnService:
+    arguments:
+      - "@doctrine.orm.default_entity_manager"
+    public: true
+
+  App\Service\magasin\Commande\Soumission\CdeFrnSoumissionStore:
+    arguments:
+      $cache: "@cache.cde_frn_soumission"
+    public: true
+
+  App\Factory\magasin\Commande\Soumission\CdeFrnSoumisAValidationFactory:
+    public: true
+
+  App\Service\magasin\Commande\Soumission\CdeFrnSoumissionService:
+    arguments:
+      $store: '@App\Service\magasin\Commande\Soumission\CdeFrnSoumissionStore'
+      $factory: '@App\Factory\magasin\Commande\Soumission\CdeFrnSoumisAValidationFactory'
+      $historiqueOperation: '@App\Service\historiqueOperation\magasin\commandeFrn\HistoriqueOperationCdeFrnService'
+    public: true
+
+  App\Api\magasin\GenerateCommandeFournisseurApi:
+    arguments:
+      $cdeFrnSoumissionService: '@App\Service\magasin\Commande\Soumission\CdeFrnSoumissionService'
+    public: true
+
+  App\Controller\Magasin\Commande\Soumission\SoumissionCommandeController:
+    arguments:
+      $cdeFrnSoumissionService: '@App\Service\magasin\Commande\Soumission\CdeFrnSoumissionService'
+    public: true

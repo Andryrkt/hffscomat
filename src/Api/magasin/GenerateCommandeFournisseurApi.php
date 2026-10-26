@@ -3,56 +3,56 @@
 namespace App\Api\magasin;
 
 use App\Controller\Controller;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use App\Service\genererPdf\magasin\GeneratePdfCdeMagasin;
-use App\Model\magasin\CommANDe\Soumission\CdeSoumissionModel;
+use App\Service\magasin\Commande\Soumission\CdeFrnSoumissionService;
 
 class GenerateCommandeFournisseurApi extends Controller
 {
-    /**
-     * @Route("/api/cmde-fournisseur/{numCde}/generate-pdf", name="api_generate_cmde_fournisseur", methods={"GET"})
-     */
-    public function generatePdfCmdeFournisseur(string $numCde): JsonResponse
+    private CdeFrnSoumissionService $cdeFrnSoumissionService;
+
+    public function __construct(CdeFrnSoumissionService $cdeFrnSoumissionService)
     {
+        parent::__construct();
+        $this->cdeFrnSoumissionService = $cdeFrnSoumissionService;
+    }
+
+    /**
+     * @Route("/api/cde-frn/generate-pdf", name="api_generate_cde_frn", methods={"POST"})
+     */
+    public function generatePdfCmdeFournisseur(Request $request): JsonResponse
+    {
+        $numCde = (string) (json_decode($request->getContent(), true)['numCde'] ?? '');
+
         // 1. Validation basique de l'input
         if (empty($numCde) || !preg_match('/^\d{7,8}$/', $numCde)) {
             return new JsonResponse([
-                'success' => false,
-                'error'   => 'Numéro de document invalide.'
+                'data'    => null,
+                'message' => 'Numéro de document invalide.'
             ], JsonResponse::HTTP_BAD_REQUEST);
         }
 
         try {
-            // 2. Récupération des données du document
-            $commandeSoumissionDto = (new CdeSoumissionModel())->findInfoCommande($numCde, $this->getUserMail(), $_ENV["SUC_NEG"], $this->getSecurityService()->getCodeSocieteUser());
+            $cdeFrnSoumisAValidationDTO = $this->cdeFrnSoumissionService->generatePdfForSubmission($numCde, $this->getUserMail(), $this->getSecurityService()->getCodeSocieteUser());
 
-            if ($commandeSoumissionDto === null) {
+            if ($cdeFrnSoumisAValidationDTO === null) {
                 return new JsonResponse([
-                    'url'     => null,
+                    'data'    => null,
                     'message' => "<span class='text-danger'>Aucune information trouvée pour la commande \"<span class='text-decoration-underline fw-bold'>$numCde</span>\".</span>"
                 ], JsonResponse::HTTP_NOT_FOUND);
             }
 
-            $basePath = rtrim($_ENV['BASE_PATH_FICHIER'], '/\\');
-            $filePath = "magasin/commandes fournisseurs/$numCde/$numCde.pdf";
-            $dirPath  = dirname("$basePath/$filePath");
-
-            if (!is_dir($dirPath)) mkdir($dirPath, 0777, true);
-
-            // 3. Suppression du fichier PDF s'il existe déjà: Forcer la regéneration
-            if (file_exists($filePath)) unlink($filePath);
-
-            // 4. Génération du PDF
-            (new GeneratePdfCdeMagasin())->generate($commandeSoumissionDto, "$basePath/$filePath");
-
             return new JsonResponse([
-                'url'     => rtrim($_ENV['BASE_PATH_FICHIER_COURT'], '/\\') . "/$filePath",
+                'data'    => [
+                    'urlPDFCourt'     => $cdeFrnSoumisAValidationDTO->urlPDFCourt,
+                    'generationToken' => $cdeFrnSoumisAValidationDTO->token,
+                ],
                 'message' => "PDF généré avec succès."
             ]);
         } catch (\Throwable $e) {
             return new JsonResponse([
-                'url'     => null,
+                'data'    => null,
                 'message' => $e->getMessage()
             ], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }

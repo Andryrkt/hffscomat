@@ -155,6 +155,7 @@ class PlanningModel extends Model
                 where sub.parts_number = cat.parts_number
                     and sub.numero_po = cat.numero_po
                     and sub.line_number = cat.line_number
+                    AND sub.quantity > 0
             )
             $vOrValideDw
         ";
@@ -194,6 +195,7 @@ class PlanningModel extends Model
                     WHERE sub.parts_number = cat.parts_number
                         AND sub.numero_po = cat.numero_po
                         AND sub.line_number = cat.line_number
+                        AND sub.quantity > 0
                 )
             $vOrValideDw
         ";

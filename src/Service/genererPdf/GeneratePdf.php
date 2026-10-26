@@ -9,6 +9,7 @@ class GeneratePdf
 {
     protected string $baseCheminDuFichier;
     protected string $baseCheminDocuware;
+    protected string $basePathAssets;
 
     public function __construct(
         ?string $baseCheminDuFichier = null,
@@ -17,6 +18,15 @@ class GeneratePdf
         // Injection de dépendances avec fallback sur les variables d'environnement
         $this->baseCheminDuFichier = $baseCheminDuFichier ?? rtrim($_ENV['BASE_PATH_FICHIER'] ?? '', '/\\') . '/';
         $this->baseCheminDocuware = $baseCheminDocuware ?? rtrim($_ENV['BASE_PATH_DOCUWARE'] ?? '', '/\\') . '/';
+        $this->basePathAssets = rtrim($_ENV['BASE_PATH_LONG'] ?? '', '/\\') . '/Views/assets';
+    }
+
+    // commande fournisseur magasin
+    public static function copyToDWCdeFnrSoumis(string $cheminDuFichier, string $numCmde): bool
+    {
+        $self = new self();
+        $cheminDW = rtrim($self->baseCheminDocuware, '/\\') . "/CDE FRN MAGASIN/$numCmde.pdf";
+        return $self->copyFile($cheminDuFichier, $cheminDW);
     }
 
     /** Message de la dernière erreur de copie (null si la dernière copie a réussi) */

@@ -1,0 +1,82 @@
+<?php
+
+namespace App\Controller\Atelier\Planning;
+
+use App\Controller\Controller;
+use App\Controller\Traits\Transformation;
+use App\Dto\Atelier\Planning\PlanningSearchDto;
+use App\Form\Atelier\Planning\PlanningSearchType;
+use App\Service\Atelier\Planning\PlanningService;
+use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Annotation\Route;
+
+/**
+ * @Route("/atelier")
+ */
+class PlanningMaterielController extends Controller
+{
+    use Transformation;
+    private PlanningSearchDto $searchDto;
+    private PlanningService $planningService;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->searchDto = new PlanningSearchDto();
+        $this->searchDto->annee = date('Y');
+        $this->searchDto->facture = 'ENCOURS';
+        $this->searchDto->planning = 'PLANIFIE';
+        $this->searchDto->interneExterne = 'TOUS';
+        $this->searchDto->typeLigne = 'TOUTES';
+        $this->searchDto->months = 3;
+        $this->planningService = new PlanningService();
+    }
+
+    /**
+     * @Route("/planning-vue", name="planning_vue")
+     */
+    public function listPlanning(Request $request): \Symfony\Component\HttpFoundation\Response
+    {
+
+        $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
+        $form = $this->getFormFactory()->createBuilder(
+            PlanningSearchType::class,
+            $this->searchDto,
+            [
+                'method' => 'GET',
+                'planningDetaille' => false,
+                'codeSociete' => $codeSociete,
+            ]
+        )->getForm();
+
+        $dto = $this->traitementFormulaire($form, $request);
+        $this->getSessionService()->set('planning_search_criteria', $dto);
+
+        $data = [];
+        $back = [];
+        if ($request->query->get('action') !== 'oui') {
+            $back = $this->planningService->getBackOrderItv($dto);
+            $data = $this->planningService->getPlanningMaterielData($dto, $back, $codeSociete);
+        }
+        $data = $this->planningService->getDataList($data, $dto->months);
+        // dd($data);
+        $this->logUserVisit('planning_vue');
+
+        return $this->render('atelier/planning/planning.html.twig', [
+            'form'         => $form->createView(),
+            'preparedData' => $data['prepared_data'],
+            'uniqueMonths' => $data['months'],
+        ]);
+    }
+
+    private function traitementFormulaire(FormInterface $form, Request $request)
+    {
+        $form->handleRequest($request);
+        $dto = $this->searchDto;
+
+        if ($form->isSubmitted() && $form->isValid()) $dto = $form->getData();
+
+        return $dto;
+    }
+}

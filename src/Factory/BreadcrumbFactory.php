@@ -183,6 +183,7 @@ class BreadcrumbFactory
             'planning-detaille'                     => 'Planning détaillé',
             'planningAtelier'                       => 'Planning Interne de l\'Atelier',
             'planningAte'                           => 'Planning',
+            'planning-negoce'                       => 'Planning commande négoces',
             'demande-de-conge'                      => 'Demande de congé',
             'conge-liste'                           => ' Liste des demandes de congés'
         ];

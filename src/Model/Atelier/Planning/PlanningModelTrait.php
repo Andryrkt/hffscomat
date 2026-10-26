@@ -257,6 +257,7 @@ trait PlanningModelTrait
                         AND Parts_Number = slor_refp 
                         AND Parts_CST = slor_constp 
                         AND Line_Number = slor_noligncm
+                        AND quantity > 0
                   )
             ), '')
         END
@@ -300,6 +301,7 @@ trait PlanningModelTrait
                                 AND Parts_Number = slor_refp  
                                 AND Parts_CST = slor_constp 
                                 AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign)
+                                AND quantity > 0
                           )
                     ), '%Y-%m-%d')
                 
@@ -318,6 +320,7 @@ trait PlanningModelTrait
                                 AND Parts_Number = slor_refp  
                                 AND Parts_CST = slor_constp 
                                 AND (Line_Number = slor_nolign OR Line_Number = nlig_noligncm)
+                                AND quantity > 0
                           )
                     ), '%Y-%m-%d')
                 ELSE NULL
@@ -347,6 +350,7 @@ trait PlanningModelTrait
                                 AND Parts_Number = slor_refp  
                                 AND Parts_CST = slor_constp 
                                 AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign)
+                                AND quantity > 0
                           )
                     )
                 WHEN slor_typcf = 'CIS' THEN 
@@ -364,6 +368,7 @@ trait PlanningModelTrait
                                 AND Parts_Number = slor_refp  
                                 AND Parts_CST = slor_constp 
                                 AND (Line_Number = slor_nolign OR Line_Number = nlig_noligncm)
+                                AND quantity > 0
                           )
                     )
                 ELSE ''

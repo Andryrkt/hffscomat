@@ -3,12 +3,9 @@
 namespace App\Controller\Magasin\Commande\Soumission;
 
 use App\Controller\Controller;
-use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
-use App\Service\genererPdf\magasin\GeneratePdfCdeMagasin;
-use App\Dto\Magasin\Commande\Soumission\BcSoumisMagasinDTO;
-use App\Model\magasin\CommANDe\Soumission\CdeSoumissionModel;
+use App\Service\magasin\Commande\Soumission\CdeFrnSoumissionService;
 use App\Form\magasin\Commande\SoumissionCommande\SoumissionCommandeType;
 use App\Service\historiqueOperation\magasin\commandeFrn\HistoriqueOperationCdeFrnService;
 use App\Service\historiqueOperation\EtapeOperationException;
@@ -19,16 +16,12 @@ use App\Service\historiqueOperation\suivi\SuiviOperationService;
  */
 class SoumissionCommandeController extends Controller
 {
-    private HistoriqueOperationCdeFrnService $historiqueOperation;
-    private CdeSoumissionModel $cdeSoumissionModel;
-    private GeneratePdfCdeMagasin $generatePdfCdeMagasin;
+    private CdeFrnSoumissionService $cdeFrnSoumissionService;
 
-    public function __construct()
+    public function __construct(CdeFrnSoumissionService $cdeFrnSoumissionService)
     {
         parent::__construct();
-        $this->historiqueOperation = new HistoriqueOperationCdeFrnService($this->getEntityManager());
-        $this->cdeSoumissionModel = new CdeSoumissionModel();
-        $this->generatePdfCdeMagasin = new GeneratePdfCdeMagasin();
+        $this->cdeFrnSoumissionService = $cdeFrnSoumissionService;
     }
 
     /**
@@ -42,11 +35,13 @@ class SoumissionCommandeController extends Controller
 
         $form->handleRequest($request);
 
-        $this->logUserVisit('generer_commande_fournisseur');
-
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->soumettreAValider($form);
+            $formData = $form->getData();
+
+            $this->cdeFrnSoumissionService->soumettre($this->getUserMail(), $formData["numCmde"], $formData["generationToken"], $formData["piecesJointesPdf"] ?? [], $this->getUserName());
         }
+
+        $this->logUserVisit('generer_commande_fournisseur');
 
         return $this->render('magasin/commande/soumission/soumissionCommandeFournisseur.html.twig', [
             'form' => $form->createView()

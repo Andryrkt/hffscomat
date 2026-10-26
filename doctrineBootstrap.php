@@ -4,7 +4,7 @@ use Doctrine\ORM\Tools\Setup;
 use Doctrine\ORM\EntityManager;
 
 require_once __DIR__ . '/vendor/autoload.php';
-require_once __DIR__ . '/config/dotenv.php';
+if (file_exists(__DIR__ . '/.env')) \Dotenv\Dotenv::createImmutable(__DIR__)->load();
 
 // Correction pour l'erreur d'annotation @required de Symfony
 \Doctrine\Common\Annotations\AnnotationReader::addGlobalIgnoredName('required');
