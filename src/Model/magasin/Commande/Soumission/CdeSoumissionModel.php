@@ -153,7 +153,7 @@ class CdeSoumissionModel extends Model
             AND fcde_numfou = fbse_numfou
             AND fbse_numfou = ffou_numfou
             AND fcde_soc    = ffou_soc
-        ORDER BY fcdl_ref";
+        ORDER BY fcdl_ligne";
 
         $result = $this->connect->executeQuery($statement);
         $data = $this->connect->fetchResults($result);

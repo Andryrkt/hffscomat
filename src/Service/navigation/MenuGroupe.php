@@ -104,6 +104,13 @@ class MenuGroupe
 
                 ],
             ],
+            [
+                'label'    => "OR / BC négoce",
+                'icon'     => 'list-squares',
+                'subitems' => [
+                    ['label' => 'Liste des commandes à traiter', 'icon' => 'search', 'route' => 'magasin_commande_a_traiter_liste'],
+                ],
+            ],
         ];
     }
 

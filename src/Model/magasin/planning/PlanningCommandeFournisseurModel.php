@@ -361,7 +361,7 @@ class PlanningCommandeFournisseurModel extends Model
     private function conditionStatut(string $statut, bool $isEmptyQuery): string
     {
         $statutParCondition = [
-            'default'             => "default",
+            'en_cours'            => "en_cours",
             'partiel_facture'     => "Partiellement facturé",
             'partiel_dispo'       => "Partiellement dispo",
             'complet_non_facture' => "Complet non facturé",
@@ -369,13 +369,13 @@ class PlanningCommandeFournisseurModel extends Model
             'back_order'          => "Back Order", // TODO: Pas encore de moyen pour les récupérer
         ];
 
-        if ($statut === "tous" || (!$isEmptyQuery && $statut === "default")) return "";
+        if ($statut === "tous") return "";
 
         $selectWhereCondition = new SelectWhereCondition;
 
         $statutCondition = $statutParCondition[$statut];
 
-        return ($statutCondition === "default")
+        return ($statutCondition === "en_cours")
             ? $selectWhereCondition->ne('statut', $statutParCondition['complet_facture']) //*** Par défaut ne pas afficher les commandes complet facturés
             : $selectWhereCondition->eq('statut', $statutCondition);
     }
