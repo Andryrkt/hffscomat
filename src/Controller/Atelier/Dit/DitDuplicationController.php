@@ -15,7 +15,7 @@ use App\Service\atelier\dit\TraitementFichierService;
 use App\Service\genererPdf\dit\GenererPdfDit;
 use App\Service\historiqueOperation\Atelier\Dit\HistoriqueOperationDITService;
 use App\Service\historiqueOperation\EtapeOperationException;
-use App\Service\historiqueOperation\SuiviOperation;
+use App\Service\historiqueOperation\suivi\SuiviOperationService;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -91,12 +91,12 @@ class DitDuplicationController extends Controller
             $dto = $this->ditFactory->apresSoumission($dto);
 
             // suivi de chaque étape (durée, succès / échec) enregistré avec l'historique de l'opération
-            $suivi = new SuiviOperation();
+            $suivi = SuiviOperationService::demarrer(SuiviOperationService::TYPE_DIT_DUPLICATION, (string) $dto->numeroDemandeIntervention);
             $message = 'Votre demande a été enregistrée';
 
             try {
                 // 2. Traitement de Fichier
-                [$nomFichierEnregistrer, $nomFichier] = (new TraitementFichierService)->traitementDeFichier($form, $dto, $suivi);
+                [$nomFichierEnregistrer, $nomFichier] = (new TraitementFichierService)->traitementDeFichier($form, $dto);
 
                 // 3. Enregistremenr dans la base de donnée
                 $suivi->etape('Enregistrement base de données', function () use ($dto, $nomFichierEnregistrer) {
@@ -123,12 +123,10 @@ class DitDuplicationController extends Controller
                 });
             } catch (EtapeOperationException $e) {
                 $message = "Echec de la duplication de la DIT " . $dto->numeroDemandeIntervention . " à l'étape « " . $e->getEtape() . " ». Veuillez contacter l'administrateur.";
-                $this->historiqueOperation->setEtapes($suivi->getEtapes());
                 $this->historiqueOperation->sendNotificationCreation($message, $dto->numeroDemandeIntervention, 'dit_liste', false);
             }
 
             // 6. enregistrement dans l'historisation de la sucès de la demande
-            $this->historiqueOperation->setEtapes($suivi->getEtapes());
             $this->historiqueOperation->sendNotificationCreation($message, $dto->numeroDemandeIntervention, 'dit_liste', true);
         }
     }

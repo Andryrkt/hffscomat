@@ -12,7 +12,7 @@ use App\Model\magasin\CommANDe\Soumission\CdeSoumissionModel;
 use App\Form\magasin\Commande\SoumissionCommande\SoumissionCommandeType;
 use App\Service\historiqueOperation\magasin\commandeFrn\HistoriqueOperationCdeFrnService;
 use App\Service\historiqueOperation\EtapeOperationException;
-use App\Service\historiqueOperation\SuiviOperation;
+use App\Service\historiqueOperation\suivi\SuiviOperationService;
 
 /**
  * @Route("/magasin/commande")
@@ -67,7 +67,7 @@ class SoumissionCommandeController extends Controller
         $cheminDuFichier = $_ENV["BASE_PATH_FICHIER"] . str_replace('/Upload', '', $generatedFilePath);
 
         // suivi de chaque étape (durée, succès / échec) enregistré avec l'historique de l'opération
-        $suivi = new SuiviOperation();
+        $suivi = SuiviOperationService::demarrer(SuiviOperationService::TYPE_CDE_FOURNISSEUR, (string) $numCommande);
         $message = 'Votre demande a été enregistrée';
 
         try {
@@ -92,11 +92,9 @@ class SoumissionCommandeController extends Controller
             });
         } catch (EtapeOperationException $e) {
             $message = "Echec de la soumission de la commande " . $numCommande . " à l'étape « " . $e->getEtape() . " ». Veuillez contacter l'administrateur.";
-            $this->historiqueOperation->setEtapes($suivi->getEtapes());
             $this->historiqueOperation->sendNotificationSoumission($message, $numCommande ?? '-', 'profil_acceuil', false);
         }
 
-        $this->historiqueOperation->setEtapes($suivi->getEtapes());
         $this->historiqueOperation->sendNotificationSoumission($message, $bcSoumisMagasinDto->numeroCommande, 'profil_acceuil', true);
     }
 }

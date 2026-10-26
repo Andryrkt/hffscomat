@@ -11,7 +11,7 @@ use App\Service\fichier\TraitementDeFichier;
 use App\Service\fichier\UploderFileService;
 use App\Service\genererPdf\dit\GenererPdfDit;
 use App\Service\historiqueOperation\EtapeOperationException;
-use App\Service\historiqueOperation\SuiviOperation;
+use App\Service\historiqueOperation\suivi\SuiviOperationService;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -21,14 +21,11 @@ class TraitementFichierService
     use FormatageTrait;
 
     /**
-     * @param SuiviOperation|null $suivi suivi des étapes (enregistré avec l'historique de l'opération)
      *
      * @throws EtapeOperationException si une étape échoue
      */
-    public function traitementDeFichier(FormInterface $form, DitDto $dto, ?SuiviOperation $suivi = null): array
+    public function traitementDeFichier(FormInterface $form, DitDto $dto): array
     {
-        $suivi = $suivi ?? new SuiviOperation();
-
         /**
          * gestion des pieces jointes et generer le nom du fichier PDF
          * Enregistrement de fichier uploder
@@ -37,12 +34,12 @@ class TraitementFichierService
          * @var string $nomAvecCheminFichier
          * @var string $nomFichier
          */
-        [$nomEtCheminFichiersEnregistrer, $nomFichierEnregistrer, $nomAvecCheminFichier, $nomFichier] = $suivi->etape('Enregistrement fichiers joints', function () use ($form, $dto) {
+        [$nomEtCheminFichiersEnregistrer, $nomFichierEnregistrer, $nomAvecCheminFichier, $nomFichier] = SuiviOperationService::suivre('Enregistrement fichiers joints', function () use ($form, $dto) {
             return $this->enregistrementFichier($form, $dto->numeroDemandeIntervention, str_replace("-", "", $dto->agenceServiceEmetteur));
         });
 
         /** 1. CREATION DE LA PAGE DE GARDE*/
-        $suivi->etape('Génération page de garde', function () use ($dto, $nomAvecCheminFichier) {
+        SuiviOperationService::suivre('Génération page de garde', function () use ($dto, $nomAvecCheminFichier) {
             $ditModel = new DitModel();
             $idMateriel = (int)$dto->idMateriel;
             if (!in_array($idMateriel, $ditModel->getNumeroMatriculePasMateriel()) && $dto->internetExterne !== "EXTERNE") {
@@ -59,10 +56,10 @@ class TraitementFichierService
         $traitementDeFichier = new TraitementDeFichier();
         $nomEtCheminFichiersEnregistrer = $traitementDeFichier->insertFileAtPosition($nomEtCheminFichiersEnregistrer, $nomAvecCheminFichier, 0);
         // 3. fusion du page de garde et des pieces jointes (conversion avant la fusion)
-        $nomEtCheminFichierConvertie = $suivi->etape('Conversion PDF (Ghostscript)', function () use ($nomEtCheminFichiersEnregistrer) {
+        $nomEtCheminFichierConvertie = SuiviOperationService::suivre('Conversion PDF (Ghostscript)', function () use ($nomEtCheminFichiersEnregistrer) {
             return $this->ConvertirLesPdf($nomEtCheminFichiersEnregistrer);
         });
-        $suivi->etape('Fusion PDF', function () use ($traitementDeFichier, $nomEtCheminFichierConvertie, $nomAvecCheminFichier) {
+        SuiviOperationService::suivre('Fusion PDF', function () use ($traitementDeFichier, $nomEtCheminFichierConvertie, $nomAvecCheminFichier) {
             $traitementDeFichier->fusionFichers($nomEtCheminFichierConvertie, $nomAvecCheminFichier);
         });
 

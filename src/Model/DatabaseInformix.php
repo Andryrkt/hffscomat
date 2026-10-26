@@ -3,6 +3,7 @@
 namespace App\Model;
 
 use App\Contract\DatabaseConnectionInterface;
+use App\Service\historiqueOperation\suivi\SuiviOperationService;
 use function odbc_connect;
 use function odbc_exec;
 use function odbc_prepare;
@@ -17,6 +18,8 @@ class DatabaseInformix implements DatabaseConnectionInterface
     private $user;
     private $password;
     private $conn;
+    /** @var array<int, int> position dans le suivi des opérations de chaque résultat de requête, pour y ajouter le temps de lecture */
+    private array $positionsSuivi = [];
 
     public function __construct()
     {
@@ -53,6 +56,7 @@ class DatabaseInformix implements DatabaseConnectionInterface
      * */
     public function executeQuery(string $query, array $params = [])
     {
+        $debut = microtime(true);
         try {
             if (!is_resource($this->conn)) {
                 $this->connect(); // Tentative de connexion si pas déjà établie
@@ -115,6 +119,13 @@ class DatabaseInformix implements DatabaseConnectionInterface
             if (!$result) {
                 throw new \Exception("ODBC Query failed: " . odbc_errormsg());
             }
+
+            // requête IPS affichée dans le suivi des opérations (si une opération est suivie)
+            $position = SuiviOperationService::requeteExterne('IPS', $query, (microtime(true) - $debut) * 1000);
+            if ($position !== null && is_resource($result)) {
+                $this->positionsSuivi[(int) $result] = $position;
+            }
+
             return $result;
         } catch (\Exception $e) {
             $errorMsg = sprintf(
@@ -134,11 +145,18 @@ class DatabaseInformix implements DatabaseConnectionInterface
      */
     public function fetchResults($result, string $fromEncoding = "UTF-8, ISO-8859-1, ASCII")
     {
+        $debut = microtime(true);
         $rows = [];
         if ($result) {
             while ($row = odbc_fetch_array($result)) {
                 $rows[] = $this->convertToUtf8($row, $fromEncoding);
             }
+        }
+
+        // temps de lecture des lignes ajouté à la requête dans le suivi des opérations
+        if ($result && is_resource($result) && isset($this->positionsSuivi[(int) $result])) {
+            SuiviOperationService::ajouterDureeRequete($this->positionsSuivi[(int) $result], (microtime(true) - $debut) * 1000);
+            unset($this->positionsSuivi[(int) $result]);
         }
         return $rows;
     }

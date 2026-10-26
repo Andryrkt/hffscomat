@@ -13,7 +13,7 @@ use App\Service\fichier\UploderFileService;
 use App\Service\genererPdf\magasin\devis\GeneratePdfBcNeg;
 use App\Service\historiqueOperation\EtapeOperationException;
 use App\Service\historiqueOperation\HistoriqueOperationDevisMagasinService;
-use App\Service\historiqueOperation\SuiviOperation;
+use App\Service\historiqueOperation\suivi\SuiviOperationService;
 use App\Service\magasin\devis\Fichier\DevisMagasinGenererNameFileService;
 use App\Service\magasin\devis\Validation\ValidationBc;
 use Symfony\Component\Form\FormInterface;
@@ -79,7 +79,7 @@ class DevisNegBcController extends Controller
             $nomInputSearch = 'devis_neg_search'; // initialistion de nom de chaque champ ou input
 
             // suivi de chaque étape (durée, succès / échec) enregistré avec l'historique de l'opération
-            $suivi = new SuiviOperation();
+            $suivi = SuiviOperationService::demarrer(SuiviOperationService::TYPE_BC_NEGOCE, (string) $dto->numeroDevis);
 
             try {
                 //traitemnet des fichiers
@@ -99,13 +99,11 @@ class DevisNegBcController extends Controller
             } catch (EtapeOperationException $e) {
                 //HISTORISATION DE L'OPERATION EN ECHEC
                 $message = "Echec de la soumission du bon de commande du devis numero : " . $dto->numeroDevis . " à l'étape « " . $e->getEtape() . " ». Veuillez contacter l'administrateur.";
-                $this->historiqueOperationDeviMagasinService->setEtapes($suivi->getEtapes());
                 $this->historiqueOperationDeviMagasinService->sendNotificationSoumission($message, $dto->numeroDevis, $nomDeRoute, false, $criteria, $nomInputSearch);
             }
 
             //HISTORISATION DE L'OPERATION
             $message = 'Le bon de commande a été soumis avec succès.';
-            $this->historiqueOperationDeviMagasinService->setEtapes($suivi->getEtapes());
             $this->historiqueOperationDeviMagasinService->sendNotificationSoumission($message, $dto->numeroDevis, $nomDeRoute, true, $criteria, $nomInputSearch);
         }
     }
@@ -113,7 +111,7 @@ class DevisNegBcController extends Controller
     /**
      * @throws EtapeOperationException si une étape échoue
      */
-    private function traitementDesFichiers(FormInterface $form, BcDto $dto, SuiviOperation $suivi): void
+    private function traitementDesFichiers(FormInterface $form, BcDto $dto, SuiviOperationService $suivi): void
     {
         /**
          * 1. gestion des pieces jointes et generer le nom du fichier PDF

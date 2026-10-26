@@ -10,7 +10,7 @@ use App\Service\fichier\FileUploaderService;
 use App\Service\FusionPdf;
 use App\Service\genererPdf\dit\facture\GenererPdfFactureAValidation;
 use App\Service\historiqueOperation\EtapeOperationException;
-use App\Service\historiqueOperation\SuiviOperation;
+use App\Service\historiqueOperation\suivi\SuiviOperationService;
 use App\Service\security\SecurityService;
 use Symfony\Component\Form\FormInterface;
 
@@ -30,36 +30,33 @@ class TraitementDeFichierService
     }
 
     /**
-     * @param SuiviOperation|null $suivi suivi des étapes (enregistré avec l'historique de l'opération)
      *
      * @throws EtapeOperationException si une étape échoue
      */
-    public function traitmenetDeFichier(DitFactureSoumisAValidationDto $dto, FormInterface $form, ?SuiviOperation $suivi = null)
+    public function traitmenetDeFichier(DitFactureSoumisAValidationDto $dto, FormInterface $form)
     {
-        $suivi = $suivi ?? new SuiviOperation();
-
         /** CREATION PDF */
-        $pathPageDeGarde = $suivi->etape('Génération page de garde', function () use ($dto) {
+        $pathPageDeGarde = SuiviOperationService::suivre('Génération page de garde', function () use ($dto) {
             return $this->enregistrerPdf($dto);
         });
-        $pathFichiers = $suivi->etape('Enregistrement fichiers joints', function () use ($form, $dto) {
+        $pathFichiers = SuiviOperationService::suivre('Enregistrement fichiers joints', function () use ($form, $dto) {
             return $this->enregistrerFichiers($form, $dto);
         });
 
         if ($dto->interneExterne === 'INTERNE') {
             $fileUploaderService = new FileUploaderService($_ENV['BASE_PATH_FICHIER'] . '/vfac/');
             $ficherAfusioner = $fileUploaderService->insertFileAtPosition($pathFichiers, $pathPageDeGarde, 0);
-            $fichierConvertie = $suivi->etape('Conversion PDF (Ghostscript)', function () use ($ficherAfusioner) {
+            $fichierConvertie = SuiviOperationService::suivre('Conversion PDF (Ghostscript)', function () use ($ficherAfusioner) {
                 return $this->ConvertirLesPdf($ficherAfusioner);
             });
-            $suivi->etape('Fusion PDF', function () use ($fichierConvertie, $pathPageDeGarde) {
+            SuiviOperationService::suivre('Fusion PDF', function () use ($fichierConvertie, $pathPageDeGarde) {
                 $this->fusionPdf->mergePdfs($fichierConvertie, $pathPageDeGarde);
             });
-            $suivi->etape('Copie DocuWare', function () use ($dto) {
+            SuiviOperationService::suivre('Copie DocuWare', function () use ($dto) {
                 $this->genererPdfFacture->exigerCopieReussie($this->genererPdfFacture->copyToDwFactureSoumis($dto->numeroSoumission, $dto->numeroFact));
             });
         } else {
-            $suivi->etape('Copie DocuWare', function () use ($dto, $pathFichiers) {
+            SuiviOperationService::suivre('Copie DocuWare', function () use ($dto, $pathFichiers) {
                 $this->genererPdfFacture->exigerCopieReussie($this->genererPdfFacture->copyToDwFacture($dto->numeroSoumission, $dto->numeroFact));
                 $this->genererPdfFacture->exigerCopieReussie($this->genererPdfFacture->copyToDwFactureFichier($dto->numeroSoumission, $dto->numeroFact, $pathFichiers)); //d'après le demande de Antsa le 22/08/2025
             });

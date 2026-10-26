@@ -2,6 +2,7 @@
 
 namespace App\Service\genererPdf;
 
+use App\Service\historiqueOperation\suivi\SuiviOperationService;
 use TCPDF;
 
 class GeneratePdf
@@ -28,7 +29,7 @@ class GeneratePdf
 
     /**
      * Lève une exception avec la raison de l'échec si la copie n'a pas réussi
-     * (à utiliser dans une étape de SuiviOperation)
+     * (à utiliser dans une étape de SuiviOperationService)
      *
      * @throws \RuntimeException
      */
@@ -76,16 +77,19 @@ class GeneratePdf
 
         // Première tentative
         if (($erreur = $attemptCopy()) === null) {
+            SuiviOperationService::copieDocuware($sourcePath, $destinationPath, true, 1);
             return true;
         }
 
         // Deuxième tentative après un court délai
         usleep(50000); // 50ms
         if (($erreur = $attemptCopy()) === null) {
+            SuiviOperationService::copieDocuware($sourcePath, $destinationPath, true, 2);
             return true;
         }
 
         $this->derniereErreurCopie = $erreur;
+        SuiviOperationService::copieDocuware($sourcePath, $destinationPath, false, 2, $erreur);
         error_log("Échec de copyFile après 2 tentatives : $sourcePath -> $destinationPath : $erreur");
         return false;
     }

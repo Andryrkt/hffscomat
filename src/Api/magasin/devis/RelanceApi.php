@@ -15,7 +15,7 @@ use App\Model\magasin\devis\ListeDevisMagasinModel;
 use App\Model\magasin\devis\Pointage\PointageRelanceModel;
 use App\Service\historiqueOperation\EtapeOperationException;
 use App\Service\historiqueOperation\HistoriqueOperationDevisMagasinService;
-use App\Service\historiqueOperation\SuiviOperation;
+use App\Service\historiqueOperation\suivi\SuiviOperationService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -87,7 +87,7 @@ class RelanceApi extends Controller
             $devisNegModel = new DevisNegModel();
 
             // suivi de l'étape (durée, succès / échec) enregistré avec l'historique de l'opération
-            $suivi = new SuiviOperation();
+            $suivi = SuiviOperationService::demarrer(SuiviOperationService::TYPE_DEVIS_NEG_STOP_RELANCE, (string) $numeroDevis);
             $resultatFaux = false;
             $erreurEtape = null;
             try {
@@ -101,7 +101,7 @@ class RelanceApi extends Controller
             } catch (EtapeOperationException $erreurEtape) {
                 $success = false;
             }
-            $this->historiserStopRelance($numeroDevis, $success, $suivi);
+            $this->historiserStopRelance($numeroDevis, $success);
 
             // une exception (et non un simple retour false) garde la réponse d'erreur 500 d'origine
             if ($erreurEtape !== null && !$resultatFaux) {
@@ -154,7 +154,7 @@ class RelanceApi extends Controller
      * Enregistre l'historique de l'arrêt / reprise de relance (MODIFICATION) avec ses étapes, sans redirection (réponse JSON).
      * Une erreur d'historisation ne doit pas faire échouer la réponse : elle est seulement loggée.
      */
-    private function historiserStopRelance(string $numeroDevis, bool $succes, SuiviOperation $suivi): void
+    private function historiserStopRelance(string $numeroDevis, bool $succes): void
     {
         $message = $succes
             ? "Arrêt / reprise de la relance du devis numero : $numeroDevis effectué avec succès."
@@ -164,7 +164,6 @@ class RelanceApi extends Controller
             global $container;
             /** @var HistoriqueOperationDevisMagasinService $historiqueOperation */
             $historiqueOperation = $container->get(HistoriqueOperationDevisMagasinService::class);
-            $historiqueOperation->setEtapes($suivi->getEtapes());
             $historiqueOperation->enregistrer($numeroDevis, self::TYPE_OPERATION_MODIFICATION, $succes, $message);
         } catch (\Throwable $e) {
             error_log("Historisation de l'arrêt de relance du devis $numeroDevis impossible : " . $e->getMessage());

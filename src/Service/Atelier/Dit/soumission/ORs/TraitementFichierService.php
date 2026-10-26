@@ -11,7 +11,7 @@ use App\Service\fichier\TraitementDeFichier;
 use App\Service\fichier\UploderFileService;
 use App\Service\genererPdf\dit\ors\GenererPdfOrSoumisAValidation;
 use App\Service\historiqueOperation\EtapeOperationException;
-use App\Service\historiqueOperation\SuiviOperation;
+use App\Service\historiqueOperation\suivi\SuiviOperationService;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -20,19 +20,17 @@ class TraitementFichierService
     use PdfConversionTrait;
 
     /**
-     * @param SuiviOperation|null $suivi suivi des étapes (enregistré avec l'historique de l'opération)
      *
      * @throws EtapeOperationException si une étape échoue
      */
-    public function traitementDeFichier(FormInterface $form, OrSoumissionDto $dto, string $email, ?SuiviOperation $suivi = null): void
+    public function traitementDeFichier(FormInterface $form, OrSoumissionDto $dto, string $email): void
     {
-        $suivi = $suivi ?? new SuiviOperation();
         $ditOrsoumisAValidationModel = new DitOrSoumisAValidationModel();
 
         $numeroOr = $dto->numeroOr;
         $numeroDit = $dto->numeroDit;
         $langueIps = $dto->langueIps;
-        $suffix = $suivi->etape('Récupération du constructeur', function () use ($ditOrsoumisAValidationModel, $numeroOr) {
+        $suffix = SuiviOperationService::suivre('Récupération du constructeur', function () use ($ditOrsoumisAValidationModel, $numeroOr) {
             return $ditOrsoumisAValidationModel->constructeurPieceMagasin($numeroOr)[0]['retour'];
         });
 
@@ -44,13 +42,13 @@ class TraitementFichierService
          * @var string $nomAvecCheminFichier
          * @var string $nomFichier
          */
-        [$nomEtCheminFichiersEnregistrer, $nomFichierEnregistrer, $nomAvecCheminFichier, $nomFichier] = $suivi->etape('Enregistrement fichiers joints', function () use ($form, $dto, $suffix) {
+        [$nomEtCheminFichiersEnregistrer, $nomFichierEnregistrer, $nomAvecCheminFichier, $nomFichier] = SuiviOperationService::suivre('Enregistrement fichiers joints', function () use ($form, $dto, $suffix) {
             return $this->enregistrementFichier($form, $dto, $suffix);
         });
 
         // 2. creation de la page de garde
         $genererPdfOrSoumisAValidation = new GenererPdfOrSoumisAValidation();
-        $suivi->etape('Génération page de garde', function () use ($dto, $nomAvecCheminFichier, $genererPdfOrSoumisAValidation, $email) {
+        SuiviOperationService::suivre('Génération page de garde', function () use ($dto, $nomAvecCheminFichier, $genererPdfOrSoumisAValidation, $email) {
             $this->creationPdf($dto, $nomAvecCheminFichier, $genererPdfOrSoumisAValidation, $email);
         });
 
@@ -59,15 +57,15 @@ class TraitementFichierService
         $nomEtCheminFichiersEnregistrer = $traitementDeFichier->insertFileAtPosition($nomEtCheminFichiersEnregistrer, $nomAvecCheminFichier, 0);
 
         // 4. fusion du page de garde et des pieces jointes (conversion avant la fusion)
-        $nomEtCheminFichierConvertie = $suivi->etape('Conversion PDF (Ghostscript)', function () use ($nomEtCheminFichiersEnregistrer) {
+        $nomEtCheminFichierConvertie = SuiviOperationService::suivre('Conversion PDF (Ghostscript)', function () use ($nomEtCheminFichiersEnregistrer) {
             return $this->ConvertirLesPdf($nomEtCheminFichiersEnregistrer);
         });
-        $suivi->etape('Fusion PDF', function () use ($traitementDeFichier, $nomEtCheminFichierConvertie, $nomAvecCheminFichier) {
+        SuiviOperationService::suivre('Fusion PDF', function () use ($traitementDeFichier, $nomEtCheminFichierConvertie, $nomAvecCheminFichier) {
             $traitementDeFichier->fusionFichers($nomEtCheminFichierConvertie, $nomAvecCheminFichier);
         });
 
         // 5.  envoyer le pdf fusionner dans DW
-        $suivi->etape('Copie DocuWare', function () use ($genererPdfOrSoumisAValidation, $nomFichier, $numeroDit, $langueIps) {
+        SuiviOperationService::suivre('Copie DocuWare', function () use ($genererPdfOrSoumisAValidation, $nomFichier, $numeroDit, $langueIps) {
             $genererPdfOrSoumisAValidation->exigerCopieReussie($genererPdfOrSoumisAValidation->copyToDw($nomFichier, $numeroDit, $langueIps));
         });
     }

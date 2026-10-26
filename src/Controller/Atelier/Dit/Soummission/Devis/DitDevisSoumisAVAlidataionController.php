@@ -11,7 +11,7 @@ use App\Service\atelier\dit\soumission\Devis\DevisValidationService;
 use App\Service\atelier\dit\soumission\Devis\TraitementDeFicherService;
 use App\Service\historiqueOperation\Atelier\Dit\Devis\HistoriqueOperationDEVService;
 use App\Service\historiqueOperation\EtapeOperationException;
-use App\Service\historiqueOperation\SuiviOperation;
+use App\Service\historiqueOperation\suivi\SuiviOperationService;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -83,7 +83,7 @@ class DitDevisSoumisAVAlidataionController extends Controller
             $ditDevisSoumisAValidationModel = new DitDevisSoumisAValidationModel();
 
             // suivi de chaque étape (durée, succès / échec) enregistré avec l'historique de l'opération
-            $suivi = new SuiviOperation();
+            $suivi = SuiviOperationService::demarrer(SuiviOperationService::TYPE_DEVIS_ATELIER, (string) $dto->numeroDevis);
 
             try {
                 // enregistrement dans la base de donnée
@@ -99,17 +99,15 @@ class DitDevisSoumisAVAlidataionController extends Controller
 
                 // traitement de fichier et copie dans DOCUWARE
                 $traitementDuFichier = new TraitementDeFicherService($this->getSecurityService());
-                $traitementDuFichier->traitementDeFicher($form, $dto, $suivi);
+                $traitementDuFichier->traitementDeFicher($form, $dto);
             } catch (EtapeOperationException $e) {
                 // historisation de l'échec
                 $message = "Echec de la soumission du devis " . $dto->numeroDevis . " à l'étape « " . $e->getEtape() . " ». Veuillez contacter l'administrateur.";
-                $historiqueOperationDEVService->setEtapes($suivi->getEtapes());
                 $historiqueOperationDEVService->sendNotificationCreation($message, $dto->numeroDevis, 'dit_liste', false);
             }
 
             // historisation
             $message = 'Le devis a été soumis avec succès';
-            $historiqueOperationDEVService->setEtapes($suivi->getEtapes());
             $historiqueOperationDEVService->sendNotificationCreation($message, $dto->numeroDevis, 'dit_liste', true);
         }
     }

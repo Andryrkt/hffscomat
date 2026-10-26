@@ -13,7 +13,7 @@ use App\Model\magasin\devis\Pointage\PointageRelanceModel;
 use App\Service\autres\AutoIncDecService;
 use App\Service\historiqueOperation\EtapeOperationException;
 use App\Service\historiqueOperation\HistoriqueOperationDevisMagasinService;
-use App\Service\historiqueOperation\SuiviOperation;
+use App\Service\historiqueOperation\suivi\SuiviOperationService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -67,7 +67,7 @@ class PointageRelanceController extends Controller
             $numeroDevis = (string) $data['numeroDevis'];
 
             // suivi de chaque étape (durée, succès / échec) enregistré avec l'historique de l'opération
-            $suivi = new SuiviOperation();
+            $suivi = SuiviOperationService::demarrer(SuiviOperationService::TYPE_DEVIS_NEG_POINTAGE_RELANCE, (string) $numeroDevis);
 
             try {
                 $pointageRelanceModel = new PointageRelanceModel();
@@ -85,12 +85,12 @@ class PointageRelanceController extends Controller
                 });
             } catch (EtapeOperationException $e) {
                 $message = "Echec du pointage relance du devis numero : $numeroDevis à l'étape « " . $e->getEtape() . " ». Veuillez contacter l'administrateur.";
-                $this->historiser($numeroDevis, false, $message, $suivi);
+                $this->historiser($numeroDevis, false, $message);
 
                 return $this->jsonResponse(['success' => false, 'message' => $message], 500);
             }
 
-            $this->historiser($numeroDevis, true, "Pointage relance du devis numero : $numeroDevis enregistré avec succès.", $suivi);
+            $this->historiser($numeroDevis, true, "Pointage relance du devis numero : $numeroDevis enregistré avec succès.");
 
             return $this->jsonResponse(['success' => true, 'message' => 'Formulaire soumis avec succès.']);
         }
@@ -103,13 +103,12 @@ class PointageRelanceController extends Controller
      * Enregistre l'historique de l'opération (CREATION) avec ses étapes, sans redirection (réponse JSON).
      * Une erreur d'historisation ne doit pas faire échouer la réponse : elle est seulement loggée.
      */
-    private function historiser(string $numeroDevis, bool $succes, string $message, SuiviOperation $suivi): void
+    private function historiser(string $numeroDevis, bool $succes, string $message): void
     {
         try {
             global $container;
             /** @var HistoriqueOperationDevisMagasinService $historiqueOperation */
             $historiqueOperation = $container->get(HistoriqueOperationDevisMagasinService::class);
-            $historiqueOperation->setEtapes($suivi->getEtapes());
             $historiqueOperation->enregistrer($numeroDevis, self::TYPE_OPERATION_CREATION, $succes, $message);
         } catch (\Throwable $e) {
             error_log("Historisation du pointage relance du devis $numeroDevis impossible : " . $e->getMessage());

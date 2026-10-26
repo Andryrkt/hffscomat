@@ -8,7 +8,7 @@ use App\Form\magasin\devis\Pointage\EnvoyerAuClientType;
 use App\Model\magasin\devis\Pointage\PointageModel;
 use App\Service\historiqueOperation\EtapeOperationException;
 use App\Service\historiqueOperation\HistoriqueOperationDevisMagasinService;
-use App\Service\historiqueOperation\SuiviOperation;
+use App\Service\historiqueOperation\suivi\SuiviOperationService;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -61,7 +61,7 @@ class EnvoyerAuClientController extends Controller
             $nomInputSearch = 'devis_neg_search'; // initialistion de nom de chaque champ ou input
 
             // suivi de chaque étape (durée, succès / échec) enregistré avec l'historique de l'opération
-            $suivi = new SuiviOperation();
+            $suivi = SuiviOperationService::demarrer(SuiviOperationService::TYPE_DEVIS_NEG_ENVOI_CLIENT, (string) $dto->numeroDevis);
 
             try {
                 // Modification dans la base de données
@@ -70,13 +70,11 @@ class EnvoyerAuClientController extends Controller
                 });
             } catch (EtapeOperationException $e) {
                 $message = "Echec du pointage « envoyé au client » du devis numero : " . $dto->numeroDevis . ". Veuillez contacter l'administrateur.";
-                $this->historiqueOperationDeviMagasinService->setEtapes($suivi->getEtapes());
                 $this->historiqueOperationDeviMagasinService->sendNotificationSoumission($message, $dto->numeroDevis, $nomDeRoute, false, $criteria, $nomInputSearch);
             }
 
             //HISTORISATION DE L'OPERATION
             $message = "Pointage enregistré avec succès .";
-            $this->historiqueOperationDeviMagasinService->setEtapes($suivi->getEtapes());
             $this->historiqueOperationDeviMagasinService->sendNotificationSoumission($message, $dto->numeroDevis, $nomDeRoute, true, $criteria, $nomInputSearch);
         }
     }

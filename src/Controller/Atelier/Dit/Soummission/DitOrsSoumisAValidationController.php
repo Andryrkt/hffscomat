@@ -15,7 +15,7 @@ use App\Service\atelier\dit\soumission\ORs\TraitementFichierService;
 use App\Service\atelier\dit\soumission\ORs\ValidationService;
 use App\Service\historiqueOperation\Atelier\Dit\ORs\HistoriqueOperationORService;
 use App\Service\historiqueOperation\EtapeOperationException;
-use App\Service\historiqueOperation\SuiviOperation;
+use App\Service\historiqueOperation\suivi\SuiviOperationService;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -89,7 +89,7 @@ class DitOrsSoumisAValidationController extends Controller
 
 
             // suivi de chaque étape (durée, succès / échec) enregistré avec l'historique de l'opération
-            $suivi = new SuiviOperation();
+            $suivi = SuiviOperationService::demarrer(SuiviOperationService::TYPE_OR, (string) $dto->numeroOr);
 
             try {
                 /** ENVOIE des DONNEE dans BASE DE DONNEE */
@@ -98,7 +98,7 @@ class DitOrsSoumisAValidationController extends Controller
                 });
 
                 /** CREATION , FUSION, ENVOIE DW du PDF */
-                (new TraitementFichierService())->traitementDeFichier($form, $dto, $this->getUserMail(), $suivi);
+                (new TraitementFichierService())->traitementDeFichier($form, $dto, $this->getUserMail());
 
                 /** modifier la colonne id_statut_demande, numero_or, statut_or dans la table demande_intervention */
                 $suivi->etape('Mise à jour de la DIT', function () use ($dto) {
@@ -106,11 +106,9 @@ class DitOrsSoumisAValidationController extends Controller
                 });
             } catch (EtapeOperationException $e) {
                 $message = "Echec de la soumission de l'OR " . $dto->numeroOr . " à l'étape « " . $e->getEtape() . " ». Veuillez contacter l'administrateur.";
-                $this->historiqueOperation->setEtapes($suivi->getEtapes());
                 $this->historiqueOperation->sendNotificationSoumission($message, $dto->numeroOr, 'dit_liste', false);
             }
 
-            $this->historiqueOperation->setEtapes($suivi->getEtapes());
             $this->historiqueOperation->sendNotificationSoumission('Le document de controle a été généré et soumis pour validation', $dto->numeroOr, 'dit_liste', true);
         }
     }

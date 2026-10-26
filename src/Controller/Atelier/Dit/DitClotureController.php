@@ -9,7 +9,7 @@ use App\Model\Atelier\Dit\DitModel;
 use App\Service\docuware\CopyDocuwareService;
 use App\Service\historiqueOperation\Atelier\Dit\HistoriqueOperationDITService;
 use App\Service\historiqueOperation\EtapeOperationException;
-use App\Service\historiqueOperation\SuiviOperation;
+use App\Service\historiqueOperation\suivi\SuiviOperationService;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -47,7 +47,7 @@ class DitClotureController extends Controller
         $historiqueOperation = new HistoriqueOperationDITService($this->getEntityManager());
 
         // suivi de chaque étape (durée, succès / échec) enregistré avec l'historique de l'opération
-        $suivi = new SuiviOperation();
+        $suivi = SuiviOperationService::demarrer(SuiviOperationService::TYPE_DIT_CLOTURE, (string) $numeroDit);
         $message = "La DIT a été clôturé avec succès.";
 
         try {
@@ -101,11 +101,9 @@ class DitClotureController extends Controller
             }
         } catch (EtapeOperationException $e) {
             $message = "Echec de la clôture de la DIT " . $numeroDit . " à l'étape « " . $e->getEtape() . " ». Veuillez contacter l'administrateur.";
-            $historiqueOperation->setEtapes($suivi->getEtapes());
             $historiqueOperation->sendNotificationCloture($message, $numeroDit, 'dit_liste', false);
         }
 
-        $historiqueOperation->setEtapes($suivi->getEtapes());
         $historiqueOperation->sendNotificationCloture($message, $numeroDit, 'dit_liste', true);
     }
 

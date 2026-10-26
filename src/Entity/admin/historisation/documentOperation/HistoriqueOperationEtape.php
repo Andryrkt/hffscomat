@@ -2,20 +2,18 @@
 
 namespace App\Entity\admin\historisation\documentOperation;
 
-use Doctrine\ORM\Mapping as ORM;
 use App\Repository\admin\historisation\documentOperation\HistoriqueOperationEtapeRepository;
+use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Détail d'une étape (upload, fusion, BD, DocuWare, mail...) d'une opération historisée
+ * Une étape d'une opération suivie (fichiers joints, page de garde, conversion, fusion, DocuWare, base de données...).
+ * Alimentée par SuiviOperationService (insertion DBAL), lue par la page admin "Suivi des opérations".
  *
  * @ORM\Entity(repositoryClass=HistoriqueOperationEtapeRepository::class)
  * @ORM\Table(name="historique_operation_etape")
  */
 class HistoriqueOperationEtape
 {
-    public const STATUT_SUCCES = 'Succès';
-    public const STATUT_ECHEC  = 'Echec';
-
     /**
      * @ORM\Id
      * @ORM\GeneratedValue
@@ -24,25 +22,59 @@ class HistoriqueOperationEtape
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity=HistoriqueOperationDocument::class)
-     * @ORM\JoinColumn(name="idHistoriqueOperation", referencedColumnName="id", nullable=false)
+     * @ORM\Column(type="string", length=36, name="id_suivi")
      */
-    private HistoriqueOperationDocument $historiqueOperation;
+    private string $idSuivi = '';
 
     /**
-     * @ORM\Column(type="integer")
+     * @ORM\Column(type="integer", name="id_historique_operation", nullable=true)
      */
-    private int $ordre;
+    private ?int $idHistoriqueOperation = null;
 
     /**
-     * @ORM\Column(type="string", length=100)
+     * @ORM\Column(type="string", length=50, name="type_operation")
      */
-    private string $etape;
+    private string $typeOperation = '';
 
     /**
-     * @ORM\Column(type="string", length=20)
+     * @ORM\Column(type="string", length=50, name="numero_document", nullable=true)
      */
-    private string $statut;
+    private ?string $numeroDocument = null;
+
+    /**
+     * @ORM\Column(type="integer", name="ordre")
+     */
+    private int $ordre = 0;
+
+    /**
+     * @ORM\Column(type="string", length=100, name="etape")
+     */
+    private string $etape = '';
+
+    /**
+     * @ORM\Column(type="string", length=20, name="statut")
+     */
+    private string $statut = '';
+
+    /**
+     * @ORM\Column(type="string", length=1000, name="message", nullable=true)
+     */
+    private ?string $message = null;
+
+    /**
+     * @ORM\Column(type="text", name="detail_erreur", nullable=true)
+     */
+    private ?string $detailErreur = null;
+
+    /**
+     * @ORM\Column(type="datetime", name="date_debut")
+     */
+    private ?\DateTimeInterface $dateDebut = null;
+
+    /**
+     * @ORM\Column(type="datetime", name="date_fin", nullable=true)
+     */
+    private ?\DateTimeInterface $dateFin = null;
 
     /**
      * @ORM\Column(type="integer", name="duree_ms", nullable=true)
@@ -50,35 +82,53 @@ class HistoriqueOperationEtape
     private ?int $dureeMs = null;
 
     /**
-     * @ORM\Column(type="string", length=1000, nullable=true)
+     * @ORM\Column(type="string", length=100, name="utilisateur", nullable=true)
      */
-    private ?string $message = null;
+    private ?string $utilisateur = null;
 
     /**
-     * @ORM\Column(type="datetime", name="date_etape")
+     * @ORM\Column(type="string", length=500, name="url", nullable=true)
      */
-    private \DateTime $dateEtape;
+    private ?string $url = null;
 
-    public function __construct()
-    {
-        $this->dateEtape = new \DateTime();
-    }
+    /**
+     * @ORM\Column(type="boolean", name="est_lu", options={"default": 0})
+     */
+    private bool $estLu = false;
+
+    /**
+     * @ORM\Column(type="string", length=100, name="lu_par", nullable=true)
+     */
+    private ?string $luPar = null;
+
+    /**
+     * @ORM\Column(type="datetime", name="date_lecture", nullable=true)
+     */
+    private ?\DateTimeInterface $dateLecture = null;
 
     public function getId()
     {
         return $this->id;
     }
 
-    public function getHistoriqueOperation(): HistoriqueOperationDocument
+    public function getIdSuivi(): string
     {
-        return $this->historiqueOperation;
+        return $this->idSuivi;
     }
 
-    public function setHistoriqueOperation(HistoriqueOperationDocument $historiqueOperation): self
+    public function getIdHistoriqueOperation(): ?int
     {
-        $this->historiqueOperation = $historiqueOperation;
+        return $this->idHistoriqueOperation;
+    }
 
-        return $this;
+    public function getTypeOperation(): string
+    {
+        return $this->typeOperation;
+    }
+
+    public function getNumeroDocument(): ?string
+    {
+        return $this->numeroDocument;
     }
 
     public function getOrdre(): int
@@ -86,23 +136,9 @@ class HistoriqueOperationEtape
         return $this->ordre;
     }
 
-    public function setOrdre(int $ordre): self
-    {
-        $this->ordre = $ordre;
-
-        return $this;
-    }
-
     public function getEtape(): string
     {
         return $this->etape;
-    }
-
-    public function setEtape(string $etape): self
-    {
-        $this->etape = mb_substr($etape, 0, 100);
-
-        return $this;
     }
 
     public function getStatut(): string
@@ -110,11 +146,24 @@ class HistoriqueOperationEtape
         return $this->statut;
     }
 
-    public function setStatut(string $statut): self
+    public function getMessage(): ?string
     {
-        $this->statut = $statut;
+        return $this->message;
+    }
 
-        return $this;
+    public function getDetailErreur(): ?string
+    {
+        return $this->detailErreur;
+    }
+
+    public function getDateDebut(): ?\DateTimeInterface
+    {
+        return $this->dateDebut;
+    }
+
+    public function getDateFin(): ?\DateTimeInterface
+    {
+        return $this->dateFin;
     }
 
     public function getDureeMs(): ?int
@@ -122,34 +171,28 @@ class HistoriqueOperationEtape
         return $this->dureeMs;
     }
 
-    public function setDureeMs(?int $dureeMs): self
+    public function getUtilisateur(): ?string
     {
-        $this->dureeMs = $dureeMs;
-
-        return $this;
+        return $this->utilisateur;
     }
 
-    public function getMessage(): ?string
+    public function getUrl(): ?string
     {
-        return $this->message;
+        return $this->url;
     }
 
-    public function setMessage(?string $message): self
+    public function getEstLu(): bool
     {
-        $this->message = $message === null ? null : mb_substr($message, 0, 1000);
-
-        return $this;
+        return $this->estLu;
     }
 
-    public function getDateEtape(): \DateTime
+    public function getLuPar(): ?string
     {
-        return $this->dateEtape;
+        return $this->luPar;
     }
 
-    public function setDateEtape(\DateTime $dateEtape): self
+    public function getDateLecture(): ?\DateTimeInterface
     {
-        $this->dateEtape = $dateEtape;
-
-        return $this;
+        return $this->dateLecture;
     }
 }

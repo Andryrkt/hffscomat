@@ -11,7 +11,7 @@ use App\Service\autres\MontantPdfService;
 use App\Service\fichier\FileUploaderService;
 use App\Service\genererPdf\dit\devis\GenererPdfDevisSoumisAValidation;
 use App\Service\historiqueOperation\EtapeOperationException;
-use App\Service\historiqueOperation\SuiviOperation;
+use App\Service\historiqueOperation\suivi\SuiviOperationService;
 use App\Service\security\SecurityService;
 use Symfony\Component\Form\FormInterface;
 
@@ -29,20 +29,17 @@ class TraitementDeFicherService
     }
 
     /**
-     * @param SuiviOperation|null $suivi suivi des étapes (enregistré avec l'historique de l'opération)
      *
      * @throws EtapeOperationException si une étape échoue
      */
-    public function traitementDeFicher(FormInterface $form, DitDevisSoumisAValidationDto $dto, ?SuiviOperation $suivi = null)
+    public function traitementDeFicher(FormInterface $form, DitDevisSoumisAValidationDto $dto)
     {
-        $suivi = $suivi ?? new SuiviOperation();
-
         $generePdfDevis = new GenererPdfDevisSoumisAValidation();
         $chemin = $_ENV['BASE_PATH_FICHIER'] . '/dit/dev/';
         $fileUploader = new FileUploaderService($chemin);
 
 
-        $suffix = $suivi->etape('Récupération du constructeur', function () use ($dto) {
+        $suffix = SuiviOperationService::suivre('Récupération du constructeur', function () use ($dto) {
             return $this->ditDevisSoumisAValidationModel->constructeurPieceMagasin($dto->numeroDevis, $dto->codeSociete)[0]['retour'];
         });
         //recuperation du fichier ajouter par l'utilisateur
@@ -56,12 +53,12 @@ class TraitementDeFicherService
             $nomFichierCtrl = "sctdevisctrlvp{$dto->langue}_{$dto->numeroDevisDeux}-{$dto->numeroVersion}#{$suffix}.pdf";
 
             // telecharger le fichier en copiant sur son repertoire
-            $suivi->etape('Enregistrement fichier joint', function () use ($fileUploader, $file, $nomFichierGenererSansTache) {
+            SuiviOperationService::suivre('Enregistrement fichier joint', function () use ($fileUploader, $file, $nomFichierGenererSansTache) {
                 $fileUploader->uploadFileSansName($file, $nomFichierGenererSansTache);
             });
 
             // creation du pdf de verification de prix
-            $suivi->etape('Génération PDF de contrôle', function () use ($generePdfDevis, $dto, $nomFichierCtrl, $mailUtilisateur) {
+            SuiviOperationService::suivre('Génération PDF de contrôle', function () use ($generePdfDevis, $dto, $nomFichierCtrl, $mailUtilisateur) {
                 $tableauMarge = $this->tableauMarge($dto->numeroDevis, $dto->codeSociete);
                 $tableauMargeReference = $this->tableauMargeReference($dto->numeroDevis, $dto->codeSociete, $dto->numeroDevisDeux); // recupération des donnée et creation de ficher excel
                 $generePdfDevis->genererPdfVerificationPrix(
@@ -74,16 +71,16 @@ class TraitementDeFicherService
             });
 
             // fusion du pdf de verification de prix avec le fichier ajouter par l'utilisateur en le mettant à la dernière position
-            $fichierConvertis = $suivi->etape('Conversion PDF (Ghostscript)', function () use ($chemin, $nomFichierGenererSansTache, $nomFichierCtrl) {
+            $fichierConvertis = SuiviOperationService::suivre('Conversion PDF (Ghostscript)', function () use ($chemin, $nomFichierGenererSansTache, $nomFichierCtrl) {
                 return $this->ConvertirLesPdf([$chemin . 'fichiers/' . $nomFichierGenererSansTache, $chemin . $nomFichierCtrl]);
             });
-            $suivi->etape('Fusion PDF', function () use ($chemin, $fichierConvertis, $nomFichierGenerer) {
+            SuiviOperationService::suivre('Fusion PDF', function () use ($chemin, $fichierConvertis, $nomFichierGenerer) {
                 $fileUploaderService = new FileUploaderService($chemin);
                 $fileUploaderService->getFusionPdf()->mergePdfs($fichierConvertis, $chemin . $nomFichierGenerer);
             });
 
             //envoye des fichier fusionner dans le DW pour les types "Vente" et "Forfait"
-            $suivi->etape('Copie DocuWare', function () use ($generePdfDevis, $nomFichierGenerer, $dto) {
+            SuiviOperationService::suivre('Copie DocuWare', function () use ($generePdfDevis, $nomFichierGenerer, $dto) {
                 $generePdfDevis->exigerCopieReussie($generePdfDevis->copyToDWFichierDevisSoumisVp($nomFichierGenerer, $dto->langue)); // copier le fichier de devis dans docuware
             });
         } else {
@@ -92,14 +89,14 @@ class TraitementDeFicherService
             $nomFichierGenerer = "sctdevisatelier{$dto->langue}_{$dto->numeroDevisDeux}-{$dto->numeroVersion}#{$suffix}.pdf";
 
             // telecharger le fichier en copiant sur son repertoire
-            $suivi->etape('Enregistrement fichier joint', function () use ($fileUploader, $file, $nomFichierGenerer) {
+            SuiviOperationService::suivre('Enregistrement fichier joint', function () use ($fileUploader, $file, $nomFichierGenerer) {
                 $fileUploader->uploadFileSansName($file, $nomFichierGenerer);
             });
 
             // création du pdf pour devis forfait
             //$this->creationPdf($dto, $generePdfDevis, $nomFichierCtrl, $dto->codeSociete);
 
-            $suivi->etape('Génération PDF de contrôle', function () use ($generePdfDevis, $dto, $nomFichierCtrl, $mailUtilisateur) {
+            SuiviOperationService::suivre('Génération PDF de contrôle', function () use ($generePdfDevis, $dto, $nomFichierCtrl, $mailUtilisateur) {
                 // recupération des donnée et creation de ficher excel pour le tableau de marge (les données n'est pas nécessaire ici pour le devis atelier)
                 $this->tableauMargeReference($dto->numeroDevis, $dto->codeSociete, null);
 
@@ -108,17 +105,17 @@ class TraitementDeFicherService
             });
 
             // fusion du pdf de verification de prix avec le fichier ajouter par l'utilisateur en le mettant à la dernière position
-            $fichierConvertis = $suivi->etape('Conversion PDF (Ghostscript)', function () use ($chemin, $nomFichierGenerer, $nomFichierCtrl) {
+            $fichierConvertis = SuiviOperationService::suivre('Conversion PDF (Ghostscript)', function () use ($chemin, $nomFichierGenerer, $nomFichierCtrl) {
                 return $this->ConvertirLesPdf([$chemin . 'fichiers/' . $nomFichierGenerer, $chemin . 'fichiers/' . $nomFichierCtrl]);
             });
-            $suivi->etape('Fusion PDF', function () use ($chemin, $fichierConvertis, $nomFichierGenerer) {
+            SuiviOperationService::suivre('Fusion PDF', function () use ($chemin, $fichierConvertis, $nomFichierGenerer) {
                 $fileUploaderService = new FileUploaderService($chemin . 'fichiers/');
                 $fileUploaderService->getFusionPdf()->mergePdfs($fichierConvertis, $chemin . 'fichiers/' . $nomFichierGenerer);
             });
 
             // envoyer les fichiers dans DW pour les types "Vente" et "Forfait"
             //$generePdfDevis->copyToDWDevisSoumis($nomFichierCtrl); // copier le fichier de controlle dans docuware
-            $suivi->etape('Copie DocuWare', function () use ($generePdfDevis, $nomFichierGenerer, $dto) {
+            SuiviOperationService::suivre('Copie DocuWare', function () use ($generePdfDevis, $nomFichierGenerer, $dto) {
                 $generePdfDevis->exigerCopieReussie($generePdfDevis->copyToDWFichierDevisSoumis($nomFichierGenerer, $dto->langue)); // copier le fichier de devis dans docuware
             });
         }

@@ -8,7 +8,7 @@ use App\Model\Atelier\Dit\Soumission\AcBc\AcBcSoumisModel;
 use App\Model\Atelier\Dit\Soumission\Devis\DitDevisSoumisAValidationModel;
 use App\Service\historiqueOperation\Atelier\Dit\Bc\HistoriqueOperationBCService;
 use App\Service\historiqueOperation\EtapeOperationException;
-use App\Service\historiqueOperation\SuiviOperation;
+use App\Service\historiqueOperation\suivi\SuiviOperationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -63,10 +63,9 @@ class AcBcValidationService
      * 
      * @return void
      */
-    private function notifySuccessSubmission(string $numDit, SuiviOperation $suivi)
+    private function notifySuccessSubmission(string $numDit)
     {
         $message = "Le bon de commande et l'accusé de réception ont été soumis avec succès.";
-        $this->historiqueOperation->setEtapes($suivi->getEtapes());
         $this->historiqueOperation->sendNotificationCreation($message, $numDit, 'dit_liste', true);
     }
 
@@ -77,7 +76,7 @@ class AcBcValidationService
 
         if ($form->isSubmitted() && $form->isValid()) {
             // suivi de chaque étape (durée, succès / échec) enregistré avec l'historique de l'opération
-            $suivi = new SuiviOperation();
+            $suivi = SuiviOperationService::demarrer(SuiviOperationService::TYPE_AC_BC, (string) $accuseReceptionDto->numeroDit);
 
             try {
                 $suivi->etape('Récupération du constructeur', function () use ($accuseReceptionDto) {
@@ -85,7 +84,7 @@ class AcBcValidationService
                 });
 
                 $traitementDeFichierService = new TraitementDeFichierService($accuseReceptionDto->numeroDit);
-                $traitementDeFichierService->traitementDeFichier($accuseReceptionDto, $suivi);
+                $traitementDeFichierService->traitementDeFichier($accuseReceptionDto);
 
                 $suivi->etape('Enregistrement base de données', function () use ($accuseReceptionDto, $codeSociete) {
                     $numeroVersionMaxBcSoumis = $this->acBcModel->findNumeroVersionMaxBcSoumis($accuseReceptionDto->numeroBc, $codeSociete);
@@ -96,11 +95,10 @@ class AcBcValidationService
                 });
             } catch (EtapeOperationException $e) {
                 $message = "Echec de la soumission du bon de commande et de l'accusé de réception à l'étape « " . $e->getEtape() . " ». Veuillez contacter l'administrateur.";
-                $this->historiqueOperation->setEtapes($suivi->getEtapes());
                 $this->historiqueOperation->sendNotificationCreation($message, $accuseReceptionDto->numeroDit, 'dit_liste', false);
             }
 
-            $this->notifySuccessSubmission($accuseReceptionDto->numeroDit, $suivi);
+            $this->notifySuccessSubmission($accuseReceptionDto->numeroDit);
         }
     }
 

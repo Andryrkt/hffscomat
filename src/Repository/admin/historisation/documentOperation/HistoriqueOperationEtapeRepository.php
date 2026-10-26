@@ -2,152 +2,143 @@
 
 namespace App\Repository\admin\historisation\documentOperation;
 
-use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\QueryBuilder;
-use Doctrine\ORM\Tools\Pagination\Paginator as DoctrinePaginator;
 use App\Entity\admin\historisation\documentOperation\HistoriqueOperationEtape;
-use App\Entity\admin\historisation\documentOperation\HistoriqueOperationDocument;
+use App\Service\historiqueOperation\suivi\SuiviOperationService;
+use Doctrine\ORM\EntityRepository;
 
 class HistoriqueOperationEtapeRepository extends EntityRepository
 {
+    // au-delà, une étape restée EN_COURS est considérée comme interrompue
+    private const DELAI_EN_COURS_MINUTES = 10;
+
     /**
-     * Opérations ayant un suivi par étape, filtrées et paginées
+     * Recherche les opérations suivies, les plus récentes en premier, avec leurs étapes dans l'ordre.
      *
-     * @param array $filtres clés possibles : dateDebut, dateFin (\DateTime), statut, numeroDocument, typeDocument (id), etape
+     * @param string|null $recherche       n° de document ou utilisateur
+     * @param string|null $typeOperation  une des constantes SuiviOperationService::TYPE_*
+     * @param bool        $problemeSeulement ne garder que les opérations avec une étape en échec, interrompue ou jamais terminée
+     * @param int|null    $idHistorique    opération rattachée à cette ligne de l'historique des opérations
+     * @param bool        $nonLuSeulement  ne garder que les opérations en problème pas encore marquées comme lues
+     *
+     * @return array<int, array{idSuivi: string, statut: string, etapes: HistoriqueOperationEtape[]}>
      */
-    public function findOperationsPaginees(array $filtres, int $page = 1, int $limit = 50): array
+    public function rechercherSuivis(?string $recherche, ?string $typeOperation, bool $problemeSeulement, ?\DateTimeInterface $dateDebut, ?\DateTimeInterface $dateFin, ?int $idHistorique = null, bool $nonLuSeulement = false, int $limit = 100): array
     {
-        $queryBuilder = $this->getEntityManager()->createQueryBuilder()
-            ->select('h', 'td', 'tp')
-            ->from(HistoriqueOperationDocument::class, 'h')
-            ->leftJoin('h.idTypeDocument', 'td')
-            ->leftJoin('h.idTypeOperation', 'tp')
-            ->andWhere('EXISTS (SELECT 1 FROM ' . HistoriqueOperationEtape::class . ' e0 WHERE e0.historiqueOperation = h)');
-
-        $this->appliquerFiltresOperation($queryBuilder, $filtres);
-
-        // filtre sur une étape précise : opérations où cette étape a été exécutée (et en échec si statut = Echec)
-        if (!empty($filtres['etape'])) {
-            $sousRequete = 'SELECT 1 FROM ' . HistoriqueOperationEtape::class . ' e1 WHERE e1.historiqueOperation = h AND e1.etape = :etape';
-            if (($filtres['statut'] ?? '') === HistoriqueOperationEtape::STATUT_ECHEC) {
-                $sousRequete .= ' AND e1.statut = :statutEtape';
-                $queryBuilder->setParameter('statutEtape', HistoriqueOperationEtape::STATUT_ECHEC);
-            }
-            $queryBuilder->andWhere("EXISTS ($sousRequete)")->setParameter('etape', $filtres['etape']);
-        }
-
-        $queryBuilder
-            ->orderBy('h.id', 'DESC')
-            ->setFirstResult(($page - 1) * $limit)
+        $qb = $this->createQueryBuilder('e')
+            ->select('e.idSuivi, MIN(e.dateDebut) AS HIDDEN debut')
+            ->groupBy('e.idSuivi')
+            ->orderBy('debut', 'DESC')
             ->setMaxResults($limit);
 
-        $paginator = new DoctrinePaginator($queryBuilder->getQuery());
-        $totalItems = count($paginator);
+        if ($recherche !== null && trim($recherche) !== '') {
+            $qb->andWhere('e.numeroDocument LIKE :recherche OR e.utilisateur LIKE :recherche')
+                ->setParameter('recherche', '%' . trim($recherche) . '%');
+        }
+        if ($typeOperation) {
+            $qb->andWhere('e.typeOperation = :type')->setParameter('type', $typeOperation);
+        }
+        if ($idHistorique) {
+            $qb->andWhere('e.idHistoriqueOperation = :idHistorique')->setParameter('idHistorique', $idHistorique);
+        }
+        if ($dateDebut) {
+            $qb->andWhere('e.dateDebut >= :dateDebut')->setParameter('dateDebut', $dateDebut->format('Y-m-d 00:00:00'));
+        }
+        if ($dateFin) {
+            $qb->andWhere('e.dateDebut <= :dateFin')->setParameter('dateFin', $dateFin->format('Y-m-d 23:59:59'));
+        }
+        // une opération non lue n'a de sens que si elle est en problème
+        if ($problemeSeulement || $nonLuSeulement) {
+            $qb->having('SUM(CASE WHEN e.statut <> :succes THEN 1 ELSE 0 END) > 0')
+                ->setParameter('succes', SuiviOperationService::STATUT_SUCCES);
+        }
+        if ($nonLuSeulement) {
+            $qb->andWhere('e.estLu = :nonLu')->setParameter('nonLu', false);
+        }
 
-        return [
-            'data'        => iterator_to_array($paginator->getIterator()),
-            'totalItems'  => $totalItems,
-            'currentPage' => $page,
-            'lastPage'    => (int) ceil($totalItems / $limit),
-        ];
-    }
-
-    /**
-     * Étapes des opérations données, regroupées par id d'opération et triées par ordre
-     *
-     * @param int[] $idsOperation
-     * @return array<int, HistoriqueOperationEtape[]>
-     */
-    public function findEtapesParOperation(array $idsOperation): array
-    {
-        if (empty($idsOperation)) return [];
+        $idsSuivi = array_column($qb->getQuery()->getScalarResult(), 'idSuivi');
+        if (empty($idsSuivi)) {
+            return [];
+        }
 
         /** @var HistoriqueOperationEtape[] $etapes */
         $etapes = $this->createQueryBuilder('e')
-            ->andWhere('e.historiqueOperation IN (:ids)')
-            ->setParameter('ids', $idsOperation)
-            ->orderBy('e.historiqueOperation', 'DESC')
-            ->addOrderBy('e.ordre', 'ASC')
+            ->where('e.idSuivi IN (:ids)')
+            ->setParameter('ids', $idsSuivi)
+            ->orderBy('e.ordre', 'ASC')
             ->getQuery()
             ->getResult();
 
-        $etapesParOperation = [];
+        // regroupement par opération, dans l'ordre de la recherche
+        $suivis = array_fill_keys($idsSuivi, []);
         foreach ($etapes as $etape) {
-            $etapesParOperation[$etape->getHistoriqueOperation()->getId()][] = $etape;
+            $suivis[$etape->getIdSuivi()][] = $etape;
         }
 
-        return $etapesParOperation;
+        $resultat = [];
+        foreach ($suivis as $idSuivi => $etapesSuivi) {
+            $resultat[] = [
+                'idSuivi' => $idSuivi,
+                'statut'  => $this->statutGlobal($etapesSuivi),
+                'etapes'  => $etapesSuivi,
+            ];
+        }
+
+        return $resultat;
     }
 
     /**
-     * Statistiques par étape (exécutions, échecs, durées) sur les opérations filtrées
-     */
-    public function statistiquesParEtape(array $filtres): array
-    {
-        $queryBuilder = $this->createQueryBuilder('e')
-            ->select(
-                'e.etape',
-                'COUNT(e.id) AS nombreExecutions',
-                "SUM(CASE WHEN e.statut = :echec THEN 1 ELSE 0 END) AS nombreEchecs",
-                'AVG(e.dureeMs) AS dureeMoyenneMs',
-                'MAX(e.dureeMs) AS dureeMaxMs',
-                'MAX(e.dateEtape) AS dernierPassage'
-            )
-            ->innerJoin('e.historiqueOperation', 'h')
-            ->setParameter('echec', HistoriqueOperationEtape::STATUT_ECHEC)
-            ->groupBy('e.etape')
-            ->orderBy('nombreEchecs', 'DESC')
-            ->addOrderBy('e.etape', 'ASC');
-
-        $this->appliquerFiltresOperation($queryBuilder, $filtres);
-
-        return $queryBuilder->getQuery()->getArrayResult();
-    }
-
-    /**
-     * Noms des étapes déjà enregistrées (pour la liste de choix du filtre)
+     * Marque toutes les étapes d'une opération comme lues (ou non lues)
      *
-     * @return string[]
+     * @return int nombre d'étapes mises à jour
      */
-    public function findNomsEtapes(): array
+    public function marquerLu(string $idSuivi, bool $lu, ?string $utilisateur): int
     {
-        $resultats = $this->createQueryBuilder('e')
-            ->select('DISTINCT e.etape')
-            ->orderBy('e.etape', 'ASC')
+        return $this->createQueryBuilder('e')
+            ->update()
+            ->set('e.estLu', ':lu')
+            ->set('e.luPar', ':luPar')
+            ->set('e.dateLecture', ':dateLecture')
+            ->where('e.idSuivi = :idSuivi')
+            ->setParameter('lu', $lu)
+            ->setParameter('luPar', $lu ? $utilisateur : null)
+            ->setParameter('dateLecture', $lu ? new \DateTime() : null)
+            ->setParameter('idSuivi', $idSuivi)
             ->getQuery()
-            ->getScalarResult();
-
-        return array_column($resultats, 'etape');
+            ->execute();
     }
 
     /**
-     * Filtres portant sur l'opération (alias h)
+     * ECHEC si une étape a échoué, INTERROMPU si une étape ne s'est pas terminée,
+     * ALERTE si un contrôle signale une anomalie, sinon SUCCES
+     *
+     * @param HistoriqueOperationEtape[] $etapes
      */
-    private function appliquerFiltresOperation(QueryBuilder $queryBuilder, array $filtres): void
+    private function statutGlobal(array $etapes): string
     {
-        if (!empty($filtres['dateDebut'])) {
-            $queryBuilder->andWhere('h.dateOperation >= :dateDebut')
-                ->setParameter('dateDebut', (clone $filtres['dateDebut'])->setTime(0, 0));
+        $statuts = array_map(function (HistoriqueOperationEtape $etape) {
+            return $etape->getStatut();
+        }, $etapes);
+
+        if (in_array(SuiviOperationService::STATUT_ECHEC, $statuts, true)) {
+            return SuiviOperationService::STATUT_ECHEC;
+        }
+        if (in_array(SuiviOperationService::STATUT_INTERROMPU, $statuts, true)) {
+            return SuiviOperationService::STATUT_INTERROMPU;
+        }
+        // une étape non terminée est encore en cours tant qu'elle est récente, sinon le script s'est arrêté sans la fermer
+        // dates enregistrées en heure de Madagascar (SuiviOperationService::formaterDate) : comparaison en texte, indépendante du fuseau PHP
+        $limite = (new \DateTime('-' . self::DELAI_EN_COURS_MINUTES . ' minutes', new \DateTimeZone('Indian/Antananarivo')))->format('Y-m-d H:i:s');
+        foreach ($etapes as $etape) {
+            if ($etape->getStatut() === SuiviOperationService::STATUT_EN_COURS) {
+                return $etape->getDateDebut()->format('Y-m-d H:i:s') > $limite
+                    ? SuiviOperationService::STATUT_EN_COURS
+                    : SuiviOperationService::STATUT_INTERROMPU;
+            }
+        }
+        if (in_array(SuiviOperationService::STATUT_ALERTE, $statuts, true)) {
+            return SuiviOperationService::STATUT_ALERTE;
         }
 
-        if (!empty($filtres['dateFin'])) {
-            $queryBuilder->andWhere('h.dateOperation < :dateFin')
-                ->setParameter('dateFin', (clone $filtres['dateFin'])->setTime(0, 0)->modify('+1 day'));
-        }
-
-        if (!empty($filtres['statut'])) {
-            $queryBuilder->andWhere('h.statutOperation = :statut')
-                ->setParameter('statut', $filtres['statut']);
-        }
-
-        if (!empty($filtres['numeroDocument'])) {
-            $queryBuilder->andWhere('h.numeroDocument LIKE :numeroDocument')
-                ->setParameter('numeroDocument', '%' . $filtres['numeroDocument'] . '%');
-        }
-
-        if (!empty($filtres['typeDocument'])) {
-            $queryBuilder->andWhere('IDENTITY(h.idTypeDocument) = :typeDocument')
-                ->setParameter('typeDocument', (int) $filtres['typeDocument']);
-        }
+        return SuiviOperationService::STATUT_SUCCES;
     }
 }

@@ -14,7 +14,7 @@ use App\Service\fichier\UploderFileService;
 use App\Service\genererPdf\magasin\devis\GeneratePdfDeviMagasinVp;
 use App\Service\historiqueOperation\EtapeOperationException;
 use App\Service\historiqueOperation\HistoriqueOperationDevisMagasinService;
-use App\Service\historiqueOperation\SuiviOperation;
+use App\Service\historiqueOperation\suivi\SuiviOperationService;
 use App\Service\magasin\devis\Fichier\DevisMagasinGenererNameFileService;
 use App\Service\magasin\devis\Validation\ValidationSoumissionVerificationPrix;
 use Symfony\Component\Form\FormInterface;
@@ -90,20 +90,18 @@ class DevisNegVerificationPrixController extends Controller
             $nomInputSearch = 'devis_neg_search'; // initialistion de nom de chaque champ ou input
 
             // suivi de chaque étape (durée, succès / échec) enregistré avec l'historique de l'opération
-            $suivi = new SuiviOperation();
+            $suivi = SuiviOperationService::demarrer(SuiviOperationService::TYPE_DEVIS_NEG_VERIFICATION_PRIX, (string) $dto->numeroDevis);
 
             try {
                 $this->traitementSoumission($form, $dto, $suivi);
             } catch (EtapeOperationException $e) {
                 //HISTORISATION DE L'OPERATION EN ECHEC
                 $message = "Echec de la vérification de prix du devis numero : " . $dto->numeroDevis . " à l'étape « " . $e->getEtape() . " ». Veuillez contacter l'administrateur.";
-                $this->historiqueOperationDeviMagasinService->setEtapes($suivi->getEtapes());
                 $this->historiqueOperationDeviMagasinService->sendNotificationSoumission($message, $dto->numeroDevis, $nomDeRoute, false, $criteria, $nomInputSearch);
             }
 
             //HISTORISATION DE L'OPERATION
             $message = "la vérification de prix du devis numero : " . $dto->numeroDevis . " a été envoyée avec succès .";
-            $this->historiqueOperationDeviMagasinService->setEtapes($suivi->getEtapes());
             $this->historiqueOperationDeviMagasinService->sendNotificationSoumission($message, $dto->numeroDevis, $nomDeRoute, true, $criteria, $nomInputSearch);
         }
     }
@@ -113,7 +111,7 @@ class DevisNegVerificationPrixController extends Controller
      *
      * @throws EtapeOperationException si une étape échoue
      */
-    private function traitementSoumission(FormInterface $form, SoumissionDto $dto, SuiviOperation $suivi): void
+    private function traitementSoumission(FormInterface $form, SoumissionDto $dto, SuiviOperationService $suivi): void
     {
         /**
          * Enregistrement de fichier excel

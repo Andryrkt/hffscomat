@@ -11,7 +11,7 @@ use App\Service\atelier\dit\soumission\Facture\FactureValidationService;
 use App\Service\atelier\dit\soumission\Facture\TraitementDeFichierService;
 use App\Service\historiqueOperation\Atelier\Dit\Facture\HistoriqueOperationFACService;
 use App\Service\historiqueOperation\EtapeOperationException;
-use App\Service\historiqueOperation\SuiviOperation;
+use App\Service\historiqueOperation\suivi\SuiviOperationService;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -69,12 +69,12 @@ class DitFactureSoumisAValidationController extends Controller
             $historiqueOperationFACService = new HistoriqueOperationFACService($this->getEntityManager());
 
             // suivi de chaque étape (durée, succès / échec) enregistré avec l'historique de l'opération
-            $suivi = new SuiviOperation();
+            $suivi = SuiviOperationService::demarrer(SuiviOperationService::TYPE_FACTURE, (string) $dto->numeroOr);
 
             try {
                 // traitement de fichier
                 $traitementDeFichierService = new TraitementDeFichierService($this->getSecurityService());
-                $traitementDeFichierService->traitmenetDeFichier($dto, $form, $suivi);
+                $traitementDeFichierService->traitmenetDeFichier($dto, $form);
 
                 $dtiFactureSoumisAValidationModel = new DitFactureSoumisAValidationModel();
 
@@ -91,13 +91,11 @@ class DitFactureSoumisAValidationController extends Controller
                 });
             } catch (EtapeOperationException $e) {
                 $message = "Echec de la soumission de la facture {$dto->numeroFact} à l'étape « " . $e->getEtape() . " ». Veuillez contacter l'administrateur.";
-                $historiqueOperationFACService->setEtapes($suivi->getEtapes());
                 $historiqueOperationFACService->sendNotificationSoumission($message, $dto->numeroDit, 'dit_liste', false);
             }
 
             // historisation de soumission
             $message = "Le document de controle a été généré et soumis pour validation {$dto->numeroFact}";
-            $historiqueOperationFACService->setEtapes($suivi->getEtapes());
             $historiqueOperationFACService->sendNotificationSoumission($message, $dto->numeroDit, 'dit_liste', true);
         }
     }

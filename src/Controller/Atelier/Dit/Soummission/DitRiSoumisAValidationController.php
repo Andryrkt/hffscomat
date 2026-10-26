@@ -12,7 +12,7 @@ use App\Service\atelier\dit\soumission\Ri\TraitementFichierService;
 use App\Service\genererPdf\dit\ri\GenererPdfRiSoumisAValidataion;
 use App\Service\historiqueOperation\Atelier\Dit\Ri\HistoriqueOperationRIService;
 use App\Service\historiqueOperation\EtapeOperationException;
-use App\Service\historiqueOperation\SuiviOperation;
+use App\Service\historiqueOperation\suivi\SuiviOperationService;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -68,7 +68,7 @@ class DitRiSoumisAValidationController extends Controller
             $historiqueOperationRIService = new HistoriqueOperationRIService($this->getEntityManager());
 
             // suivi de chaque étape (durée, succès / échec) enregistré avec l'historique de l'opération
-            $suivi = new SuiviOperation();
+            $suivi = SuiviOperationService::demarrer(SuiviOperationService::TYPE_RI, 'RI_' . $dto->numeroOr);
 
             try {
                 // Enregistrement dans la base de donnée
@@ -92,13 +92,11 @@ class DitRiSoumisAValidationController extends Controller
                 });
             } catch (EtapeOperationException $e) {
                 $message = "Echec de la soumission du rapport d'intervention RI_{$dto->numeroOr} à l'étape « " . $e->getEtape() . " ». Veuillez contacter l'administrateur.";
-                $historiqueOperationRIService->setEtapes($suivi->getEtapes());
                 $historiqueOperationRIService->sendNotificationSoumission($message, $dto->numeroDit, 'dit_liste', false);
             }
 
             // notification reussi de soumission
             $message = "Le rapport d'intervention a été soumis avec succès, RI_{$dto->numeroOr}";
-            $historiqueOperationRIService->setEtapes($suivi->getEtapes());
             $historiqueOperationRIService->sendNotificationSoumission($message, $dto->numeroDit, 'dit_liste', true);
         }
     }
