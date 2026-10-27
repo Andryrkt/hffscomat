@@ -46,7 +46,7 @@
 								{% set commandes = item.commandes[month.key]|default([]) %}
 								{% if commandes|length > 0 %}
 									{% for commande in commandes %}
-										<a href="#" data-bs-toggle="modal" data-bs-target="#listeLigneCommandeMagasin" style="cursor: pointer;" data-id="{{ commande.numero }}" data-emetteur="{{ item.fournisseur }}" class="d-inline-block px-2 pt-1 my-1 rounded text-wrap {{ commande.classeStatut }}" title="{{ commande.statut }}">
+										<a href="#" data-bs-toggle="modal" data-bs-target="#listeLigneCommandeMagasin" style="cursor: pointer;" data-id="{{ commande.numero }}" data-emetteur="{{ item.fournisseur }}" class="d-inline-block px-2 pt-1 my-1 rounded text-wrap {{ commande.classeStatut }} {{ commande.backOrder }}" title="{{ commande.statut }}">
 											{{ commande.numero }}
 										</a><br>
 									{% endfor %}

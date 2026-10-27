@@ -119,6 +119,7 @@ class PlanningCommandeFournisseurController extends Controller
                 'numero'       => $item['numero_commande'],
                 'statut'       => $statut,
                 'classeStatut' => $styleStatut[$statut] ?? '',
+                'backOrder'    => $item['back_order'] === "O" ? "border-back-order" : ""
             ];
         }
 
