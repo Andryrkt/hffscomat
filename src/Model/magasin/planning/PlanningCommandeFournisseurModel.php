@@ -29,7 +29,11 @@ class PlanningCommandeFournisseurModel extends Model
                         WHEN o.total_recu = 0 THEN 'Aucune reception'
                         ELSE 'Autre'
                     END
-                ) AS statut
+                ) AS statut,
+                CASE
+                    WHEN bo.numero_po IS NOT NULL THEN 'O'
+                    ELSE 'N'
+                END AS back_order
             FROM (
                 SELECT
                     l.fcdl_constp,
@@ -80,6 +84,20 @@ class PlanningCommandeFournisseurModel extends Model
                 ) l
                 GROUP BY l.fcdl_constp, l.fcdl_numcde, l.fbse_numfou, l.fbse_nomfou, l.asuc_lib, l.atab_lib, l.asuc_num, l.atab_code, l.fcde_datec
             ) o
+            LEFT JOIN (
+                SELECT DISTINCT CAST(cat.numero_po AS VARCHAR(50)) AS numero_po
+                FROM {$this->dbIrium}.gcot_acknow_cat AS cat
+                WHERE CAST(cat.libelle_type AS VARCHAR(10)) = 'Back Order'
+                    AND cat.id_gcot_acknow_cat = (
+                        SELECT MAX(sub.id_gcot_acknow_cat)
+                        FROM {$this->dbIrium}.gcot_acknow_cat AS sub
+                        WHERE sub.parts_number = cat.parts_number
+                            AND sub.numero_po    = cat.numero_po
+                            AND sub.line_number  = cat.line_number
+                            AND sub.quantity > 0
+                    )
+            ) bo 
+                ON CAST(o.fcdl_numcde AS VARCHAR(50)) = bo.numero_po
             WHERE o.fcdl_constp IN (select distinct abse_constp from {$this->dbIps}.art_bse where abse_codg = 'ST') AND o.total_qte > 0
         ) t
         WHERE 1=1 {$this->conditionStatut($statut)} 
@@ -365,18 +383,16 @@ class PlanningCommandeFournisseurModel extends Model
             'partiel_facture'     => "Partiellement facturé",
             'partiel_dispo'       => "Partiellement dispo",
             'complet_non_facture' => "Complet non facturé",
-            'complet_facture'     => "Complet facturé",
-            'back_order'          => "Back Order", // TODO: Pas encore de moyen pour les récupérer
+            'complet_facture'     => "Complet facturé"
         ];
 
         if ($statut === "tous") return "";
+        if ($statut === "back_order") return "t.back_order = 'O'";
 
         $selectWhereCondition = new SelectWhereCondition;
 
         $statutCondition = $statutParCondition[$statut];
 
-        return ($statutCondition === "en_cours")
-            ? $selectWhereCondition->ne('statut', $statutParCondition['complet_facture']) //*** Par défaut ne pas afficher les commandes complet facturés
-            : $selectWhereCondition->eq('statut', $statutCondition);
+        return ($statutCondition === "en_cours") ? $selectWhereCondition->ne('statut', $statutParCondition['complet_facture']) : $selectWhereCondition->eq('statut', $statutCondition);
     }
 }
