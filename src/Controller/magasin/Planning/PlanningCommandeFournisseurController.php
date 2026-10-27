@@ -41,12 +41,14 @@ class PlanningCommandeFournisseurController extends Controller
         )->getForm();
 
         $form->handleRequest($request);
-        $dto = $form->getData() ?? new PlanningCommandeFournisseurSearchDto();
+
+        /** @var PlanningCommandeFournisseurSearchDto $dto */
+        $dto = $form->getData();
 
         $condition = $request->query->get('condition', 'en_cours');
         $allRequestQuery = $request->query->all();
 
-        $data = $this->planningMagasinModel->getPlanningMagasin($condition, empty($allRequestQuery));
+        $data = $this->planningMagasinModel->getPlanningMagasin($condition);
         $data = $this->filtrerDonnees($data, $dto);
 
         $uniqueMonths = $this->genererMoisAffiches($dto->months ?? 3);

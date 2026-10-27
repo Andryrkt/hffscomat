@@ -8,7 +8,7 @@ use App\Model\Informix\SelectWhereCondition;
 
 class PlanningCommandeFournisseurModel extends Model
 {
-    public function getPlanningMagasin(string $statut, bool $isEmptyQuery)
+    public function getPlanningMagasin(string $statut)
     {
         $statement = "SELECT *
         FROM(
@@ -82,7 +82,7 @@ class PlanningCommandeFournisseurModel extends Model
             ) o
             WHERE o.fcdl_constp IN (select distinct abse_constp from {$this->dbIps}.art_bse where abse_codg = 'ST') AND o.total_qte > 0
         ) t
-        WHERE 1=1  {$this->conditionStatut($statut,$isEmptyQuery)} 
+        WHERE 1=1 {$this->conditionStatut($statut)} 
         ORDER BY t.numero_commande
         ";
 
@@ -358,7 +358,7 @@ class PlanningCommandeFournisseurModel extends Model
             ) $asSipLnk2 ON $asSipLnk2.num_cde = $asCde.numcde";
     }
 
-    private function conditionStatut(string $statut, bool $isEmptyQuery): string
+    private function conditionStatut(string $statut): string
     {
         $statutParCondition = [
             'en_cours'            => "en_cours",
