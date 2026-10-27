@@ -35,23 +35,6 @@ class CmdeATraiterMagasinSearchType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('type_doc', ChoiceType::class, [
-                'label'       => 'Type',
-                'placeholder' => '-- Tous --',
-                'choices'     => ['OR' => 'OR', 'BC' => 'BC négoce'],
-                'required'    => false,
-            ])
-            ->add('reference', TextType::class, [
-                'label'    => 'N°, Reférence ou Désignation',
-                'required' => false,
-            ])
-
-            ->add('constructeur', ChoiceType::class, [
-                'label'       => 'Constructeur',
-                'placeholder' => '-- Tous --',
-                'choices'     =>  $this->constructeurChoices(),
-                'required'    => false,
-            ])
             ->add('dateDebut', DateType::class, [
                 'widget'   => 'single_text',
                 'label'    => 'Période Du',
@@ -65,6 +48,29 @@ class CmdeATraiterMagasinSearchType extends AbstractType
                 'required' => false,
                 'data'     => $options['data']->dateFin ?? new \DateTime(),
             ])
+            ->add('type_doc', ChoiceType::class, [
+                'label'       => 'Type',
+                'placeholder' => '-- Tous --',
+                'choices'     => ['OR' => 'OR', 'BC' => 'BC négoce'],
+                'required'    => false,
+            ])
+            ->add('constructeur', ChoiceType::class, [
+                'label'       => 'Constructeur',
+                'placeholder' => '-- Tous --',
+                'choices'     =>  $this->constructeurChoices(),
+                'required'    => false,
+            ])
+            ->add('reference', TextType::class, [
+                'label'    => 'Ref ou Désignation',
+                'required' => false,
+            ])
+            ->add('numero_doc', TextType::class, [
+                'label'    => 'N° OR/BC',
+                'required' => false,
+            ])
+
+
+
         ;
     }
 
