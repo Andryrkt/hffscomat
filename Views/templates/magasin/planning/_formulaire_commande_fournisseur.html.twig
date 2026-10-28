@@ -43,57 +43,57 @@
 
 <div class="d-flex justify-content-between">
     <div class="my-2 d-flex flex-row">
-        <div class="{{ condition == 'tous' ? 'fw-bold' : '' }}">
+        <div class="{{ statut == 'tous' ? 'fw-bold' : '' }}">
             <small>
-                <a class="text-dark text-decoration-none" href="{{ path('interface_planning_cde_frn_magasin', currentQuery|merge({'condition': 'tous'})) }}">
+                <a class="text-dark text-decoration-none" href="{{ path('interface_planning_cde_frn_magasin', currentQuery|merge({'statut': 'tous'})) }}">
                     TOUT AFFICHER |
                 </a>
             </small>
         </div>
-        <div class="{{ condition == 'en_cours' ? 'fw-bold' : '' }}">
+        <div class="{{ statut == 'en_cours' ? 'fw-bold' : '' }}">
             <i class="fa-solid fa-circle text-muted"></i>
             <small>
-                <a class="text-dark text-decoration-none" href="{{ path('interface_planning_cde_frn_magasin', currentQuery|merge({'condition': 'en_cours'})) }}">
+                <a class="text-dark text-decoration-none" href="{{ path('interface_planning_cde_frn_magasin', currentQuery|merge({'statut': 'en_cours'})) }}">
                     EN COURS |
                 </a>
             </small>
         </div>
-        <div class="{{ condition == 'partiel_facture' ? 'fw-bold' : '' }}">
+        <div class="{{ statut == 'partiel_facture' ? 'fw-bold' : '' }}">
             <i class="fa-solid fa-circle text-warning"></i>
             <small>
-                <a class="text-warning text-decoration-none" href="{{ path('interface_planning_cde_frn_magasin', currentQuery|merge({'condition': 'partiel_facture'})) }}">
+                <a class="text-warning text-decoration-none" href="{{ path('interface_planning_cde_frn_magasin', currentQuery|merge({'statut': 'partiel_facture'})) }}">
                     Partiellement facturé |
                 </a>
             </small>
         </div>
-        <div class="{{ condition == 'partiel_dispo' ? 'fw-bold' : '' }}">
+        <div class="{{ statut == 'partiel_dispo' ? 'fw-bold' : '' }}">
             <i class="fa-solid fa-circle text-info"></i>
             <small>
-                <a class="text-info text-decoration-none" href="{{ path('interface_planning_cde_frn_magasin', currentQuery|merge({'condition': 'partiel_dispo'})) }}">
+                <a class="text-info text-decoration-none" href="{{ path('interface_planning_cde_frn_magasin', currentQuery|merge({'statut': 'partiel_dispo'})) }}">
                     Partiellement dispo |
                 </a>
             </small>
         </div>
-        <div class="{{ condition == 'complet_non_facture' ? 'fw-bold' : '' }}">
+        <div class="{{ statut == 'complet_non_facture' ? 'fw-bold' : '' }}">
             <i class="fa-solid fa-circle text-primary"></i>
             <small>
-                <a class="text-primary text-decoration-none" href="{{ path('interface_planning_cde_frn_magasin', currentQuery|merge({'condition': 'complet_non_facture'})) }}">
+                <a class="text-primary text-decoration-none" href="{{ path('interface_planning_cde_frn_magasin', currentQuery|merge({'statut': 'complet_non_facture'})) }}">
                     Complet non facturé |
                 </a>
             </small>
         </div>
-        <div class="{{ condition == 'complet_facture' ? 'fw-bold' : '' }}">
+        <div class="{{ statut == 'complet_facture' ? 'fw-bold' : '' }}">
             <i class="fa-solid fa-circle text-success"></i>
             <small>
-                <a class="text-success text-decoration-none" href="{{ path('interface_planning_cde_frn_magasin', currentQuery|merge({'condition': 'complet_facture'})) }}">
+                <a class="text-success text-decoration-none" href="{{ path('interface_planning_cde_frn_magasin', currentQuery|merge({'statut': 'complet_facture'})) }}">
                     Complet facturé |
                 </a>
             </small>
         </div>
-        <div class="{{ condition == 'back_order' ? 'fw-bold' : '' }}">
+        <div class="{{ statut == 'back_order' ? 'fw-bold' : '' }}">
             <i class="fa-solid fa-circle text-danger"></i>
             <small>
-                <a class="text-dark text-decoration-none" href="{{ path('interface_planning_cde_frn_magasin', currentQuery|merge({'condition': 'back_order'})) }}">
+                <a class="text-dark text-decoration-none" href="{{ path('interface_planning_cde_frn_magasin', currentQuery|merge({'statut': 'back_order'})) }}">
                     Back Order / Error
                 </a>
             </small>
