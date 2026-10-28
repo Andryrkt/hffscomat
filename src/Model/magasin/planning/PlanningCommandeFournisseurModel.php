@@ -387,9 +387,9 @@ class PlanningCommandeFournisseurModel extends Model
         ];
 
         if ($statut === "tous") return "";
-        if ($statut === "back_order") return "t.back_order = 'O'";
-
         $selectWhereCondition = new SelectWhereCondition;
+
+        if ($statut === "back_order") return $selectWhereCondition->eq('t.back_order', "O");
 
         $statutCondition = $statutParCondition[$statut];
 
