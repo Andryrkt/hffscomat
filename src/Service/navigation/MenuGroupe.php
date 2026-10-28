@@ -90,27 +90,21 @@ class MenuGroupe
                 'label'    => 'VENTE NEGOCE',
                 'icon'     => 'cloud-arrow-up',
                 'subitems' => [
-                    ['label' => 'Liste devis',                        'icon' => 'file-invoice', 'route' => 'liste_devis_neg'],
-                    ['label' => 'Liste commandes à traiter', 'icon' => 'file-invoice', 'route' => 'magasinListe_commande_traiter'],
-                    ['label' => 'Planning commande négoces', 'icon' => 'calendar-alt', 'route' => 'interface_planningMag'],
+                    ['label' => 'Liste devis',               'icon' => 'file-invoice', 'route' => 'liste_devis_neg'],
+                    ['label' => 'Liste à traiter', 'icon' => 'file-invoice', 'route' => 'magasinListe_commande_traiter'],
+                    ['label' => 'Planning', 'icon' => 'calendar-alt', 'route' => 'interface_planningMag'],
                 ],
             ],
             [
                 'label'    => 'COMMANDE FOURNISSEUR',
                 'icon'     => 'cloud-arrow-up',
                 'subitems' => [
-                    ['label' => 'Soumission commandes fournisseur', 'icon' => 'plus-circle', 'route' => 'generer_commande_fournisseur'],
-                    ['label' => 'Planning Commande Fournisseur', 'icon' => 'calendar-alt', 'route' => 'interface_planning_cde_frn_magasin'],
-
-                ],
-            ],
-            [
-                'label'    => "OR / BC négoce",
-                'icon'     => 'list-squares',
-                'subitems' => [
                     ['label' => 'Liste des commandes à traiter', 'icon' => 'search', 'route' => 'magasin_commande_a_traiter_liste'],
+                    ['label' => 'Soumission à validation', 'icon' => 'plus-circle', 'route' => 'generer_commande_fournisseur'],
+                    ['label' => 'Planning', 'icon' => 'calendar-alt', 'route' => 'interface_planning_cde_frn_magasin'],
                 ],
             ],
+
         ];
     }
 
