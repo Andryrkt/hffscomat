@@ -181,13 +181,38 @@ class PlanningCommandeFournisseurModel extends Model
             res.type_doc,
             res.numcli,
             res.nomcli,
+            CASE 
+                WHEN bo.numero_po IS NOT NULL THEN 'O' 
+                ELSE 'N' 
+            END AS back_order,
             {$this->getColonnesEta($sipLnkActive,$asCde,$asCat,$asSipLnk1,$asSipLnk2)}
         FROM $asCde
         LEFT JOIN res
             ON  res.refp   = $asCde.refp
             AND $asCde.constp = res.constp
+        LEFT JOIN (
+            SELECT DISTINCT
+                CAST(b.numero_po AS VARCHAR(50)) AS numero_po,
+                b.parts_cst,
+                b.parts_number,
+                b.line_number
+            FROM {$this->dbIrium}.gcot_acknow_cat AS b
+            WHERE CAST(b.libelle_type AS VARCHAR(10)) = 'Back Order'
+                AND b.id_gcot_acknow_cat = (
+                    SELECT MAX(sub.id_gcot_acknow_cat)
+                    FROM {$this->dbIrium}.gcot_acknow_cat AS sub
+                    WHERE sub.parts_number = b.parts_number
+                        AND sub.numero_po    = b.numero_po
+                        AND sub.line_number  = b.line_number
+                        AND sub.quantity > 0
+                )
+        ) bo
+            ON  bo.numero_po    = CAST($asCde.numcde AS VARCHAR(50))
+            AND bo.parts_cst    = $asCde.constp
+            AND bo.parts_number = TRIM($asCde.refp)
+            AND bo.line_number  = $asCde.ligne
         LEFT JOIN {$this->dbIrium}.gcot_acknow_cat $asCat
-            ON  $asCat.numero_po    = $asCde.numcde
+            ON  CAST($asCat.numero_po AS VARCHAR(50)) = CAST($asCde.numcde AS VARCHAR(50))
             AND $asCat.parts_number = $asCde.refp
             AND $asCat.parts_cst    = $asCde.constp
             AND $asCat.line_number  = $asCde.ligne
