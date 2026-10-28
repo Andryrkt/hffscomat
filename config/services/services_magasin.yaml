@@ -29,3 +29,7 @@ services:
     arguments:
       $cdeFrnSoumissionService: '@App\Service\magasin\Commande\Soumission\CdeFrnSoumissionService'
     public: true
+  App\Controller\Magasin\OrBc\CmdeATraiterMagasinController:
+    arguments:
+      - '@App\Model\magasin\OrBc\CmdeATraiterMagasinModel'
+    public: true
