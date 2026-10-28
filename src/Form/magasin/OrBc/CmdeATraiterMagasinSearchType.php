@@ -51,7 +51,7 @@ class CmdeATraiterMagasinSearchType extends AbstractType
             ->add('type_doc', ChoiceType::class, [
                 'label'       => 'Type',
                 'placeholder' => '-- Tous --',
-                'choices'     => ['OR' => 'OR', 'BC' => 'BC négoce'],
+                'choices'     => ['OR' => 'OR', 'BC' => 'BC'],
                 'required'    => false,
             ])
             ->add('constructeur', ChoiceType::class, [
