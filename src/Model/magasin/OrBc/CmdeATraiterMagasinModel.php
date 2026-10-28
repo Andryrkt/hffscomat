@@ -144,11 +144,11 @@ class CmdeATraiterMagasinModel extends Model
                 WHERE
                     nlig_succ = '$sucNeg'
                     AND a2.abse_codg = 'ST'
+                    AND a2.abse_constp <> '---'
                     AND nlig_qtecde > 0
                     AND nlig_qtecde > (nlig_qtealiv + nlig_qteliv + nlig_qtefac)
                     AND nlig_qtewait = 0
                     AND NVL(nlig_numcf, 0) = 0
-                    AND nlig_numcli < 1990000
                     AND nlig_nolign <> NVL(nlig_nolmait,0)
                     AND nlig_natop <> 'DEV'
         ";
@@ -165,6 +165,7 @@ class CmdeATraiterMagasinModel extends Model
             WHERE abse_codg = 'ST'
               AND abse_constp IS NOT NULL
               AND TRIM(abse_constp) <> ''
+              AND abse_constp <> '---'
             ORDER BY abse_constp
         ";
 

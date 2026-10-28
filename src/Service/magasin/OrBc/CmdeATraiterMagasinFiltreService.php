@@ -19,13 +19,17 @@ class CmdeATraiterMagasinFiltreService
         // Le DTO peut contenir 'OR', 'BC' ou null/'' (= tous)
         $this->addCondition($conditions, $swc->eq('type_doc', $dto->type_doc));
 
-        // --- Recherche libre : N° OR/BC OU référence OU désignation ---
+
+        // --- Recherche: N° OR/BC
+        if (!empty($dto->numero_doc)) {
+            $needleNum = strtoupper(addslashes(trim($dto->numero_doc)));
+            $conditions[] = " AND UPPER(CAST(numero_doc AS VARCHAR(50))) LIKE '%$needleNum%'";
+        }
+        // --- Recherche libre : référence OU désignation ---
         if (!empty($dto->reference)) {
             $needle = strtoupper(addslashes(trim($dto->reference)));
-
             $conditions[] = " AND ("
-                . "UPPER(CAST(numero_doc AS VARCHAR(50))) LIKE '%$needle%'"
-                . " OR UPPER(CAST(reference AS VARCHAR(100))) LIKE '%$needle%'"
+                . " UPPER(CAST(reference AS VARCHAR(100))) LIKE '%$needle%'"
                 . " OR UPPER(CAST(designation AS VARCHAR(255))) LIKE '%$needle%'"
                 . ")";
         }
@@ -34,11 +38,11 @@ class CmdeATraiterMagasinFiltreService
         $this->addCondition($conditions, $swc->eq('constructeur', $dto->constructeur));
 
         // --- Période sur date_doc (défaut : 30 derniers jours) ---
-        $dateDebut = $dto->dateDebut ?? new \DateTime('-' . self::DEFAULT_DAYS_BACK . ' days');
-        $dateFin   = $dto->dateFin   ?? new \DateTime();
+        $dateDebut = $dto->dateDebut;
+        $dateFin   = $dto->dateFin;
+        $selectWhereCondition = new SelectWhereCondition();
 
-        $conditions[] = " AND date_doc >= " . $this->formatDateInformix($dateDebut);
-        $conditions[] = " AND date_doc <= " . $this->formatDateInformix($dateFin);
+        $this->addCondition($conditions, $selectWhereCondition->between('date_doc', $dateDebut, $dateFin));
 
         // Nettoyage : on retire les chaînes vides
         $conditions = array_filter($conditions, function ($c) {
