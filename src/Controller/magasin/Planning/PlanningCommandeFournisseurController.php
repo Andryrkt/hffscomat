@@ -48,7 +48,8 @@ class PlanningCommandeFournisseurController extends Controller
         $statut = $request->query->get('statut', 'en_cours');
         $allRequestQuery = $request->query->all();
 
-        $data = $this->planningMagasinModel->getPlanningMagasin($statut);
+        $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
+        $data = $this->planningMagasinModel->getPlanningMagasin($statut, $codeSociete);
         $data = $this->filtrerDonnees($data, $dto);
 
         $uniqueMonths = $this->genererMoisAffiches($dto->months ?? 3);
