@@ -8,7 +8,7 @@ use App\Model\Informix\SelectWhereCondition;
 
 class PlanningCommandeFournisseurModel extends Model
 {
-    public function getPlanningMagasin(string $statut)
+    public function getPlanningMagasin(string $statut, string $codeSociete)
     {
         $statement = "SELECT *
         FROM(
@@ -68,8 +68,8 @@ class PlanningCommandeFournisseurModel extends Model
                     FROM {$this->dbIps}.frn_cdl fcdl
                     INNER JOIN {$this->dbIps}.frn_cde
                         ON fcdl_soc    = fcde_soc
-                    AND fcdl_succ   = fcde_succ
-                    AND fcdl_numcde = fcde_numcde
+                        AND fcdl_succ   = fcde_succ
+                        AND fcdl_numcde = fcde_numcde
                     INNER JOIN {$this->dbIps}.frn_bse
                         ON fbse_numfou = fcde_numfou
                     INNER JOIN {$this->dbIps}.agr_succ
@@ -80,6 +80,7 @@ class PlanningCommandeFournisseurModel extends Model
                         ON fllf.fllf_soc = fcdl.fcdl_soc AND fllf.fllf_numcde = fcdl.fcdl_numcde AND fllf.fllf_ligne = fcdl.fcdl_ligne
                     WHERE year(fcde_date) = 2026
                         AND (fcde_cdeext NOT LIKE '%CIS%' OR fcde_cdeext IS NULL)
+                        AND fcde_soc = '$codeSociete'
                     GROUP BY fcdl.fcdl_constp, fcdl.fcdl_numcde, fcdl.fcdl_ligne, fcdl.fcdl_qte, fbse_numfou, fbse_nomfou, asuc_lib, atab_lib, asuc_num, atab_code, fcde_datec
                 ) l
                 GROUP BY l.fcdl_constp, l.fcdl_numcde, l.fbse_numfou, l.fbse_nomfou, l.asuc_lib, l.atab_lib, l.asuc_num, l.atab_code, l.fcde_datec
