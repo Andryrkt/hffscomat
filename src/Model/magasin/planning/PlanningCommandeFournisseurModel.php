@@ -8,7 +8,7 @@ use App\Model\Informix\SelectWhereCondition;
 
 class PlanningCommandeFournisseurModel extends Model
 {
-    public function getPlanningMagasin(string $statut, bool $isEmptyQuery)
+    public function getPlanningMagasin(string $statut)
     {
         $statement = "SELECT *
         FROM(
@@ -29,7 +29,11 @@ class PlanningCommandeFournisseurModel extends Model
                         WHEN o.total_recu = 0 THEN 'Aucune reception'
                         ELSE 'Autre'
                     END
-                ) AS statut
+                ) AS statut,
+                CASE
+                    WHEN bo.numero_po IS NOT NULL THEN 'O'
+                    ELSE 'N'
+                END AS back_order
             FROM (
                 SELECT
                     l.fcdl_constp,
@@ -80,9 +84,23 @@ class PlanningCommandeFournisseurModel extends Model
                 ) l
                 GROUP BY l.fcdl_constp, l.fcdl_numcde, l.fbse_numfou, l.fbse_nomfou, l.asuc_lib, l.atab_lib, l.asuc_num, l.atab_code, l.fcde_datec
             ) o
+            LEFT JOIN (
+                SELECT DISTINCT CAST(cat.numero_po AS VARCHAR(50)) AS numero_po
+                FROM {$this->dbIrium}.gcot_acknow_cat AS cat
+                WHERE CAST(cat.libelle_type AS VARCHAR(10)) = 'Back Order'
+                    AND cat.id_gcot_acknow_cat = (
+                        SELECT MAX(sub.id_gcot_acknow_cat)
+                        FROM {$this->dbIrium}.gcot_acknow_cat AS sub
+                        WHERE sub.parts_number = cat.parts_number
+                            AND sub.numero_po    = cat.numero_po
+                            AND sub.line_number  = cat.line_number
+                            AND sub.quantity > 0
+                    )
+            ) bo 
+                ON CAST(o.fcdl_numcde AS VARCHAR(50)) = bo.numero_po
             WHERE o.fcdl_constp IN (select distinct abse_constp from {$this->dbIps}.art_bse where abse_codg = 'ST') AND o.total_qte > 0
         ) t
-        WHERE 1=1  {$this->conditionStatut($statut,$isEmptyQuery)} 
+        WHERE 1=1 {$this->conditionStatut($statut)} 
         ORDER BY t.numero_commande
         ";
 
@@ -163,13 +181,38 @@ class PlanningCommandeFournisseurModel extends Model
             res.type_doc,
             res.numcli,
             res.nomcli,
+            CASE 
+                WHEN bo.numero_po IS NOT NULL THEN 'O' 
+                ELSE 'N' 
+            END AS back_order,
             {$this->getColonnesEta($sipLnkActive,$asCde,$asCat,$asSipLnk1,$asSipLnk2)}
         FROM $asCde
         LEFT JOIN res
             ON  res.refp   = $asCde.refp
             AND $asCde.constp = res.constp
+        LEFT JOIN (
+            SELECT DISTINCT
+                CAST(b.numero_po AS VARCHAR(50)) AS numero_po,
+                b.parts_cst,
+                b.parts_number,
+                b.line_number
+            FROM {$this->dbIrium}.gcot_acknow_cat AS b
+            WHERE CAST(b.libelle_type AS VARCHAR(10)) = 'Back Order'
+                AND b.id_gcot_acknow_cat = (
+                    SELECT MAX(sub.id_gcot_acknow_cat)
+                    FROM {$this->dbIrium}.gcot_acknow_cat AS sub
+                    WHERE sub.parts_number = b.parts_number
+                        AND sub.numero_po    = b.numero_po
+                        AND sub.line_number  = b.line_number
+                        AND sub.quantity > 0
+                )
+        ) bo
+            ON  bo.numero_po    = CAST($asCde.numcde AS VARCHAR(50))
+            AND bo.parts_cst    = $asCde.constp
+            AND bo.parts_number = TRIM($asCde.refp)
+            AND bo.line_number  = $asCde.ligne
         LEFT JOIN {$this->dbIrium}.gcot_acknow_cat $asCat
-            ON  $asCat.numero_po    = $asCde.numcde
+            ON  CAST($asCat.numero_po AS VARCHAR(50)) = CAST($asCde.numcde AS VARCHAR(50))
             AND $asCat.parts_number = $asCde.refp
             AND $asCat.parts_cst    = $asCde.constp
             AND $asCat.line_number  = $asCde.ligne
@@ -358,25 +401,23 @@ class PlanningCommandeFournisseurModel extends Model
             ) $asSipLnk2 ON $asSipLnk2.num_cde = $asCde.numcde";
     }
 
-    private function conditionStatut(string $statut, bool $isEmptyQuery): string
+    private function conditionStatut(string $statut): string
     {
         $statutParCondition = [
             'en_cours'            => "en_cours",
             'partiel_facture'     => "Partiellement facturé",
             'partiel_dispo'       => "Partiellement dispo",
             'complet_non_facture' => "Complet non facturé",
-            'complet_facture'     => "Complet facturé",
-            'back_order'          => "Back Order", // TODO: Pas encore de moyen pour les récupérer
+            'complet_facture'     => "Complet facturé"
         ];
 
         if ($statut === "tous") return "";
-
         $selectWhereCondition = new SelectWhereCondition;
+
+        if ($statut === "back_order") return $selectWhereCondition->eq('t.back_order', "O");
 
         $statutCondition = $statutParCondition[$statut];
 
-        return ($statutCondition === "en_cours")
-            ? $selectWhereCondition->ne('statut', $statutParCondition['complet_facture']) //*** Par défaut ne pas afficher les commandes complet facturés
-            : $selectWhereCondition->eq('statut', $statutCondition);
+        return ($statutCondition === "en_cours") ? $selectWhereCondition->ne('statut', $statutParCondition['complet_facture']) : $selectWhereCondition->eq('statut', $statutCondition);
     }
 }
