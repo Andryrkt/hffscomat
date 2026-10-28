@@ -38,11 +38,11 @@ class CmdeATraiterMagasinFiltreService
         $this->addCondition($conditions, $swc->eq('constructeur', $dto->constructeur));
 
         // --- Période sur date_doc (défaut : 30 derniers jours) ---
-        $dateDebut = $dto->dateDebut ?? new \DateTime('-' . self::DEFAULT_DAYS_BACK . ' days');
-        $dateFin   = $dto->dateFin   ?? new \DateTime();
+        $dateDebut = $dto->dateDebut;
+        $dateFin   = $dto->dateFin;
+        $selectWhereCondition = new SelectWhereCondition();
 
-        $conditions[] = " AND date_doc >= " . $this->formatDateInformix($dateDebut);
-        $conditions[] = " AND date_doc <= " . $this->formatDateInformix($dateFin);
+        $this->addCondition($conditions, $selectWhereCondition->between('date_doc', $dateDebut, $dateFin));
 
         // Nettoyage : on retire les chaînes vides
         $conditions = array_filter($conditions, function ($c) {
