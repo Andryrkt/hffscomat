@@ -157,62 +157,95 @@ class PlanningCommandeFournisseurModel extends Model
                 GROUP BY type_doc, constp, refp, numero, numcli, nomcli
             )
         SELECT
-            $asCde.constp,
-            TRIM($asCde.refp) AS refp,
-            TRIM($asCde.desi) AS desi,
-            $asCde.qte_dem,
-            $asCde.qte_rest,
-            $asCde.qte_recept,
-            $asCde.qte_dispo,
-            $asCde.qte_fact,
+            g.constp, 
+            g.refp, 
+            g.desi,
+            g.qte_dem, 
+            g.qte_rest, 
+            g.qte_recept, 
+            g.qte_dispo, 
+            g.qte_fact,
             CASE
-                WHEN $asCde.qte_recept = 0 THEN 'en_attente'
-                WHEN $asCde.qte_dem > 0 AND $asCde.qte_fact = $asCde.qte_dem THEN 'complet_facture'
-                WHEN $asCde.qte_dem > 0 AND $asCde.qte_fact > 0 AND $asCde.qte_fact < $asCde.qte_dem THEN 'partiel_facture'
-                WHEN $asCde.qte_dem > 0 AND $asCde.qte_recept > 0 AND $asCde.qte_rest > 0 THEN 'partiel_dispo'
-                WHEN $asCde.qte_dem > 0 AND $asCde.qte_rest = 0 AND $asCde.qte_fact = 0 THEN 'complet_non_facture'
-                when $asCde.qte_dem = 0 and $asCde.qte_rest > 0 then 'en_attente'
-                when $asCde.qte_dem = 0 and $asCde.qte_rest = 0 and $asCde.qte_recept = $asCde.qte_fact then 'complet_facture'
-                WHEN $asCde.qte_dem = 0 and $asCde.qte_rest = 0 and $asCde.qte_recept > 0 and $asCde.qte_recept > $asCde.qte_fact THEN 'complet_non_facture'
+                WHEN g.qte_recept = 0 THEN 'en_attente'
+                WHEN g.qte_dem > 0 AND g.qte_fact = g.qte_dem THEN 'complet_facture'
+                WHEN g.qte_dem > 0 AND g.qte_fact > 0 AND g.qte_fact < g.qte_dem THEN 'partiel_facture'
+                WHEN g.qte_dem > 0 AND g.qte_recept > 0 AND g.qte_rest > 0 THEN 'partiel_dispo'
+                WHEN g.qte_dem > 0 AND g.qte_rest = 0 AND g.qte_fact = 0 THEN 'complet_non_facture'
+                when g.qte_dem = 0 and g.qte_rest > 0 then 'en_attente'
+                when g.qte_dem = 0 and g.qte_rest = 0 and g.qte_recept = g.qte_fact then 'complet_facture'
+                WHEN g.qte_dem = 0 and g.qte_rest = 0 and g.qte_recept > 0 and g.qte_recept > g.qte_fact THEN 'complet_non_facture'
                 ELSE ''
             END AS statut,
-            res.numero,
-            NVL(res.qtedem, 0) AS qte_dem_ligne,
-            res.type_doc,
-            res.numcli,
-            res.nomcli,
-            CASE 
-                WHEN bo.numero_po IS NOT NULL THEN 'O' 
-                ELSE 'N' 
-            END AS back_order,
-            {$this->getColonnesEta($sipLnkActive,$asSipLnkLigne,$asSipLnkCommande)}
-        FROM $asCde
-        LEFT JOIN res
-            ON  res.refp   = $asCde.refp
-            AND res.constp = $asCde.constp
-        LEFT JOIN (
-            SELECT DISTINCT
-                CAST(b.numero_po AS VARCHAR(50)) AS numero_po,
-                b.parts_cst,
-                b.parts_number,
-                b.line_number
-            FROM {$this->dbIrium}.gcot_acknow_cat AS b
-            WHERE CAST(b.libelle_type AS VARCHAR(10)) = 'Back Order'
-                AND b.id_gcot_acknow_cat = (
-                    SELECT MAX(sub.id_gcot_acknow_cat)
-                    FROM {$this->dbIrium}.gcot_acknow_cat AS sub
-                    WHERE sub.parts_number = b.parts_number
-                        AND sub.numero_po    = b.numero_po
-                        AND sub.line_number  = b.line_number
-                        AND sub.quantity > 0
-                )
-        ) bo
-            ON  bo.numero_po    = CAST($asCde.numcde AS VARCHAR(50))
-            AND bo.parts_cst    = $asCde.constp
-            AND bo.parts_number = TRIM($asCde.refp)
-            AND bo.line_number  = $asCde.ligne
-        {$this->getJoinSipLnk($sipLnkActive,$numCde,$asCde,$asSipLnkLigne,$asSipLnkCommande)}
-        ORDER BY $asCde.refp, res.numero;";
+            g.numero, 
+            g.qte_dem_ligne, 
+            g.type_doc, 
+            g.numcli, 
+            g.nomcli, 
+            g.back_order, 
+            g.eta_magasin,
+            SUBSTR(g.eta_maurice_key, 5, 2) || '/' || SUBSTR(g.eta_maurice_key, 3, 2) || '/' || SUBSTR(g.eta_maurice_key, 1, 2) AS eta_maurice
+        FROM (
+            SELECT
+                x.constp, x.refp, x.desi,
+                SUM(x.qte_dem) AS qte_dem,
+                SUM(x.qte_rest) AS qte_rest,
+                SUM(x.qte_recept) AS qte_recept,
+                SUM(x.qte_dispo) AS qte_dispo,
+                SUM(x.qte_fact) AS qte_fact,
+                x.numero, x.qte_dem_ligne, x.type_doc, x.numcli, x.nomcli,
+                MAX(x.back_order) AS back_order,
+                MAX(x.eta_magasin) AS eta_magasin,
+                MAX(SUBSTR(x.eta_maurice, 7, 2) || SUBSTR(x.eta_maurice, 4, 2) || SUBSTR(x.eta_maurice, 1, 2)) AS eta_maurice_key
+            FROM (
+                SELECT
+                    $asCde.constp,
+                    TRIM($asCde.refp) AS refp,
+                    TRIM($asCde.desi) AS desi,
+                    $asCde.qte_dem,
+                    $asCde.qte_rest,
+                    $asCde.qte_recept,
+                    $asCde.qte_dispo,
+                    $asCde.qte_fact,
+                    res.numero,
+                    NVL(res.qtedem, 0) AS qte_dem_ligne,
+                    res.type_doc,
+                    res.numcli,
+                    res.nomcli,
+                    CASE
+                        WHEN bo.numero_po IS NOT NULL THEN 'O'
+                        ELSE 'N'
+                    END AS back_order,
+                    {$this->getColonnesEta($sipLnkActive,$asSipLnkLigne,$asSipLnkCommande)}
+                FROM $asCde
+                LEFT JOIN res
+                    ON  res.refp   = $asCde.refp
+                    AND res.constp = $asCde.constp
+                LEFT JOIN (
+                    SELECT DISTINCT
+                        CAST(b.numero_po AS VARCHAR(50)) AS numero_po,
+                        b.parts_cst,
+                        b.parts_number,
+                        b.line_number
+                    FROM {$this->dbIrium}.gcot_acknow_cat AS b
+                    WHERE CAST(b.libelle_type AS VARCHAR(10)) = 'Back Order'
+                        AND b.id_gcot_acknow_cat = (
+                            SELECT MAX(sub.id_gcot_acknow_cat)
+                            FROM {$this->dbIrium}.gcot_acknow_cat AS sub
+                            WHERE sub.parts_number = b.parts_number
+                                AND sub.numero_po    = b.numero_po
+                                AND sub.line_number  = b.line_number
+                                AND sub.quantity > 0
+                        )
+                ) bo
+                    ON  bo.numero_po    = CAST($asCde.numcde AS VARCHAR(50))
+                    AND bo.parts_cst    = $asCde.constp
+                    AND bo.parts_number = TRIM($asCde.refp)
+                    AND bo.line_number  = $asCde.ligne
+                {$this->getJoinSipLnk($sipLnkActive,$numCde,$asCde,$asSipLnkLigne,$asSipLnkCommande)}
+            ) x
+            GROUP BY x.constp, x.refp, x.desi, x.numero, x.qte_dem_ligne, x.type_doc, x.numcli, x.nomcli
+        ) g
+        ORDER BY g.refp, g.numero;";
 
         $result = $this->connect->executeQuery($statement);
 
