@@ -49,6 +49,13 @@ class MenuGroupe
                 ],
             ],
             [
+                'label'    => "CVA",
+                'icon'     => 'toolbox',
+                'subitems' => [
+                    ['label' => 'OR - CSA à traiter', 'icon' => 'search', 'route' => 'or_csa_a_traiter_liste'],
+                ],
+            ],
+            [
                 'route'    => 'dit_new',
                 'label'    => 'Glossaire OR',
                 'icon'     => 'book',
@@ -72,6 +79,7 @@ class MenuGroupe
                 'label'    => 'Planning interne Atelier',
                 'icon'     => 'calendar-alt',
             ]
+
         ];
     }
 
