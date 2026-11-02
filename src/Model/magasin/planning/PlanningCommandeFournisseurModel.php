@@ -4,11 +4,15 @@ namespace App\Model\magasin\planning;
 
 use App\Model\Model;
 use App\Model\Informix\SelectWhereCondition;
+use App\Dto\Magasin\Planning\PlanningCommandeFournisseurSearchDto;
 
 
 class PlanningCommandeFournisseurModel extends Model
 {
-    public function getPlanningMagasin(string $statut, string $codeSociete)
+    /**
+     * @param array $monthsKey mois affichés au format 'Y-m' ; limite les commandes à cette fenêtre
+     */
+    public function getPlanningMagasin(string $statut, string $codeSociete, PlanningCommandeFournisseurSearchDto $dto, array $monthsKey = [])
     {
         $statement = "SELECT *
         FROM(
@@ -78,7 +82,7 @@ class PlanningCommandeFournisseurModel extends Model
                         ON atab_code = fcde_serv AND atab_nom  = 'SER'
                     LEFT JOIN {$this->dbIps}.frn_llf fllf
                         ON fllf.fllf_soc = fcdl.fcdl_soc AND fllf.fllf_numcde = fcdl.fcdl_numcde AND fllf.fllf_ligne = fcdl.fcdl_ligne
-                    WHERE year(fcde_date) = 2026
+                    WHERE 1=1 {$this->conditionsCommande($dto,$monthsKey)}
                         AND (fcde_cdeext NOT LIKE '%CIS%' OR fcde_cdeext IS NULL)
                         AND fcde_soc = '$codeSociete'
                     GROUP BY fcdl.fcdl_constp, fcdl.fcdl_numcde, fcdl.fcdl_ligne, fcdl.fcdl_qte, fbse_numfou, fbse_nomfou, asuc_lib, atab_lib, asuc_num, atab_code, fcde_datec
@@ -423,6 +427,32 @@ class PlanningCommandeFournisseurModel extends Model
                     AND slnk_pk2 IS NULL
                 ORDER BY slnk_id
             ) $asSipLnkCommande ON $asSipLnkCommande.num_cde = $asCde.numcde";
+    }
+
+    /** Filtres du formulaire + fenêtre de mois, appliqués avant les agrégations. */
+    private function conditionsCommande(PlanningCommandeFournisseurSearchDto $dto, array $monthsKey): string
+    {
+        $where = new SelectWhereCondition;
+        $sql = '';
+
+        if ($monthsKey) {
+            $anneesMois = array_map(fn($k) => (int) str_replace('-', '', $k), $monthsKey); // Ex: [202611,202612,202701,202702,...]
+            $sql .= $where->in('(YEAR(fcde_datec) * 100 + MONTH(fcde_datec))', $anneesMois);
+        }
+
+        $sql .= $where->between('fcde_datec', $dto->dateCommande['debut'] ?? null, $dto->dateCommande['fin'] ?? null);
+
+        // Fournisseur : recherche partielle sur le code ou le nom
+        $sql .= $where->like("fbse_numfou || ' ' || fbse_nomfou", $dto->fournisseur);
+
+        $agence = $dto->agenceService['agence'] ?? null;
+        $service = $dto->agenceService['service'] ?? null;
+
+        $sql .= $where->eq('fcde_numcde', $dto->numeroCommande);
+        $sql .= $where->eq('asuc_num', $agence ? $agence->getCodeAgence() : null);
+        $sql .= $where->eq('atab_code', $service ? $service->getCodeService() : null);
+
+        return $sql;
     }
 
     private function conditionStatut(string $statut): string
