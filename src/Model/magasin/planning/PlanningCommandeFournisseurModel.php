@@ -157,23 +157,23 @@ class PlanningCommandeFournisseurModel extends Model
                 GROUP BY type_doc, constp, refp, numero, numcli, nomcli
             )
         SELECT
-            cde.constp,
-            TRIM(cde.refp) AS refp,
-            TRIM(cde.desi) AS desi,
-            cde.qte_dem,
-            cde.qte_rest,
-            cde.qte_recept,
-            cde.qte_dispo,
-            cde.qte_fact,
+            $asCde.constp,
+            TRIM($asCde.refp) AS refp,
+            TRIM($asCde.desi) AS desi,
+            $asCde.qte_dem,
+            $asCde.qte_rest,
+            $asCde.qte_recept,
+            $asCde.qte_dispo,
+            $asCde.qte_fact,
             CASE
-                WHEN cde.qte_recept = 0 THEN 'en_attente'
-                WHEN cde.qte_dem > 0 AND cde.qte_fact = cde.qte_dem THEN 'complet_facture'
-                WHEN cde.qte_dem > 0 AND cde.qte_fact > 0 AND cde.qte_fact < cde.qte_dem THEN 'partiel_facture'
-                WHEN cde.qte_dem > 0 AND cde.qte_recept > 0 AND cde.qte_rest > 0 THEN 'partiel_dispo'
-                WHEN cde.qte_dem > 0 AND cde.qte_rest = 0 AND cde.qte_fact = 0 THEN 'complet_non_facture'
-                when cde.qte_dem = 0 and cde.qte_rest > 0 then 'en_attente'
-                when cde.qte_dem = 0 and cde.qte_rest = 0 and cde.qte_recept = cde.qte_fact then 'complet_facture'
-                WHEN cde.qte_dem = 0 and cde.qte_rest = 0 and cde.qte_recept > 0 and cde.qte_recept > cde.qte_fact THEN 'complet_non_facture'
+                WHEN $asCde.qte_recept = 0 THEN 'en_attente'
+                WHEN $asCde.qte_dem > 0 AND $asCde.qte_fact = $asCde.qte_dem THEN 'complet_facture'
+                WHEN $asCde.qte_dem > 0 AND $asCde.qte_fact > 0 AND $asCde.qte_fact < $asCde.qte_dem THEN 'partiel_facture'
+                WHEN $asCde.qte_dem > 0 AND $asCde.qte_recept > 0 AND $asCde.qte_rest > 0 THEN 'partiel_dispo'
+                WHEN $asCde.qte_dem > 0 AND $asCde.qte_rest = 0 AND $asCde.qte_fact = 0 THEN 'complet_non_facture'
+                when $asCde.qte_dem = 0 and $asCde.qte_rest > 0 then 'en_attente'
+                when $asCde.qte_dem = 0 and $asCde.qte_rest = 0 and $asCde.qte_recept = $asCde.qte_fact then 'complet_facture'
+                WHEN $asCde.qte_dem = 0 and $asCde.qte_rest = 0 and $asCde.qte_recept > 0 and $asCde.qte_recept > $asCde.qte_fact THEN 'complet_non_facture'
                 ELSE ''
             END AS statut,
             res.numero,
@@ -189,7 +189,7 @@ class PlanningCommandeFournisseurModel extends Model
         FROM $asCde
         LEFT JOIN res
             ON  res.refp   = $asCde.refp
-            AND $asCde.constp = res.constp
+            AND res.constp = $asCde.constp
         LEFT JOIN (
             SELECT DISTINCT
                 CAST(b.numero_po AS VARCHAR(50)) AS numero_po,
@@ -212,7 +212,7 @@ class PlanningCommandeFournisseurModel extends Model
             AND bo.parts_number = TRIM($asCde.refp)
             AND bo.line_number  = $asCde.ligne
         {$this->getJoinSipLnk($sipLnkActive,$numCde,$asCde,$asSipLnkLigne,$asSipLnkCommande)}
-        ORDER BY cde.refp, res.numero;";
+        ORDER BY $asCde.refp, res.numero;";
 
         $result = $this->connect->executeQuery($statement);
 
