@@ -187,7 +187,7 @@ class PlanningCommandeFournisseurModel extends Model
             g.nomcli, 
             g.back_order, 
             g.eta_magasin,
-            SUBSTR(g.eta_maurice_key, 5, 2) || '/' || SUBSTR(g.eta_maurice_key, 3, 2) || '/' || SUBSTR(g.eta_maurice_key, 1, 2) AS eta_maurice
+            g.eta_maurice
         FROM (
             SELECT
                 x.constp, x.refp, x.desi,
@@ -197,9 +197,8 @@ class PlanningCommandeFournisseurModel extends Model
                 SUM(x.qte_dispo) AS qte_dispo,
                 SUM(x.qte_fact) AS qte_fact,
                 x.numero, x.qte_dem_ligne, x.type_doc, x.numcli, x.nomcli,
-                MAX(x.back_order) AS back_order,
-                MAX(x.eta_magasin) AS eta_magasin,
-                MAX(SUBSTR(x.eta_maurice, 7, 2) || SUBSTR(x.eta_maurice, 4, 2) || SUBSTR(x.eta_maurice, 1, 2)) AS eta_maurice_key
+                x.eta_magasin, x.eta_maurice,
+                MAX(x.back_order) AS back_order
             FROM (
                 SELECT
                     $asCde.constp,
@@ -247,7 +246,7 @@ class PlanningCommandeFournisseurModel extends Model
                     AND bo.line_number  = $asCde.ligne
                 {$this->getJoinSipLnk($sipLnkActive,$numCde,$asCde,$asSipLnkLigne,$asSipLnkCommande)}
             ) x
-            GROUP BY x.constp, x.refp, x.desi, x.numero, x.qte_dem_ligne, x.type_doc, x.numcli, x.nomcli
+            GROUP BY x.constp, x.refp, x.desi, x.numero, x.qte_dem_ligne, x.type_doc, x.numcli, x.nomcli, x.eta_magasin, x.eta_maurice
         ) g
         ORDER BY g.refp, g.numero";
 
@@ -411,11 +410,17 @@ class PlanningCommandeFournisseurModel extends Model
                     slnk_pk2    AS no_lign,
                     slnk_date1  AS eta_magasin,
                     slnk_alpha1 AS eta_maurice
-                FROM {$this->dbIpsRegix}.sip_lnk
+                FROM {$this->dbIpsRegix}.sip_lnk s
                 WHERE slnk_tabname IN ('frn_cdl', 'frn_cde')
                     AND slnk_pk1 = '$numCde'
                     AND slnk_pk2 IS NOT NULL
-                ORDER BY slnk_id
+                    AND slnk_id = (
+                        SELECT MAX(m.slnk_id)
+                        FROM {$this->dbIpsRegix}.sip_lnk m
+                        WHERE m.slnk_tabname IN ('frn_cdl', 'frn_cde')
+                            AND m.slnk_pk1 = s.slnk_pk1
+                            AND m.slnk_pk2 = s.slnk_pk2
+                    )
             ) $asSipLnkLigne ON $asSipLnkLigne.num_cde = $asCde.numcde 
                 AND $asSipLnkLigne.no_lign = $asCde.ligne
             LEFT JOIN (
@@ -423,11 +428,17 @@ class PlanningCommandeFournisseurModel extends Model
                     slnk_pk1    AS num_cde,
                     slnk_date1  AS eta_magasin,
                     slnk_alpha1 AS eta_maurice
-                FROM {$this->dbIpsRegix}.sip_lnk
+                FROM {$this->dbIpsRegix}.sip_lnk s
                 WHERE slnk_tabname IN ('frn_cdl', 'frn_cde')
                     AND slnk_pk1 = '$numCde'
                     AND slnk_pk2 IS NULL
-                ORDER BY slnk_id
+                    AND slnk_id = (
+                        SELECT MAX(m.slnk_id)
+                        FROM {$this->dbIpsRegix}.sip_lnk m
+                        WHERE m.slnk_tabname IN ('frn_cdl', 'frn_cde')
+                            AND m.slnk_pk1 = '$numCde'
+                            AND m.slnk_pk2 IS NULL
+                    )
             ) $asSipLnkCommande ON $asSipLnkCommande.num_cde = $asCde.numcde";
     }
 
