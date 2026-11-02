@@ -45,15 +45,16 @@ class PlanningCommandeFournisseurController extends Controller
         /** @var PlanningCommandeFournisseurSearchDto $dto */
         $dto = $form->getData();
 
-        $statut = $request->query->get('statut', 'en_cours');
+        $defaultStatut = $dto->numeroCommande ? "tous" : "en_cours";
+        $statut = $request->query->get('statut', $defaultStatut);
         $allRequestQuery = $request->query->all();
 
         $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
-        $data = $this->planningMagasinModel->getPlanningMagasin($statut, $codeSociete);
-        $data = $this->filtrerDonnees($data, $dto);
-
         $uniqueMonths = $this->genererMoisAffiches($dto->months ?? 3);
-        $preparedData = $this->preparerDonnees($data, array_column($uniqueMonths, 'key'));
+        $monthsKey = array_column($uniqueMonths, 'key');
+
+        $data = $this->planningMagasinModel->getPlanningMagasin($statut, $codeSociete, $dto, $monthsKey);
+        $preparedData = $this->preparerDonnees($data, $monthsKey);
 
         return $this->render('magasin/planning/commande_fournisseur.html.twig', [
             'form'         => $form->createView(),
@@ -62,66 +63,6 @@ class PlanningCommandeFournisseurController extends Controller
             'statut'       => $statut,
             'currentQuery' => $allRequestQuery,
         ]);
-    }
-
-    /**
-     * Filtre les commandes selon les critères saisis dans le formulaire de recherche.
-     */
-    private function filtrerDonnees(array $data, PlanningCommandeFournisseurSearchDto $dto): array
-    {
-        $fournisseur = trim((string) $dto->fournisseur);
-        $numeroCommande = trim((string) $dto->numeroCommande);
-        $agence = $dto->agenceService['agence'] ?? null;
-        $service = $dto->agenceService['service'] ?? null;
-        $dateDebut = $dto->dateCommande['debut'] ?? null;
-        $dateFin = $dto->dateCommande['fin'] ?? null;
-
-        if ($fournisseur === '' && $numeroCommande === '' && !$agence && !$service && !$dateDebut && !$dateFin) {
-            return $data;
-        }
-
-        return array_values(array_filter($data, function ($item) use ($fournisseur, $numeroCommande, $agence, $service, $dateDebut, $dateFin) {
-            // Un seul champ pour chercher par nom OU par code fournisseur.
-            if ($fournisseur !== '') {
-                $matchNom = stripos(trim($item['nom_fournisseur']), $fournisseur) !== false;
-                $matchCode = stripos(trim((string) $item['numero_fournisseur']), $fournisseur) !== false;
-
-                if (!$matchNom && !$matchCode) {
-                    return false;
-                }
-            }
-
-            if ($numeroCommande !== '' && stripos(trim((string) $item['numero_commande']), $numeroCommande) === false) {
-                return false;
-            }
-
-            if ($agence && trim((string) $item['code_agence']) !== $agence->getCodeAgence()) {
-                return false;
-            }
-
-            if ($service && trim((string) $item['code_service']) !== $service->getCodeService()) {
-                return false;
-            }
-
-            if ($dateDebut || $dateFin) {
-                $timestamp = strtotime($item['date_commande']);
-                if ($timestamp === false) {
-                    return false;
-                }
-
-                $dateCommande = date('Y-m-d', $timestamp);
-
-                if ($dateDebut && $dateCommande < $dateDebut->format('Y-m-d')) {
-                    return false;
-                }
-
-                if ($dateFin && $dateCommande > $dateFin->format('Y-m-d')) {
-                    return false;
-                }
-            }
-
-            return true;
-        }));
     }
 
     /**

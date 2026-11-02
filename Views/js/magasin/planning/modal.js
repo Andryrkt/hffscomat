@@ -176,7 +176,7 @@ document.addEventListener("DOMContentLoaded", function () {
                   <td class="text-center">${formatDate(detail.eta_magasin)}</td>
                   <td class="text-center">${detail.eta_maurice || ""}</td>
                   <td class="text-center">${nameAndNumberDoc(detail.type_doc, detail.numero)}</td>
-                  <td class="text-start">${nameAndNumberDoc(detail.numcli, detail.nomcli)}</td>
+                  <td class="text-center">${nameAndNumberDoc(detail.numcli, detail.nomcli)}</td>
                   <td class="text-center">${formatQte(detail.qte_dem_ligne)}</td>
                 </tr>`
             )
