@@ -11,12 +11,15 @@ class OrCsaATraiterListeModel extends Model
 {
     // -----------------------------------------------------------------
     // Paramètres métier (cf. spec : valeurs paramétrables, pas codées en dur)
-    // Idéalement câblés via services.yaml / parameters depuis le container.
     // -----------------------------------------------------------------
     private int   $delaiAllocation  = 90;
     private int   $toleranceFenetre = 10;
+    // TODO 
+    // private array $typesOr          = ['222', '229'];
+
+    // Types a changer en ['222', '229'] pour la prod
     private array $typesOr          = ['201', '202'];
-    private int   $anneeMin         = 2026;
+    private int   $anneeMin         = 2025;
 
     private FiltreService $filtreService;
 
@@ -24,8 +27,11 @@ class OrCsaATraiterListeModel extends Model
         SecurityService $securityService,
         int $delaiAllocation = 90,
         int $toleranceFenetre = 10,
+        // array $typesOr          = ['222', '229'],
+
+        // Types a changer en ['222', '229'] pour la prod
         array $typesOr = ['201', '202'],
-        int $anneeMin = 2026
+        int $anneeMin = 2025
     ) {
         parent::__construct();
 

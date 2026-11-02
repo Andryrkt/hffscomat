@@ -30,14 +30,13 @@ class OrCsaATraiterListeController extends Controller
      */
     public function index(Request $request)
     {
-        $allAgenceServices = $this->getSecurityService()->getAllAgenceServices();
 
         $dtoSearch =  $this->getSessionService()->has('criteria_for_or_csa_a_traiter_liste') ? $this->getSessionService()->get('criteria_for_or_csa_a_traiter_liste') : new OrCsaATraiterSearchDto();
-
+        $typesOrChoices = $this->orCsaATraiterListeModel->getTypesOrChoices();
         //création et initialisation du formulaire de la recherche
         $form = $this->getFormFactory()->createBuilder(OrCsaATraiterSearchType::class, $dtoSearch, [
             'method' => 'GET',
-            'allAgenceServices' => $allAgenceServices
+            'types_or_choices' => $typesOrChoices,
         ])->getForm();
         $dtoSearch  = $this->traitementFormulaireRecherhce($form, $request, $dtoSearch);
 
@@ -51,7 +50,7 @@ class OrCsaATraiterListeController extends Controller
         $dataOrCsaATraiter = $this->getDataOrCsaATraiteEnDto($dtoSearch, $request);
 
         $criteria = [];
-        return $this->render('atelier/cva/list.html.twig', [
+        return $this->render('atelier/cva/orCsaATraiterlist.html.twig', [
             'data'          => $dataOrCsaATraiter['data'],
             'currentPage'   => $dataOrCsaATraiter['currentPage'],
             'totalPages'    => $dataOrCsaATraiter['lastPage'],

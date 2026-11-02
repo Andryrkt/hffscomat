@@ -83,6 +83,40 @@
                 </div>
             {% endif %}
         </div>
+        {# ============================================================
+        MODALE DE CONFIRMATION D'ENVOI
+        ============================================================ #}
+        <div class="modal fade" id="confirm-send-modal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Confirmer l'envoi pour traitement</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Les OR suivants vont être envoyés pour traitement :</p>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>N° OR</th>
+                                        <th>Client</th>
+                                        <th>Lead time</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="confirm-send-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                        <button type="button" class="btn btn-primary" id="btn-confirm-send">
+                            Confirmer l'envoi
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         {% include "/partials/_pagination.html.twig" %}
         <!-- FIN tableau -->
