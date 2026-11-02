@@ -9,76 +9,86 @@
     <link rel="stylesheet" href="{{ App.base_path }}/Views/css/atelier/cva/liste.css?v=2025.09.15.08.00">
 {% endblock %}
 
-{% import "macroForm.html.twig" as macroForm %}
-
 {% block content %}
     <div class="sticky-header-titre">
         <div class="container">
-            {% include "/partials/_notification.html.twig" %}
             {% include "/atelier/cva/shared/_formulaireRecherche.html.twig" %}
-
             {% include "/atelier/cva/shared/_pagination.html.twig" %}
         </div>
     </div>
-    <div class="table-responsive">
-        <table class="table table-sm table-hover align-middle" id="or-csa-table">
-            <thead class="table-light">
+
+    <!-- DEBUT tableau -->
+    <div class="container-fluid">
+        <table class="table table-sticky">
+            <thead class="table-dark align-middle">
                 <tr>
                     <th style="width: 40px;" class="text-center">
                         <input type="checkbox" id="or-check-all" aria-label="Tout sélectionner">
                     </th>
-                    <th>N° OR</th>
-                    <th>Client</th>
+                    <th style="width: 120px;">N° OR</th>
+                    <th>Client (N° - libellé)</th>
                     <th>Référence client</th>
-                    <th>Type d'OR</th>
-                    <th>Lead time</th>
-                    <th class="text-center">Nb jours dispo / J-90</th>
+                    <th>Type OR</th>
+                    <th>Lead time (date prévue)</th>
+                    <th class="text-end" style="padding-right: 2rem;">Nb jours dispo / J-90</th>
                 </tr>
             </thead>
             <tbody>
+                {# Le thead reste visible même si la boucle ne retourne rien #}
                 {% for ligne in data %}
+                    {% set clientParts = ligne.client|split(' - ') %}
                     <tr data-numor="{{ ligne.numOr }}"
                         data-client="{{ ligne.client }}"
                         data-leadtime="{{ ligne.leadTime ? ligne.leadTime|date('d/m/Y') : '' }}">
-                        <td class="text-center">
+
+                        <td class="text-center align-middle">
                             <input type="checkbox"
                                 class="or-row-selector"
                                 value="{{ ligne.numOr }}"
                                 aria-label="Sélectionner l'OR {{ ligne.numOr }}">
                             </td>
-                            <td>{{ ligne.numOr }}</td>
-                            <td>{{ ligne.client }}</td>
-                            <td>{{ ligne.referenceClient }}</td>
-                            <td>{{ ligne.typeOr }}</td>
-                            <td>{{ ligne.leadTime ? ligne.leadTime|date('d/m/Y') : '' }}</td>
-                            <td class="text-center">
+
+                            <td class="fw-bold align-middle">{{ ligne.numOr }}</td>
+
+                            <td class="align-middle">
+                                <div class="fw-bold text-dark">{{ clientParts[0] ?? ligne.client }}</div>
+                                {% if clientParts[1] is defined %}
+                                    <div class="text-muted small text-uppercase">{{ clientParts[1] }}</div>
+                                {% endif %}
+                            </td>
+
+                            <td class="align-middle">{{ ligne.referenceClient }}</td>
+
+                            <td class="align-middle">{{ ligne.typeOr }}</td>
+
+                            <td class="align-middle">{{ ligne.leadTime ? ligne.leadTime|date('d/m/Y') : '' }}</td>
+
+                            <td class="text-end align-middle" style="padding-right: 2rem;">
                                 <span class="or-pastille or-pastille--{{ ligne.codeCouleur|lower }}">
                                     {{ ligne.nbJoursDispoLib }}
                                 </span>
-                                <div class="or-statut small text-muted">
+                                <div class="or-statut small text-muted mt-1">
                                     {{ ligne.statutAllocation }}
                                 </div>
-                            </td>
-                        </tr>
-                    {% else %}
-                        <tr>
-                            <td colspan="7" class="text-center text-muted py-4">
-                                Aucun OR à traiter ne correspond aux critères.
                             </td>
                         </tr>
                     {% endfor %}
                 </tbody>
             </table>
+
+            {# Message hors du tableau si aucune donnée #}
+            {% if data is empty %}
+                <div class="text-center text-muted">
+                    <p>Aucun OR à traiter ne correspond aux critères.</p>
+                </div>
+            {% endif %}
         </div>
 
         {% include "/partials/_pagination.html.twig" %}
         <!-- FIN tableau -->
-        {# body modal #}
-
-
     {% endblock %}
 
     {% block javascript %}
         <script src="{{ App.base_path }}/Views/js/utils/positionSticky.js?v=2025.09.15.08.00"></script>
-        <script src="{{ App.base_path }}/Views/js/atelier/cva/listDit.js?v=2025.09.15.08.00" type="module"></script>
+        <script src="{{ App.base_path }}/Views/js/atelier/cva/orCsaATraiterListe.js?v=2025.09.15.08.00" type="module"></script>
     {% endblock %}

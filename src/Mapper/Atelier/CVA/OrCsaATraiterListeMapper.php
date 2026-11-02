@@ -39,10 +39,9 @@ class OrCsaATraiterListeMapper
 
     /**
      * Informix renvoie les colonnes en MAJUSCULES selon la configuration
-     * du driver (PDO/odbc). On tolère les deux casses pour rester robuste
-     * si la couche d'accès change.
+     * du driver (PDO/odbc). On tolère les deux casses pour rester robuste.
      */
-    private function pick(array $row, string $key, mixed $default = null): mixed
+    private function pick(array $row, string $key, $default = null)
     {
         if (array_key_exists($key, $row)) {
             return $row[$key];
@@ -55,7 +54,7 @@ class OrCsaATraiterListeMapper
         return $default;
     }
 
-    private function toDateTime(mixed $value): ?\DateTime
+    private function toDateTime($value): ?\DateTime
     {
         if ($value === null || $value === '') {
             return null;
@@ -64,7 +63,8 @@ class OrCsaATraiterListeMapper
             return $value;
         }
         if ($value instanceof \DateTimeInterface) {
-            return \DateTime::createFromInterface($value);
+            // Compatible PHP 7.4 (pas de createFromInterface)
+            return new \DateTime($value->format('Y-m-d H:i:s'));
         }
 
         // Informix renvoie généralement 'YYYY-MM-DD' pour un DATE

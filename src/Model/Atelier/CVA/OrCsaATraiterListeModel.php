@@ -15,7 +15,7 @@ class OrCsaATraiterListeModel extends Model
     // -----------------------------------------------------------------
     private int   $delaiAllocation  = 90;
     private int   $toleranceFenetre = 10;
-    private array $typesOr          = ['222', '229'];
+    private array $typesOr          = ['201', '202'];
     private int   $anneeMin         = 2026;
 
     private FiltreService $filtreService;
@@ -24,7 +24,7 @@ class OrCsaATraiterListeModel extends Model
         SecurityService $securityService,
         int $delaiAllocation = 90,
         int $toleranceFenetre = 10,
-        array $typesOr = ['222', '229'],
+        array $typesOr = ['201', '202'],
         int $anneeMin = 2026
     ) {
         parent::__construct();
@@ -62,7 +62,6 @@ class OrCsaATraiterListeModel extends Model
             FROM ({$innerQuery}) AS t
             ORDER BY t.lead_time ASC, t.seor_numor ASC
         ";
-
 
         $result = $this->connect->executeQuery($statement);
         $data   = $this->convertirEnUtf8($this->connect->fetchResults($result));
@@ -180,5 +179,37 @@ class OrCsaATraiterListeModel extends Model
         }
 
         return $statusCounts;
+    }
+
+    /**
+     * Récupère les libellés des types d'OR depuis agr_ces pour le formulaire de recherche.
+     */
+    public function getTypesOrChoices(): array
+    {
+        $typesOrSql = implode(', ', array_map(
+            static fn(string $t): string => "'" . str_replace("'", "''", $t) . "'",
+            $this->typesOr
+        ));
+
+        $statement = "SELECT DISTINCT aces_nat, aces_lib 
+                      FROM {$this->dbIps}.agr_ces 
+                      WHERE aces_nat IN ({$typesOrSql}) 
+                      ORDER BY aces_nat";
+        $result = $this->connect->executeQuery($statement);
+        $data   = $this->convertirEnUtf8($this->connect->fetchResults($result));
+
+        $choices = [];
+        foreach ($data as $row) {
+            // Prise en charge des majuscules/minuscules selon le driver
+            $code    = $row['aces_nat'] ?? $row['ACES_NAT'] ?? null;
+            $libelle = $row['aces_lib'] ?? $row['ACES_LIB'] ?? null;
+
+            if ($code && $libelle) {
+                // On crée la clé d'affichage : "222 - CSA JOB"
+                $choices["{$code} - {$libelle}"] = $code;
+            }
+        }
+
+        return $choices;
     }
 }
