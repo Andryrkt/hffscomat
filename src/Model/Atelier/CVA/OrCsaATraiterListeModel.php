@@ -87,6 +87,28 @@ class OrCsaATraiterListeModel extends Model
         ];
     }
 
+    public function DonnerAAjouterExcel(
+        OrCsaATraiterSearchDto $orCsaATraiterSearchDto,
+        string $codeSociete
+    ): array {
+        // Conditions des filtres de l'écran (fenêtre, lead time, client, etc.)
+        $conditions              = $this->filtreService->filtre($orCsaATraiterSearchDto);
+        $conditionsMultisucursal = ''; // réservé au filtrage agence/service
+
+        // Requête « métier » : SELECT DISTINCT + WHERE + colonnes calculées
+        $innerQuery = $this->buildBaseQuery($conditions, $conditionsMultisucursal);
+
+        $statement = "
+            SELECT t.*
+            FROM ({$innerQuery}) AS t
+            ORDER BY t.lead_time ASC, t.seor_numor ASC
+        ";
+
+        $result = $this->connect->executeQuery($statement);
+
+        return $this->convertirEnUtf8($this->connect->fetchResults($result));
+    }
+
     /**
      * Construit la requête de base (SELECT DISTINCT + WHERE).
      * Les paramètres métier sont injectés ici, jamais codés en dur

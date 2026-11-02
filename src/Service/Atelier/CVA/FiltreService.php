@@ -69,19 +69,18 @@ class FiltreService
 
         // 4) Client (N° ou libellé) — recherche partielle insensible à la casse
         if ($dto->client !== null && trim($dto->client) !== '') {
-            $esc = $this->esc(strtoupper(trim($dto->client)));
-            // Utilisation de UPSHIFT pour éviter l'erreur "ambiguous" d'Informix
+            $esc = $this->esc(trim($dto->client));
             $conditions[] = " AND ("
-                . "LOWER(seor_numcli::VARCHAR(255)) LIKE '%{$esc}%'"
-                . " OR LOWER(seor_nomcli::VARCHAR(255)) LIKE '%{$esc}%'"
+                . " seor_numcli::VARCHAR(255) LIKE '%{$esc}%'"
+                . " OR seor_nomcli::VARCHAR(255) LIKE '%{$esc}%'"
                 . ")";
         }
 
         // 5) Référence client
         if ($dto->referenceClient !== null && trim($dto->referenceClient) !== '') {
-            $esc = $this->esc(strtoupper(trim($dto->referenceClient)));
+            $esc = $this->esc(trim($dto->referenceClient));
             // Même correction ici
-            $conditions[] = " AND UPSHIFT(seor_lib) LIKE '%{$esc}%'";
+            $conditions[] = " AND seor_lib::VARCHAR(255) LIKE '%{$esc}%'";
         }
 
         // 6) N° OR
