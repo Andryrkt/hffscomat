@@ -30,6 +30,14 @@ class OrCsaATraiterListeController extends Controller
      */
     public function index(Request $request)
     {
+        if ($request->query->get('reset')) {
+            // Vide la clés de session
+            $this->getSessionService()->remove('criteria_for_or_csa_a_traiter_liste');
+            // Redirige vers une URL propre pour retirer ?reset=1
+            // (évite qu'un F5 re-déclenche la purge / garde l'URL propre)
+            return $this->redirectToRoute('or_csa_a_traiter_liste');
+        }
+
 
         $dtoSearch =  $this->getSessionService()->has('criteria_for_or_csa_a_traiter_liste') ? $this->getSessionService()->get('criteria_for_or_csa_a_traiter_liste') : new OrCsaATraiterSearchDto();
         $typesOrChoices = $this->orCsaATraiterListeModel->getTypesOrChoices();
@@ -38,7 +46,7 @@ class OrCsaATraiterListeController extends Controller
             'method' => 'GET',
             'types_or_choices' => $typesOrChoices,
         ])->getForm();
-        $dtoSearch  = $this->traitementFormulaireRecherhce($form, $request, $dtoSearch);
+        $dtoSearch  = $this->traitementFormulaireRecherche($form, $request, $dtoSearch);
 
         /**  Docs à intégrer dans DW * */
         $formDocDansDW = $this->getFormFactory()->createBuilder(DocDansDwType::class, null, [
@@ -62,15 +70,15 @@ class OrCsaATraiterListeController extends Controller
         ]);
     }
 
-    private function traitementFormulaireRecherhce(FormInterface $form, Request $request, OrCsaATraiterSearchDto $dtoSearch): OrCsaATraiterSearchDto
+    private function traitementFormulaireRecherche(FormInterface $form, Request $request, OrCsaATraiterSearchDto $dtoSearch): OrCsaATraiterSearchDto
     {
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $dtoSearch = $form->getData();
 
-            //recupères les données du criteria dans une session nommé or_csa_a_traiter_search_criteria
-            $this->getSessionService()->set('criteria_for_excel_or_csa_a_traiter_liste', $dtoSearch);
+
+            $this->getSessionService()->set('criteria_for_or_csa_a_traiter_liste', $dtoSearch);
         }
 
         return $dtoSearch;
@@ -82,7 +90,7 @@ class OrCsaATraiterListeController extends Controller
         $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
         $page = (int) $request->query->get('page', 1);
         if ($page < 1) $page = 1;
-        $perPage = 20;
+        $perPage = 500;
 
         $dits = $this->orCsaATraiterListeModel->findPaginatedAndFiltered($codeSociete, $dtoSearch, $page, $perPage);
         $ditDto = (new OrCsaATraiterListeMapper())->map($dits['data']);

@@ -10,9 +10,32 @@
 {% endblock %}
 
 {% block content %}
+    {% set statutMeta = {
+        'RETARD':    { label: 'En retard', couleur: 'retard',    icone: 'fa-solid fa-circle' },
+        'A_ALLOUER': { label: 'À allouer', couleur: 'a-allouer', icone: 'fa-solid fa-circle' },
+        'A_VENIR':   { label: 'À venir',   couleur: 'a-venir',   icone: 'fa-solid fa-circle' }
+    } %}
     <div class="sticky-header-titre">
         <div class="container">
             {% include "/atelier/cva/shared/_formulaireRecherche.html.twig" %}
+
+            <div class="cva-statuts-bar d-flex flex-wrap gap-3 my-2 align-items-center">
+
+
+                {% for code, meta in statutMeta %}
+                    <span class="cva-legend-item text-{{ meta.couleur }}">
+                        <i class="{{ meta.icone }}"></i>
+                        <small class="fw-semibold">{{ meta.label }}</small>
+                    </span>
+                    {% if not loop.last %}
+                        <span class="text-muted">|</span>
+                    {% endif %}
+                {% endfor %}
+
+                <span class="ms-auto"></span>
+
+
+            </div>
             {% include "/atelier/cva/shared/_pagination.html.twig" %}
         </div>
     </div>

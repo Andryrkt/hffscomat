@@ -23,7 +23,7 @@ class OrCsaATraiterExportExcelController extends Controller
     {
         $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
 
-        $criteria = $this->getSessionService()->get('criteria_for_excel_or_csa_a_traiter_liste');
+        $criteria = $this->getSessionService()->get('criteria_for_or_csa_a_traiter_liste');
         if (!$criteria instanceof OrCsaATraiterSearchDto) {
             $criteria = new OrCsaATraiterSearchDto();
         }
