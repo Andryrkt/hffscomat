@@ -2,18 +2,8 @@
 
 namespace App\Form\Atelier\CVA;
 
-use App\Constants\atelier\dit\soumission\ORs\ConstantStatutOr;
 use App\Dto\Atelier\CVA\OrCsaATraiterDto;
-use App\Dto\Atelier\Dit\DitSearchDto;
-use App\Entity\admin\StatutDemande;
-use App\Model\admin\StatutDemande\StatutDemandeModel;
-use App\Model\Atelier\Dit\CategorieAteAppModel;
-use App\Model\Atelier\Dit\DitListeModel;
-use App\Model\Atelier\Dit\WorNiveauUrgenceModel;
-use App\Model\Atelier\Dit\WorTypeDocumentModel;
-use App\Repository\admin\StatutDemandeRepository;
-use App\Traits\PrepareAgenceServiceTrait;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use App\Dto\Atelier\CVA\OrCsaATraiterSearchDto;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -27,25 +17,59 @@ class OrCsaATraiterSearchType extends AbstractType
 {
 
 
-    public function buildForm(FormBuilderInterface $builder, array $options)
+    public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add(
-                'niveauUrgence',
-                ChoiceType::class,
-                [
-                    'label' => 'Niveau d\'urgence',
-                    'label_html' => true,
-                    'placeholder' => "-- Choisir un Niv d'urgence --",
-                    'required' => false,
-                ]
-            );
+            ->add('leadTimeDu', DateType::class, [
+                'label'    => 'Lead time du',
+                'widget'   => 'single_text',
+                'html5'    => false,
+                'format'   => 'dd/MM/yyyy',
+                'required' => false,
+                'attr'     => ['class' => 'datepicker', 'placeholder' => 'jj/mm/aaaa'],
+            ])
+            ->add('leadTimeAu', DateType::class, [
+                'label'    => 'Lead time au',
+                'widget'   => 'single_text',
+                'html5'    => false,
+                'format'   => 'dd/MM/yyyy',
+                'required' => false,
+                'attr'     => ['class' => 'datepicker', 'placeholder' => 'jj/mm/aaaa'],
+            ])
+            ->add('client', TextType::class, [
+                'label'    => 'Client (N° ou libellé)',
+                'required' => false,
+            ])
+            ->add('referenceClient', TextType::class, [
+                'label'    => 'Référence client',
+                'required' => false,
+            ])
+            ->add('fenetreAllocation', ChoiceType::class, [
+                'label'    => 'Fenêtre d\'allocation',
+                'required' => false,
+                'choices'  => [
+                    'Tous'                        => 'TOUS',
+                    'En retard (< 90 j)'          => 'RETARD',
+                    'Autour de J-90 (80 à 100 j)' => 'AUTOUR_J90',
+                    'À venir (> 100 j)'           => 'A_VENIR',
+                ],
+            ])
+            ->add('numOr', TextType::class, [
+                'label'    => 'N° OR',
+                'required' => false,
+            ])
+            ->add('typeOr', ChoiceType::class, [
+                'label'       => 'Type OR',
+                'required'    => false,
+                'placeholder' => '-- Tous --',
+                'choices' => $options['types_or_choices'] ?? [],
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults([
-            'data_class'             => OrCsaATraiterDto::class,
+            'data_class'             => OrCsaATraiterSearchDto::class,
             'allAgenceServices' => [],
         ]);
     }

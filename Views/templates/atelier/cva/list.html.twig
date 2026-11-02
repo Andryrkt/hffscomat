@@ -12,15 +12,73 @@
 {% import "macroForm.html.twig" as macroForm %}
 
 {% block content %}
+    <div class="sticky-header-titre">
+        <div class="container">
+            {% include "/partials/_notification.html.twig" %}
+            {% include "/atelier/cva/shared/_formulaireRecherche.html.twig" %}
 
-    {% include "/partials/_pagination.html.twig" %}
-    <!-- FIN tableau -->
-    {# body modal #}
+            {% include "/atelier/cva/shared/_pagination.html.twig" %}
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-sm table-hover align-middle" id="or-csa-table">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 40px;" class="text-center">
+                        <input type="checkbox" id="or-check-all" aria-label="Tout sélectionner">
+                    </th>
+                    <th>N° OR</th>
+                    <th>Client</th>
+                    <th>Référence client</th>
+                    <th>Type d'OR</th>
+                    <th>Lead time</th>
+                    <th class="text-center">Nb jours dispo / J-90</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ligne in data %}
+                    <tr data-numor="{{ ligne.numOr }}"
+                        data-client="{{ ligne.client }}"
+                        data-leadtime="{{ ligne.leadTime ? ligne.leadTime|date('d/m/Y') : '' }}">
+                        <td class="text-center">
+                            <input type="checkbox"
+                                class="or-row-selector"
+                                value="{{ ligne.numOr }}"
+                                aria-label="Sélectionner l'OR {{ ligne.numOr }}">
+                            </td>
+                            <td>{{ ligne.numOr }}</td>
+                            <td>{{ ligne.client }}</td>
+                            <td>{{ ligne.referenceClient }}</td>
+                            <td>{{ ligne.typeOr }}</td>
+                            <td>{{ ligne.leadTime ? ligne.leadTime|date('d/m/Y') : '' }}</td>
+                            <td class="text-center">
+                                <span class="or-pastille or-pastille--{{ ligne.codeCouleur|lower }}">
+                                    {{ ligne.nbJoursDispoLib }}
+                                </span>
+                                <div class="or-statut small text-muted">
+                                    {{ ligne.statutAllocation }}
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">
+                                Aucun OR à traiter ne correspond aux critères.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% include "/partials/_pagination.html.twig" %}
+        <!-- FIN tableau -->
+        {# body modal #}
 
 
-{% endblock %}
+    {% endblock %}
 
-{% block javascript %}
-    <script src="{{ App.base_path }}/Views/js/utils/positionSticky.js?v=2025.09.15.08.00"></script>
-    <script src="{{ App.base_path }}/Views/js/atelier/cva/listDit.js?v=2025.09.15.08.00" type="module"></script>
-{% endblock %}
+    {% block javascript %}
+        <script src="{{ App.base_path }}/Views/js/utils/positionSticky.js?v=2025.09.15.08.00"></script>
+        <script src="{{ App.base_path }}/Views/js/atelier/cva/listDit.js?v=2025.09.15.08.00" type="module"></script>
+    {% endblock %}

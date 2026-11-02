@@ -5,6 +5,7 @@ namespace App\Controller\Atelier\CVA;
 
 use App\Controller\Controller;
 use App\Dto\Atelier\CVA\OrCsaATraiterSearchDto;
+use App\Form\Atelier\CVA\OrCsaATraiterSearchType;
 use App\Form\Atelier\Dit\DocDansDwType;
 use App\Mapper\Atelier\CVA\OrCsaATraiterListeMapper;
 use App\Model\Atelier\CVA\OrCsaATraiterListeModel;
@@ -13,7 +14,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
- * @Route("/atelier/cva/")
+ * @Route("/atelier/cva")
  */
 class OrCsaATraiterListeController extends Controller
 {
@@ -31,14 +32,14 @@ class OrCsaATraiterListeController extends Controller
     {
         $allAgenceServices = $this->getSecurityService()->getAllAgenceServices();
 
-        $dtoSearch =  $this->getSessionService()->has('criteria_for_excel_dit_liste') ? $this->getSessionService()->get('criteria_for_excel_dit_liste') : new OrCsaATraiterSearchDto();
+        $dtoSearch =  $this->getSessionService()->has('criteria_for_or_csa_a_traiter_liste') ? $this->getSessionService()->get('criteria_for_or_csa_a_traiter_liste') : new OrCsaATraiterSearchDto();
 
         //création et initialisation du formulaire de la recherche
-        $form = $this->getFormFactory()->createBuilder(OrCsaATraiterSearchDto::class, $dtoSearch, [
+        $form = $this->getFormFactory()->createBuilder(OrCsaATraiterSearchType::class, $dtoSearch, [
             'method' => 'GET',
             'allAgenceServices' => $allAgenceServices
         ])->getForm();
-        $dtoSearch  = $this->traitementFormualireRecherhce($form, $request, $dtoSearch);
+        $dtoSearch  = $this->traitementFormulaireRecherhce($form, $request, $dtoSearch);
 
         /**  Docs à intégrer dans DW * */
         $formDocDansDW = $this->getFormFactory()->createBuilder(DocDansDwType::class, null, [
@@ -62,14 +63,14 @@ class OrCsaATraiterListeController extends Controller
         ]);
     }
 
-    private function traitementFormualireRecherhce(FormInterface $form, Request $request, OrCsaATraiterSearchDto $dtoSearch): OrCsaATraiterSearchDto
+    private function traitementFormulaireRecherhce(FormInterface $form, Request $request, OrCsaATraiterSearchDto $dtoSearch): OrCsaATraiterSearchDto
     {
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $dtoSearch = $form->getData();
 
-            //recupères les données du criteria dans une session nommé dit_serch_criteria
+            //recupères les données du criteria dans une session nommé or_csa_a_traiter_search_criteria
             $this->getSessionService()->set('criteria_for_excel_or_csa_a_traiter_liste', $dtoSearch);
         }
 

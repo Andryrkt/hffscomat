@@ -2,126 +2,181 @@
 
 namespace App\Model\Atelier\CVA;
 
-
 use App\Dto\Atelier\CVA\OrCsaATraiterSearchDto;
 use App\Model\Model;
 use App\Service\Atelier\CVA\FiltreService;
 use App\Service\security\SecurityService;
 
-
-
-
 class OrCsaATraiterListeModel extends Model
 {
+    // -----------------------------------------------------------------
+    // Paramètres métier (cf. spec : valeurs paramétrables, pas codées en dur)
+    // Idéalement câblés via services.yaml / parameters depuis le container.
+    // -----------------------------------------------------------------
+    private int   $delaiAllocation  = 90;
+    private int   $toleranceFenetre = 10;
+    private array $typesOr          = ['222', '229'];
+    private int   $anneeMin         = 2026;
+
     private FiltreService $filtreService;
 
-
     public function __construct(
-        SecurityService $securityService
+        SecurityService $securityService,
+        int $delaiAllocation = 90,
+        int $toleranceFenetre = 10,
+        array $typesOr = ['222', '229'],
+        int $anneeMin = 2026
     ) {
         parent::__construct();
+
+        $this->delaiAllocation  = $delaiAllocation;
+        $this->toleranceFenetre = $toleranceFenetre;
+        $this->typesOr          = $typesOr;
+        $this->anneeMin         = $anneeMin;
+
+        // ⚠️ FiltreService doit aussi connaître délai/tolérance pour
+        // traduire les codes TOUS / RETARD / AUTOUR_J90 / A_VENIR.
         $this->filtreService = new FiltreService($securityService);
     }
 
-    public function findPaginatedAndFiltered(string $codeSociete, OrCsaATraiterSearchDto $orCsaATraiterSearchDto, int $page, int $perPage)
-    {
-        // Calculer le SKIP
+    public function findPaginatedAndFiltered(
+        string $codeSociete,
+        OrCsaATraiterSearchDto $orCsaATraiterSearchDto,
+        int $page,
+        int $perPage
+    ): array {
         $skip = ($page - 1) * $perPage;
 
-        $conditions = $this->filtreService->filtre($orCsaATraiterSearchDto);
+        // Conditions des filtres de l'écran (fenêtre, lead time, client, etc.)
+        $conditions              = $this->filtreService->filtre($orCsaATraiterSearchDto);
+        $conditionsMultisucursal = ''; // réservé au filtrage agence/service
 
-        // $conditionsMultisucursal = $this->filtreService->conditionAgenceService();
-        $conditionsMultisucursal = '';
+        // Requête « métier » : SELECT DISTINCT + WHERE + colonnes calculées
+        $innerQuery = $this->buildBaseQuery($conditions, $conditionsMultisucursal);
 
-        $statement = "SELECT DISTINCT
-                        seor_numor,
-                        seor_numcli || ' - ' || seor_nomcli as client,
-                        seor_lib as reference_client,
-                        seor_typeor || ' - ' || aces_lib as type_or,
-                        seor_delai as lead_time,
-                        (seor_delai - TODAY) as nb_jours_dispo,
-                        CAST((seor_delai - TODAY) as varchar(10)) || ' j' as nb_jours_dispo_lib,
-                        CASE
-                            WHEN (seor_delai - TODAY) < 90 then 'Retard de ' || cast(90 - (seor_delai - TODAY) as varchar(10)) || ' j'
-                            WHEN (seor_delai - TODAY) = 90 then 'J-90 aujourd''hui'
-                            else 'J-90 dans ' || cast((seor_delai - TODAY) - 90 as varchar(10)) || ' j'
-                        END as statut_allocation,
-                        CASE
-                            WHEN (seor_delai - TODAY) < 90 then 'RETARD'
-                            WHEN (seor_delai - TODAY) <= 100 then 'A_ALLOUER'
-                            else 'A_VENIR'
-                        END as code_couleur
-                        FROM
-                        sav_eor
-                        INNER JOIN agr_ces ON aces_soc = seor_soc
-                        AND aces_nat = seor_typeor
-                        INNER JOIN sav_lor ON slor_soc = seor_soc
-                        AND slor_succ = seor_succ
-                        AND slor_numor = seor_numor
-                        WHERE
-                        seor_typeor in ('222', '229')
-                        AND year (seor_dateor) >= 2026
-                        AND slor_qtewait > 0 -- qte en attente d'allocation
-                        AND seor_delai is not null
-                        --AND (seor_delai - TODAY) between 80 AND 100
-                        ORDER BY
-                        5;           
-                     ";
+        // ---------- Requête paginée ----------
+        // Wrapping nécessaire pour appliquer SKIP/FIRST + ORDER BY sur
+        // le résultat dédupliqué (DISTINCT).
+        $statement = "
+            SELECT SKIP {$skip} FIRST {$perPage} t.*
+            FROM ({$innerQuery}) AS t
+            ORDER BY t.lead_time ASC, t.seor_numor ASC
+        ";
+
+
         $result = $this->connect->executeQuery($statement);
-        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
+        $data   = $this->convertirEnUtf8($this->connect->fetchResults($result));
+        // ---------- Total ----------
+        $totalItems = $this->compteNombreItem($innerQuery);
+        $lastPage   = $totalItems > 0 ? (int) ceil($totalItems / $perPage) : 1;
 
-        // Compter le total d'items
-        $totalItems = $this->compteNombreItem($codeSociete, $conditions, $conditionsMultisucursal);
-
-        // Calculer le nombre de pages
-        $lastPage = ceil($totalItems / $perPage);
-
-        // Compter les statuts
-        $statusCounts = $this->compteNombreStatut($codeSociete, $conditions, $conditionsMultisucursal);
+        // ---------- Comptage par statut ----------
+        $statusCounts = $this->compteNombreStatut($innerQuery);
 
         return [
-            'data' => $data,
-            'totalItems' => $totalItems,
-            'currentPage' => $page,
-            'lastPage' => $lastPage,
+            'data'         => $data,
+            'totalItems'   => $totalItems,
+            'currentPage'  => $page,
+            'lastPage'     => $lastPage,
             'statusCounts' => $statusCounts,
         ];
     }
 
-
     /**
-     * compte le nombre de ligne recupérer
-     *
-     * @return integer
+     * Construit la requête de base (SELECT DISTINCT + WHERE).
+     * Les paramètres métier sont injectés ici, jamais codés en dur
+     * dans le SQL final.
      */
-    private function compteNombreItem(string $codeSociete, string $conditions, string $conditionsMultisucursal): int
+    private function buildBaseQuery(string $conditions, string $conditionsMultisucursal): string
     {
-        $countStatement = "
+        // Liste des types OR, échappée par sécurité (paramètres serveur,
+        // pas d'input utilisateur direct ici, mais on protège).
+        $typesOrSql = implode(', ', array_map(
+            static fn(string $t): string => "'" . str_replace("'", "''", $t) . "'",
+            $this->typesOr
+        ));
+
+        $d = $this->delaiAllocation;                       // seuil « J-90 »
+        $h = $this->delaiAllocation + $this->toleranceFenetre; // borne haute fenêtre
+
+        return "
+            SELECT DISTINCT
+                seor_numor,
+                seor_numcli || ' - ' || seor_nomcli AS client,
+                seor_lib                            AS reference_client,
+                seor_typeor || ' - ' || aces_lib    AS type_or,
+                seor_delai                          AS lead_time,
+                (seor_delai - TODAY)                AS nb_jours_dispo,
+                CAST((seor_delai - TODAY) AS VARCHAR(10)) || ' j'
+                                                    AS nb_jours_dispo_lib,
+                CASE
+                    WHEN (seor_delai - TODAY) < {$d}
+                        THEN 'Retard de '
+                             || CAST({$d} - (seor_delai - TODAY) AS VARCHAR(10))
+                             || ' j'
+                    WHEN (seor_delai - TODAY) = {$d}
+                        THEN 'J-{$d} aujourd''hui'
+                    ELSE 'J-{$d} dans '
+                             || CAST((seor_delai - TODAY) - {$d} AS VARCHAR(10))
+                             || ' j'
+                END AS statut_allocation,
+                CASE
+                    WHEN (seor_delai - TODAY) <  {$d} THEN 'RETARD'
+                    WHEN (seor_delai - TODAY) <= {$h} THEN 'A_ALLOUER'
+                    ELSE 'A_VENIR'
+                END AS code_couleur
+            FROM {$this->dbIps}.sav_eor
+            INNER JOIN {$this->dbIps}.agr_ces
+                ON aces_soc = seor_soc
+               AND aces_nat = seor_typeor
+            INNER JOIN {$this->dbIps}.sav_lor
+                ON slor_soc  = seor_soc
+               AND slor_succ = seor_succ
+               AND slor_numor = seor_numor
+            WHERE seor_typeor IN ({$typesOrSql})
+              AND YEAR(seor_dateor) >= {$this->anneeMin}
+              AND slor_qtewait > 0
+              AND seor_delai IS NOT NULL
+              {$conditions}
+              {$conditionsMultisucursal}
         ";
-
-
-        $countResult = $this->connect->executeQuery($countStatement);
-        $countData = $this->connect->fetchResults($countResult);
-        return  $countData[0]['total'] ?? 0;
     }
 
+    /**
+     * Compte le nombre total de lignes (sur la requête de base, sans pagination).
+     */
+    private function compteNombreItem(string $innerQuery): int
+    {
+        $countStatement = "SELECT COUNT(*) AS total FROM ({$innerQuery}) AS t";
+
+        $countResult = $this->connect->executeQuery($countStatement);
+        $countData   = $this->connect->fetchResults($countResult);
+
+        return (int) ($countData[0]['total'] ?? $countData[0]['TOTAL'] ?? 0);
+    }
 
     /**
-     * Compte le nombre de chaque statut
-     *
-     * @return array
+     * Compte les OR par code couleur (RETARD / A_ALLOUER / A_VENIR).
+     * Le résultat alimentera la légende / les badges côté vue.
      */
-    private function compteNombreStatut(string $codeSociete, string $conditions, string $conditionsMultisucursal): array
+    private function compteNombreStatut(string $innerQuery): array
     {
-
         $statusStatement = "
+            SELECT t.code_couleur AS description, COUNT(*) AS count
+            FROM ({$innerQuery}) AS t
+            GROUP BY t.code_couleur
         ";
 
         $statusResult = $this->connect->executeQuery($statusStatement);
-        $statusData = $this->connect->fetchResults($statusResult);
+        $statusData   = $this->connect->fetchResults($statusResult);
+
         $statusCounts = [];
         foreach ($statusData as $status) {
-            $statusCounts[$status['description']] = $status['count'];
+            $desc = $status['description'] ?? $status['DESCRIPTION'] ?? null;
+            $cnt  = $status['count']       ?? $status['COUNT']       ?? 0;
+            if ($desc !== null) {
+                $statusCounts[$desc] = (int) $cnt;
+            }
         }
 
         return $statusCounts;

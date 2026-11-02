@@ -3,102 +3,156 @@
 namespace App\Service\Atelier\CVA;
 
 use App\Constants\admin\ApplicationConstant;
-use App\Constants\atelier\dit\StatutDitConstant;
 use App\Dto\Atelier\CVA\OrCsaATraiterSearchDto;
-use App\Model\Informix\SelectWhereCondition;
 use App\Service\security\SecurityService;
 
 class FiltreService
 {
     private SecurityService $securityService;
-
+    private int $delaiAllocation;
+    private int $toleranceFenetre;
 
     public function __construct(
-        SecurityService $securityService
+        SecurityService $securityService,
+        int $delaiAllocation = 90,
+        int $toleranceFenetre = 10
     ) {
-        $this->securityService = $securityService;
-    }
-
-    public function filtre(OrCsaATraiterSearchDto $orCsaATraiterSearchDto): string
-    {
-        $selectWhereCondition = new SelectWhereCondition();
-        $conditions = [];
-
-
-        // Si aucune condition, ajouter la condition par défaut (qui s'applique s'il n'y a pas de filtre ajouter par l'utilisateur)
-        if (empty($conditions)) {
-            $conditionOrNonRefuse = $selectWhereCondition->nlike('statut_or', 'Refus', ['position' => 'starts', 'tableAlias' => 'd0_', 'not' => true]);
-            $conditions[] = " AND d0_.statut_or is NULL OR (d0_.statut_or is NOT NULL $conditionOrNonRefuse)";
-            $conditions[] =  ' OR d0_.numero_or IS NULL';
-            $conditions[] = $selectWhereCondition->in('d0_.id_statut_demande', StatutDitConstant::DEFAULT_STATUT_ID);
-        }
-
-        // Filtrer les conditions vides et retourner le résultat
-        $conditions = array_filter($conditions, function ($condition) {
-            return !empty(trim($condition));
-        });
-
-        return implode(' ', $conditions);
+        $this->securityService  = $securityService;
+        $this->delaiAllocation  = $delaiAllocation;
+        $this->toleranceFenetre = $toleranceFenetre;
     }
 
     /**
-     * Ajoute une condition si elle n'est pas vide
+     * Construit le fragment SQL des filtres de l'écran OR CSA à traiter.
+     *
+     * @return string  chaîne commençant par " AND …" (ou vide si aucun filtre)
      */
-    private function addCondition(array &$conditions, string $condition): void
+    public function filtre(OrCsaATraiterSearchDto $dto): string
     {
-        if (!empty(trim($condition))) {
-            $conditions[] = $condition;
+        $conditions = [];
+
+        $d   = $this->delaiAllocation;
+        $min = $this->delaiAllocation - $this->toleranceFenetre; // 80
+        $max = $this->delaiAllocation + $this->toleranceFenetre; // 100
+
+        // 1) Fenêtre d'allocation
+        switch ($dto->fenetreAllocation) {
+            case 'RETARD':
+                $conditions[] = " AND (seor_delai - TODAY) < {$d}";
+                break;
+
+            case 'AUTOUR_J90':
+                $conditions[] = " AND (seor_delai - TODAY) BETWEEN {$min} AND {$max}";
+                break;
+
+            case 'A_VENIR':
+                $conditions[] = " AND (seor_delai - TODAY) > {$max}";
+                break;
+
+            case 'TOUS':
+            default:
+                // aucun filtre
+                break;
         }
+
+        // 2) Lead time du
+        if ($dto->leadTimeDu !== null) {
+            $date = $dto->leadTimeDu->format('d/m/Y');
+            $conditions[] = " AND seor_delai >= TO_DATE('{$date}', '%d/%m/%Y')";
+        }
+
+        // 3) Lead time au
+        if ($dto->leadTimeAu !== null) {
+            $date = $dto->leadTimeAu->format('d/m/Y');
+            $conditions[] = " AND seor_delai <= TO_DATE('{$date}', '%d/%m/%Y')";
+        }
+
+        // 4) Client (N° ou libellé) — recherche partielle insensible à la casse
+        if ($dto->client !== null && trim($dto->client) !== '') {
+            $esc = $this->esc(strtoupper(trim($dto->client)));
+            $conditions[] = " AND ("
+                . "UPPER(seor_numcli) LIKE '%{$esc}%'"
+                . " OR UPPER(seor_nomcli) LIKE '%{$esc}%'"
+                . ")";
+        }
+
+        // 5) Référence client
+        if ($dto->referenceClient !== null && trim($dto->referenceClient) !== '') {
+            $esc = $this->esc(strtoupper(trim($dto->referenceClient)));
+            $conditions[] = " AND UPPER(seor_lib) LIKE '%{$esc}%'";
+        }
+
+        // 6) N° OR
+        if ($dto->numOr !== null && trim($dto->numOr) !== '') {
+            $esc = $this->esc(trim($dto->numOr));
+            $conditions[] = " AND seor_numor = '{$esc}'";
+        }
+
+        // 7) Type OR
+        if ($dto->typeOr !== null && trim($dto->typeOr) !== '') {
+            $esc = $this->esc(trim($dto->typeOr));
+            $conditions[] = " AND seor_typeor = '{$esc}'";
+        }
+
+        return implode('', $conditions);
     }
 
+    /**
+     * Échappe une valeur textuelle pour insertion SQL.
+     * (Pas de requête paramétrée disponible côté Model,
+     *  donc on protège au minimum l'apostrophe.)
+     */
+    private function esc(string $value): string
+    {
+        return str_replace("'", "''", $value);
+    }
+
+    /**
+     * Condition multi-succursale.
+     *
+     * ⚠️ Cette méthode reste spécifique au DIT (colonnes d0_.agence_emetteur_id,
+     * d0_.service_emetteur_id…). Elle n'est pas utilisée par le Model OR CSA
+     * qui passe une chaîne vide en attendant une adaptation aux tables sav_eor/sav_lor.
+     * Conservée ici pour ne pas casser les éventuels appelants DIT.
+     */
     public function conditionAgenceService(): string
     {
-        // Vérifier la permission de voir tous les données
         $multisuccursale = $this->securityService->verifierPermission(SecurityService::PERMISSION_MULTI_SUCCURSALE);
-        if (!$multisuccursale) {
-            $agenceIdUser = $this->securityService->getAgenceIdUser();
-            $serviceIdUser = $this->securityService->getServiceIdUser();
-            $agenceServiceAutorises = $this->securityService->getAgenceServices(ApplicationConstant::CODE_DIT);
-            $peutVoirListeAvecDebiteur = $this->securityService->verifierPermission(SecurityService::PERMISSION_AUTH_2);
 
-            $conditions = [];
+        if ($multisuccursale) {
+            return '';
+        }
 
-            // 1- Conditions utilisateur courant (émetteur)
-            $conditions[] = "(d0_.agence_emetteur_id = {$agenceIdUser} AND d0_.service_emetteur_id = {$serviceIdUser})";
+        $agenceIdUser       = $this->securityService->getAgenceIdUser();
+        $serviceIdUser      = $this->securityService->getServiceIdUser();
+        $agenceServiceAutorises = $this->securityService->getAgenceServices(ApplicationConstant::CODE_DIT);
+        $peutVoirListeAvecDebiteur = $this->securityService->verifierPermission(SecurityService::PERMISSION_AUTH_2);
 
-            // 2- Conditions utilisateur courant (débiteur)
-            $conditions[] = "(d0_.agence_debiteur_id = {$agenceIdUser} AND d0_.service_debiteur_id = {$serviceIdUser})";
+        $conditions = [];
 
-            // 3- Agences/Services autorisés (émetteur)
-            if (!empty($agenceServiceAutorises)) {
-                $conditionsEmetteur = [];
-                $conditionsDebiteur = [];
+        $conditions[] = "(d0_.agence_emetteur_id = {$agenceIdUser} AND d0_.service_emetteur_id = {$serviceIdUser})";
+        $conditions[] = "(d0_.agence_debiteur_id = {$agenceIdUser} AND d0_.service_debiteur_id = {$serviceIdUser})";
 
-                foreach ($agenceServiceAutorises as $agServAut) {
-                    // Conditions pour émetteur
-                    $conditionsEmetteur[] = "(d0_.agence_emetteur_id = {$agServAut['agence_id']} AND d0_.service_emetteur_id = {$agServAut['service_id']})";
+        if (!empty($agenceServiceAutorises)) {
+            $conditionsEmetteur = [];
+            $conditionsDebiteur = [];
 
-                    // Conditions pour débiteur (si permission)
-                    if ($peutVoirListeAvecDebiteur) {
-                        $conditionsDebiteur[] = "(d0_.agence_debiteur_id = {$agServAut['agence_id']} AND d0_.service_debiteur_id = {$agServAut['service_id']})";
-                    }
-                }
+            foreach ($agenceServiceAutorises as $agServAut) {
+                $conditionsEmetteur[] = "(d0_.agence_emetteur_id = {$agServAut['agence_id']} AND d0_.service_emetteur_id = {$agServAut['service_id']})";
 
-                // Ajouter les conditions émetteur si elles existent
-                if (!empty($conditionsEmetteur)) {
-                    $conditions[] = '(' . implode(' OR ', $conditionsEmetteur) . ')';
-                }
-
-                // Ajouter les conditions débiteur si elles existent
-                if (!empty($conditionsDebiteur)) {
-                    $conditions[] = '(' . implode(' OR ', $conditionsDebiteur) . ')';
+                if ($peutVoirListeAvecDebiteur) {
+                    $conditionsDebiteur[] = "(d0_.agence_debiteur_id = {$agServAut['agence_id']} AND d0_.service_debiteur_id = {$agServAut['service_id']})";
                 }
             }
 
-            // Retourner toutes les conditions avec AND
-            return ' AND (' . implode(' OR ', $conditions) . ')';
+            if (!empty($conditionsEmetteur)) {
+                $conditions[] = '(' . implode(' OR ', $conditionsEmetteur) . ')';
+            }
+            if (!empty($conditionsDebiteur)) {
+                $conditions[] = '(' . implode(' OR ', $conditionsDebiteur) . ')';
+            }
         }
 
-        return '';
+        return ' AND (' . implode(' OR ', $conditions) . ')';
     }
 }
