@@ -39,8 +39,8 @@ class OrCsaATraiterSearchType extends AbstractType
             ->add('fenetreAllocation', ChoiceType::class, [
                 'label'    => 'Fenêtre d\'allocation',
                 'required' => false,
+                'placeholder' => '-- Tous --',
                 'choices'  => [
-                    'Tous'                        => 'TOUS',
                     'En retard (< 90 j)'          => 'RETARD',
                     'Autour de J-90 (80 à 100 j)' => 'AUTOUR_J90',
                     'À venir (> 100 j)'           => 'A_VENIR',
