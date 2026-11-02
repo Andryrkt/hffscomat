@@ -249,7 +249,7 @@ class PlanningCommandeFournisseurModel extends Model
             ) x
             GROUP BY x.constp, x.refp, x.desi, x.numero, x.qte_dem_ligne, x.type_doc, x.numcli, x.nomcli
         ) g
-        ORDER BY g.refp, g.numero;";
+        ORDER BY g.refp, g.numero";
 
         $result = $this->connect->executeQuery($statement);
 
@@ -375,7 +375,7 @@ class PlanningCommandeFournisseurModel extends Model
                 FROM {$this->dbIps}.neg_lig n
                 INNER JOIN {$this->dbIps}.cli_bse cb ON cb.cbse_numcli = n.nlig_numcli
                 INNER JOIN {$this->dbIps}.cli_soc cs ON cs.csoc_soc = n.nlig_soc AND cs.csoc_numcli = n.nlig_numcli
-                WHERE n.nlig_numcde = '$numCde'
+                WHERE n.nlig_numcf = '$numCde'
                     AND n.nlig_soc = '$codeSociete'
                     AND n.nlig_refp IN (SELECT refp FROM $asCdlFiltre)";
     }
