@@ -136,11 +136,10 @@ class PlanningCommandeFournisseurModel extends Model
         // Activer la jointure sur la table {$this->dbIrium}.sip_lnk pour la société SCOMAT
         $sipLnkActive = $codeSociete === "SO";
 
-        $asCdlFiltre = 'cdl_filtre';
-        $asCde       = 'cde';
-        $asCat       = 'cat';
-        $asSipLnk1   = 'sl1';
-        $asSipLnk2   = 'sl2';
+        $asCdlFiltre      = 'cdl_filtre';
+        $asCde            = 'cde';
+        $asSipLnkLigne    = 'sl_ligne';
+        $asSipLnkCommande = 'sl_cde';
 
         $statement = "--sql
         WITH
@@ -186,7 +185,7 @@ class PlanningCommandeFournisseurModel extends Model
                 WHEN bo.numero_po IS NOT NULL THEN 'O' 
                 ELSE 'N' 
             END AS back_order,
-            {$this->getColonnesEta($sipLnkActive,$asCde,$asCat,$asSipLnk1,$asSipLnk2)}
+            {$this->getColonnesEta($sipLnkActive,$asSipLnkLigne,$asSipLnkCommande)}
         FROM $asCde
         LEFT JOIN res
             ON  res.refp   = $asCde.refp
@@ -212,12 +211,7 @@ class PlanningCommandeFournisseurModel extends Model
             AND bo.parts_cst    = $asCde.constp
             AND bo.parts_number = TRIM($asCde.refp)
             AND bo.line_number  = $asCde.ligne
-        LEFT JOIN {$this->dbIrium}.gcot_acknow_cat $asCat
-            ON  CAST($asCat.numero_po AS VARCHAR(50)) = CAST($asCde.numcde AS VARCHAR(50))
-            AND $asCat.parts_number = $asCde.refp
-            AND $asCat.parts_cst    = $asCde.constp
-            AND $asCat.line_number  = $asCde.ligne
-        {$this->getJoinSipLnk($sipLnkActive,$numCde,$asCde,$asSipLnk1,$asSipLnk2)}
+        {$this->getJoinSipLnk($sipLnkActive,$numCde,$asCde,$asSipLnkLigne,$asSipLnkCommande)}
         ORDER BY cde.refp, res.numero;";
 
         $result = $this->connect->executeQuery($statement);
@@ -354,25 +348,20 @@ class PlanningCommandeFournisseurModel extends Model
      * Si sip_lnk est désactivée pour l'environnement courant, ces colonnes
      * retombent sur cat.esd_date / NULL au lieu d'échouer sur des alias absents.
      */
-    private function getColonnesEta(bool $sipLnkActive, string $asCde, string $asCat, string $asSipLnk1, string $asSipLnk2): string
+    private function getColonnesEta(bool $sipLnkActive, string $asSipLnkLigne, string $asSipLnkCommande): string
     {
         if (!$sipLnkActive) {
             return "--sql
-            $asCat.esd_date AS eta_magasin,
+            CAST(NULL AS CHAR(1)) AS eta_magasin,
             CAST(NULL AS CHAR(1)) AS eta_maurice";
         }
 
         return "--sql
-            CASE
-                WHEN $asCde.constp = 'CAT' THEN COALESCE($asCat.esd_date, $asSipLnk1.eta_magasin, $asSipLnk2.eta_magasin)
-                ELSE COALESCE($asSipLnk1.eta_magasin, $asSipLnk2.eta_magasin)
-            END AS eta_magasin,
-            CASE
-                WHEN $asCde.constp <> 'CAT' THEN COALESCE($asSipLnk1.eta_maurice, $asSipLnk2.eta_maurice)
-            END AS eta_maurice";
+            COALESCE($asSipLnkLigne.eta_magasin, $asSipLnkCommande.eta_magasin) AS eta_magasin,
+            COALESCE($asSipLnkLigne.eta_maurice, $asSipLnkCommande.eta_maurice) AS eta_maurice";
     }
 
-    private function getJoinSipLnk(bool $sipLnkActive, string $numCde, string $asCde, string $asSipLnk1, string $asSipLnk2): string
+    private function getJoinSipLnk(bool $sipLnkActive, string $numCde, string $asCde, string $asSipLnkLigne, string $asSipLnkCommande): string
     {
         if (!$sipLnkActive) return "";
 
@@ -388,7 +377,8 @@ class PlanningCommandeFournisseurModel extends Model
                     AND slnk_pk1 = '$numCde'
                     AND slnk_pk2 IS NOT NULL
                 ORDER BY slnk_id
-            ) $asSipLnk1 ON $asSipLnk1.num_cde = $asCde.numcde AND $asSipLnk1.no_lign = $asCde.ligne
+            ) $asSipLnkLigne ON $asSipLnkLigne.num_cde = $asCde.numcde 
+                AND $asSipLnkLigne.no_lign = $asCde.ligne
             LEFT JOIN (
                 SELECT
                     slnk_pk1    AS num_cde,
@@ -399,7 +389,7 @@ class PlanningCommandeFournisseurModel extends Model
                     AND slnk_pk1 = '$numCde'
                     AND slnk_pk2 IS NULL
                 ORDER BY slnk_id
-            ) $asSipLnk2 ON $asSipLnk2.num_cde = $asCde.numcde";
+            ) $asSipLnkCommande ON $asSipLnkCommande.num_cde = $asCde.numcde";
     }
 
     private function conditionStatut(string $statut): string
