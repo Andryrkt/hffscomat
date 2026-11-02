@@ -172,7 +172,7 @@ document.addEventListener("DOMContentLoaded", function () {
                   <td class="text-center">${qteAvecStyle(detail.qte_rest, detail.statut, detail.statut !== "complet_facture")}</td>
                   <td class="text-center">${qteAvecStyle(detail.qte_recept, detail.statut, detail.statut === "complet_facture")}</td>
                   <td class="text-center">${formatQte(detail.qte_fact)}</td>
-                  <td class="text-start">${statutBadge(detail.statut, detail.back_order)}</td>
+                  <td class="text-center">${statutBadge(detail.statut, detail.back_order)}</td>
                   <td class="text-center">${formatDate(detail.eta_magasin)}</td>
                   <td class="text-center">${detail.eta_maurice || ""}</td>
                   <td class="text-center">${nameAndNumberDoc(detail.type_doc, detail.numero)}</td>
