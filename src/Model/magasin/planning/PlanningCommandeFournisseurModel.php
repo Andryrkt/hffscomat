@@ -146,7 +146,7 @@ class PlanningCommandeFournisseurModel extends Model
             $asCdlFiltre AS ({$this->getQueryCdlFiltre($numCde,$codeSociete)}),
             $asCde AS ({$this->getQueryCdeAgrege($asCdlFiltre)}),
             res AS (
-                SELECT type_doc, constp, refp, numero, numcli, nomcli, SUM(NVL(qtedem, 0)) AS qtedem
+                SELECT DISTINCT type_doc, constp, refp, numero, numcli, nomcli, SUM(NVL(qtedem, 0)) AS qtedem
                 FROM (
                     {$this->getQueryResOrViaLivraison($numCde,$codeSociete,$asCdlFiltre)}
                     UNION ALL
