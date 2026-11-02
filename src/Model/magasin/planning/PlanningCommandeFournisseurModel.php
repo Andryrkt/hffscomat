@@ -370,11 +370,13 @@ class PlanningCommandeFournisseurModel extends Model
                     n.nlig_refp   AS refp,
                     n.nlig_numcde AS numero,
                     n.nlig_qtecde AS qtedem,
-                    n.nlig_numcli AS numcli,
-                    cb.cbse_nomcli AS nomcli
+                    e.nent_numcli AS numcli,
+                    TRIM(e.nent_nomcli) AS nomcli
                 FROM {$this->dbIps}.neg_lig n
-                INNER JOIN {$this->dbIps}.cli_bse cb ON cb.cbse_numcli = n.nlig_numcli
-                INNER JOIN {$this->dbIps}.cli_soc cs ON cs.csoc_soc = n.nlig_soc AND cs.csoc_numcli = n.nlig_numcli
+                INNER JOIN {$this->dbIps}.neg_ent e
+                    ON  e.nent_soc    = n.nlig_soc
+                    AND e.nent_succ   = n.nlig_succ
+                    AND e.nent_numcde = n.nlig_numcde
                 WHERE n.nlig_numcf = '$numCde'
                     AND n.nlig_soc = '$codeSociete'
                     AND n.nlig_refp IN (SELECT refp FROM $asCdlFiltre)";
