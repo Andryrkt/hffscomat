@@ -10,7 +10,7 @@ class CmdeATraitrerMagasinDto
     public ?string $type_doc = null;
     public ?string $numero_doc = null;
     public ?string $numero_ligne = null;
-    public  ?DateTime $date_doc = null;
+    public ?DateTime $date_doc = null;
     public ?string $constructeur = null;
     public ?string $reference = null;
     public ?string $designation = null;

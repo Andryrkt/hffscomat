@@ -14,7 +14,13 @@ class CmdeATraiterMagasinListeMapper
             $dto = new CmdeATraitrerMagasinDto();
             $dto->type_doc      = $item['type_doc'] ?? null;
             $dto->numero_doc    = $item['numero_doc'] ?? null;
-            $dto->date_doc    = $item['date_doc'] ?? null;
+            if (!empty($item['date_doc'])) {
+                try {
+                    $dto->date_doc      = new \DateTime($item['date_doc']);
+                } catch (\Exception $e) {
+                    $dto->date_doc      = null;
+                }
+            }
             $dto->numero_ligne  = $item['numero_ligne'] ?? null;
             $dto->constructeur  = $item['constructeur'] ?? null;
             $dto->reference     = $item['reference'] ?? null;
