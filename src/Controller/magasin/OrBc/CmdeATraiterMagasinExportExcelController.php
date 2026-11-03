@@ -5,8 +5,8 @@ namespace App\Controller\Magasin\OrBc;
 ini_set('memory_limit', '512M');
 
 use App\Controller\Controller;
-use App\Dto\Magasin\OrBc\CmdeATraitrerAtelierSearchDto;
-use App\Model\magasin\OrBc\CmdeATraiterAtelierModel;
+use App\Dto\Magasin\OrBc\CmdeATraitrerMagasinSearchDto;
+use App\Model\magasin\OrBc\CmdeATraiterMagasinModel;
 use App\Service\ExcelService;
 use DateTime;
 use Symfony\Component\Routing\Annotation\Route;
@@ -20,7 +20,7 @@ class CmdeATraiterMagasinExportExcelController extends Controller
 
 
     /**
-     * @Route("/export-excel", name="magasin_commande_a_traiter_export")
+     * @Route("/export-excel", name="export_excel_magasin_commande_a_traiter_export")
      */
     public function exportExcel()
     {
@@ -28,15 +28,15 @@ class CmdeATraiterMagasinExportExcelController extends Controller
         $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
 
         // Récupération des critères depuis la session
-        $dtoSearch = $this->getSessionService()->get('criteria_for_excel_atelier_cmde_a_traiter_liste');
+        $dtoSearch = $this->getSessionService()->get('criteria_for_magasin_cmde_a_traiter_liste');
 
         // Si aucun critère en session (ex: première visite), on crée un DTO vide
-        if (!$dtoSearch instanceof CmdeATraitrerAtelierSearchDto) {
-            $dtoSearch = new CmdeATraitrerAtelierSearchDto();
+        if (!$dtoSearch instanceof CmdeATraitrerMagasinSearchDto) {
+            $dtoSearch = new CmdeATraitrerMagasinSearchDto();
         }
-        $cmdeAtraiterAtelierModel = new CmdeATraiterAtelierModel($this->getSecurityService());
+        $cmdeAtraiterMagasinModel = new CmdeATraiterMagasinModel($this->getSecurityService());
         // Récupération de TOUTES les données filtrées
-        $cmdeDatas = $cmdeAtraiterAtelierModel->DonnerAAjouterExcel($dtoSearch, $codeSociete);
+        $cmdeDatas = $cmdeAtraiterMagasinModel->DonnerAAjouterExcel($dtoSearch, $codeSociete);
 
         // Convertir les données en tableau avec en-têtes
         $data = $this->transformationEnTableauAvecEntet($cmdeDatas);
