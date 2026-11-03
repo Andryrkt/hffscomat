@@ -20,7 +20,7 @@ class CmdeATraiterMagasinExportExcelController extends Controller
 
 
     /**
-     * @Route("/export-excel", name="magasin_commande_a_traiter_export")
+     * @Route("/export-excel", name="export_excel_magasin_commande_a_traiter_export")
      */
     public function exportExcel()
     {
