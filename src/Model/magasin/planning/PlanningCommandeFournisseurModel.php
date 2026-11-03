@@ -4,11 +4,15 @@ namespace App\Model\magasin\planning;
 
 use App\Model\Model;
 use App\Model\Informix\SelectWhereCondition;
+use App\Dto\Magasin\Planning\PlanningCommandeFournisseurSearchDto;
 
 
 class PlanningCommandeFournisseurModel extends Model
 {
-    public function getPlanningMagasin(string $statut, bool $isEmptyQuery)
+    /**
+     * @param array $monthsKey mois affichés au format 'Y-m' ; limite les commandes à cette fenêtre
+     */
+    public function getPlanningMagasin(string $statut, string $codeSociete, PlanningCommandeFournisseurSearchDto $dto, array $monthsKey = [])
     {
         $statement = "SELECT *
         FROM(
@@ -64,8 +68,8 @@ class PlanningCommandeFournisseurModel extends Model
                     FROM {$this->dbIps}.frn_cdl fcdl
                     INNER JOIN {$this->dbIps}.frn_cde
                         ON fcdl_soc    = fcde_soc
-                    AND fcdl_succ   = fcde_succ
-                    AND fcdl_numcde = fcde_numcde
+                        AND fcdl_succ   = fcde_succ
+                        AND fcdl_numcde = fcde_numcde
                     INNER JOIN {$this->dbIps}.frn_bse
                         ON fbse_numfou = fcde_numfou
                     INNER JOIN {$this->dbIps}.agr_succ
@@ -74,8 +78,9 @@ class PlanningCommandeFournisseurModel extends Model
                         ON atab_code = fcde_serv AND atab_nom  = 'SER'
                     LEFT JOIN {$this->dbIps}.frn_llf fllf
                         ON fllf.fllf_soc = fcdl.fcdl_soc AND fllf.fllf_numcde = fcdl.fcdl_numcde AND fllf.fllf_ligne = fcdl.fcdl_ligne
-                    WHERE year(fcde_date) = 2026
+                    WHERE 1=1 {$this->conditionsCommande($dto,$monthsKey)}
                         AND (fcde_cdeext NOT LIKE '%CIS%' OR fcde_cdeext IS NULL)
+                        AND fcde_soc = '$codeSociete'
                     GROUP BY fcdl.fcdl_constp, fcdl.fcdl_numcde, fcdl.fcdl_ligne, fcdl.fcdl_qte, fbse_numfou, fbse_nomfou, asuc_lib, atab_lib, asuc_num, atab_code, fcde_datec
                 ) l
                 GROUP BY l.fcdl_constp, l.fcdl_numcde, l.fbse_numfou, l.fbse_nomfou, l.asuc_lib, l.atab_lib, l.asuc_num, l.atab_code, l.fcde_datec
@@ -115,20 +120,19 @@ class PlanningCommandeFournisseurModel extends Model
     public function recupLigneCommande(string $numCde, string $codeSociete)
     {
         // Activer la jointure sur la table {$this->dbIrium}.sip_lnk pour la société SCOMAT
-        $sipLnkActive = $codeSociete === "SO";
+        $sipLnkActive = $codeSociete === "CO";
 
-        $asCdlFiltre = 'cdl_filtre';
-        $asCde       = 'cde';
-        $asCat       = 'cat';
-        $asSipLnk1   = 'sl1';
-        $asSipLnk2   = 'sl2';
+        $asCdlFiltre      = 'cdl_filtre';
+        $asCde            = 'cde';
+        $asSipLnkLigne    = 'sl_ligne';
+        $asSipLnkCommande = 'sl_cde';
 
         $statement = "--sql
         WITH
             $asCdlFiltre AS ({$this->getQueryCdlFiltre($numCde,$codeSociete)}),
             $asCde AS ({$this->getQueryCdeAgrege($asCdlFiltre)}),
             res AS (
-                SELECT type_doc, constp, refp, numero, numcli, nomcli, SUM(NVL(qtedem, 0)) AS qtedem
+                SELECT DISTINCT type_doc, constp, refp, numero, numcli, nomcli, SUM(NVL(qtedem, 0)) AS qtedem
                 FROM (
                     {$this->getQueryResOrViaLivraison($numCde,$codeSociete,$asCdlFiltre)}
                     UNION ALL
@@ -139,42 +143,94 @@ class PlanningCommandeFournisseurModel extends Model
                 GROUP BY type_doc, constp, refp, numero, numcli, nomcli
             )
         SELECT
-            cde.constp,
-            TRIM(cde.refp) AS refp,
-            TRIM(cde.desi) AS desi,
-            cde.qte_dem,
-            cde.qte_rest,
-            cde.qte_recept,
-            cde.qte_dispo,
-            cde.qte_fact,
+            g.constp, 
+            g.refp, 
+            g.desi,
+            g.qte_dem, 
+            g.qte_rest, 
+            g.qte_recept, 
+            g.qte_dispo, 
+            g.qte_fact,
             CASE
-                WHEN cde.qte_recept = 0 THEN 'en_attente'
-                WHEN cde.qte_dem > 0 AND cde.qte_fact = cde.qte_dem THEN 'complet_facture'
-                WHEN cde.qte_dem > 0 AND cde.qte_fact > 0 AND cde.qte_fact < cde.qte_dem THEN 'partiel_facture'
-                WHEN cde.qte_dem > 0 AND cde.qte_recept > 0 AND cde.qte_rest > 0 THEN 'partiel_dispo'
-                WHEN cde.qte_dem > 0 AND cde.qte_rest = 0 AND cde.qte_fact = 0 THEN 'complet_non_facture'
-                when cde.qte_dem = 0 and cde.qte_rest > 0 then 'en_attente'
-                when cde.qte_dem = 0 and cde.qte_rest = 0 and cde.qte_recept = cde.qte_fact then 'complet_facture'
-                WHEN cde.qte_dem = 0 and cde.qte_rest = 0 and cde.qte_recept > 0 and cde.qte_recept > cde.qte_fact THEN 'complet_non_facture'
+                WHEN g.qte_recept = 0 THEN 'en_attente'
+                WHEN g.qte_dem > 0 AND g.qte_fact = g.qte_dem THEN 'complet_facture'
+                WHEN g.qte_dem > 0 AND g.qte_fact > 0 AND g.qte_fact < g.qte_dem THEN 'partiel_facture'
+                WHEN g.qte_dem > 0 AND g.qte_recept > 0 AND g.qte_rest > 0 THEN 'partiel_dispo'
+                WHEN g.qte_dem > 0 AND g.qte_rest = 0 AND g.qte_fact = 0 THEN 'complet_non_facture'
+                when g.qte_dem = 0 and g.qte_rest > 0 then 'en_attente'
+                when g.qte_dem = 0 and g.qte_rest = 0 and g.qte_recept = g.qte_fact then 'complet_facture'
+                WHEN g.qte_dem = 0 and g.qte_rest = 0 and g.qte_recept > 0 and g.qte_recept > g.qte_fact THEN 'complet_non_facture'
                 ELSE ''
             END AS statut,
-            res.numero,
-            NVL(res.qtedem, 0) AS qte_dem_ligne,
-            res.type_doc,
-            res.numcli,
-            res.nomcli,
-            {$this->getColonnesEta($sipLnkActive,$asCde,$asCat,$asSipLnk1,$asSipLnk2)}
-        FROM $asCde
-        LEFT JOIN res
-            ON  res.refp   = $asCde.refp
-            AND $asCde.constp = res.constp
-        LEFT JOIN {$this->dbIrium}.gcot_acknow_cat $asCat
-            ON  $asCat.numero_po    = $asCde.numcde
-            AND $asCat.parts_number = $asCde.refp
-            AND $asCat.parts_cst    = $asCde.constp
-            AND $asCat.line_number  = $asCde.ligne
-        {$this->getJoinSipLnk($sipLnkActive,$numCde,$asCde,$asSipLnk1,$asSipLnk2)}
-        ORDER BY cde.refp, res.numero;";
+            g.numero, 
+            g.qte_dem_ligne, 
+            g.type_doc, 
+            g.numcli, 
+            g.nomcli, 
+            g.back_order, 
+            g.eta_magasin,
+            g.eta_maurice
+        FROM (
+            SELECT
+                x.constp, x.refp, x.desi,
+                SUM(x.qte_dem) AS qte_dem,
+                SUM(x.qte_rest) AS qte_rest,
+                SUM(x.qte_recept) AS qte_recept,
+                SUM(x.qte_dispo) AS qte_dispo,
+                SUM(x.qte_fact) AS qte_fact,
+                x.numero, x.qte_dem_ligne, x.type_doc, x.numcli, x.nomcli,
+                x.eta_magasin, x.eta_maurice,
+                MAX(x.back_order) AS back_order
+            FROM (
+                SELECT
+                    $asCde.constp,
+                    TRIM($asCde.refp) AS refp,
+                    TRIM($asCde.desi) AS desi,
+                    $asCde.qte_dem,
+                    $asCde.qte_rest,
+                    $asCde.qte_recept,
+                    $asCde.qte_dispo,
+                    $asCde.qte_fact,
+                    res.numero,
+                    NVL(res.qtedem, 0) AS qte_dem_ligne,
+                    res.type_doc,
+                    res.numcli,
+                    res.nomcli,
+                    CASE
+                        WHEN bo.numero_po IS NOT NULL THEN 'O'
+                        ELSE 'N'
+                    END AS back_order,
+                    {$this->getColonnesEta($sipLnkActive,$asSipLnkLigne,$asSipLnkCommande)}
+                FROM $asCde
+                LEFT JOIN res
+                    ON  res.refp   = $asCde.refp
+                    AND res.constp = $asCde.constp
+                LEFT JOIN (
+                    SELECT DISTINCT
+                        CAST(b.numero_po AS VARCHAR(50)) AS numero_po,
+                        b.parts_cst,
+                        b.parts_number,
+                        b.line_number
+                    FROM {$this->dbIrium}.gcot_acknow_cat AS b
+                    WHERE CAST(b.libelle_type AS VARCHAR(10)) = 'Back Order'
+                        AND b.id_gcot_acknow_cat = (
+                            SELECT MAX(sub.id_gcot_acknow_cat)
+                            FROM {$this->dbIrium}.gcot_acknow_cat AS sub
+                            WHERE sub.parts_number = b.parts_number
+                                AND sub.numero_po    = b.numero_po
+                                AND sub.line_number  = b.line_number
+                                AND sub.quantity > 0
+                        )
+                ) bo
+                    ON  bo.numero_po    = CAST($asCde.numcde AS VARCHAR(50))
+                    AND bo.parts_cst    = $asCde.constp
+                    AND bo.parts_number = TRIM($asCde.refp)
+                    AND bo.line_number  = $asCde.ligne
+                {$this->getJoinSipLnk($sipLnkActive,$numCde,$asCde,$asSipLnkLigne,$asSipLnkCommande)}
+            ) x
+            GROUP BY x.constp, x.refp, x.desi, x.numero, x.qte_dem_ligne, x.type_doc, x.numcli, x.nomcli, x.eta_magasin, x.eta_maurice
+        ) g
+        ORDER BY g.refp, g.numero";
 
         $result = $this->connect->executeQuery($statement);
 
@@ -295,12 +351,14 @@ class PlanningCommandeFournisseurModel extends Model
                     n.nlig_refp   AS refp,
                     n.nlig_numcde AS numero,
                     n.nlig_qtecde AS qtedem,
-                    n.nlig_numcli AS numcli,
-                    cb.cbse_nomcli AS nomcli
+                    e.nent_numcli AS numcli,
+                    TRIM(e.nent_nomcli) AS nomcli
                 FROM {$this->dbIps}.neg_lig n
-                INNER JOIN {$this->dbIps}.cli_bse cb ON cb.cbse_numcli = n.nlig_numcli
-                INNER JOIN {$this->dbIps}.cli_soc cs ON cs.csoc_soc = n.nlig_soc AND cs.csoc_numcli = n.nlig_numcli
-                WHERE n.nlig_numcde = '$numCde'
+                INNER JOIN {$this->dbIps}.neg_ent e
+                    ON  e.nent_soc    = n.nlig_soc
+                    AND e.nent_succ   = n.nlig_succ
+                    AND e.nent_numcde = n.nlig_numcde
+                WHERE n.nlig_numcf = '$numCde'
                     AND n.nlig_soc = '$codeSociete'
                     AND n.nlig_refp IN (SELECT refp FROM $asCdlFiltre)";
     }
@@ -310,25 +368,20 @@ class PlanningCommandeFournisseurModel extends Model
      * Si sip_lnk est désactivée pour l'environnement courant, ces colonnes
      * retombent sur cat.esd_date / NULL au lieu d'échouer sur des alias absents.
      */
-    private function getColonnesEta(bool $sipLnkActive, string $asCde, string $asCat, string $asSipLnk1, string $asSipLnk2): string
+    private function getColonnesEta(bool $sipLnkActive, string $asSipLnkLigne, string $asSipLnkCommande): string
     {
         if (!$sipLnkActive) {
             return "--sql
-            $asCat.esd_date AS eta_magasin,
+            CAST(NULL AS CHAR(1)) AS eta_magasin,
             CAST(NULL AS CHAR(1)) AS eta_maurice";
         }
 
         return "--sql
-            CASE
-                WHEN $asCde.constp = 'CAT' THEN COALESCE($asCat.esd_date, $asSipLnk1.eta_magasin, $asSipLnk2.eta_magasin)
-                ELSE COALESCE($asSipLnk1.eta_magasin, $asSipLnk2.eta_magasin)
-            END AS eta_magasin,
-            CASE
-                WHEN $asCde.constp <> 'CAT' THEN COALESCE($asSipLnk1.eta_maurice, $asSipLnk2.eta_maurice)
-            END AS eta_maurice";
+            COALESCE($asSipLnkLigne.eta_magasin, $asSipLnkCommande.eta_magasin) AS eta_magasin,
+            COALESCE($asSipLnkLigne.eta_maurice, $asSipLnkCommande.eta_maurice) AS eta_maurice";
     }
 
-    private function getJoinSipLnk(bool $sipLnkActive, string $numCde, string $asCde, string $asSipLnk1, string $asSipLnk2): string
+    private function getJoinSipLnk(bool $sipLnkActive, string $numCde, string $asCde, string $asSipLnkLigne, string $asSipLnkCommande): string
     {
         if (!$sipLnkActive) return "";
 
@@ -339,23 +392,62 @@ class PlanningCommandeFournisseurModel extends Model
                     slnk_pk2    AS no_lign,
                     slnk_date1  AS eta_magasin,
                     slnk_alpha1 AS eta_maurice
-                FROM {$this->dbIpsRegix}.sip_lnk
+                FROM {$this->dbIpsRegix}.sip_lnk s
                 WHERE slnk_tabname IN ('frn_cdl', 'frn_cde')
                     AND slnk_pk1 = '$numCde'
                     AND slnk_pk2 IS NOT NULL
-                ORDER BY slnk_id
-            ) $asSipLnk1 ON $asSipLnk1.num_cde = $asCde.numcde AND $asSipLnk1.no_lign = $asCde.ligne
+                    AND slnk_id = (
+                        SELECT MAX(m.slnk_id)
+                        FROM {$this->dbIpsRegix}.sip_lnk m
+                        WHERE m.slnk_tabname IN ('frn_cdl', 'frn_cde')
+                            AND m.slnk_pk1 = s.slnk_pk1
+                            AND m.slnk_pk2 = s.slnk_pk2
+                    )
+            ) $asSipLnkLigne ON $asSipLnkLigne.num_cde = $asCde.numcde 
+                AND $asSipLnkLigne.no_lign = $asCde.ligne
             LEFT JOIN (
                 SELECT
                     slnk_pk1    AS num_cde,
                     slnk_date1  AS eta_magasin,
                     slnk_alpha1 AS eta_maurice
-                FROM {$this->dbIpsRegix}.sip_lnk
+                FROM {$this->dbIpsRegix}.sip_lnk s
                 WHERE slnk_tabname IN ('frn_cdl', 'frn_cde')
                     AND slnk_pk1 = '$numCde'
                     AND slnk_pk2 IS NULL
-                ORDER BY slnk_id
-            ) $asSipLnk2 ON $asSipLnk2.num_cde = $asCde.numcde";
+                    AND slnk_id = (
+                        SELECT MAX(m.slnk_id)
+                        FROM {$this->dbIpsRegix}.sip_lnk m
+                        WHERE m.slnk_tabname IN ('frn_cdl', 'frn_cde')
+                            AND m.slnk_pk1 = '$numCde'
+                            AND m.slnk_pk2 IS NULL
+                    )
+            ) $asSipLnkCommande ON $asSipLnkCommande.num_cde = $asCde.numcde";
+    }
+
+    /** Filtres du formulaire + fenêtre de mois, appliqués avant les agrégations. */
+    private function conditionsCommande(PlanningCommandeFournisseurSearchDto $dto, array $monthsKey): string
+    {
+        $where = new SelectWhereCondition;
+        $sql = '';
+
+        if ($monthsKey) {
+            $anneesMois = array_map(fn($k) => (int) str_replace('-', '', $k), $monthsKey); // Ex: [202611,202612,202701,202702,...]
+            $sql .= $where->in('(YEAR(fcde_datec) * 100 + MONTH(fcde_datec))', $anneesMois);
+        }
+
+        $sql .= $where->between('fcde_datec', $dto->dateCommande['debut'] ?? null, $dto->dateCommande['fin'] ?? null);
+
+        // Fournisseur : recherche partielle sur le code ou le nom
+        $sql .= $where->like("fbse_numfou || ' ' || fbse_nomfou", $dto->fournisseur);
+
+        $agence = $dto->agenceService['agence'] ?? null;
+        $service = $dto->agenceService['service'] ?? null;
+
+        $sql .= $where->eq('fcde_numcde', $dto->numeroCommande);
+        $sql .= $where->eq('asuc_num', $agence ? $agence->getCodeAgence() : null);
+        $sql .= $where->eq('atab_code', $service ? $service->getCodeService() : null);
+
+        return $sql;
     }
 
     private function conditionStatut(string $statut, bool $isEmptyQuery): string
@@ -370,8 +462,9 @@ class PlanningCommandeFournisseurModel extends Model
         ];
 
         if ($statut === "tous") return "";
-
         $selectWhereCondition = new SelectWhereCondition;
+
+        if ($statut === "back_order") return $selectWhereCondition->eq('t.back_order', "O");
 
         $statutCondition = $statutParCondition[$statut];
 

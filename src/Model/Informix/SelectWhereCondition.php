@@ -6,7 +6,7 @@ class SelectWhereCondition
 {
     public function eq(string $column, ?string $value): string
     {
-        $value = $value ? trim($value) : null;
+        $value = $value ? $this->escapeString($value) : null;
         if (!$value) return '';
 
         return "AND $column = '$value'";
@@ -14,7 +14,7 @@ class SelectWhereCondition
 
     public function ne(string $column, ?string $value): string
     {
-        $value = $value ? trim($value) : null;
+        $value = $value ? $this->escapeString($value) : null;
         if (!$value) return '';
         return "AND $column <> '$value'";
     }
@@ -33,11 +33,9 @@ class SelectWhereCondition
 
     public function like(string $column, ?string $value): string
     {
-        $value = $value ? trim($value) : null;
+        $value = $value ? $this->escapeString($value) : null;
 
-        if (!$value) {
-            return '';
-        }
+        if (!$value) return '';
 
         $numericColumns = [
             'nent_numcli',
@@ -114,7 +112,7 @@ class SelectWhereCondition
         }
 
         // Échapper la valeur
-        $escapedValue = $options['escape'] ? addslashes($value) : $value;
+        $escapedValue = $options['escape'] ? $this->escapeString($value) : $value;
 
         // Construire le nom de la colonne
         $columnName = $options['tableAlias']

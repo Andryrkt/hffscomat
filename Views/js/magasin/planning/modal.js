@@ -138,10 +138,12 @@ document.addEventListener("DOMContentLoaded", function () {
             complet_facture: "text-success fw-bold",
           };
 
-          const statutBadge = (statut) => {
+          const statutBadge = (statut, backOrder) => {
             const [label, classe] = BADGES[statut] || [];
+            const borderBackOrder =
+              backOrder === "O" ? "border-back-order" : "";
             return label
-              ? `<span class="d-inline-block px-2 py-1 rounded text-wrap ${classe}">${label}</span>`
+              ? `<span class="d-inline-block px-2 py-1 rounded text-wrap ${classe} ${borderBackOrder}">${label}</span>`
               : "";
           };
           const qteAvecStyle = (qte, statut, matchStatut) => {
@@ -151,6 +153,11 @@ document.addEventListener("DOMContentLoaded", function () {
           const formatQte = (val) => {
             const n = parseInt(val, 10);
             return n === 0 ? "-" : n;
+          };
+          const formatDate = (date) => {
+            if (!date) return "";
+            const [year, month, day] = date.split("-");
+            return `${day}/${month}/${year}`;
           };
           const nameAndNumberDoc = (number, name) =>
             number ? `${number} - ${name}` : "";
@@ -165,11 +172,11 @@ document.addEventListener("DOMContentLoaded", function () {
                   <td class="text-center">${qteAvecStyle(detail.qte_rest, detail.statut, detail.statut !== "complet_facture")}</td>
                   <td class="text-center">${qteAvecStyle(detail.qte_recept, detail.statut, detail.statut === "complet_facture")}</td>
                   <td class="text-center">${formatQte(detail.qte_fact)}</td>
-                  <td class="text-start">${statutBadge(detail.statut)}</td>
-                  <td class="text-center">${detail.eta_magasin || ""}</td>
+                  <td class="text-center">${statutBadge(detail.statut, detail.back_order)}</td>
+                  <td class="text-center">${formatDate(detail.eta_magasin)}</td>
                   <td class="text-center">${detail.eta_maurice || ""}</td>
                   <td class="text-center">${nameAndNumberDoc(detail.type_doc, detail.numero)}</td>
-                  <td class="text-start">${nameAndNumberDoc(detail.numcli, detail.nomcli)}</td>
+                  <td class="text-center">${nameAndNumberDoc(detail.numcli, detail.nomcli)}</td>
                   <td class="text-center">${formatQte(detail.qte_dem_ligne)}</td>
                 </tr>`
             )
