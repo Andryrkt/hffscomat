@@ -40,6 +40,11 @@ class CmdeATraiterMagasinFiltreService
         // --- Période sur date_doc (défaut : 30 derniers jours) ---
         $dateDebut = $dto->dateDebut;
         $dateFin   = $dto->dateFin;
+        if ($dateDebut === null && $dateFin === null) {
+            $dateFin   = new \DateTimeImmutable('today');
+            $dateDebut = $dateFin->modify('-' . self::DEFAULT_DAYS_BACK . ' days');
+        }
+
         $selectWhereCondition = new SelectWhereCondition();
 
         $this->addCondition($conditions, $selectWhereCondition->between('date_doc', $dateDebut, $dateFin));
