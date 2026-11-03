@@ -15,10 +15,10 @@ class OrCsaATraiterListeModel extends Model
     private int   $delaiAllocation  = 90;
     private int   $toleranceFenetre = 10;
     // TODO 
-    // private array $typesOr          = ['222', '229'];
+    private array $typesOr          = ['222', '229'];
 
     // Types a changer en ['222', '229'] pour la prod
-    private array $typesOr          = ['201', '202'];
+    // private array $typesOr          = ['201', '202'];
     private int   $anneeMin         = 2025;
 
     private FiltreService $filtreService;
@@ -27,10 +27,9 @@ class OrCsaATraiterListeModel extends Model
         SecurityService $securityService,
         int $delaiAllocation = 90,
         int $toleranceFenetre = 10,
-        // array $typesOr          = ['222', '229'],
+        array $typesOr          = ['222', '229'],
 
         // Types a changer en ['222', '229'] pour la prod
-        array $typesOr = ['201', '202'],
         int $anneeMin = 2025
     ) {
         parent::__construct();
@@ -239,5 +238,84 @@ class OrCsaATraiterListeModel extends Model
         }
 
         return $choices;
+    }
+
+    /**
+     * Récupère un OR par son numéro, dans le périmètre société de l'utilisateur.
+     * Retourne un tableau dont les clés correspondent aux champs attendus par
+     * DitCreationService::creerDepuisOr(). Null si l'OR n'existe pas / hors périmètre.
+     *
+     * @return array<string,mixed>|null
+     */
+    public function findOrByNumero(string $numOr, string $codeSociete): ?array
+    {
+        // Échappement manuel (pas de prepared statement dans ce Model)
+        $numOrEsc   = str_replace("'", "''", $numOr);
+        $codeSocEsc = str_replace("'", "''", $codeSociete);
+
+        $statement = "
+        SELECT
+            e.seor_numor                        AS numero_or,
+            e.seor_soc                          AS code_societe,
+            e.seor_succ                         AS code_succursale,
+            e.seor_dateor                       AS date_or,
+            e.seor_delai                        AS lead_time,
+            e.seor_numcli                       AS numero_client,
+            e.seor_nomcli                       AS nom_client,
+            e.seor_lib                          AS reference_client,
+            e.seor_typeor                       AS code_type_or,
+            c.aces_lib                          AS libelle_type_or,
+            e.seor_typeor || ' - ' || c.aces_lib AS type_or,
+
+            -- ⚠️ TODO : compléter selon les colonnes réelles de sav_eor
+            -- NULL                              AS statut_or,
+            -- NULL                              AS mail_client,
+            -- NULL                              AS numero_telephone,
+            -- NULL                              AS objet_demande,
+            -- NULL                              AS detail_demande,
+            -- NULL                              AS type_document,
+            -- NULL                              AS categorie_demande,
+            -- NULL                              AS type_reparation,
+            -- NULL                              AS demande_devis,
+            -- NULL                              AS client_sous_contrat,
+            -- NULL                              AS avis_recouvrement,
+            -- NULL                              AS internet_externe,
+            -- NULL                              AS date_prevue_travaux,
+
+            -- ⚠️ TODO : adapter aux noms réels des colonnes sav_lor
+            l.slor_articl                       AS id_materiel,
+            l.slor_numparc                      AS numero_parc,
+            l.slor_nuserie                      AS numero_serie
+            -- NULL                              AS km,
+            -- NULL                              AS heure
+        FROM {$this->dbIps}.sav_eor e
+        INNER JOIN {$this->dbIps}.agr_ces c
+            ON  c.aces_soc = e.seor_soc
+            AND c.aces_nat = e.seor_typeor
+        LEFT JOIN {$this->dbIps}.sav_lor l
+            ON  l.slor_soc   = e.seor_soc
+            AND l.slor_succ  = e.seor_succ
+            AND l.slor_numor = e.seor_numor
+            AND l.slor_qtewait > 0
+        WHERE e.seor_numor = '{$numOrEsc}'
+          AND e.seor_soc   = '{$codeSocEsc}'
+        FETCH FIRST 1 ROWS ONLY
+    ";
+        dd($statement);
+
+        $result = $this->connect->executeQuery($statement);
+        $rows   = $this->convertirEnUtf8($this->connect->fetchResults($result));
+
+        if (empty($rows)) {
+            return null;
+        }
+
+        // Normalisation : DB2 peut retourner les clés en MAJUSCULES
+        $normalized = [];
+        foreach ($rows[0] as $key => $value) {
+            $normalized[strtolower($key)] = $value;
+        }
+
+        return $normalized;
     }
 }

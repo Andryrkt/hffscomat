@@ -1,7 +1,6 @@
-import { baseUrl } from "../../utils/config.js";
-import { FetchManager } from "../../api/FetchManager.js";
+import { ApiRequestManager } from "../../api/ApiRequestManager.js";
 
-const fetchManager = new FetchManager();
+const fetchManager = new ApiRequestManager();
 
 document.addEventListener("DOMContentLoaded", () => {
   const checkAll = document.getElementById("or-check-all");
@@ -104,21 +103,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // ✅ Utilisation de FetchManager (si la méthode post retourne du JSON)
         const result = await fetchManager.post(url, { ors: selectedIds });
-
-        /* 
-        // 🔄 Si FetchManager.post() ne renvoie PAS le JSON directement, 
-        // décommente ce bloc à la place de la ligne au-dessus :
-        const response = await fetch(url, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Requested-With": "XMLHttpRequest",
-          },
-          body: JSON.stringify({ ors: selectedIds }),
-        });
-        if (!response.ok) throw new Error("Erreur réseau lors de l'appel API");
-        const result = await response.json();
-        */
 
         // Vérification de la réponse
         if (result && result.success) {

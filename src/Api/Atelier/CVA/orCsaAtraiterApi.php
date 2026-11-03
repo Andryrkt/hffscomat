@@ -3,6 +3,9 @@
 namespace App\Api\Atelier\CVA;
 
 use App\Controller\Controller;
+use App\Model\Atelier\CVA\OrCsaATraiterListeModel;          // ⚠️ adapter au bon namespace
+use App\Service\atelier\dit\DitCreationService;
+use App\Service\historiqueOperation\Atelier\Dit\HistoriqueOperationDITService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -12,6 +15,38 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class OrCsaATraiterApi extends Controller
 {
+    /** @var DitCreationService */
+    private $ditCreationService;
+
+    /** @var OrCsaATraiterListeModel */
+    private $orCsaATraiterListeModel;
+
+    /** @var HistoriqueOperationDITService */
+    private $historiqueOperationDit;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        // ✅ mêmes dépendances que DitController → même pipeline
+        $this->ditCreationService = new DitCreationService(
+            $this->getEntityManager(),
+            new \App\Factory\Atelier\Dit\DitFactory(
+                $this->getSecurityService(),
+                $this->getEntityManager()
+            ),
+            new \App\Model\Atelier\Dit\DitModel()
+        );
+
+        $this->orCsaATraiterListeModel   = new OrCsaATraiterListeModel($this->getSecurityService());
+        $this->historiqueOperationDit    = new HistoriqueOperationDITService($this->getEntityManager());
+    }
+
+    /**
+     * Envoie les OR sélectionnés pour traitement → crée une DIT par OR.
+     *
+     * @Route("/or-csa/envoyer", name="api_or_csa_envoyer", methods={"POST"})
+     */
     /**
      * Envoie les OR sélectionnés pour traitement.
      * 
