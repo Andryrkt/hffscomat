@@ -17,7 +17,7 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class CmdeATraiterMagasinController extends Controller
 {
-    private const SESSION_KEY = 'criteria_for_excel_Magasin_cmde_a_traiter_liste';
+    private const SESSION_KEY = 'criteria_for_magasin_cmde_a_traiter_liste';
     private CmdeATraiterMagasinModel $cmdeAtraiterMagasinModel;
 
     public function __construct(CmdeATraiterMagasinModel $cmdeAtraiterMagasinModel)

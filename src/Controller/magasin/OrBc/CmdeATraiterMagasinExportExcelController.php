@@ -28,7 +28,7 @@ class CmdeATraiterMagasinExportExcelController extends Controller
         $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
 
         // Récupération des critères depuis la session
-        $dtoSearch = $this->getSessionService()->get('criteria_for_excel_atelier_cmde_a_traiter_liste');
+        $dtoSearch = $this->getSessionService()->get('criteria_for_magasin_cmde_a_traiter_liste');
 
         // Si aucun critère en session (ex: première visite), on crée un DTO vide
         if (!$dtoSearch instanceof CmdeATraitrerMagasinSearchDto) {
