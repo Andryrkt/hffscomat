@@ -5,9 +5,9 @@
 /* Palette centralisée (cohérente légende ↔ pastille) */
 :root {
   --or-retard: #e60202;
-  --or-a-allouer: #f16100;
-  --or-a-venir: #85aa00;
-  --or-neutral: #6c757d;
+  --or-a-allouer: #ff8330;
+  --or-a-venir: #767879;
+  --or-neutral: #98bbda;
 }
 
 /* Pastille par ligne */
