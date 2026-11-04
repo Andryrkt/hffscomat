@@ -50,9 +50,9 @@ class MenuGroupe
             ],
             [
                 'label'    => "CVA",
-                'icon'     => 'toolbox',
+                'icon'     => 'file-invoice',
                 'subitems' => [
-                    ['label' => 'OR - CSA à traiter', 'icon' => 'search', 'route' => 'or_csa_a_traiter_liste'],
+                    ['label' => 'OR - CSA à traiter', 'icon' => 'list-check', 'route' => 'or_csa_a_traiter_liste'],
                 ],
             ],
             [
