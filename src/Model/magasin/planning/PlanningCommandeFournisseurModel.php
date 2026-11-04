@@ -143,7 +143,7 @@ class PlanningCommandeFournisseurModel extends Model
 
     public function recupLigneCommande(string $numCde, string $codeSociete)
     {
-        // Activer la jointure sur la table {$this->dbIrium}.sip_lnk pour la société SCOMAT
+        // Activer la jointure sur la table {$this->dbIpsRegix}.sip_lnk pour la société SCOMAT
         $sipLnkActive = $codeSociete === "CO";
 
         $asCdlFiltre      = 'cdl_filtre';
