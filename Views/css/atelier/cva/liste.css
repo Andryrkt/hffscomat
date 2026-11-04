@@ -1,0 +1,133 @@
+/* =================================================================
+   1. STYLES SPÉCIFIQUES OR CSA — PASTILLES + STATUTS
+   ================================================================= */
+
+/* Palette centralisée (cohérente légende ↔ pastille) */
+:root {
+  --or-retard: #e60202;
+  --or-a-allouer: #ff8330;
+  --or-a-venir: #767879;
+  --or-neutral: #98bbda;
+  --or-tous: #495057;
+}
+
+/* Pastille par ligne */
+.or-pastille {
+  display: inline-block;
+  padding: 0.25rem 1.5rem;
+  border-radius: 50rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+  min-width: 85px;
+  text-align: center;
+  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+}
+.or-pastille--retard {
+  background-color: var(--or-retard);
+}
+.or-pastille--a_allouer {
+  background-color: var(--or-a-allouer);
+}
+.or-pastille--a_venir {
+  background-color: var(--or-a-venir);
+}
+.or-pastille--secondary {
+  background-color: var(--or-neutral);
+} /* fallback */
+
+.or-statut {
+  font-size: 0.75rem;
+  margin-top: 4px;
+  color: #6c757d;
+}
+
+/* Surlignage ligne sélectionnée (sans id) */
+.table-sticky tbody tr.selected {
+  background-color: #e2f0fd !important;
+}
+
+/* Colonne Client (sans id) */
+.table-sticky td.client-col .client-num {
+  font-weight: bold;
+  color: #212529;
+}
+.table-sticky td.client-col .client-nom {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  color: #6c757d;
+}
+
+/* =================================================================
+   2. BARRE DE STATUTS (légende filtrable + compteurs)
+   ================================================================= */
+
+.cva-statuts-bar {
+  padding: 0.5rem 0.75rem;
+  background: #f8f9fa;
+}
+
+.cva-statuts-total {
+  color: #343a40;
+  font-size: 0.95rem;
+}
+
+/* On garde .cva-legend-item pour compatibilité (span historique),
+   mais on cible AUSSI .cva-legend-btn qui est la version bouton. */
+.cva-legend-item,
+.cva-legend-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+}
+
+.cva-legend-item i.fa-circle,
+.cva-legend-btn i.fa-circle {
+  font-size: 0.65rem;
+  vertical-align: middle;
+}
+
+/* -----------------------------------------------------------------
+   Couleurs : on cible les deux variantes (item + btn) pour éviter
+   les régressions si un span traîne encore quelque part.
+   Spécificité 0,2,0 → gagne sur .cva-legend-btn { color: inherit }
+   ----------------------------------------------------------------- */
+.cva-legend-item.text-retard,
+.cva-legend-btn.text-retard {
+  color: var(--or-retard);
+}
+.cva-legend-item.text-a-allouer,
+.cva-legend-btn.text-a-allouer {
+  color: var(--or-a-allouer);
+}
+.cva-legend-item.text-a-venir,
+.cva-legend-btn.text-a-venir {
+  color: var(--or-a-venir);
+}
+
+/* Bouton "Tous" : couleur neutre cohérente avec la palette */
+.cva-legend-btn[data-filter="tous"] {
+  color: var(--or-tous);
+}
+
+/* -----------------------------------------------------------------
+   Style commun des boutons de légende
+   ----------------------------------------------------------------- */
+.cva-legend-btn {
+  background: none;
+  border: none;
+  padding: 0.25rem 0.6rem;
+  cursor: pointer;
+  border-radius: 0.25rem;
+  transition:
+    opacity 0.15s,
+    background-color 0.15s;
+  /* ⚠️ pas de color: inherit ici — la couleur vient des .text-* */
+}
+
+.cva-legend-btn.active {
+  background-color: rgba(0, 0, 0, 0.06);
+  font-weight: 600;
+  text-decoration: underline;
+}

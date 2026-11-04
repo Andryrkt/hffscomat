@@ -95,3 +95,7 @@ services:
       - '@App\Service\Atelier\Planning\PlanningAtelierService'
       - '@App\Model\Atelier\Planning\PlanningAtelierModel'
     public: true
+  App\Controller\Atelier\CVA\OrCsaATraiterListeController:
+    arguments:
+      - '@App\Model\Atelier\CVA\OrCsaATraiterListeModel'
+    public: true
