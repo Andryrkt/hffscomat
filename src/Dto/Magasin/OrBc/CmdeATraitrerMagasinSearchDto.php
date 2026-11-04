@@ -4,8 +4,12 @@ namespace App\Dto\Magasin\OrBc;
 
 class CmdeATraitrerMagasinSearchDto
 {
+    public function __construct()
+    {
+        $this->dateDebut = new \DateTime('-30 days');
+        $this->dateFin   = new \DateTime();
+    }
     public ?\Datetime $dateDebut = null;
-
     public ?\DateTime $dateFin = null;
 
     public ?string $type_doc = null;
