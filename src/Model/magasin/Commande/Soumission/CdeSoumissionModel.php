@@ -36,6 +36,7 @@ class CdeSoumissionModel extends Model
 
         $ipsArtSta = ($codeSociete === 'CO') ? "{$this->dbIpsRegix}.art_sta" : "{$this->dbIps}.art_sta";
         $ipsAgrDev = ($codeSociete === 'CO') ? "{$this->dbIpsRegix}.agr_dev" : "{$this->dbIps}.agr_dev";
+        $sipLnk    = ($codeSociete === 'CO') ? "{$this->dbIrium}.sip_lnk"    : "{$this->dbIpsRegix}.sip_lnk";
 
         $statement = "SELECT 
             fcde_numcde as num_cde,
@@ -47,13 +48,13 @@ class CdeSoumissionModel extends Model
             ) AS type_cde,
             (
                 SELECT slnk_date1
-                FROM {$this->dbIrium}.sip_lnk
+                FROM $sipLnk
                 WHERE slnk_tabname IN ('frn_cdl', 'frn_cde')
                 AND slnk_pk1 = '$numCde'
                 AND slnk_pk2 IS NULL
                 AND slnk_id = (
                     SELECT MAX(m.slnk_id)
-                    FROM {$this->dbIrium}.sip_lnk m
+                    FROM $sipLnk m
                     WHERE m.slnk_tabname IN ('frn_cdl', 'frn_cde')
                     AND m.slnk_pk1 = '$numCde'
                     AND m.slnk_pk2 IS NULL
