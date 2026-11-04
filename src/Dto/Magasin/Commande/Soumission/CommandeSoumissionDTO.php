@@ -7,7 +7,7 @@ class CommandeSoumissionDTO
     public ?string    $numeroCommande  = null;
     public ?\DateTime $dateCde         = null;
     public ?string    $typeCde         = null;
-    public ?int       $delaiExpedition = null;
+    public ?\DateTime $dateExpedition  = null;
     public ?string    $numFrn          = null;
     public ?string    $nomFrn          = null;
     public ?string    $devise          = null;
@@ -22,25 +22,30 @@ class CommandeSoumissionDTO
     /** @var list<CommandeSoumissionLigneDTO> */
     public array      $lignes          = [];
 
-    public function getDateCdeFormatted(): string
+    private function formatDateLongue(\DateTime $date): string
     {
-        if (!$this->dateCde) return "";
-
-        $dateFormatter = new \IntlDateFormatter(
+        return (new \IntlDateFormatter(
             'fr_FR',
             \IntlDateFormatter::FULL,
             \IntlDateFormatter::NONE,
             null,
             null,
             "EEEE dd MMMM yyyy"
-        );
-
-        return "du {$dateFormatter->format($this->dateCde)}";
+        ))->format($date);
     }
 
-    public function getDelaiExpedition(): string
+    public function getDateCdeFormatted(): string
     {
-        return "{$this->delaiExpedition} jour" . ($this->delaiExpedition > 1 ? "s" : "");
+        if (!$this->dateCde) return "";
+
+        return "du {$this->formatDateLongue($this->dateCde)}";
+    }
+
+    public function getDateExpeditionFormatted(): string
+    {
+        if (!$this->dateExpedition) return "-";
+
+        return $this->formatDateLongue($this->dateExpedition);
     }
 
     public function getAgenceService(): string
