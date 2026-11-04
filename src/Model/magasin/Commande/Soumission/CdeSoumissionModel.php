@@ -46,7 +46,7 @@ class CdeSoumissionModel extends Model
                 WHERE atab_code = fcde_typcde AND atab_nom  = 'TOP'
             ) AS type_cde,
             (
-                SELECT FIRST 1 slnk_date1
+                SELECT slnk_date1
                 FROM {$this->dbIrium}.sip_lnk
                 WHERE slnk_tabname IN ('frn_cdl', 'frn_cde')
                 AND slnk_pk1 = '$numCde'
