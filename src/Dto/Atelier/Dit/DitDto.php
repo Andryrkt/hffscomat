@@ -134,4 +134,14 @@ class DitDto
     public float $chiffreAffaire = 0.0;
     public float $resultatExploitation = 0.0;
     public ?string $lienMargeRef = null;
+
+    // --- DocuWare (obligatoire pour le pipeline creerDepuisOr) ---
+    public ?int    $pdfDeposerDw   = 0;      // 0 = à déposer, 1 = déposé
+    public ?string $dateDepotPdfDw = null;   // format 'Y-m-d H:i:s'
+
+    // --- OR : validation (cartographie date_validation_or) ---
+    public ?string $dateValidationOr = null; // format 'Y-m-d'
+
+    // --- OR : fin souhaitée (cartographie date_fin_souhaite) ---
+    public ?string $dateFinSouhaite = null;  // format 'Y-m-d'
 }

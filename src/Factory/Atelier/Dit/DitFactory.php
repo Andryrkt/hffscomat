@@ -40,14 +40,14 @@ class DitFactory
         return $dto;
     }
 
-    public function apresSoumission(DitDto $dto, bool $avecMateriel = true): DitDto
+    public function apresSoumission(DitDto $dto, bool $avecMateriel = true,    ?string $numeroDit = null): DitDto
     {
         $dto->utilisateurDemandeur = $this->securityService->getDataService()->getUserName();
         $dto->heureDemande = date('H:i');
         $dto->dateDemande = date('Y-m-d');
         $dto->mailDemandeur = $this->securityService->getDataService()->getUserMail();
         $dto->statutDemande = StatutDitConstant::STATUT_AFFECTEE_SECTION;
-        $dto->numeroDemandeIntervention = $this->genererNumeroDit();
+        $dto->numeroDemandeIntervention = $numeroDit ?? $this->genererNumeroDit();
         $dto->clientSousContrat = $dto->clientSousContrat === null ? 'NON' : $dto->clientSousContrat;
         $dto->demandeDevis = $dto->demandeDevis === null ? 'NON' : $dto->demandeDevis;
 
@@ -82,7 +82,6 @@ class DitFactory
         $dto->chargeEntretient = (float)($infoMaterielEtBilanFinancier['chargeentretien'] ?? 0);
         $dto->chargeLocative = (float)($infoMaterielEtBilanFinancier['chargelocative'] ?? 0);
         $dto->chiffreAffaire = (float)($infoMaterielEtBilanFinancier['chiffreaffaires'] ?? 0);
-        $dto->resultatExploitation = $dto->chiffreAffaire - ($dto->chargeEntretient + $dto->chargeLocative);
 
         return $dto;
     }
@@ -98,16 +97,19 @@ class DitFactory
         return $worNiveauUrgenceModel->getP2Description();
     }
 
-    private function genererNumeroDit(): string
+    private function genererNumeroDit(bool $depuisOr = false): string
     {
-        $application = $this->em->getRepository(Application::class)->findOneBy(['codeApp' => ApplicationConstant::CODE_DIT]);
-        // 1. recuperation du dernière numero demande d'intervention
+        $application = $this->em->getRepository(Application::class)
+            ->findOneBy(['codeApp' => ApplicationConstant::CODE_DIT]);
+
         $dernierNumeroDit = $application->getDerniereId();
 
-        // 2. recupération du nouveau numeéro DIT  décrémenter par le  dernière numero d'intervention recupérer dans la table applications
-        $numeroDemandeIntervention = AutoIncDecService::autoGenerateNumero(ApplicationConstant::CODE_DIT, $dernierNumeroDit, false);
+        $numeroDemandeIntervention = AutoIncDecService::autoGenerateNumero(
+            ApplicationConstant::CODE_DIT,
+            $dernierNumeroDit,
+            false
+        );
 
-        // 3. mise à jour du colonne dernier_id dans la table application par le nouveau numero DIT
         $application->setDerniereId($numeroDemandeIntervention);
         $this->em->persist($application);
         $this->em->flush();

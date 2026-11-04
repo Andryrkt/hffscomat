@@ -20,7 +20,6 @@ class DitMapper
         $worTypeNiveaUrgenceModel = new WorNiveauUrgenceModel();
         $categorieAteAppModel = new CategorieAteAppModel();
         $statutDemandeModel = new StatutDemandeModel();
-
         return [
             'numero_demande_dit' => $dto->numeroDemandeIntervention,
             'type_document' => $worTypeDocumentModel->getIdSelonDescription($dto->typeDocument),
