@@ -18,23 +18,30 @@
     <div class="sticky-header-titre">
         <div class="container">
             {% include "/atelier/cva/shared/_formulaireRecherche.html.twig" %}
-
-            <div class="cva-statuts-bar d-flex flex-wrap gap-3 my-2 align-items-center">
-
+            <div class="cva-statuts-bar d-flex flex-wrap gap-3 my-2 align-items-center" id="cva-statuts-filter">
+                <button type="button" class="cva-legend-btn active" data-filter="tous">
+                    <i class="fa-solid fa-list"></i>
+                    <small class="fw-semibold">
+                        Tous
+                    </small>
+                </button>
+                <span class="text-muted">|</span>
 
                 {% for code, meta in statutMeta %}
-                    <span class="cva-legend-item text-{{ meta.couleur }}">
+                    <button type="button"
+                        class="cva-legend-btn text-{{ meta.couleur }}"
+                        data-filter="{{ meta.couleur }}">
                         <i class="{{ meta.icone }}"></i>
-                        <small class="fw-semibold">{{ meta.label }}</small>
-                    </span>
+                        <small class="fw-semibold">
+                            {{ meta.label }}
+                        </small>
+                    </button>
                     {% if not loop.last %}
                         <span class="text-muted">|</span>
                     {% endif %}
                 {% endfor %}
 
                 <span class="ms-auto"></span>
-
-
             </div>
             {% include "/atelier/cva/shared/_pagination.html.twig" %}
         </div>
@@ -60,92 +67,98 @@
                 {# Le thead reste visible même si la boucle ne retourne rien #}
                 {% for ligne in data %}
                     {% set clientParts = ligne.client|split(' - ') %}
-                    <tr data-numor="{{ ligne.numOr }}"
-                        data-client="{{ ligne.client }}"
-                        data-leadtime="{{ ligne.leadTime ? ligne.leadTime|date('d/m/Y') : '' }}">
 
-                        <td class="text-center align-middle">
-                            <input type="checkbox"
-                                class="or-row-selector"
-                                value="{{ ligne.numOr }}"
-                                aria-label="Sélectionner l'OR {{ ligne.numOr }}">
-                            </td>
 
-                            <td class="fw-bold align-middle">{{ ligne.numOr }}</td>
 
-                            <td class="align-middle">
-                                <div class="fw-bold text-dark">{{ clientParts[0] ?? ligne.client }}</div>
-                                {% if clientParts[1] is defined %}
-                                    <div class="text-muted small text-uppercase">{{ clientParts[1] }}</div>
-                                {% endif %}
-                            </td>
+                    <tr
+                    data-numor="{{ ligne.numOr }}"
+                    data-client="{{ ligne.client }}"
+                    data-leadtime="{{ ligne.leadTime ? ligne.leadTime|date('d/m/Y') : '' }}"
+                    data-statut="{{ ligne.codeCouleur|trim|lower|replace({'_': '-'}) }}">
 
-                            <td class="align-middle">{{ ligne.referenceClient }}</td>
+                    <td class="text-center align-middle">
+                        <input type="checkbox"
+                            class="or-row-selector"
+                            value="{{ ligne.numOr }}"
+                            aria-label="Sélectionner l'OR {{ ligne.numOr }}">
+                        </td>
 
-                            <td class="align-middle">{{ ligne.typeOr }}</td>
+                        <td class="fw-bold align-middle">{{ ligne.numOr }}</td>
 
-                            <td class="align-middle">{{ ligne.leadTime ? ligne.leadTime|date('d/m/Y') : '' }}</td>
+                        <td class="align-middle">
+                            <div class="fw-bold text-dark">{{ clientParts[0] ?? ligne.client }}</div>
+                            {% if clientParts[1] is defined %}
+                                <div class="text-muted small text-uppercase">{{ clientParts[1] }}</div>
+                            {% endif %}
+                        </td>
 
-                            <td class="text-end align-middle" style="padding-right: 2rem;">
-                                <span class="or-pastille or-pastille--{{ ligne.codeCouleur|lower }}">
-                                    {{ ligne.nbJoursDispoLib }}
-                                </span>
-                                <div class="or-statut small text-muted mt-1">
-                                    {{ ligne.statutAllocation }}
-                                </div>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                        <td class="align-middle">{{ ligne.referenceClient }}</td>
 
-            {# Message hors du tableau si aucune donnée #}
-            {% if data is empty %}
-                <div class="text-center text-muted">
-                    <p>Aucun OR à traiter ne correspond aux critères.</p>
-                </div>
-            {% endif %}
+                        <td class="align-middle">{{ ligne.typeOr }}</td>
+
+                        <td class="align-middle">{{ ligne.leadTime ? ligne.leadTime|date('d/m/Y') : '' }}</td>
+
+                        <td class="text-end align-middle" style="padding-right: 2rem;">
+                            <span class="or-pastille or-pastille--{{ ligne.codeCouleur|lower }}">
+                                {{ ligne.nbJoursDispoLib }}
+                            </span>
+                            <div class="or-statut small text-muted mt-1">
+                                {{ ligne.statutAllocation }}
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if data is empty %}
+            <div class="text-center text-muted"><p>Aucun OR à traiter ne correspond aux critères.</p></div>
+        {% endif %}
+
+        <div id="or-filter-empty" class="text-center text-muted d-none">
+            <p>Aucun OR ne correspond au filtre sélectionné <em>sur cette page</em>.</p>
         </div>
-        {# ============================================================
-        MODALE DE CONFIRMATION D'ENVOI
-        ============================================================ #}
-        <div class="modal fade" id="confirm-send-modal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Confirmer l'envoi pour traitement</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+    </div>
+    {# ============================================================
+    MODALE DE CONFIRMATION D'ENVOI
+    ============================================================ #}
+    <div class="modal fade" id="confirm-send-modal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmer l'envoi pour traitement</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Les OR suivants vont être envoyés pour traitement :</p>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>N° OR</th>
+                                    <th>Client</th>
+                                    <th>Lead time</th>
+                                </tr>
+                            </thead>
+                            <tbody id="confirm-send-tbody"></tbody>
+                        </table>
                     </div>
-                    <div class="modal-body">
-                        <p>Les OR suivants vont être envoyés pour traitement :</p>
-                        <div class="table-responsive">
-                            <table class="table table-sm">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>N° OR</th>
-                                        <th>Client</th>
-                                        <th>Lead time</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="confirm-send-tbody"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                        <button type="button" class="btn btn-primary" id="btn-confirm-send">
-                            Confirmer l'envoi
-                        </button>
-                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-primary" id="btn-confirm-send">
+                        Confirmer l'envoi
+                    </button>
                 </div>
             </div>
         </div>
+    </div>
 
-        {% include "/partials/_pagination.html.twig" %}
-        <!-- FIN tableau -->
-    {% endblock %}
+    {% include "/partials/_pagination.html.twig" %}
+    <!-- FIN tableau -->
+{% endblock %}
 
-    {% block javascript %}
-        <script src="{{ App.base_path }}/Views/js/utils/positionSticky.js?v=2025.09.15.08.00"></script>
-        <script src="{{ App.base_path }}/Views/js/atelier/cva/orCsaATraiterListe.js?v=2025.09.15.08.00" type="module"></script>
-    {% endblock %}
+{% block javascript %}
+    <script src="{{ App.base_path }}/Views/js/utils/positionSticky.js?v=2025.09.15.08.00"></script>
+    <script src="{{ App.base_path }}/Views/js/atelier/cva/orCsaATraiterListe.js?v=2025.09.15.08.00" type="module"></script>
+{% endblock %}

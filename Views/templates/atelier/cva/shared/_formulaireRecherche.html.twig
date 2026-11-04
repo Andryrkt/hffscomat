@@ -13,23 +13,24 @@
                 <div class="row">
                     {# Colonne 1 #}
                     <div class="col-12 col-md-2">
+                        {{ form_row(form.fenetreAllocation) }}
+                    </div>
+
+
+                    {# Colonne 2 #}
+                    <div class="col-12 col-md-2">
                         {{ form_row(form.leadTimeDu) }}
                         {{ form_row(form.leadTimeAu) }}
                     </div>
 
-                    {# Colonne 2 #}
+                    {# Colonne 3 #}
                     <div class="col-12 col-md-2">
                         {{ form_row(form.client) }}
                     </div>
 
-                    {# Colonne 3 #}
-                    <div class="col-12 col-md-2">
-                        {{ form_row(form.referenceClient) }}
-                    </div>
-
                     {# Colonne 4 #}
                     <div class="col-12 col-md-2">
-                        {{ form_row(form.fenetreAllocation) }}
+                        {{ form_row(form.referenceClient) }}
                     </div>
 
                     {# Colonne 5 #}

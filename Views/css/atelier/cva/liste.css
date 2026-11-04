@@ -8,6 +8,7 @@
   --or-a-allouer: #ff8330;
   --or-a-venir: #767879;
   --or-neutral: #98bbda;
+  --or-tous: #495057;
 }
 
 /* Pastille par ligne */
@@ -58,7 +59,7 @@
 }
 
 /* =================================================================
-   2. BARRE DE STATUTS (légende + compteurs)
+   2. BARRE DE STATUTS (légende filtrable + compteurs)
    ================================================================= */
 
 .cva-statuts-bar {
@@ -71,24 +72,62 @@
   font-size: 0.95rem;
 }
 
-.cva-legend-item {
+/* On garde .cva-legend-item pour compatibilité (span historique),
+   mais on cible AUSSI .cva-legend-btn qui est la version bouton. */
+.cva-legend-item,
+.cva-legend-btn {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
   font-size: 0.85rem;
 }
-.cva-legend-item i.fa-circle {
+
+.cva-legend-item i.fa-circle,
+.cva-legend-btn i.fa-circle {
   font-size: 0.65rem;
   vertical-align: middle;
 }
 
-/* Couleurs de la légende = celles des pastilles */
-.cva-legend-item.text-retard {
+/* -----------------------------------------------------------------
+   Couleurs : on cible les deux variantes (item + btn) pour éviter
+   les régressions si un span traîne encore quelque part.
+   Spécificité 0,2,0 → gagne sur .cva-legend-btn { color: inherit }
+   ----------------------------------------------------------------- */
+.cva-legend-item.text-retard,
+.cva-legend-btn.text-retard {
   color: var(--or-retard);
 }
-.cva-legend-item.text-a-allouer {
+.cva-legend-item.text-a-allouer,
+.cva-legend-btn.text-a-allouer {
   color: var(--or-a-allouer);
 }
-.cva-legend-item.text-a-venir {
+.cva-legend-item.text-a-venir,
+.cva-legend-btn.text-a-venir {
   color: var(--or-a-venir);
+}
+
+/* Bouton "Tous" : couleur neutre cohérente avec la palette */
+.cva-legend-btn[data-filter="tous"] {
+  color: var(--or-tous);
+}
+
+/* -----------------------------------------------------------------
+   Style commun des boutons de légende
+   ----------------------------------------------------------------- */
+.cva-legend-btn {
+  background: none;
+  border: none;
+  padding: 0.25rem 0.6rem;
+  cursor: pointer;
+  border-radius: 0.25rem;
+  transition:
+    opacity 0.15s,
+    background-color 0.15s;
+  /* ⚠️ pas de color: inherit ici — la couleur vient des .text-* */
+}
+
+.cva-legend-btn.active {
+  background-color: rgba(0, 0, 0, 0.06);
+  font-weight: 600;
+  text-decoration: underline;
 }

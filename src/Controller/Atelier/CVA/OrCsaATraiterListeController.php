@@ -90,7 +90,7 @@ class OrCsaATraiterListeController extends Controller
         $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
         $page = (int) $request->query->get('page', 1);
         if ($page < 1) $page = 1;
-        $perPage = 500;
+        $perPage = 1000;
 
         $dits = $this->orCsaATraiterListeModel->findPaginatedAndFiltered($codeSociete, $dtoSearch, $page, $perPage);
         $ditDto = (new OrCsaATraiterListeMapper())->map($dits['data']);
