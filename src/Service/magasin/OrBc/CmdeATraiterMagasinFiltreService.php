@@ -7,9 +7,6 @@ use App\Model\Informix\SelectWhereCondition;
 
 class CmdeATraiterMagasinFiltreService
 {
-    /** Défaut si aucune date fournie : 30 derniers jours */
-    private const DEFAULT_DAYS_BACK = 30;
-
     public function filtre(CmdeATraitrerMagasinSearchDto $dto): string
     {
         $swc = new SelectWhereCondition();
@@ -40,9 +37,15 @@ class CmdeATraiterMagasinFiltreService
         // --- Période sur date_doc (défaut : 30 derniers jours) ---
         $dateDebut = $dto->dateDebut;
         $dateFin   = $dto->dateFin;
+
         $selectWhereCondition = new SelectWhereCondition();
 
-        $this->addCondition($conditions, $selectWhereCondition->between('date_doc', $dateDebut, $dateFin));
+        if ($dateDebut !== null && $dateFin !== null) {
+            $this->addCondition(
+                $conditions,
+                $selectWhereCondition->between('date_doc', $dateDebut, $dateFin)
+            );
+        }
 
         // Nettoyage : on retire les chaînes vides
         $conditions = array_filter($conditions, function ($c) {
