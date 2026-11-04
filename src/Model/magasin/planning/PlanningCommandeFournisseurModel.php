@@ -81,7 +81,9 @@ class PlanningCommandeFournisseurModel extends Model
                     INNER JOIN {$this->dbIps}.agr_tab
                         ON atab_code = fcde_serv AND atab_nom  = 'SER'
                     LEFT JOIN {$this->dbIps}.frn_llf fllf
-                        ON fllf.fllf_soc = fcdl.fcdl_soc AND fllf.fllf_numcde = fcdl.fcdl_numcde AND fllf.fllf_ligne = fcdl.fcdl_ligne
+                        ON  fllf.fllf_soc = fcdl.fcdl_soc 
+                        AND fllf.fllf_numcde = fcdl.fcdl_numcde 
+                        AND fllf.fllf_ligne = fcdl.fcdl_ligne
                     WHERE 1=1 {$this->conditionsCommande($dto,$monthsKey)}
                         AND (fcde_cdeext NOT LIKE '%CIS%' OR fcde_cdeext IS NULL)
                         AND fcde_soc = '$codeSociete'
@@ -103,7 +105,11 @@ class PlanningCommandeFournisseurModel extends Model
                     )
             ) bo 
                 ON CAST(o.fcdl_numcde AS VARCHAR(50)) = bo.numero_po
-            WHERE o.fcdl_constp IN (select distinct abse_constp from {$this->dbIps}.art_bse where abse_codg = 'ST') AND o.total_qte > 0
+            WHERE o.fcdl_constp IN (
+                select distinct abse_constp 
+                from {$this->dbIps}.art_bse 
+                where abse_codg = 'ST'
+            ) AND o.total_qte > 0
         ) t
         WHERE 1=1 {$this->conditionStatut($statut)} 
         ORDER BY t.numero_commande
