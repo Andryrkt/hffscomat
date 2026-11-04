@@ -3,7 +3,9 @@
 namespace App\Api\Atelier\CVA;
 
 use App\Controller\Controller;
+use App\Factory\Atelier\Dit\DitFactory;
 use App\Model\Atelier\CVA\OrCsaATraiterListeModel;
+use App\Model\Atelier\Dit\DitModel;
 use App\Service\atelier\dit\DitCreationService;
 use App\Service\historiqueOperation\Atelier\Dit\HistoriqueOperationDITService;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -20,6 +22,9 @@ class OrCsaATraiterApi extends Controller
 
     private $orCsaATraiterListeModel;
 
+    /** @var DitModel */
+    private $ditModel;
+
     /** @var HistoriqueOperationDITService */
     private $historiqueOperationDit;
 
@@ -29,25 +34,21 @@ class OrCsaATraiterApi extends Controller
 
         $this->ditCreationService = new DitCreationService(
             $this->getEntityManager(),
-            new \App\Factory\Atelier\Dit\DitFactory(
+            new DitFactory(
                 $this->getSecurityService(),
                 $this->getEntityManager()
             ),
-            new \App\Model\Atelier\Dit\DitModel()
+            new DitModel()
         );
 
         $this->orCsaATraiterListeModel   = new OrCsaATraiterListeModel($this->getSecurityService());
         $this->historiqueOperationDit    = new HistoriqueOperationDITService($this->getEntityManager());
+        $this->ditModel                = new DitModel();
     }
 
     /**
      * Envoie les OR sélectionnés pour traitement → crée une DIT par OR.
      *
-     * @Route("/or-csa/envoyer", name="api_or_csa_envoyer", methods={"POST"})
-     */
-    /**
-     * Envoie les OR sélectionnés pour traitement.
-     * 
      * @Route("/or-csa/envoyer", name="api_or_csa_envoyer", methods={"POST"})
      */
     public function envoyerPourTraitement(Request $request): JsonResponse
@@ -113,7 +114,7 @@ class OrCsaATraiterApi extends Controller
                     'agenceIps'  => $agence,
                     'serviceIps' => $service,
                 ];
-                $numeroDit = $this->orCsaATraiterListeModel->getNextNumeroDitForCurrentMonth();
+                $numeroDit = $this->ditModel->getNextNumeroDitOrForCurrentMonth();
 
                 $resultat = $this->ditCreationService->creerDepuisOr(
                     $orData,

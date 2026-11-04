@@ -302,35 +302,5 @@ WHERE e.seor_numor = '21002094'
 
         return $normalized;
     }
-    public function getNextNumeroDitForCurrentMonth(string $prefix = 'DIT'): string
-    {
-        $now         = new \DateTime();
-        $yyMm        = $now->format('ym');
-        $pattern     = $prefix . $yyMm;
-        $expectedLen = strlen($pattern) + 4;
-        $patternEsc  = str_replace("'", "''", $pattern);
-
-        $statement = "
-        SELECT MAX(numero_demande_dit) AS max_numero
-          FROM {$this->dbIrium}.demande_intervention
-         WHERE numero_demande_dit LIKE '{$patternEsc}%'
-           AND LEN(numero_demande_dit) = {$expectedLen}
-    ";
-
-        $result = $this->connect->executeQuery($statement);
-        $data   = $this->convertirEnUtf8($this->connect->fetchResults($result));
-
-        $dernier = null;
-        if (!empty($data[0])) {
-            $row     = $data[0];
-            $dernier = $row['max_numero'] ?? $row['MAX_NUMERO'] ?? null;
-        }
-
-        $sequence = 1;
-        if ($dernier && str_starts_with($dernier, $pattern)) {
-            $sequence = (int) substr($dernier, strlen($pattern)) + 1;
-        }
-
-        return $pattern . str_pad((string) $sequence, 4, '0', STR_PAD_LEFT);
-    }
+    
 }

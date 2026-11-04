@@ -97,7 +97,7 @@ class DitFactory
         return $worNiveauUrgenceModel->getP2Description();
     }
 
-    private function genererNumeroDit(bool $depuisOr = false): string
+    private function genererNumeroDit(): string
     {
         $application = $this->em->getRepository(Application::class)
             ->findOneBy(['codeApp' => ApplicationConstant::CODE_DIT]);
