@@ -144,4 +144,6 @@ class DitDto
 
     // --- OR : fin souhaitée (cartographie date_fin_souhaite) ---
     public ?string $dateFinSouhaite = null;  // format 'Y-m-d'
+
+    public ?string $sourceCreation = 'FORMULAIRE';
 }

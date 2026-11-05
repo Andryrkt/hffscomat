@@ -228,13 +228,48 @@ document.addEventListener("DOMContentLoaded", () => {
           totalLabel.textContent = Math.max(0, cur - removed) + " Résultats";
         }
 
+        // ✅ Construire la liste à partir de result.details
+        const succes = (result.details || []).filter((d) => d.success);
+        const echecs = (result.details || []).filter((d) => !d.success);
+
+        const lignesSucces = succes
+          .map(
+            (d) =>
+              `<li><span class="fw-bold text-success">${d.numeroDit ?? d.numeroOr}</span>
+       <small class="text-muted">(OR ${d.numeroOr})</small></li>`,
+          )
+          .join("");
+
+        const lignesEchecs = echecs
+          .map(
+            (d) =>
+              `<li><span class="fw-bold text-danger">${d.numeroOr}</span>
+       <small class="text-muted">— ${d.message ?? "échec"}</small></li>`,
+          )
+          .join("");
+
+        let htmlMsg = "";
+        if (succes.length) {
+          htmlMsg += `<p class="mb-1">DIT créée(s) :</p><ul class="text-start">${lignesSucces}</ul>`;
+        }
+        if (echecs.length) {
+          htmlMsg += `<p class="mb-1 mt-2">OR en échec :</p><ul class="text-start">${lignesEchecs}</ul>`;
+        }
+
         Swal.fire({
-          icon: "success",
-          title: "Transmission réussie !",
-          html: `Les OR suivants ont été envoyés pour traitement :<br><br>
-                 <span class="fw-bold text-success fs-5">${result.ors.join(" - ")}</span>`,
+          icon:
+            echecs.length === 0
+              ? "success"
+              : succes.length
+                ? "warning"
+                : "error",
+          title:
+            echecs.length === 0
+              ? "Transmission réussie !"
+              : "Transmission partielle",
+          html: htmlMsg || result.message,
           confirmButtonText: "OK",
-          confirmButtonColor: "#198754",
+          confirmButtonColor: echecs.length === 0 ? "#198754" : "#f0ad4e",
         }).then(() => {
           if (document.querySelectorAll(".or-row-selector").length === 0) {
             window.location.reload();

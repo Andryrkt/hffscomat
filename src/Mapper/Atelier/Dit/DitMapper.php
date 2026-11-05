@@ -57,6 +57,10 @@ class DitMapper
             'agence_debiteur_id' => $dto->agence !== null ? $dto->agence->getId() : null,
             'service_debiteur_id' => $dto->service !== null ? $dto->service->getId() : null,
             'mail_client' => $dto->mailClient,
+            'source_creation' => $dto->sourceCreation ?? 'FORMULAIRE',
+            'numero_or' =>  $dto->numeroOr ?? null,
+            'statut_or' => $dto->statutOr ?? null
+
         ];
     }
 

@@ -61,6 +61,9 @@ class DitCreationService
         // ↑ initialisation() remplit déjà agenceEmetteur, serviceEmetteur,
         //   agence, service, worNiveauUrgence, codeSociete.
 
+        // important
+        $dto->sourceCreation = 'OR';
+
         // ---------- 1. Mapping direct ----------
         $dto->numeroOr     = $orData['numero_or']     ?? null;
         $dto->statutOr     = 'Validé';
@@ -86,6 +89,7 @@ class DitCreationService
         $dto->avisRecouvrement  = 'NON';
         $dto->clientSousContrat = 'OUI';
         $dto->livraisonPartiel  = 'NON';
+        $dto->statutOr  = 'Validé';
         $dto->id_statut_demande = 53;
 
         // ---------- 4. Champs calculés ----------
@@ -113,10 +117,10 @@ class DitCreationService
 
         // ---------- 8. Finalisation ----------
         $avecMateriel = !empty($dto->idMateriel);
-
         $dto = $this->ditFactory->apresSoumission($dto, $avecMateriel, $numeroDit);
-
-        return $this->executerCreation($dto, [null, null, null], "{$numeroDit}_{$dto->agence->getCodeAgence()}{$dto->service->getCodeService()}.pdf");
+        [$nomFichierEnregistrer, $nomFichier] = (new TraitementFichierService())
+            ->genererPdfSansFichier($dto);
+        return $this->executerCreation($dto, $nomFichierEnregistrer, $nomFichier);
     }
 
     /**

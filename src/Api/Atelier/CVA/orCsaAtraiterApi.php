@@ -141,7 +141,6 @@ class OrCsaATraiterApi extends Controller
                     'numeroDit' => $resultat['numero']  ?? null,
                     'success'   => $resultat['success'] ?? false,
                     'message'   => $resultat['message'] ?? '',
-                    'debug'     => $orData,
                 ];
             } catch (\Throwable $e) {
                 $nbEchecs++;
