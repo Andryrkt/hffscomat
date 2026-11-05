@@ -2,7 +2,7 @@
 
 namespace App\Model\Atelier\Dit\Soumission;
 
-
+use App\Constants\atelier\dit\soumission\ORs\ConstantStatutOr;
 use App\Dto\atelier\dit\soumission\OrSoumissionDto;
 use App\Mapper\Atelier\Dit\Soumission\OrSoumissionMapper;
 use App\Model\Informix\InsertQueryBuilder;
@@ -991,5 +991,91 @@ class DitOrSoumisAValidationModel extends Model
         $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
 
         return $data[0]['langue'] ?? null;
+    }
+
+
+    /**
+     * Insère l'OR dans ors_soumis_a_validation dès la création de la DIT (scénario B).
+     * Réutilise recupOrSoumisValidation() pour les données ITV (IPS).
+     *
+     * @return bool true = inséré, false = déjà présent (idempotent)
+     */
+    public function enregistrerOrInitial(
+        string $numeroOr,
+        string $numeroDit,
+        string $codeSociete,
+        int    $numeroVersion = 1,
+        string $statut = ConstantStatutOr::STATUT_VALIDE
+    ): bool {
+        $versionMax = $this->findNumeroVersionMax($numeroOr, $codeSociete);
+        if ((int) ($versionMax ?? 0) > 0) {
+            return false;   // une version >= 1 existe déjà → skip
+        }
+        // Données IPS
+        $ors = $this->recupOrSoumisValidation($numeroOr, $codeSociete);
+        $dateJour  = date('Y-m-d');
+        $heureJour = date('H:i:s');
+        if (empty($ors)) {
+            // Ligne coquille : pas d'ITV côté IPS
+            $rows = [[
+                'numerodit'                   => $numeroDit,
+                'numeroor'                    => $numeroOr,
+                'numeroitv'                   => null,      // pas d'ITV
+                'datesoumission'              => $dateJour,
+                'heuresoumission'             => $heureJour,
+                'nombreligneitv'              => 0,
+                'montantitv'                  => 0,
+                'numeroversion'               => $numeroVersion,
+                'montantpiece'                => 0,
+                'montantmo'                   => 0,
+                'montantachatlocaux'          => 0,
+                'montantfraisdivers'          => 0,
+                'montantlubrifiants'          => 0,
+                'libellelitv'                 => '',
+                'observation'                 => null,
+                'statut'                      => $statut,
+                'code_societe'                => $codeSociete,
+                'piece_faible_activite_achat' => 0,
+                'date_validation_or'          => $dateJour,
+            ]];
+        } else {
+            $rows = [];
+            foreach ($ors as $item) {
+                $rows[] = [
+                    'numerodit'                   => $numeroDit,
+                    'numeroor'                    => $numeroOr,
+                    'numeroitv'                   => $item['numero_itv'],
+                    'datesoumission'              => $dateJour,
+                    'heuresoumission'             => $heureJour,
+                    'nombreligneitv'              => $item['nombre_ligne'],
+                    'montantitv'                  => $item['montant_itv'],
+                    'numeroversion'               => $numeroVersion,
+                    'montantpiece'                => $item['montant_piece'],
+                    'montantmo'                   => $item['montant_mo'],
+                    'montantachatlocaux'          => $item['montant_achats_locaux'],
+                    'montantfraisdivers'          => $item['montant_divers'],
+                    'montantlubrifiants'          => $item['montant_lubrifiants'],
+                    'libellelitv'                 => $item['libelle_itv'],
+                    'observation'                 => null,
+                    'statut'                      => $statut,
+                    'code_societe'                => $codeSociete,
+                    'piece_faible_activite_achat' => 0,
+                    'date_validation_or'          => $dateJour,
+                ];
+            }
+        }
+
+        $this->connect->connect();
+        try {
+            foreach ($rows as $donnees) {
+                $builder = new InsertQueryBuilder("{$this->dbIrium}.ors_soumis_a_validation");
+                $builder->setData($donnees);
+                $result = $builder->build();
+                $this->connect->executeQuery($result['sql'], $result['params']);
+            }
+        } finally {
+            $this->connect->close();
+        }
+        return true;
     }
 }

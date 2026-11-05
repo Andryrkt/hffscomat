@@ -15,8 +15,8 @@ class OrCsaATraiterListeModel extends Model
     private int   $delaiAllocation  = 90;
     private int   $toleranceFenetre = 10;
     // Types a changer en ['222', '229'] pour la prod
-    private array $typesOr          = ['222', '229'];
-    // private array $typesOr          = ['201', '202'];
+    // private array $typesOr          = ['222', '229'];
+    private array $typesOr          = ['201', '202'];
     private int   $anneeMin         = 2025;
 
     private FiltreService $filtreService;
@@ -26,8 +26,8 @@ class OrCsaATraiterListeModel extends Model
         int $delaiAllocation = 90,
         int $toleranceFenetre = 10,
         // Types a changer en ['222', '229'] pour la prod
-        array $typesOr          = ['222', '229'],
-        // array $typesOr          = ['201', '202'],
+        // array $typesOr          = ['222', '229'],
+        array $typesOr          = ['201', '202'],
 
 
         int $anneeMin = 2025
@@ -58,7 +58,6 @@ class OrCsaATraiterListeModel extends Model
 
         // Requête « métier » : SELECT DISTINCT + WHERE + colonnes calculées
         $innerQuery = $this->buildBaseQuery($conditions, $conditionsMultisucursal);
-
         // ---------- Requête paginée ----------
         // Wrapping nécessaire pour appliquer SKIP/FIRST + ORDER BY sur
         // le résultat dédupliqué (DISTINCT).
@@ -125,8 +124,7 @@ class OrCsaATraiterListeModel extends Model
         $d = $this->delaiAllocation;                       // seuil « J-90 »
         $h = $this->delaiAllocation + $this->toleranceFenetre; // borne haute fenêtre
 
-        return "
-            SELECT DISTINCT
+        return "SELECT DISTINCT
                 seor_numor,
                 seor_numcli || ' - ' || seor_nomcli AS client,
                 seor_lib                            AS reference_client,
@@ -163,6 +161,15 @@ class OrCsaATraiterListeModel extends Model
               AND YEAR(seor_dateor) >= {$this->anneeMin}
               AND slor_qtewait > 0
               AND seor_delai IS NOT NULL
+
+              ---SOLUTION PROVISOIRE A REVOIR
+              AND NOT EXISTS (
+                        SELECT 1 
+                            FROM {$this->dbIrium}.demande_intervention d0_
+                        WHERE d0_.numero_or    = seor_numor
+                            AND d0_.code_societe = seor_soc
+              )
+              -----
               {$conditions}
               {$conditionsMultisucursal}
         ";
@@ -242,66 +249,51 @@ class OrCsaATraiterListeModel extends Model
 
     /**
      * Récupère un OR par son numéro, dans le périmètre société de l'utilisateur.
-     * Retourne un tableau dont les clés correspondent aux champs attendus par
-     * DitCreationService::creerDepuisOr(). Null si l'OR n'existe pas / hors périmètre.
+     * Retourne un tableau normalisé (clés en minuscules) prêt pour
+     * DitCreationService::creerDepuisOr().
      *
      * @return array<string,mixed>|null
      */
     public function findOrByNumero(string $numOr, string $codeSociete): ?array
     {
-        // Échappement manuel (pas de prepared statement dans ce Model)
         $numOrEsc   = str_replace("'", "''", $numOr);
         $codeSocEsc = str_replace("'", "''", $codeSociete);
 
-        $statement = "
-        SELECT
-            e.seor_numor                        AS numero_or,
-            e.seor_soc                          AS code_societe,
-            e.seor_succ                         AS code_succursale,
-            e.seor_dateor                       AS date_or,
-            e.seor_delai                        AS lead_time,
-            e.seor_numcli                       AS numero_client,
-            e.seor_nomcli                       AS nom_client,
-            e.seor_lib                          AS reference_client,
-            e.seor_typeor                       AS code_type_or,
-            c.aces_lib                          AS libelle_type_or,
+        $statement = "SELECT
+            e.seor_numor            AS numero_or,
+            e.seor_soc              AS code_societe,
+            e.seor_succ             AS code_agence,
+            e.seor_servcrt          AS code_service,
+            e.seor_dateor           AS date_or,
+            e.seor_delai            AS date_prevue_travaux,
+            e.seor_delai            AS date_limite_souhaite,
+            e.seor_numcli           AS numero_client,
+            e.seor_nomcli           AS nom_client,
+            e.seor_lib              AS reference_client,
+            e.seor_typeor           AS code_type_or,
+            e.seor_nummat           AS id_materiel,
+            c.aces_lib              AS libelle_type_or,
             e.seor_typeor || ' - ' || c.aces_lib AS type_or,
-
-            -- ⚠️ TODO : compléter selon les colonnes réelles de sav_eor
-            -- NULL                              AS statut_or,
-            -- NULL                              AS mail_client,
-            -- NULL                              AS numero_telephone,
-            -- NULL                              AS objet_demande,
-            -- NULL                              AS detail_demande,
-            -- NULL                              AS type_document,
-            -- NULL                              AS categorie_demande,
-            -- NULL                              AS type_reparation,
-            -- NULL                              AS demande_devis,
-            -- NULL                              AS client_sous_contrat,
-            -- NULL                              AS avis_recouvrement,
-            -- NULL                              AS internet_externe,
-            -- NULL                              AS date_prevue_travaux,
-
-            -- ⚠️ TODO : adapter aux noms réels des colonnes sav_lor
-            l.slor_articl                       AS id_materiel,
-            l.slor_numparc                      AS numero_parc,
-            l.slor_nuserie                      AS numero_serie
-            -- NULL                              AS km,
-            -- NULL                              AS heure
+            m.mmat_recalph           AS numero_parc,
+            m.mmat_numserie           AS numero_serie
         FROM {$this->dbIps}.sav_eor e
         INNER JOIN {$this->dbIps}.agr_ces c
             ON  c.aces_soc = e.seor_soc
             AND c.aces_nat = e.seor_typeor
-        LEFT JOIN {$this->dbIps}.sav_lor l
-            ON  l.slor_soc   = e.seor_soc
-            AND l.slor_succ  = e.seor_succ
-            AND l.slor_numor = e.seor_numor
-            AND l.slor_qtewait > 0
-        WHERE e.seor_numor = '{$numOrEsc}'
-          AND e.seor_soc   = '{$codeSocEsc}'
-        FETCH FIRST 1 ROWS ONLY
+        LEFT JOIN mat_mat m
+            ON  m.mmat_nummat = e.seor_nummat
+        WHERE e.seor_numor = '$numOrEsc'
+        AND e.seor_soc   = '$codeSocEsc'
+        AND 
+        EXISTS (
+            SELECT 1 FROM {$this->dbIps}.sav_lor l
+            WHERE l.slor_soc   = e.seor_soc
+                AND l.slor_succ  = e.seor_succ
+                AND l.slor_numor = e.seor_numor
+                AND l.slor_qtewait > 0
+                );
+        
     ";
-        dd($statement);
 
         $result = $this->connect->executeQuery($statement);
         $rows   = $this->convertirEnUtf8($this->connect->fetchResults($result));
@@ -310,7 +302,7 @@ class OrCsaATraiterListeModel extends Model
             return null;
         }
 
-        // Normalisation : DB2 peut retourner les clés en MAJUSCULES
+        // Normalisation des clés (DB2 renvoie parfois en MAJUSCULES)
         $normalized = [];
         foreach ($rows[0] as $key => $value) {
             $normalized[strtolower($key)] = $value;

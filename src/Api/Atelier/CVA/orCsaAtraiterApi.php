@@ -3,7 +3,12 @@
 namespace App\Api\Atelier\CVA;
 
 use App\Controller\Controller;
-use App\Model\Atelier\CVA\OrCsaATraiterListeModel;          // ⚠️ adapter au bon namespace
+use App\Entity\admin\Agence;
+use App\Entity\admin\Service;
+use App\Factory\Atelier\Dit\DitFactory;
+use App\Model\Atelier\CVA\OrCsaATraiterListeModel;
+use App\Model\Atelier\Dit\DitModel;
+use App\Model\Atelier\Dit\Soumission\DitOrSoumisAValidationModel;
 use App\Service\atelier\dit\DitCreationService;
 use App\Service\historiqueOperation\Atelier\Dit\HistoriqueOperationDITService;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -18,38 +23,40 @@ class OrCsaATraiterApi extends Controller
     /** @var DitCreationService */
     private $ditCreationService;
 
-    /** @var OrCsaATraiterListeModel */
     private $orCsaATraiterListeModel;
+
+    /** @var DitModel */
+    private $ditModel;
 
     /** @var HistoriqueOperationDITService */
     private $historiqueOperationDit;
+
+
+    /** @var DitOrSoumisAValidationModel */
+    private $ditOrSoumisAValidationModel;
 
     public function __construct()
     {
         parent::__construct();
 
-        // ✅ mêmes dépendances que DitController → même pipeline
         $this->ditCreationService = new DitCreationService(
             $this->getEntityManager(),
-            new \App\Factory\Atelier\Dit\DitFactory(
+            new DitFactory(
                 $this->getSecurityService(),
                 $this->getEntityManager()
             ),
-            new \App\Model\Atelier\Dit\DitModel()
+            new DitModel()
         );
 
         $this->orCsaATraiterListeModel   = new OrCsaATraiterListeModel($this->getSecurityService());
         $this->historiqueOperationDit    = new HistoriqueOperationDITService($this->getEntityManager());
+        $this->ditModel                  = new DitModel();
+        $this->ditOrSoumisAValidationModel  = new DitOrSoumisAValidationModel();
     }
 
     /**
      * Envoie les OR sélectionnés pour traitement → crée une DIT par OR.
      *
-     * @Route("/or-csa/envoyer", name="api_or_csa_envoyer", methods={"POST"})
-     */
-    /**
-     * Envoie les OR sélectionnés pour traitement.
-     * 
      * @Route("/or-csa/envoyer", name="api_or_csa_envoyer", methods={"POST"})
      */
     public function envoyerPourTraitement(Request $request): JsonResponse
@@ -68,43 +75,117 @@ class OrCsaATraiterApi extends Controller
 
         // Code Société de l'utilisateur
         $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
+        $resultats = [];
+        $nbSucces  = 0;
+        $nbEchecs  = 0;
+        foreach ($orsSelectionnes as $numOr) {
+            try {
+                // 1. Récupération des données complètes de l'OR
+                $orData = $this->orCsaATraiterListeModel->findOrByNumero($numOr, $codeSociete);
+                if (empty($orData)) {
+                    $nbEchecs++;
+                    $resultats[] = [
+                        'numeroOr' => $numOr,
+                        'success'  => false,
+                        'message'  => "OR introuvable : {$numOr}",
+                    ];
+                    continue;
+                }
+                // Récupération des entités Agence/Service à partir des codes IPS
+                $em      = $this->getEntityManager();
+                $agence  = $em->getRepository(Agence::class)
+                    ->findOneBy([
+                        'codeAgence'  => $orData['code_agence'],
+                    ]);
+                $service = $em->getRepository(Service::class)
+                    ->findOneBy([
+                        'codeService' => $orData['code_service'],
+                    ]);
 
-        // -----------------------------------------------------------------
-        // 🚧 TRAITEMENT MÉTIER (À décommenter et adapter plus tard)
-        // -----------------------------------------------------------------
-        /*
-        try {
-            // Exemple de logique : mise à jour du statut dans demandeIntervention
-            // $entityManager = $this->getDoctrine()->getManager();
-            
-            foreach ($orsSelectionnes as $numOr) {
-                // Requête pour changer le statut_or
-                // Exemple avec un Model :
-                // $this->orCsaATraiterListeModel->updateStatutOr($numOr, 'ENVOYE_POUR_TRAITEMENT', $codeSociete);
-                
-                // Ou avec Doctrine (si demandeIntervention est une entité) :
-                // $dit = $entityManager->getRepository(DemandeIntervention::class)->findOneBy(['numeroOr' => $numOr]);
-                // if ($dit) {
-                //     $dit->setStatutOr('ENVOYE_POUR_TRAITEMENT');
-                // }
+                if (!$agence || !$service) {
+                    $nbEchecs++;
+                    $resultats[] = [
+                        'numeroOr' => $numOr,
+                        'success'  => false,
+                        'message'  => sprintf(
+                            'Agence/Service introuvable pour OR %s (agence=%s, service=%s)',
+                            $numOr,
+                            $orData['code_agence']  ?? 'null',
+                            $orData['code_service'] ?? 'null'
+                        ),
+                    ];
+                    continue;
+                }
+
+                // ✅ $agenceService avec les clés attendues par la factory
+                $agenceService = [
+                    'agenceIps'  => $agence,
+                    'serviceIps' => $service,
+                ];
+                $numeroDit = $this->ditModel->getNextNumeroDitOrForCurrentMonth();
+                // 3. Création de la DIT
+                $resultat = $this->ditCreationService->creerDepuisOr(
+                    $orData,
+                    $codeSociete,
+                    $agenceService,
+                    $numeroDit
+                );
+                if (!empty($resultat['success'])) {
+                    // insertion dans ors_soumis_a_validation 
+                    try {
+                        $this->ditOrSoumisAValidationModel->enregistrerOrInitial(
+                            (string) $numOr,
+                            (string) $numeroDit,
+                            (string) $codeSociete,
+                            1,
+                        );
+                    } catch (\Throwable $e) {
+                        // La DIT existe déjà côté IPS : on ne casse pas le retour utilisateur
+                        error_log("[ors_soumis_a_validation] OR {$numOr} : " . $e->getMessage());
+                    }
+
+                    // Historique
+                    $this->historiqueOperationDit->enregistrer(
+                        'ENVOI_OR_VERS_DIT',
+                        (int) ($resultat['numero'] ?? $numOr),
+                        $codeSociete
+                    );
+                    $nbSucces++;
+                } else {
+                    $nbEchecs++;
+                }
+
+                $resultats[] = [
+                    'numeroOr'  => $numOr,
+                    'numeroDit' => $resultat['numero']  ?? null,
+                    'success'   => $resultat['success'] ?? false,
+                    'message'   => $resultat['message'] ?? '',
+                ];
+            } catch (\Throwable $e) {
+                $nbEchecs++;
+                $resultats[] = [
+                    'numeroOr' => $numOr,
+                    'success'  => false,
+                    'message'  => 'Erreur : ' . $e->getMessage(),
+                ];
             }
-            
-            // $entityManager->flush();
-            
-        } catch (\Exception $e) {
-            return new JsonResponse([
-                'success' => false,
-                'message' => 'Erreur lors de la mise à jour : ' . $e->getMessage()
-            ], 500);
         }
-        */
-        // -----------------------------------------------------------------
 
-        // 2. Retour de succès (immédiat pour l'instant)
+        $message = sprintf(
+            '%d DIT créée(s) sur %d OR sélectionné(s).',
+            $nbSucces,
+            count($orsSelectionnes)
+        );
+        if ($nbEchecs > 0) {
+            $message .= sprintf(' %d échec(s).', $nbEchecs);
+        }
+
         return new JsonResponse([
-            'success' => true,
-            'ors'     => $orsSelectionnes,
-            'message' => 'Les OR ont bien été transmis.'
+            'success'  => $nbSucces > 0,
+            'message'  => $message,
+            'nbSucces' => $nbSucces,
+            'nbEchecs' => $nbEchecs,
+            'details'  => $resultats,
         ]);
     }
 }

@@ -590,4 +590,42 @@ class DitModel extends Model
             ? $this->convertirEnUtf8($data[0])
             : [];
     }
+
+    /**
+     * Prochain numéro DIT pour le mois courant — cas OR.
+     *
+     * - Filtre source_creation = 'OR'
+     * - Si aucune DIT OR n'existe pour le mois → démarre à DITAAMM0001
+     * - Sinon → MAX + 1
+     * - Reset automatique au changement de mois
+     */
+    public function getNextNumeroDitOrForCurrentMonth(string $prefix = 'DIT'): string
+    {
+        $now         = new \DateTime();
+        $yyMm        = $now->format('ym');
+        $pattern     = $prefix . $yyMm;                     // ex : 'DIT2611'
+        $expectedLen = strlen($pattern) + 4;                // ex : 11
+        $patternEsc  = str_replace("'", "''", $pattern);
+
+        $statement = "
+        SELECT MAX(numero_demande_dit) AS max_numero
+          FROM {$this->dbIrium}.demande_intervention
+         WHERE numero_demande_dit LIKE '{$patternEsc}%'
+           AND LEN(numero_demande_dit) = {$expectedLen}
+           AND source_creation = 'OR'
+    ";
+
+        $result = $this->connect->executeQuery($statement);
+        $data   = $this->convertirEnUtf8($this->connect->fetchResults($result));
+
+        $dernier = $data[0]['max_numero'] ?? $data[0]['MAX_NUMERO'] ?? null;
+
+        // 🔑 Fallback : aucune DIT OR pour ce mois → DITAAMM0001
+        $sequence = 1;
+        if ($dernier && str_starts_with($dernier, $pattern)) {
+            $sequence = (int) substr($dernier, strlen($pattern)) + 1;
+        }
+
+        return $pattern . str_pad((string) $sequence, 4, '0', STR_PAD_LEFT);
+    }
 }

@@ -3,10 +3,12 @@
 
 namespace App\Service\Atelier\Dit;
 
+use App\Constants\atelier\dit\soumission\ORs\ConstantStatutOr;
 use App\Dto\Atelier\Dit\DitDto;
 use App\Factory\Atelier\Dit\DitFactory;
 use App\Mapper\Atelier\Dit\DitMapper;
 use App\Model\Atelier\Dit\DitModel;
+use App\Model\Atelier\Dit\WorNiveauUrgenceModel;
 use App\Service\atelier\dit\TraitementFichierService;
 use App\Service\genererPdf\dit\GenererPdfDit;
 use App\Service\historiqueOperation\EtapeOperationException;
@@ -51,65 +53,92 @@ class DitCreationService
     /**
      * Cas 2 : création depuis un OR
      */
-    public function creerDepuisOr(array $orData, string $codeSociete, array $agenceService): array
+    public function creerDepuisOr(array $orData, string $codeSociete, array $agenceService, string $numeroDit): array
     {
+        $now = new \DateTime();
+
+        /** @var DitDto $dto */
         $dto = $this->ditFactory->initialisation($agenceService, $codeSociete);
+        // ↑ initialisation() remplit déjà agenceEmetteur, serviceEmetteur,
+        //   agence, service, worNiveauUrgence, codeSociete.
 
-        // ---- MAPPING OR → DIT (à compléter selon tes colonnes réelles) ----
-        $dto->numeroOr          = $orData['numero_or']           ?? null;
-        $dto->statutOr          = $orData['statut_or']           ?? null;
-        $dto->numeroClient      = $orData['numero_client']       ?? null;
-        $dto->nomClient         = $orData['nom_client']          ?? null;
-        $dto->mailClient        = $orData['mail_client']         ?? null;
-        $dto->numeroTel         = $orData['numero_telephone']    ?? null;
-        $dto->objetDemande      = $orData['objet_demande']       ?? null;
-        $dto->detailDemande     = $orData['detail_demande']      ?? null;
-        $dto->typeDocument      = $orData['type_document']       ?? null;
-        $dto->categorieDemande  = $orData['categorie_demande']   ?? null;
-        $dto->typeReparation    = $orData['type_reparation']     ?? null;
-        $dto->demandeDevis      = $orData['demande_devis']       ?? null;
-        $dto->clientSousContrat = $orData['client_sous_contrat'] ?? null;
-        $dto->avisRecouvrement  = $orData['avis_recouvrement']   ?? null;
-        $dto->internetExterne   = $orData['internet_externe']    ?? null;
+        // important
+        $dto->sourceCreation = 'OR';
 
-        $dto->dateSoumissionOr = !empty($orData['date_or'])
-            ? new \DateTime($orData['date_or']) : null;
-        $dto->datePrevueTravaux = !empty($orData['date_prevue_travaux'])
-            ? new \DateTime($orData['date_prevue_travaux']) : null;
+        // ---------- 1. Mapping direct ----------
+        $dto->numeroOr     = $orData['numero_or']     ?? null;
+        $dto->statutOr     = 'Validé';
+        // $dto->codeSociete déjà rempli par initialisation() — mais on peut forcer :
+        $dto->codeSociete  = $orData['code_societe']  ?? $codeSociete;
+        $dto->numeroClient = $orData['numero_client'] ?? null;
+        $dto->nomClient    = $orData['nom_client']    ?? null;
 
-        $dto->idMateriel = $orData['id_materiel']  ?? null;
-        $dto->numParc    = $orData['numero_parc']  ?? null;
-        $dto->numSerie   = $orData['numero_serie'] ?? null;
-        $dto->km         = $orData['km']           ?? null;
-        $dto->heure      = $orData['heure']        ?? null;
+        $dto->idMateriel = isset($orData['id_materiel'])  ? (string) $orData['id_materiel']  : null;
+        $dto->numParc  = isset($orData['numero_parc'])  && trim((string) $orData['numero_parc'])  !== ''
+            ? trim((string) $orData['numero_parc'])
+            : null;
 
-        $avecMateriel = !empty($dto->idMateriel)
-            || !empty($dto->numParc)
-            || !empty($dto->numSerie);
+        $dto->numSerie = isset($orData['numero_serie']) && trim((string) $orData['numero_serie']) !== ''
+            ? trim((string) $orData['numero_serie'])
+            : null;
 
-        $dto = $this->ditFactory->apresSoumission($dto, $avecMateriel);
+        $dto->dateSoumissionOr  = $this->toDateString($orData['date_or']             ?? null);
+        $dto->datePrevueTravaux = $this->toDateTime($orData['date_prevue_travaux'] ?? null);
 
-        return $this->executerCreation($dto, [null, null, null], null);
+        // ---------- 3. Valeurs fixes ----------
+        $dto->internetExterne   = 'Externe';
+        $dto->avisRecouvrement  = 'NON';
+        $dto->clientSousContrat = 'OUI';
+        $dto->livraisonPartiel  = 'NON';
+        $dto->statutOr  = ConstantStatutOr::STATUT_VALIDE;
+        $dto->id_statut_demande = 53;
+
+        // ---------- 4. Champs calculés ----------
+        $leadTime       = $this->calculerLeadTime($orData['date_prevue_travaux'] ?? null);
+        $numeroMateriel = $dto->idMateriel ?? '';
+        $dto->objetDemande  = trim(sprintf('CVI %s %s ', $numeroMateriel, $leadTime));
+        $dto->detailDemande  = '...';
+
+        // ---------- 5. Date / heure du jour ----------
+        $dto->dateDemande      = $now->format('Y-m-d');
+        $dto->heureDemande     = $now->format('H:i:s');
+        $dto->dateValidationOr = $now->format('Y-m-d');
+
+        // ---------- 6. À arbitrer ----------
+        $dto->typeDocument      = 'Autres';
+        $dto->typeReparation    = 'AUTRES';
+        $dto->reparationRealise = 'WS SCOMAT';
+        $dto->categorieDemande  = 'AUTRES';
+        $dto->sectionAffectee   = null;
+        $dto->mailDemandeur     = null;
+
+        // ---------- 7. DocuWare ----------
+        $dto->pdfDeposerDw   = 0;
+        $dto->dateDepotPdfDw = null;
+
+        // ---------- 8. Finalisation ----------
+        $avecMateriel = !empty($dto->idMateriel);
+        $dto = $this->ditFactory->apresSoumission($dto, $avecMateriel, $numeroDit);
+        [$nomFichierEnregistrer, $nomFichier] = (new TraitementFichierService())
+            ->genererPdfSansFichier($dto);
+        return $this->executerCreation($dto, $nomFichierEnregistrer, $nomFichier);
     }
 
     /**
      * Pipeline commun (DB → DocuWare → mise à jour DW)
      */
-    private function executerCreation(DitDto $dto, $nomFichierEnregistrer, $nomFichier): array
+    private function executerCreation(DitDto $dto, array $nomFichierEnregistrer, string $nomFichier): array
     {
         $numero  = $dto->numeroDemandeIntervention;
         $suivi   = SuiviOperationService::demarrer(SuiviOperationService::TYPE_DIT, (string) $numero);
         $message = 'Votre demande a été enregistrée';
         $copieOk = false;
-
         try {
             $self = $this;
-
             $suivi->etape('Enregistrement base de données', function () use ($self, $dto, $nomFichierEnregistrer) {
                 $data = DitMapper::DtoToArray($dto, $self->getEntityManager(), $nomFichierEnregistrer);
                 $self->getDitModel()->enregistrementDit($data);
             });
-
             $genererPdfDit = new GenererPdfDit();
             try {
                 $copieOk = $suivi->etape('Copie DocuWare', function () use ($genererPdfDit, $nomFichier, $numero) {
@@ -150,5 +179,56 @@ class DitCreationService
     public function getDitModel(): DitModel
     {
         return $this->ditModel;
+    }
+
+    private function toDateString($value): ?string
+    {
+        if (empty($value)) {
+            return null;
+        }
+        if ($value instanceof \DateTimeInterface) {
+            return $value->format('Y-m-d');
+        }
+        try {
+            return (new \DateTime((string) $value))->format('Y-m-d');
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+    private function toDateTime($value): ?\DateTime
+    {
+        if (empty($value)) {
+            return null;
+        }
+        if ($value instanceof \DateTimeInterface) {
+            return new \DateTime($value->format('Y-m-d'));
+        }
+        try {
+            return new \DateTime((string) $value);
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+    private function calculerLeadTime($dateDelai): string
+    {
+        $dt = $this->toDateTime($dateDelai);
+        if (!$dt) {
+            return '';
+        }
+        $jours = (int) (new \DateTime('today'))->diff($dt)->format('%r%a');
+        return $jours > 0 ? $jours . 'j' : '0j';
+    }
+
+    /**
+     * Recupératin du niveau d'urence P2
+     *
+     * @return string|null
+     */
+    private function getP2NiveauUrgence(): ?string
+    {
+        $worNiveauUrgenceModel = new WorNiveauUrgenceModel();
+        return $worNiveauUrgenceModel->getP2Description();
     }
 }
