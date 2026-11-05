@@ -275,8 +275,8 @@ INNER JOIN {$this->dbIps}.agr_ces c
     AND c.aces_nat = e.seor_typeor
 LEFT JOIN mat_mat m
     ON  m.mmat_nummat = e.seor_nummat
-WHERE e.seor_numor = '21002094'
-  AND e.seor_soc   = 'HF'
+WHERE e.seor_numor = '$numOrEsc'
+  AND e.seor_soc   = '$codeSocEsc'
   AND EXISTS (
       SELECT 1 FROM {$this->dbIps}.sav_lor l
        WHERE l.slor_soc   = e.seor_soc
@@ -302,5 +302,4 @@ WHERE e.seor_numor = '21002094'
 
         return $normalized;
     }
-    
 }

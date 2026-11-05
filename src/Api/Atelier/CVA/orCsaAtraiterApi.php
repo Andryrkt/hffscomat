@@ -3,9 +3,12 @@
 namespace App\Api\Atelier\CVA;
 
 use App\Controller\Controller;
+use App\Entity\admin\Agence;
+use App\Entity\admin\Service;
 use App\Factory\Atelier\Dit\DitFactory;
 use App\Model\Atelier\CVA\OrCsaATraiterListeModel;
 use App\Model\Atelier\Dit\DitModel;
+use App\Model\Atelier\Dit\Soumission\DitOrSoumisAValidationModel;
 use App\Service\atelier\dit\DitCreationService;
 use App\Service\historiqueOperation\Atelier\Dit\HistoriqueOperationDITService;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -28,6 +31,10 @@ class OrCsaATraiterApi extends Controller
     /** @var HistoriqueOperationDITService */
     private $historiqueOperationDit;
 
+
+    /** @var DitOrSoumisAValidationModel */
+    private $ditOrSoumisAValidationModel;
+
     public function __construct()
     {
         parent::__construct();
@@ -43,7 +50,8 @@ class OrCsaATraiterApi extends Controller
 
         $this->orCsaATraiterListeModel   = new OrCsaATraiterListeModel($this->getSecurityService());
         $this->historiqueOperationDit    = new HistoriqueOperationDITService($this->getEntityManager());
-        $this->ditModel                = new DitModel();
+        $this->ditModel                  = new DitModel();
+        $this->ditOrSoumisAValidationModel  = new DitOrSoumisAValidationModel();
     }
 
     /**
@@ -83,13 +91,14 @@ class OrCsaATraiterApi extends Controller
                     ];
                     continue;
                 }
-                // ✅ Récupération des entités Agence/Service à partir des codes IPS
+
+                // Récupération des entités Agence/Service à partir des codes IPS
                 $em      = $this->getEntityManager();
-                $agence  = $em->getRepository(\App\Entity\admin\Agence::class)
+                $agence  = $em->getRepository(Agence::class)
                     ->findOneBy([
                         'codeAgence'  => $orData['code_agence'],
                     ]);
-                $service = $em->getRepository(\App\Entity\admin\Service::class)
+                $service = $em->getRepository(Service::class)
                     ->findOneBy([
                         'codeService' => $orData['code_service'],
                     ]);
@@ -115,17 +124,28 @@ class OrCsaATraiterApi extends Controller
                     'serviceIps' => $service,
                 ];
                 $numeroDit = $this->ditModel->getNextNumeroDitOrForCurrentMonth();
-
+                // 3. Création de la DIT
                 $resultat = $this->ditCreationService->creerDepuisOr(
                     $orData,
                     $codeSociete,
                     $agenceService,
                     $numeroDit
                 );
-
-
-                // 4. Historique si succès
                 if (!empty($resultat['success'])) {
+                    // insertion dans ors_soumis_a_validation 
+                    try {
+                        $this->ditOrSoumisAValidationModel->enregistrerOrInitial(
+                            (string) $numOr,
+                            (string) $numeroDit,
+                            (string) $codeSociete,
+                            1,
+                        );
+                    } catch (\Throwable $e) {
+                        // La DIT existe déjà côté IPS : on ne casse pas le retour utilisateur
+                        error_log("[ors_soumis_a_validation] OR {$numOr} : " . $e->getMessage());
+                    }
+
+                    // Historique
                     $this->historiqueOperationDit->enregistrer(
                         'ENVOI_OR_VERS_DIT',
                         (int) ($resultat['numero'] ?? $numOr),

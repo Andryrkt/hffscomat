@@ -3,6 +3,7 @@
 
 namespace App\Service\Atelier\Dit;
 
+use App\Constants\atelier\dit\soumission\ORs\ConstantStatutOr;
 use App\Dto\Atelier\Dit\DitDto;
 use App\Factory\Atelier\Dit\DitFactory;
 use App\Mapper\Atelier\Dit\DitMapper;
@@ -89,14 +90,14 @@ class DitCreationService
         $dto->avisRecouvrement  = 'NON';
         $dto->clientSousContrat = 'OUI';
         $dto->livraisonPartiel  = 'NON';
-        $dto->statutOr  = 'Validé';
+        $dto->statutOr  = ConstantStatutOr::STATUT_VALIDE;
         $dto->id_statut_demande = 53;
 
         // ---------- 4. Champs calculés ----------
         $leadTime       = $this->calculerLeadTime($orData['date_prevue_travaux'] ?? null);
         $numeroMateriel = $dto->idMateriel ?? '';
         $dto->objetDemande  = trim(sprintf('CVI %s %s ', $numeroMateriel, $leadTime));
-        $dto->detailDemande  = 'Détails exemple';
+        $dto->detailDemande  = '...';
 
         // ---------- 5. Date / heure du jour ----------
         $dto->dateDemande      = $now->format('Y-m-d');
