@@ -1007,11 +1007,16 @@ class DitOrSoumisAValidationModel extends Model
         int    $numeroVersion = 1,
         string $statut = ConstantStatutOr::STATUT_VALIDE
     ): bool {
+        $versionMax = $this->findNumeroVersionMax($numeroOr, $codeSociete);
+        if ((int) ($versionMax ?? 0) > 0) {
+            return false;   // une version >= 1 existe déjà → skip
+        }
         // Données IPS
         $ors = $this->recupOrSoumisValidation($numeroOr, $codeSociete);
         $dateJour  = date('Y-m-d');
         $heureJour = date('H:i:s');
         if (empty($ors)) {
+            // Ligne coquille : pas d'ITV côté IPS
             $rows = [[
                 'numerodit'                   => $numeroDit,
                 'numeroor'                    => $numeroOr,
@@ -1056,7 +1061,6 @@ class DitOrSoumisAValidationModel extends Model
                     'code_societe'                => $codeSociete,
                     'piece_faible_activite_achat' => 0,
                     'date_validation_or'          => $dateJour,
-
                 ];
             }
         }

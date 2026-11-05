@@ -91,7 +91,6 @@ class OrCsaATraiterApi extends Controller
                     ];
                     continue;
                 }
-
                 // Récupération des entités Agence/Service à partir des codes IPS
                 $em      = $this->getEntityManager();
                 $agence  = $em->getRepository(Agence::class)
@@ -168,7 +167,6 @@ class OrCsaATraiterApi extends Controller
                     'numeroOr' => $numOr,
                     'success'  => false,
                     'message'  => 'Erreur : ' . $e->getMessage(),
-
                 ];
             }
         }

@@ -58,7 +58,6 @@ class OrCsaATraiterListeModel extends Model
 
         // Requête « métier » : SELECT DISTINCT + WHERE + colonnes calculées
         $innerQuery = $this->buildBaseQuery($conditions, $conditionsMultisucursal);
-
         // ---------- Requête paginée ----------
         // Wrapping nécessaire pour appliquer SKIP/FIRST + ORDER BY sur
         // le résultat dédupliqué (DISTINCT).
@@ -125,8 +124,7 @@ class OrCsaATraiterListeModel extends Model
         $d = $this->delaiAllocation;                       // seuil « J-90 »
         $h = $this->delaiAllocation + $this->toleranceFenetre; // borne haute fenêtre
 
-        return "
-            SELECT DISTINCT
+        return "SELECT DISTINCT
                 seor_numor,
                 seor_numcli || ' - ' || seor_nomcli AS client,
                 seor_lib                            AS reference_client,
@@ -163,6 +161,15 @@ class OrCsaATraiterListeModel extends Model
               AND YEAR(seor_dateor) >= {$this->anneeMin}
               AND slor_qtewait > 0
               AND seor_delai IS NOT NULL
+
+              ---SOLUTION PROVISOIRE A REVOIR
+              AND NOT EXISTS (
+                        SELECT 1 
+                            FROM {$this->dbIrium}.demande_intervention d0_
+                        WHERE d0_.numero_or    = seor_numor
+                            AND d0_.code_societe = seor_soc
+              )
+              -----
               {$conditions}
               {$conditionsMultisucursal}
         ";
@@ -253,37 +260,38 @@ class OrCsaATraiterListeModel extends Model
         $codeSocEsc = str_replace("'", "''", $codeSociete);
 
         $statement = "SELECT
-    e.seor_numor            AS numero_or,
-    e.seor_soc              AS code_societe,
-    e.seor_succ             AS code_agence,
-    e.seor_servcrt          AS code_service,
-    e.seor_dateor           AS date_or,
-    e.seor_delai            AS date_prevue_travaux,
-    e.seor_delai            AS date_limite_souhaite,
-    e.seor_numcli           AS numero_client,
-    e.seor_nomcli           AS nom_client,
-    e.seor_lib              AS reference_client,
-    e.seor_typeor           AS code_type_or,
-    e.seor_nummat           AS id_materiel,
-    c.aces_lib              AS libelle_type_or,
-    e.seor_typeor || ' - ' || c.aces_lib AS type_or,
-    m.mmat_recalph           AS numero_parc,
-    m.mmat_numserie           AS numero_serie
-FROM {$this->dbIps}.sav_eor e
-INNER JOIN {$this->dbIps}.agr_ces c
-    ON  c.aces_soc = e.seor_soc
-    AND c.aces_nat = e.seor_typeor
-LEFT JOIN mat_mat m
-    ON  m.mmat_nummat = e.seor_nummat
-WHERE e.seor_numor = '$numOrEsc'
-  AND e.seor_soc   = '$codeSocEsc'
-  AND EXISTS (
-      SELECT 1 FROM {$this->dbIps}.sav_lor l
-       WHERE l.slor_soc   = e.seor_soc
-         AND l.slor_succ  = e.seor_succ
-         AND l.slor_numor = e.seor_numor
-         AND l.slor_qtewait > 0
-  );
+            e.seor_numor            AS numero_or,
+            e.seor_soc              AS code_societe,
+            e.seor_succ             AS code_agence,
+            e.seor_servcrt          AS code_service,
+            e.seor_dateor           AS date_or,
+            e.seor_delai            AS date_prevue_travaux,
+            e.seor_delai            AS date_limite_souhaite,
+            e.seor_numcli           AS numero_client,
+            e.seor_nomcli           AS nom_client,
+            e.seor_lib              AS reference_client,
+            e.seor_typeor           AS code_type_or,
+            e.seor_nummat           AS id_materiel,
+            c.aces_lib              AS libelle_type_or,
+            e.seor_typeor || ' - ' || c.aces_lib AS type_or,
+            m.mmat_recalph           AS numero_parc,
+            m.mmat_numserie           AS numero_serie
+        FROM {$this->dbIps}.sav_eor e
+        INNER JOIN {$this->dbIps}.agr_ces c
+            ON  c.aces_soc = e.seor_soc
+            AND c.aces_nat = e.seor_typeor
+        LEFT JOIN mat_mat m
+            ON  m.mmat_nummat = e.seor_nummat
+        WHERE e.seor_numor = '$numOrEsc'
+        AND e.seor_soc   = '$codeSocEsc'
+        AND 
+        EXISTS (
+            SELECT 1 FROM {$this->dbIps}.sav_lor l
+            WHERE l.slor_soc   = e.seor_soc
+                AND l.slor_succ  = e.seor_succ
+                AND l.slor_numor = e.seor_numor
+                AND l.slor_qtewait > 0
+                );
         
     ";
 
