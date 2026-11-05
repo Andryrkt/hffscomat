@@ -12,24 +12,20 @@ class OrCsaATraiterListeModel extends Model
     // -----------------------------------------------------------------
     // Paramètres métier (cf. spec : valeurs paramétrables, pas codées en dur)
     // -----------------------------------------------------------------
-    private int   $delaiAllocation  = 90;
-    private int   $toleranceFenetre = 10;
-    // Types a changer en ['222', '229'] pour la prod
-    // private array $typesOr          = ['222', '229'];
-    private array $typesOr          = ['201', '202'];
-    private int   $anneeMin         = 2025;
+    private int   $delaiAllocation;
+    private int   $toleranceFenetre;
+    private array $typesOr;
+    private int   $anneeMin;
 
     private FiltreService $filtreService;
 
     public function __construct(
         SecurityService $securityService,
-        int $delaiAllocation = 90,
+        int $delaiAllocation  = 90,
         int $toleranceFenetre = 10,
         // Types a changer en ['222', '229'] pour la prod
-        // array $typesOr          = ['222', '229'],
-        array $typesOr          = ['201', '202'],
-
-
+        // array $typesOr        = ['201', '202'],
+        array $typesOr        = ['222', '229'],
         int $anneeMin = 2025
     ) {
         parent::__construct();
