@@ -54,12 +54,12 @@ class OrSoumissionFactory
 
 
 
-        $dto->numeroVersion = $this->getVersion($numDit, $dto->numeroOr);
+        $dto->numeroVersion = $this->getVersion($dto->numeroOr, $dto->codeSociete);
         $dto->heureSoumission =  date('H:i');
         $dto->dateSoumission = date('Y-m-d');
         $dto->originalNamePj1 = $dto->pieceJoint01->getClientOriginalName();
         $dto->estIdMaterielDifferent = (int)$dit['id_materiel'] !== $idMaterielIps;
-        $dto->statut = $ditOrsoumisAValidationModel->findByStatut($dto->numeroOr, $dto->codeSociete, $dto->numeroVersion);
+        $dto->statut = $ditOrsoumisAValidationModel->findByStatut($dto->numeroOr, $dto->codeSociete, $dto->numeroVersion - 1); // dernière version déjà soumise
         $dto->nmbrOr_soumis = $ditOrsoumisAValidationModel->getNbrOrSoumis($dto->numeroOr, $dto->codeSociete);
 
         $dto->isVerifiedDatePlanning = $this->verificationDatePlanning($dto->numeroOr, $dto->codeSociete);
