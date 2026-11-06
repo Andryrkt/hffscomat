@@ -148,7 +148,6 @@ class PlanningCommandeFournisseurModel extends Model
 
         $asCdlFiltre      = 'cdl_filtre';
         $asCde            = 'cde';
-        $asSipLnkLigne    = 'sl_ligne';
         $asSipLnkCommande = 'sl_cde';
 
         $statement = "--sql
@@ -224,7 +223,7 @@ class PlanningCommandeFournisseurModel extends Model
                         WHEN bo.numero_po IS NOT NULL THEN 'O'
                         ELSE 'N'
                     END AS back_order,
-                    {$this->getColonnesEta($sipLnkActive,$asSipLnkLigne,$asSipLnkCommande)}
+                    {$this->getColonnesEta($sipLnkActive,$asSipLnkCommande)}
                 FROM $asCde
                 LEFT JOIN res
                     ON  res.refp   = $asCde.refp
@@ -250,7 +249,7 @@ class PlanningCommandeFournisseurModel extends Model
                     AND bo.parts_cst    = $asCde.constp
                     AND bo.parts_number = TRIM($asCde.refp)
                     AND bo.line_number  = $asCde.ligne
-                {$this->getJoinSipLnk($sipLnkActive,$numCde,$asCde,$asSipLnkLigne,$asSipLnkCommande)}
+                {$this->getJoinSipLnk($sipLnkActive,$numCde,$asCde,$asSipLnkCommande)}
             ) x
             GROUP BY x.constp, x.refp, x.desi, x.numero, x.qte_dem_ligne, x.type_doc, x.numcli, x.nomcli, x.eta_magasin, x.eta_maurice
         ) g
@@ -387,12 +386,7 @@ class PlanningCommandeFournisseurModel extends Model
                     AND n.nlig_refp IN (SELECT refp FROM $asCdlFiltre)";
     }
 
-    /**
-     * Colonnes eta_magasin/eta_maurice, dépendantes de la jointure sip_lnk.
-     * Si sip_lnk est désactivée pour l'environnement courant, ces colonnes
-     * retombent sur cat.esd_date / NULL au lieu d'échouer sur des alias absents.
-     */
-    private function getColonnesEta(bool $sipLnkActive, string $asSipLnkLigne, string $asSipLnkCommande): string
+    private function getColonnesEta(bool $sipLnkActive, string $asSipLnkCommande): string
     {
         if (!$sipLnkActive) {
             return "--sql
@@ -401,11 +395,11 @@ class PlanningCommandeFournisseurModel extends Model
         }
 
         return "--sql
-            COALESCE($asSipLnkLigne.eta_magasin, $asSipLnkCommande.eta_magasin) AS eta_magasin,
-            COALESCE($asSipLnkLigne.eta_maurice, $asSipLnkCommande.eta_maurice) AS eta_maurice";
+            $asSipLnkCommande.eta_magasin AS eta_magasin,
+            $asSipLnkCommande.eta_maurice AS eta_maurice";
     }
 
-    private function getJoinSipLnk(bool $sipLnkActive, string $numCde, string $asCde, string $asSipLnkLigne, string $asSipLnkCommande): string
+    private function getJoinSipLnk(bool $sipLnkActive, string $numCde, string $asCde, string $asSipLnkCommande): string
     {
         if (!$sipLnkActive) return "";
 
@@ -413,37 +407,16 @@ class PlanningCommandeFournisseurModel extends Model
             LEFT JOIN (
                 SELECT
                     slnk_pk1    AS num_cde,
-                    slnk_pk2    AS no_lign,
-                    slnk_date1  AS eta_magasin,
+                    slnk_date2  AS eta_magasin,
                     slnk_alpha1 AS eta_maurice
                 FROM {$this->dbIpsRegix}.sip_lnk s
                 WHERE slnk_tabname IN ('frn_cdl', 'frn_cde')
                     AND slnk_pk1 = '$numCde'
-                    AND slnk_pk2 IS NOT NULL
-                    AND slnk_id = (
-                        SELECT MAX(m.slnk_id)
-                        FROM {$this->dbIpsRegix}.sip_lnk m
-                        WHERE m.slnk_tabname IN ('frn_cdl', 'frn_cde')
-                            AND m.slnk_pk1 = s.slnk_pk1
-                            AND m.slnk_pk2 = s.slnk_pk2
-                    )
-            ) $asSipLnkLigne ON $asSipLnkLigne.num_cde = $asCde.numcde 
-                AND $asSipLnkLigne.no_lign = $asCde.ligne
-            LEFT JOIN (
-                SELECT
-                    slnk_pk1    AS num_cde,
-                    slnk_date1  AS eta_magasin,
-                    slnk_alpha1 AS eta_maurice
-                FROM {$this->dbIpsRegix}.sip_lnk s
-                WHERE slnk_tabname IN ('frn_cdl', 'frn_cde')
-                    AND slnk_pk1 = '$numCde'
-                    AND slnk_pk2 IS NULL
                     AND slnk_id = (
                         SELECT MAX(m.slnk_id)
                         FROM {$this->dbIpsRegix}.sip_lnk m
                         WHERE m.slnk_tabname IN ('frn_cdl', 'frn_cde')
                             AND m.slnk_pk1 = '$numCde'
-                            AND m.slnk_pk2 IS NULL
                     )
             ) $asSipLnkCommande ON $asSipLnkCommande.num_cde = $asCde.numcde";
     }
