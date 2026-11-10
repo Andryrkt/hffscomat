@@ -68,8 +68,6 @@ class DitCreationService
         // ---------- 1. Mapping direct ----------
         $dto->numeroOr     = $orData['numero_or']     ?? null;
         $dto->statutOr     = 'Validé';
-        // $dto->codeSociete déjà rempli par initialisation() — mais on peut forcer :
-        $dto->codeSociete  = $orData['code_societe']  ?? $codeSociete;
         $dto->numeroClient = $orData['numero_client'] ?? null;
         $dto->nomClient    = $orData['nom_client']    ?? null;
 
@@ -107,7 +105,7 @@ class DitCreationService
         // ---------- 6. À arbitrer ----------
         $dto->typeDocument      = 'Autres';
         $dto->typeReparation    = 'AUTRES';
-        $dto->reparationRealise = 'WS SCOMAT';
+        $dto->reparationRealise = '...';
         $dto->categorieDemande  = 'AUTRES';
         $dto->sectionAffectee   = null;
         $dto->mailDemandeur     = null;
