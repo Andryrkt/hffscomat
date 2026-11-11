@@ -2,8 +2,8 @@
 
 namespace App\Api\Atelier\CVA;
 
+
 use App\Controller\Controller;
-use App\Dto\Atelier\CVA\OrCsaSoumissionDto;
 use App\Entity\admin\Agence;
 use App\Entity\admin\Service;
 use App\Factory\Atelier\Dit\DitFactory;
@@ -134,8 +134,8 @@ class OrCsaATraiterApi extends Controller
             // $this->mettreAJourRefdem($numOr, $numeroDit, $codeSociete);
             $pdfInfo = $this->genererEtDeposerPdf('DIT20110014', $codeSociete, $email, $langueIps);
 
-            $this->enregistrerSuivi($numOr, $numeroDit, $codeSociete);
-            $this->historiser($numeroDit, $codeSociete);
+            // $this->enregistrerSuivi($numOr, $numeroDit, $codeSociete);
+            // $this->historiser($numeroDit, $codeSociete);
 
             return $this->succes($numOr, $numeroDit, $pdfInfo);
         } catch (\Throwable $e) {
@@ -217,9 +217,9 @@ class OrCsaATraiterApi extends Controller
                 return $this->pdfEchec("Numéro OR absent en base pour DIT {$numeroDit}");
             }
 
+            $lignes   = $this->orCsaSoumissionPdfModel->findLignesByNumOr($data['numero_or']);
             $montants = $this->orCsaSoumissionPdfModel->calculMontants($data['numero_or']);
-
-            $dto = $this->orCsaSoumissionDtoFactory->createFromData($data, $montants, $langueIps);
+            $dto = $this->orCsaSoumissionDtoFactory->createFromData($data, $montants, $langueIps, $lignes);
 
             $filename = sprintf('OR_%s_%s.pdf', $data['numero_or'], $numeroDit);
 
@@ -245,31 +245,7 @@ class OrCsaATraiterApi extends Controller
         return ['success' => false, 'message' => 'PDF non généré : ' . $raison];
     }
 
-    private function construireDto(array $data, array $montants, string $langueIps): OrCsaSoumissionDto
-    {
-        $dto = new OrCsaSoumissionDto();
 
-        $dto->nomClient              = $data['nom_client']                ?? '';
-        $dto->adresseClient          = $data['adresse_client']            ?? '';
-        $dto->bureauPostal           = $data['bureau_postal']             ?? '';
-        $dto->pays                   = 'MAURITUS';
-        $dto->numeroOr               = $data['numero_or']                 ?? '';
-        $dto->numeroClient           = $data['numero_client']             ?? '';
-        $dto->dateOr                 = !empty($data['date_or'])
-            ? (new \DateTime($data['date_or']))->format('d/m/Y')
-            : '';
-        $dto->referenceClient        = $data['reference_client']          ?? '';
-        $dto->refDemande             = $data['ref_demande']               ?? '';
-        $dto->codeService            = $data['code_service']              ?? '';
-        $dto->libelleService         = $data['libelle_service']           ?? '';
-        $dto->natureOperation        = $data['nature_operation']          ?? '';
-        $dto->libelleNatureOperation = $data['libelle_nature_operation']  ?? '';
-        $dto->montantExclVat         = $montants['exclVat'];
-        $dto->montantIncVat          = $montants['incVat'];
-        $dto->langueIps              = $langueIps;
-
-        return $dto;
-    }
 
     // =========================================================================
     // Construction des retours

@@ -2,26 +2,25 @@
 
 namespace App\Factory\Atelier\Dit\soumission;
 
+
+
 use App\Dto\Atelier\CVA\OrCsaSoumissionDto;
 
-
-class OrCsaSoumissionDtoFactory
+final class OrCsaSoumissionDtoFactory
 {
     private const PAYS_DEFAUT = 'MAURITUS';
+    private const FORMAT_DATE = 'd/m/Y';
 
     /**
-     * Construit un OrCsaSoumissionDto à partir :
-     *   - $data     : données issues de OrCsaSoumissionPdfModel::findOrByRefDemande()
-     *   - $montants : ['exclVat' => float, 'incVat' => float] issues de calculMontants()
-     *   - $langueIps: 'A' ou 'F'
-     *
-     * @param array<string,mixed> $data
+     * @param array<string,mixed>                  $data
      * @param array{exclVat: float, incVat: float} $montants
+     * @param array<int,array{quantity:string,reference:string,description:string,unitPrice:float,netAmount:float}> $lignes
      */
     public function createFromData(
         array $data,
         array $montants,
-        string $langueIps
+        string $langueIps,
+        array $lignes = []
     ): OrCsaSoumissionDto {
         $dto = new OrCsaSoumissionDto();
 
@@ -52,6 +51,12 @@ class OrCsaSoumissionDtoFactory
 
         $dto->langueIps = $langueIps;
 
+        // Section 6 — Compléments PROFORMA
+        $dto->operator           = (string) ($data['operator']           ?? '');
+        $dto->quoteNo            = (string) ($data['quote_no']           ?? $data['seor_numdev'] ?? '');
+        $dto->salesman           = (string) ($data['salesman']           ?? '');
+        $dto->segmentDescription = (string) ($data['segment_description'] ?? $data['reference_client'] ?? '');
+        $dto->lignes             = $lignes;   // ← OUBLI CRITIQUE dans le fichier actuel
 
         return $dto;
     }
@@ -65,26 +70,22 @@ class OrCsaSoumissionDtoFactory
             return '';
         }
 
-        // Cas 1 : déjà un objet DateTime
         if ($date instanceof \DateTimeInterface) {
-            return $date->format('d/m/Y');
+            return $date->format(self::FORMAT_DATE);
         }
 
-        // Cas 2 : string ISO — on force l'interprétation YYYY-MM-DD
         $dateTime = \DateTime::createFromFormat('Y-m-d', (string) $date);
         if ($dateTime !== false) {
-            return $dateTime->format('d/m/Y');
+            return $dateTime->format(self::FORMAT_DATE);
         }
 
-        // Cas 3 : ISO avec heure "YYYY-MM-DD HH:MM:SS"
         $dateTime = \DateTime::createFromFormat('Y-m-d H:i:s', (string) $date);
         if ($dateTime !== false) {
-            return $dateTime->format('d/m/Y');
+            return $dateTime->format(self::FORMAT_DATE);
         }
 
-        // Cas 4 : fallback permissif (DB2 "03-NOV-2020", etc.)
         try {
-            return (new \DateTime((string) $date))->format('d/m/Y');
+            return (new \DateTime((string) $date))->format(self::FORMAT_DATE);
         } catch (\Throwable $e) {
             return '';
         }

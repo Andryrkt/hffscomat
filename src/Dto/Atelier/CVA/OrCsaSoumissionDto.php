@@ -31,4 +31,10 @@ class OrCsaSoumissionDto
 
     // Langue (pour le nom du dossier DW)
     public string $langueIps           = 'F';
+
+    public string $operator           = '';
+    public string $quoteNo            = '';
+    public string $salesman           = '';
+    public string $segmentDescription = '';
+    public array $lignes = [];
 }

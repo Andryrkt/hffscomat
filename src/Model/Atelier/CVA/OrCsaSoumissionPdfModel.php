@@ -98,4 +98,47 @@ class OrCsaSoumissionPdfModel  extends Model
             'incVat'  => round($exclVat * (1 + self::TAUX_TVA), 2),
         ];
     }
+
+    /**
+     * Détail des lignes d'un OR pour la PROFORMA.
+     *
+     * @return array<int,array{quantity:string,reference:string,description:string,unitPrice:float,netAmount:float}>
+     */
+    public function findLignesByNumOr(string $numOr): array
+    {
+        $numOrEsc = str_replace("'", "''", $numOr);
+
+        $statement = "SELECT
+                    slor_desi as designation,
+                    CASE
+                        WHEN slor_typlig = 'P'
+                            THEN (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec)
+                        WHEN slor_typlig IN ('F','M','U','C')
+                            THEN slor_qterea
+                        ELSE 0
+                    END AS quantite,
+                    slor_pxnreel as prix_unitaire
+                FROM {$this->dbIps}.sav_lor
+                WHERE slor_numor = '{$numOrEsc}'
+                     ";
+
+        $result = $this->connect->executeQuery($statement);
+        $rows   = $this->convertirEnUtf8($this->connect->fetchResults($result));
+
+        $lignes = [];
+        foreach ($rows as $row) {
+            $qte = (float) ($row['quantite'] ?? $row['QUANTITE'] ?? 0);
+            $pu  = (float) ($row['prix_unitaire'] ?? $row['prix_unitaire'] ?? 0);
+
+            $lignes[] = [
+                'quantity'    => (string) $qte,
+                'reference'   => (string) ($row['designation']  ?? $row['designation']  ?? ''),
+                'description' => (string) ($row['designation'] ?? $row['designation'] ?? ''),
+                'unitPrice'   => $pu,
+                'netAmount'   => $qte * $pu,
+            ];
+        }
+
+        return $lignes;
+    }
 }
