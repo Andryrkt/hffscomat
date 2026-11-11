@@ -103,10 +103,10 @@ class DitCreationService
         $dto->dateValidationOr = $now->format('Y-m-d');
 
         // ---------- 6. À arbitrer ----------
-        $dto->typeDocument      = 'Autres';
-        $dto->typeReparation    = 'AUTRES';
+        $dto->typeDocument      = 'Maintenance préventive';
+        $dto->typeReparation    = 'A REALISER';
         $dto->reparationRealise = '...';
-        $dto->categorieDemande  = 'AUTRES';
+        $dto->categorieDemande  = 'ENTRETIEN';
         $dto->sectionAffectee   = null;
         $dto->mailDemandeur     = null;
 

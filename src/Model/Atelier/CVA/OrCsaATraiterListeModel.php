@@ -56,11 +56,9 @@ class OrCsaATraiterListeModel extends Model
         $conditions              = $this->filtreService->filtre($orCsaATraiterSearchDto);
         $conditionsMultisucursal = ''; // réservé au filtrage agence/service
 
-        // Requête « métier » : SELECT DISTINCT + WHERE + colonnes calculées
         $innerQuery = $this->buildBaseQuery($conditions, $conditionsMultisucursal);
         // ---------- Requête paginée ----------
-        // Wrapping nécessaire pour appliquer SKIP/FIRST + ORDER BY sur
-        // le résultat dédupliqué (DISTINCT).
+
         $statement = "
             SELECT SKIP {$skip} FIRST {$perPage} t.*
             FROM ({$innerQuery}) AS t
@@ -93,7 +91,6 @@ class OrCsaATraiterListeModel extends Model
         $conditions              = $this->filtreService->filtre($orCsaATraiterSearchDto);
         $conditionsMultisucursal = ''; // réservé au filtrage agence/service
 
-        // Requête « métier » : SELECT DISTINCT + WHERE + colonnes calculées
         $innerQuery = $this->buildBaseQuery($conditions, $conditionsMultisucursal);
 
         $statement = "
