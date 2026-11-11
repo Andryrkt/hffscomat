@@ -310,4 +310,28 @@ class OrCsaATraiterListeModel extends Model
 
         return $normalized;
     }
+
+    /**
+     * Met à jour la colonne ips_scomat.sav_eor.seor_refdem
+     * avec le numéro de DIT correspondant à l'OR.
+     *
+     * @param string $numOr        Numéro de l'OR (ex: "OR-2024-000123")
+     * @param string $numeroDit    Numéro de DIT à enregistrer
+     * @param string $codeSociete  Code société (filtre de sécurité)
+     *
+     * @return bool true si au moins une ligne a été mise à jour
+     */
+    public function misAjourNumeroDitSurOr(string $numOr, string $numeroDit, string $codeSociete): bool
+    {
+        $numOrEsc    = str_replace("'", "''", $numOr);
+        $numeroDitEsc = str_replace("'", "''", $numeroDit);
+        $codeSocEsc  = str_replace("'", "''", $codeSociete);
+        $statement = "UPDATE {$this->dbIps}.sav_eor
+                         SET seor_refdem = '{$numeroDitEsc}'
+                       WHERE seor_numor = '{$numOrEsc}'
+                         AND seor_soc   = '{$codeSocEsc}'";
+        $this->connect->executeQuery($statement);
+
+        return true;
+    }
 }

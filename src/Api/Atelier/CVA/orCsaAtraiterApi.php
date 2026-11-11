@@ -131,6 +131,17 @@ class OrCsaATraiterApi extends Controller
                     $numeroDit
                 );
                 if (!empty($resultat['success'])) {
+
+                    try {
+                        $this->orCsaATraiterListeModel->misAjourNumeroDitSurOr(
+                            (string) $numOr,
+                            (string) $numeroDit,
+                            (string) $codeSociete
+                        );
+                    } catch (\Throwable $e) {
+                        // Ne pas casser le flux : la DIT est créée, on log juste l'échec de MAJ
+                        error_log("[sav_eor] Impossible de mettre à jour seor_refdem pour OR {$numOr} : " . $e->getMessage());
+                    }
                     // insertion dans ors_soumis_a_validation 
                     try {
                         $this->ditOrSoumisAValidationModel->enregistrerOrInitial(
