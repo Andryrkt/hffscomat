@@ -4,6 +4,7 @@
 namespace App\Service\Atelier\Dit;
 
 use App\Constants\atelier\dit\soumission\ORs\ConstantStatutOr;
+use App\Constants\atelier\dit\StatutDitConstant;
 use App\Dto\Atelier\Dit\DitDto;
 use App\Factory\Atelier\Dit\DitFactory;
 use App\Mapper\Atelier\Dit\DitMapper;
@@ -89,7 +90,8 @@ class DitCreationService
         $dto->clientSousContrat = 'OUI';
         $dto->livraisonPartiel  = 'NON';
         $dto->statutOr  = ConstantStatutOr::STATUT_VALIDE;
-        $dto->id_statut_demande = 53;
+        $dto->id_statut_demande = StatutDitConstant::STATUT_CLOTUREE_VALIDER_ID;
+        $dto->statutDemande = StatutDitConstant::STATUT_CLOTUREE_VALIDER;
 
         // ---------- 4. Champs calculés ----------
         $leadTime       = $this->calculerLeadTime($orData['date_prevue_travaux'] ?? null);
