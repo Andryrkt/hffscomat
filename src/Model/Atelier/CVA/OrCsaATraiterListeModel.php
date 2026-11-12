@@ -10,7 +10,7 @@ use App\Service\security\SecurityService;
 class OrCsaATraiterListeModel extends Model
 {
     // -----------------------------------------------------------------
-    // Paramètres métier (cf. spec : valeurs paramétrables, pas codées en dur)
+    // Paramètres métier
     // -----------------------------------------------------------------
     private int   $delaiAllocation;
     private int   $toleranceFenetre;
@@ -23,9 +23,8 @@ class OrCsaATraiterListeModel extends Model
         SecurityService $securityService,
         int $delaiAllocation  = 90,
         int $toleranceFenetre = 10,
-        // Types a changer en ['222', '229'] pour la prod
-        // array $typesOr        = ['201', '202'],
-        array $typesOr        = ['222', '229'],
+        // Types a changer en ['222', '229'] pour la prod et exemple: ['202', '209'] pour le test local
+        array $typesOr          = ['222', '229'],
         int $anneeMin = 2025
     ) {
         parent::__construct();
@@ -153,6 +152,7 @@ class OrCsaATraiterListeModel extends Model
             WHERE seor_typeor IN ({$typesOrSql})
               AND YEAR(seor_dateor) >= {$this->anneeMin}
               AND slor_qtewait > 0
+              AND seor_serv = 'SAV'
               AND seor_delai IS NOT NULL
 
               ---SOLUTION PROVISOIRE A REVOIR

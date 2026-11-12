@@ -19,6 +19,19 @@ use Symfony\Component\Form\FormInterface;
 
 class DitCreationService
 {
+
+    private $reparationMap = [
+        "100" => 'WS UPS',
+        "400" => 'WS MACHINE',
+        "410" => 'WS MACHINE',
+        "420" => 'WS SCOMAT',
+        "430" => 'WS SCOMAT',
+        "435" => 'WS AGRI TRUCK',
+        "460" => 'WS UPS',
+        "470" => 'WS SCOMAT',
+        "480" => 'WS AGRI TRUCK',
+    ];
+
     /** @var EntityManagerInterface */
     private $em;
 
@@ -107,7 +120,7 @@ class DitCreationService
         // ---------- 6. À arbitrer ----------
         $dto->typeDocument      = 'Maintenance préventive';
         $dto->typeReparation    = 'A REALISER';
-        $dto->reparationRealise = '...';
+        $dto->reparationRealise =  $this->reparationMap[$agenceService['serviceIps']->getCodeService()] ?? "WS SCOMAT";
         $dto->categorieDemande  = 'ENTRETIEN';
         $dto->sectionAffectee   = null;
         $dto->mailDemandeur     = null;
