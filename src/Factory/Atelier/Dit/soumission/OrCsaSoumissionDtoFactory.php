@@ -49,13 +49,13 @@ final class OrCsaSoumissionDtoFactory
         $dto->montantExclVat = (float) ($montants['exclVat'] ?? 0.0);
         $dto->montantIncVat  = (float) ($montants['incVat']  ?? 0.0);
 
-        $dto->langueIps = $langueIps;
+        $dto->langueIps = $langueIps ?? "A";
 
-        // Section 6 — Compléments PROFORMA
-        $dto->operator           = (string) ($data['operator']           ?? '');
-        $dto->quoteNo            = (string) ($data['quote_no']           ?? $data['seor_numdev'] ?? '');
-        $dto->salesman           = (string) ($data['salesman']           ?? '');
-        $dto->segmentDescription = (string) ($data['segment_description'] ?? $data['reference_client'] ?? '');
+        // Section 6 — Compléments PROFORMA a Arbitrer
+        $dto->operator           = (string) ($data['operator']           ?? '-');
+        $dto->quoteNo            = (string) ($data['quote_no']           ?? '-');
+        $dto->salesman           = (string) ($data['salesman']           ?? '-');
+        $dto->segmentDescription = (string) ($data['segment_description'] ?? '-');
         $dto->lignes             = $lignes;   // ← OUBLI CRITIQUE dans le fichier actuel
 
         return $dto;

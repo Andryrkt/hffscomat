@@ -70,10 +70,9 @@ class OrCsaATraiterApi extends Controller
 
         $codeSociete = $this->getSecurityService()->getCodeSocieteUser();
         $emailUser   = $this->getSecurityService()->getUserEmail();
-        $langueIps   = 'A';
 
         $resultats = array_map(
-            fn(string $numOr) => $this->traitementOr($numOr, $codeSociete, $emailUser, $langueIps),
+            fn(string $numOr) => $this->traitementOr($numOr, $codeSociete, $emailUser),
             $orsSelectionnes
         );
 
@@ -96,14 +95,15 @@ class OrCsaATraiterApi extends Controller
     private function traitementOr(
         string $numOr,
         string $codeSociete,
-        string $email,
-        string $langueIps
+        string $email
     ): array {
         try {
             $orData = $this->orCsaATraiterListeModel->findOrByNumero($numOr, $codeSociete);
             if (empty($orData)) {
                 return $this->echec($numOr, "OR introuvable : {$numOr}");
             }
+
+            $langueIps   = $this->orCsaSoumissionPdfModel->getLangueIps($orData['numero_client'], $codeSociete);
 
             $agenceService = $this->resoudreAgenceService($orData);
             if ($agenceService === null) {
@@ -221,7 +221,12 @@ class OrCsaATraiterApi extends Controller
             $montants = $this->orCsaSoumissionPdfModel->calculMontants($data['numero_or']);
             $dto = $this->orCsaSoumissionDtoFactory->createFromData($data, $montants, $langueIps, $lignes);
 
-            $filename = sprintf('OR_%s_%s.pdf', $data['numero_or'], $numeroDit);
+            $filename = sprintf(
+                'PROFORMA_INVOICE_%s_%s_%03d.pdf',
+                $data['numero_or'],
+                (new \DateTime())->format('YmdHis'),
+                random_int(0, 999)
+            );
 
             $this->genererPdfOrCsa->genererPdf($dto, $email, $filename, $numeroDit);
             $depose = $this->genererPdfOrCsa->copyToDw($filename, $numeroDit, $langueIps);
