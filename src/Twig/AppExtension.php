@@ -31,9 +31,11 @@ class AppExtension extends AbstractExtension implements GlobalsInterface
         return [
             'App' => [
                 'userConnecter'     => [
+                    'username'     => $userInfo['username'] ?? '',
                     'firstname'    => $userInfo['firstname'] ?? '',
                     'lastname'     => $userInfo['lastname'] ?? '',
                     'fullname'     => $userInfo['fullname'] ?? '',
+                    'email'        => $userInfo['email'] ?? '',
                     'agenceIPS'    => $userInfo['default_agence_code'] ?? '',
                     'serviceIPS'   => $userInfo['default_service_code'] ?? '',
                     'isAdmin'      => ($userInfo['profil_id'] ?? 0) === Profil::HFF_ADMIN,
