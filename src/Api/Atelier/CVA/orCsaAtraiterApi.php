@@ -116,26 +116,26 @@ class OrCsaATraiterApi extends Controller
             }
 
             $numeroDit = $this->ditModel->getNextNumeroDitOrForCurrentMonth();
-            // $creation  = $this->ditCreationService->creerDepuisOr(
-            //     $orData,
-            //     $codeSociete,
-            //     $agenceService,
-            //     $numeroDit
-            // );
+            $creation  = $this->ditCreationService->creerDepuisOr(
+                $orData,
+                $codeSociete,
+                $agenceService,
+                $numeroDit
+            );
 
-            // if (empty($creation['success'])) {
-            //     return $this->echec(
-            //         $numOr,
-            //         $creation['message'] ?? 'Échec de création de la DIT',
-            //         $creation['numero'] ?? null
-            //     );
-            // }
+            if (empty($creation['success'])) {
+                return $this->echec(
+                    $numOr,
+                    $creation['message'] ?? 'Échec de création de la DIT',
+                    $creation['numero'] ?? null
+                );
+            }
 
-            // $this->mettreAJourRefdem($numOr, $numeroDit, $codeSociete);
-            $pdfInfo = $this->genererEtDeposerPdf('DIT20110014', $codeSociete, $email, $langueIps);
+            $this->mettreAJourRefdem($numOr, $numeroDit, $codeSociete);
+            $pdfInfo = $this->genererEtDeposerPdf($numeroDit, $codeSociete, $email, $langueIps);
 
-            // $this->enregistrerSuivi($numOr, $numeroDit, $codeSociete);
-            // $this->historiser($numeroDit, $codeSociete);
+            $this->enregistrerSuivi($numOr, $numeroDit, $codeSociete);
+            $this->historiser($numeroDit, $codeSociete);
 
             return $this->succes($numOr, $numeroDit, $pdfInfo);
         } catch (\Throwable $e) {
