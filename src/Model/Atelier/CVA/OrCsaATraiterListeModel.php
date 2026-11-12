@@ -26,8 +26,8 @@ class OrCsaATraiterListeModel extends Model
         int $delaiAllocation = 90,
         int $toleranceFenetre = 10,
         // Types a changer en ['222', '229'] pour la prod
-        // array $typesOr          = ['222', '229'],
-        array $typesOr          = ['201', '202'],
+        array $typesOr          = ['222', '229'],
+        // array $typesOr          = ['201', '202'],
 
 
         int $anneeMin = 2025
