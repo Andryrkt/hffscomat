@@ -59,11 +59,28 @@ class OrCsaATraiterApi extends Controller
      */
     public function envoyerPourTraitement(Request $request): JsonResponse
     {
-        $orsSelectionnes = json_decode($request->getContent(), true)['ors'] ?? [];
+        $payload = json_decode($request->getContent(), true);
+        $orsSelectionnes = is_array($payload) && isset($payload['ors']) && is_array($payload['ors'])
+            ? $payload['ors']
+            : [];
 
         if (empty($orsSelectionnes)) {
             return new JsonResponse(
-                ['success' => false, 'message' => 'Aucun OR sélectionné.'],
+                ['success' => false, 'message' => 'Aucun OR sélectionné (payload invalide ou vide).'],
+                400
+            );
+        }
+
+        $orsSelectionnes = array_values(array_filter(
+            $orsSelectionnes,
+            static function ($v) {
+                return is_string($v) && trim($v) !== '';
+            }
+        ));
+
+        if (empty($orsSelectionnes)) {
+            return new JsonResponse(
+                ['success' => false, 'message' => 'Aucun OR valide.'],
                 400
             );
         }
@@ -103,7 +120,7 @@ class OrCsaATraiterApi extends Controller
                 return $this->echec($numOr, "OR introuvable : {$numOr}");
             }
 
-            $langueIps   = $this->orCsaSoumissionPdfModel->getLangueIps($orData['numero_client'], $codeSociete);
+            $langueIps = $this->orCsaSoumissionPdfModel->getLangueIps($orData['numero_client'] ?? '', $codeSociete);
 
             $agenceService = $this->resoudreAgenceService($orData);
             if ($agenceService === null) {
@@ -188,9 +205,10 @@ class OrCsaATraiterApi extends Controller
     private function historiser(string $numeroDit, string $codeSociete): void
     {
         $this->historiqueOperationDit->enregistrer(
-            self::CODE_HISTORIQUE_ENVOI,
-            (int) $numeroDit,
-            $codeSociete
+            $numeroDit,               // numeroDocument
+            5,                        // CREATION
+            true,                     // statut
+            'Envoi OR vers DIT'       // libelle
         );
     }
 
@@ -210,11 +228,11 @@ class OrCsaATraiterApi extends Controller
         try {
             $data = $this->orCsaSoumissionPdfModel->findOrByRefDemande($numeroDit, $codeSociete);
             if ($data === null) {
-                return $this->pdfEchec("OR introuvable pour DIT {$numeroDit}");
+                return $this->pdfEchec("OR introuvable pour {$numeroDit}");
             }
 
             if (empty($data['numero_or'])) {
-                return $this->pdfEchec("Numéro OR absent en base pour DIT {$numeroDit}");
+                return $this->pdfEchec("Numéro OR absent en base pour {$numeroDit}");
             }
 
             $lignes   = $this->orCsaSoumissionPdfModel->findLignesByNumOr($data['numero_or']);
@@ -239,7 +257,7 @@ class OrCsaATraiterApi extends Controller
                 'filename' => $filename,
             ];
         } catch (\Throwable $e) {
-            error_log("[pdf_or_csa] DIT {$numeroDit} : " . $e->getMessage());
+            error_log("[pdf_or_csa] {$numeroDit} : " . $e->getMessage());
             return $this->pdfEchec($e->getMessage());
         }
     }
@@ -258,11 +276,15 @@ class OrCsaATraiterApi extends Controller
 
     private function succes(string $numOr, string $numeroDit, array $pdfInfo): array
     {
+        $partial = $pdfInfo['success'] === false;
         return [
             'numeroOr'  => $numOr,
             'numeroDit' => $numeroDit,
             'success'   => true,
-            'message'   => 'DIT créée. ' . $pdfInfo['message'],
+            'partial'   => $partial,
+            'message'   => $partial
+                ? 'DIT créée, mais PDF/DocuWare en échec : ' . $pdfInfo['message']
+                : 'DIT créée. ' . $pdfInfo['message'],
             'pdf'       => $pdfInfo,
         ];
     }
@@ -273,7 +295,9 @@ class OrCsaATraiterApi extends Controller
             'numeroOr'  => $numOr,
             'numeroDit' => $numeroDit,
             'success'   => false,
+            'partial'   => false,          // ← cohérence
             'message'   => $message,
+            'pdf'       => null,           // ← cohérence
         ];
     }
 
@@ -283,6 +307,8 @@ class OrCsaATraiterApi extends Controller
         int $total,
         array $resultats
     ): JsonResponse {
+        $httpStatus = $nbSucces === 0 ? 422 : (($nbEchecs > 0) ? 207 : 200);
+
         $message = sprintf('%d DIT créée(s) sur %d OR sélectionné(s).', $nbSucces, $total);
         if ($nbEchecs > 0) {
             $message .= sprintf(' %d échec(s).', $nbEchecs);
@@ -294,6 +320,6 @@ class OrCsaATraiterApi extends Controller
             'nbSucces' => $nbSucces,
             'nbEchecs' => $nbEchecs,
             'details'  => $resultats,
-        ]);
+        ], $httpStatus);
     }
 }

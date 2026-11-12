@@ -324,7 +324,7 @@ class OrCsaATraiterListeModel extends Model
         $numeroDitEsc = str_replace("'", "''", $numeroDit);
         $codeSocEsc  = str_replace("'", "''", $codeSociete);
         $statement = "UPDATE {$this->dbIps}.sav_eor
-                         SET seor_refdem = '{$numeroDitEsc}'
+                        SET seor_refdem = '{$numeroDitEsc}'
                        WHERE seor_numor = '{$numOrEsc}'
                          AND seor_soc   = '{$codeSocEsc}'";
         $this->connect->executeQuery($statement);
