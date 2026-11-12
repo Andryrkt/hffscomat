@@ -21,9 +21,10 @@ class WorTypeDocumentModel extends Model
 
     public function getIdSelonDescription(string $description): int
     {
+        $descriptionLatin1 = mb_convert_encoding($description, 'ISO-8859-1', 'UTF-8');
         $statement = " SELECT  id as id
                     FROM {$this->dbIrium}.wor_type_document 
-                    where description = '$description'
+                    where description = '$descriptionLatin1'
                     ";
 
         $result = $this->connect->executeQuery($statement);
