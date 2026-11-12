@@ -165,6 +165,21 @@ document.addEventListener("DOMContentLoaded", () => {
   // ==========================================================
   // 4. ENVOI API
   // ==========================================================
+
+  // Helper d'échappement — à placer en haut du fichier si absent
+  const escapeHtml = (str) =>
+    String(str ?? "").replace(
+      /[&<>"']/g,
+      (c) =>
+        ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;",
+        })[c],
+    );
+
   if (btnConfirmSend) {
     btnConfirmSend.addEventListener("click", async () => {
       const selectedIds = getVisibleCheckboxes()
@@ -183,23 +198,100 @@ document.addEventListener("DOMContentLoaded", () => {
           { ors: selectedIds },
         );
 
-        if (!result || !result.success) {
-          throw new Error(
-            result?.message || "Erreur lors du traitement serveur.",
-          );
+        // ⚠️ Accepte aussi les réponses 207 (partiel) — on ne throw que si tout échoue
+        if (!result) {
+          throw new Error("Aucune réponse du serveur.");
+        }
+        const details = Array.isArray(result.details) ? result.details : [];
+        if (details.length === 0) {
+          throw new Error(result.message || "Réponse serveur inexploitable.");
         }
 
         bootstrap.Modal.getInstance(confirmModal)?.hide();
 
-        // Supprime + met à jour les compteurs de statut dans la légende
+        // ---------------------------------------------------------
+        // Classification : succès complet / partiel (PDF KO) / échec
+        // ---------------------------------------------------------
+        const complets = [];
+        const partiels = [];
+        const echecs = [];
+
+        details.forEach((d) => {
+          if (!d.success) {
+            echecs.push(d);
+            return;
+          }
+          if (!d.numeroDit) {
+            // Cas anormal : le backend dit "succès" mais pas de numéro DIT
+            console.error(
+              "[CVA] Réponse incohérente : succès sans numeroDit",
+              d,
+            );
+            echecs.push({
+              ...d,
+              success: false,
+              message: "Réponse serveur incohérente (DIT manquante).",
+            });
+            return;
+          }
+          const pdfKo = d.partial === true || d.pdf?.success === false;
+          (pdfKo ? partiels : complets).push(d);
+        });
+
+        // Index pour retrouver le détail par OR
+        const detailsByOr = new Map(
+          details.map((d) => [String(d.numeroOr), d]),
+        );
+
+        // ---------------------------------------------------------
+        // Mise à jour du DOM : on retire uniquement les OR complets
+        // Les OR partiels sont conservés et marqués "PDF à regénérer"
+        // ---------------------------------------------------------
         let removed = 0;
+        let keptPartiels = 0;
+
         getVisibleCheckboxes()
           .filter((cb) => cb.checked)
           .forEach((cb) => {
             const tr = cb.closest("tr");
+            if (!tr) return;
+
+            const numOr = tr.getAttribute("data-numor");
+            const detail = detailsByOr.get(String(numOr));
+            const isPartial =
+              detail &&
+              detail.success &&
+              (detail.partial === true || detail.pdf?.success === false);
+
+            if (isPartial) {
+              // On garde la ligne : l'utilisateur doit pouvoir relancer le PDF
+              cb.checked = false;
+              tr.classList.add("table-warning");
+              tr.dataset.pdfFailed = "1";
+
+              // Badge visible dans la cellule PDF si elle existe
+              const tdPdf = tr.querySelector("td[data-field='pdf']");
+              if (tdPdf) {
+                tdPdf.innerHTML =
+                  '<span class="badge bg-warning text-dark">PDF à regénérer</span>';
+              } else {
+                // Fallback : ajoute un marqueur dans la première cellule
+                const first = tr.querySelector("td");
+                if (first && !first.querySelector(".pdf-ko-badge")) {
+                  const badge = document.createElement("span");
+                  badge.className =
+                    "pdf-ko-badge badge bg-warning text-dark ms-1";
+                  badge.textContent = "PDF KO";
+                  first.appendChild(badge);
+                }
+              }
+              keptPartiels++;
+              return;
+            }
+
+            // Cas normal : suppression + décrément des compteurs
             const statut = tr.dataset.statut;
 
-            // Décrémente le badge du statut concerné
             const btnStatut = statutsBar?.querySelector(
               `.cva-legend-btn[data-filter="${statut}"] .cva-legend-count`,
             );
@@ -207,7 +299,6 @@ document.addEventListener("DOMContentLoaded", () => {
               const current = parseInt(btnStatut.textContent, 10) || 0;
               btnStatut.textContent = Math.max(0, current - 1);
             }
-            // Décrémente le badge "Tous"
             const btnTous = statutsBar?.querySelector(
               `.cva-legend-btn[data-filter="tous"] .cva-legend-count`,
             );
@@ -220,7 +311,7 @@ document.addEventListener("DOMContentLoaded", () => {
             removed++;
           });
 
-        // Total résultats (label serveur existant)
+        // Total résultats — on ne déduit que les lignes effectivement retirées
         const totalLabel = document.getElementById("nombreResultat");
         if (totalLabel) {
           const cur =
@@ -228,48 +319,81 @@ document.addEventListener("DOMContentLoaded", () => {
           totalLabel.textContent = Math.max(0, cur - removed) + " Résultats";
         }
 
-        // ✅ Construire la liste à partir de result.details
-        const succes = (result.details || []).filter((d) => d.success);
-        const echecs = (result.details || []).filter((d) => !d.success);
-
-        const lignesSucces = succes
+        // ---------------------------------------------------------
+        // Construction du message Swal
+        // ---------------------------------------------------------
+        const lignesComplets = complets
           .map(
             (d) =>
-              `<li><span class="fw-bold text-success">${d.numeroDit ?? d.numeroOr}</span>
-       <small class="text-muted">(OR ${d.numeroOr})</small></li>`,
+              `<li><span class="fw-bold text-success">${escapeHtml(d.numeroDit)}</span>
+             <small class="text-muted">(OR ${escapeHtml(d.numeroOr)})</small></li>`,
+          )
+          .join("");
+
+        const lignesPartiels = partiels
+          .map(
+            (d) =>
+              `<li><span class="fw-bold text-warning">${escapeHtml(d.numeroDit)}</span>
+             <small class="text-muted">(OR ${escapeHtml(d.numeroOr)})</small>
+             <br><small class="text-danger">${escapeHtml(d.pdf?.message || d.message || "PDF non généré")}</small></li>`,
           )
           .join("");
 
         const lignesEchecs = echecs
           .map(
             (d) =>
-              `<li><span class="fw-bold text-danger">${d.numeroOr}</span>
-       <small class="text-muted">— ${d.message ?? "échec"}</small></li>`,
+              `<li><span class="fw-bold text-danger">${escapeHtml(d.numeroOr)}</span>
+             <small class="text-muted">— ${escapeHtml(d.message || "échec")}</small></li>`,
           )
           .join("");
 
         let htmlMsg = "";
-        if (succes.length) {
-          htmlMsg += `<p class="mb-1">DIT créée(s) :</p><ul class="text-start">${lignesSucces}</ul>`;
+
+        // Résumé chiffré — toujours en premier
+        if (result.message) {
+          htmlMsg += `<p class="mb-2 fw-semibold">${escapeHtml(result.message)}</p>`;
+        }
+
+        if (complets.length) {
+          htmlMsg += `<p class="mb-1">DIT créée(s) avec PDF :</p>
+                    <ul class="text-start">${lignesComplets}</ul>`;
+        }
+        if (partiels.length) {
+          htmlMsg += `<p class="mb-1 mt-2 text-warning"><strong>DIT créée(s) mais PDF non déposé :</strong></p>
+                    <ul class="text-start">${lignesPartiels}</ul>
+                    <small class="text-muted d-block mb-2">
+                      Les lignes concernées ont été conservées dans le tableau.
+                      Relancez la génération du PDF.
+                    </small>`;
         }
         if (echecs.length) {
-          htmlMsg += `<p class="mb-1 mt-2">OR en échec :</p><ul class="text-start">${lignesEchecs}</ul>`;
+          htmlMsg += `<p class="mb-1 mt-2">OR en échec :</p>
+                    <ul class="text-start">${lignesEchecs}</ul>`;
+        }
+
+        // Icône / titre / couleur : les 3 cas possibles
+        let icon, title, confirmColor;
+        if (echecs.length > 0) {
+          icon = partiels.length || complets.length ? "warning" : "error";
+          title = "Transmission partielle";
+          confirmColor = "#f0ad4e";
+        } else if (partiels.length > 0) {
+          icon = "warning";
+          title = "DIT créées, PDF en échec";
+          confirmColor = "#f0ad4e";
+        } else {
+          icon = "success";
+          title = "Transmission réussie !";
+          confirmColor = "#198754";
         }
 
         Swal.fire({
-          icon:
-            echecs.length === 0
-              ? "success"
-              : succes.length
-                ? "warning"
-                : "error",
-          title:
-            echecs.length === 0
-              ? "Transmission réussie !"
-              : "Transmission partielle",
-          html: htmlMsg || result.message,
+          icon,
+          title,
+          html:
+            htmlMsg || escapeHtml(result.message || "Aucun détail retourné."),
           confirmButtonText: "OK",
-          confirmButtonColor: echecs.length === 0 ? "#198754" : "#f0ad4e",
+          confirmButtonColor: confirmColor,
         }).then(() => {
           if (document.querySelectorAll(".or-row-selector").length === 0) {
             window.location.reload();
@@ -278,6 +402,18 @@ document.addEventListener("DOMContentLoaded", () => {
             window.reapplyOrStatutFilter();
           }
         });
+
+        // Console : trace les partiels pour debug / support
+        if (partiels.length) {
+          console.warn(
+            `[CVA] ${partiels.length} DIT créée(s) sans PDF :`,
+            partiels.map((d) => ({
+              numeroOr: d.numeroOr,
+              numeroDit: d.numeroDit,
+              message: d.pdf?.message || d.message,
+            })),
+          );
+        }
       } catch (error) {
         console.error(error);
         Swal.fire({
