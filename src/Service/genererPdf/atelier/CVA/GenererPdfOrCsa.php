@@ -139,17 +139,17 @@ class GenererPdfOrCsa extends GeneratePdf
         $pdf->setFont('helvetica', 'B', 12);
 
         // 
-        $pdf->Cell(85, 8, 'PROFORMA INVOICE No. WO ' . $dto->numeroOr, 0, 0, 'L');
+        $pdf->Cell(85, 1, 'PROFORMA INVOICE No. WO ' . $dto->numeroOr, 0, 0, 'L');
 
         // 
-        $pdf->Cell(60, 8, 'Customer No. : ' . $this->tronquer($dto->numeroClient, 20), 0, 0, 'C');
-        $pdf->Cell(0, 8, 'Date : ' . $dto->dateOr, 0, 1, 'R');
+        $pdf->Cell(60, 1, 'Customer No. : ' . $this->tronquer($dto->numeroClient, 20), 0, 0, 'C');
+        $pdf->Cell(0, 1, 'Date : ' . $dto->dateOr, 0, 1, 'R');
 
         $pdf->setFont('helvetica', '', 8);
-        $pdf->Cell(0, 5, sprintf('Page %d / 1', $pdf->PageNo()), 0, 1, 'R');
+        $pdf->Cell(0, 1, sprintf('Page %d / 1', $pdf->PageNo()), 0, 1, 'R');
 
 
-        $pdf->Ln(2);
+        $pdf->Ln(1);
         $yLigne = $pdf->GetY();
         $pdf->Line(10, $yLigne, 200, $yLigne);
 
@@ -390,7 +390,7 @@ class GenererPdfOrCsa extends GeneratePdf
         $pdf->setFont('helvetica', 'B', 9);
         $pdf->Cell($totalW, 1, 'VAT%', 0, 1, 'R');
         $pdf->setFont('helvetica', '', 9);
-        $pdf->Cell($totalW, 1, '15.00', 0, 1, 'R');
+        $pdf->Cell($totalW, 1,  number_format($dto->tauxTva * 100, 2, '.', ''), 0, 1, 'R');
 
         $pdf->Ln(1);
         $pdf->Line($x, $pdf->GetY(), $x + $totalW, $pdf->GetY());

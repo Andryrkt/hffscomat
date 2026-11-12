@@ -6,7 +6,7 @@ use App\Model\Model;
 
 class OrCsaSoumissionPdfModel  extends Model
 {
-    private const TAUX_TVA = 0.15;
+    public const TAUX_TVA = 0.15;
     /**
      * Récupère les données OR + Client pour un N° de DIT donné.
      * Requête issue de la spec (adaptée en concaténation de chaînes,

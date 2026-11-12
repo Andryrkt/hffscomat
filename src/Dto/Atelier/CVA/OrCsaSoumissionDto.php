@@ -2,6 +2,8 @@
 
 namespace App\Dto\Atelier\CVA;
 
+use App\Model\Atelier\CVA\OrCsaSoumissionPdfModel;
+
 class OrCsaSoumissionDto
 {
     // Section 1 - Client
@@ -37,4 +39,5 @@ class OrCsaSoumissionDto
     public string $salesman           = '';
     public string $segmentDescription = '';
     public array $lignes = [];
+    public ?float $tauxTva = OrCsaSoumissionPdfModel::TAUX_TVA;
 }
