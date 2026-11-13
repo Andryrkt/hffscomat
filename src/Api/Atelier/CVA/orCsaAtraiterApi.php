@@ -212,6 +212,22 @@ class OrCsaATraiterApi extends Controller
         );
     }
 
+    private function quelqueAffichage(string $numOr, string $codeSociete): array
+    {
+        $numDevis         = $this->ditModel->recupererNumdevis($numOr, $codeSociete);
+        $nbSortieMagasin  = $this->ditOrSoumisAValidationModel->recupNbPieceMagasin($numOr, $codeSociete);
+        $nbAchatLocaux    = $this->ditOrSoumisAValidationModel->recupNbAchatLocaux($numOr, $codeSociete);
+        $nbPol            = $this->ditOrSoumisAValidationModel->recupNbPol($numOr, $codeSociete);
+        return [
+            'dateSoumission' => (new \DateTime())->format('Y-m-d'),
+            'numeroVersion' => 1,
+            'numDevis' => (string) ($numDevis[0]['seor_numdev'] ?? ''),
+            'sortieMagasin' => (!empty($nbSortieMagasin) && $nbSortieMagasin[0]['nbr_sortie_magasin'] !== '0') ? 'OUI' : 'NON',
+            'achatLocaux'   => (!empty($nbAchatLocaux)   && $nbAchatLocaux[0]['nbr_achat_locaux']     !== '0') ? 'OUI' : 'NON',
+            'pol'           => (!empty($nbPol)           && $nbPol[0]['nbr_pol']                     !== '0') ? 'OUI' : 'NON',
+        ];
+    }
+
     // =========================================================================
     // Génération PDF
     // =========================================================================
@@ -238,6 +254,7 @@ class OrCsaATraiterApi extends Controller
             $lignes   = $this->orCsaSoumissionPdfModel->findLignesByNumOr($data['numero_or']);
             $montants = $this->orCsaSoumissionPdfModel->calculMontants($data['numero_or']);
             $dto = $this->orCsaSoumissionDtoFactory->createFromData($data, $montants, $langueIps, $lignes);
+            $quelqueAffichage = $this->quelqueAffichage($data['numero_or'], $codeSociete);
 
             $filename = sprintf(
                 'PROFORMA_INVOICE_%s_%s_%03d.pdf',
@@ -246,7 +263,7 @@ class OrCsaATraiterApi extends Controller
                 random_int(0, 999)
             );
 
-            $this->genererPdfOrCsa->genererPdf($dto, $email, $filename, $numeroDit);
+            $this->genererPdfOrCsa->genererPdf($dto, $email, $filename, $numeroDit, $quelqueAffichage);
             $depose = $this->genererPdfOrCsa->copyToDw($filename, $numeroDit, $langueIps);
 
             return [
