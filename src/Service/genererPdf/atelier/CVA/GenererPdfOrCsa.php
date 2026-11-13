@@ -16,9 +16,9 @@ class GenererPdfOrCsa extends GeneratePdf
     // ---- Largeurs (mm) — A4, marges 10mm ------------------------
     private const COL_QUANTITY    = 14;
     private const COL_REFERENCE   = 34;
-    private const COL_DESCRIPTION = 82;
-    private const COL_UNIT_PRICE  = 30;
-    private const COL_NET         = 30;
+    private const COL_DESCRIPTION = 62;
+    private const COL_UNIT_PRICE  = 40;
+    private const COL_NET         = 40;
 
     // ------------------------------------------------------------
     // Dépôt DocuWare
@@ -41,7 +41,8 @@ class GenererPdfOrCsa extends GeneratePdf
         OrCsaSoumissionDto $dto,
         string $email,
         string $filename,
-        string $numeroDit
+        string $numeroDit,
+        array $quelqueAffichage
     ): void {
         $chemin = $this->baseCheminDuFichier . 'dit/' . $numeroDit . '/' . $filename;
         $dir    = dirname($chemin);
@@ -51,21 +52,22 @@ class GenererPdfOrCsa extends GeneratePdf
         }
 
         $pdf = new HeaderPdf($email);
+        $pdf->SetMargins(8, 10, 8);
 
-        $pdf->SetMargins(10, 10, 10);
+        // ----- PAGE (Page de garde) : Validation OR - CVA  -----
+        $this->renderValidationOrCVA($pdf, $dto, $quelqueAffichage);
 
+        // ----- PAGE 2+ : Proforma Invoice -----
         $pdf->AddPage();
         $this->renderEnteteImages($pdf);
-
         $this->renderOrScomat($pdf, $dto);
-
         $this->renderFooter($pdf, $dto);
 
         $pdf->Output($chemin, 'F');
     }
 
     // ------------------------------------------------------------
-    // En-tête : logo + image d'infos à droite (sans cadre)
+    // En-tête : logo + image d'infos à droite
     // ------------------------------------------------------------
     private function renderEnteteImages(HeaderPdf $pdf): void
     {
@@ -142,11 +144,11 @@ class GenererPdfOrCsa extends GeneratePdf
         $pdf->Cell(85, 1, 'PROFORMA INVOICE No. WO ' . $dto->numeroOr, 0, 0, 'L');
 
         // 
-        $pdf->Cell(60, 1, 'Customer No. : ' . $this->tronquer($dto->numeroClient, 20), 0, 0, 'C');
+        $pdf->Cell(60, 1, 'Customer No. :  ' . $this->tronquer($dto->numeroClient, 20), 0, 0, 'C');
         $pdf->Cell(0, 1, 'Date : ' . $dto->dateOr, 0, 1, 'R');
 
         $pdf->setFont('helvetica', '', 8);
-        $pdf->Cell(0, 1, sprintf('Page %d / 1', $pdf->PageNo()), 0, 1, 'R');
+        $pdf->Cell(0, 4, sprintf('Page %d / %d', $pdf->PageNo(), $pdf->getNumPages()), 0, 1, 'R');
 
 
         $pdf->Ln(1);
@@ -325,8 +327,6 @@ class GenererPdfOrCsa extends GeneratePdf
         // Reference
         $pdf->Cell($colW[1], $minHeight, (string) ($ligne['reference'] ?? ''), 0, 0, 'L');
 
-        // Description (MultiCell)
-        $pdf->MultiCell($colW[2], $minHeight, (string) ($ligne['description'] ?? ''), 0, 'L');
 
         $actualHeight = $pdf->GetY() - $y;
         if ($actualHeight < $minHeight) {
@@ -432,11 +432,83 @@ class GenererPdfOrCsa extends GeneratePdf
             $pdf->Image($footerLogosPath, 10, $pdf->GetY(), 65, 0, '', '', '', true, 300, '', false, false, 1, false, false, false);
         }
 
-        // Si vous avez un QR Code, ajoutez-le ici
+        // Si QR Code
         // $footerQrPath = $basePath . '/Views/assets/footer_qr.png';
         // if (is_file($footerQrPath)) {
         //     $pdf->Image($footerQrPath, 150, $pdf->GetY() - 2, 35, 0, '', '', '', true, 300, '', false, false, 0, false, false, false);
         // }
+    }
+
+    // Page de Garde
+    private function renderValidationOrCVA(
+        HeaderPdf $pdf,
+        OrCsaSoumissionDto $dto,
+        array $quelqueAffichage
+    ): void {
+        $pdf->AddPage();
+
+        // Titre centré
+        $pdf->setFont('helvetica', 'B', 17);
+        $pdf->Cell(0, 6, 'Validation OR - CVA', 0, 0, 'C', false, '', 0, false, 'T', 'M');
+        $pdf->Ln(10, true);
+
+        $pdf->setFont('helvetica', '', 10);
+        $startX = $pdf->GetX();
+
+        // --- Ligne 1 : Date soumission (gauche) + N° Devis (droite) ---
+        $pdf->setFont('helvetica', 'B', 10);
+        $pdf->Cell(45, 6, 'Date soumission : ', 0, 0, 'L');
+        $pdf->setFont('helvetica', '', 10);
+        $pdf->Cell(
+            50,
+            6,
+            $quelqueAffichage['dateSoumission'] ?? '',
+            0,
+            1,
+            'L'
+        );
+
+        $pdf->SetAbsX(130);
+        $pdf->setFont('helvetica', 'B', 10);
+        $pdf->Cell(20, 6, 'N° Devis :', 0, 0);
+        $pdf->setFont('helvetica', '', 10);
+        $pdf->Cell(0, 6, $quelqueAffichage['numDevis'], 0, 0);
+
+        // --- Ligne 2 : Numéro OR (gauche) + Sortie POL (droite) ---
+        $pdf->SetXY($startX, $pdf->GetY() + 2);
+        $pdf->setFont('helvetica', 'B', 10);
+        $pdf->Cell(45, 6, 'Numéro OR : ', 0, 0, 'L');
+        $pdf->setFont('helvetica', '', 10);
+        $pdf->Cell(50, 6, $dto->numeroOr, 0, 1);
+
+        $pdf->SetAbsX(130);
+        $pdf->setFont('helvetica', 'B', 10);
+        $pdf->Cell(20, 6, 'Sortie POL : ', 0, 0);
+        $pdf->setFont('helvetica', '', 10);
+        $pdf->Cell(0, 6, ' ' . ($quelqueAffichage['pol'] ?? ''), 0, 0);
+
+        // --- Ligne 3 : Version à valider ---
+        $pdf->SetXY($startX, $pdf->GetY() + 2);
+        $pdf->setFont('helvetica', 'B', 10);
+        $pdf->Cell(45, 6, 'Version à valider : ', 0, 0, 'L');
+        $pdf->setFont('helvetica', '', 10);
+        $pdf->Cell(50, 6, $quelqueAffichage['numeroVersion'] ?? '', 0, 1);
+
+        // --- Ligne 4 : Sortie magasin ---
+        $pdf->SetXY($startX, $pdf->GetY() + 2);
+        $pdf->setFont('helvetica', 'B', 10);
+        $pdf->Cell(45, 6, 'Sortie magasin : ', 0, 0, 'L');
+        $pdf->setFont('helvetica', '', 10);
+        $pdf->Cell(50, 6, $quelqueAffichage['sortieMagasin'] ?? '', 0, 1);
+
+        // --- Ligne 5 : Achat locaux ---
+        $pdf->SetXY($startX, $pdf->GetY() + 2);
+        $pdf->setFont('helvetica', 'B', 10);
+        $pdf->Cell(45, 6, 'Achat locaux : ', 0, 0, 'L');
+        $pdf->setFont('helvetica', '', 10);
+        $pdf->Cell(50, 6, $quelqueAffichage['achatLocaux'] ?? '', 0, 1);
+
+        $pdf->Ln(10, true);
     }
 
     // ------------------------------------------------------------
