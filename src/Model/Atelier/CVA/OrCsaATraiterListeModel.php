@@ -24,7 +24,7 @@ class OrCsaATraiterListeModel extends Model
         int $delaiAllocation = 90,
         int $toleranceFenetre = 10,
         // Types a changer en ['222', '229'] pour la prod et exemple: ['202', '209'] pour le test local
-        array $typesOr          = ['222', '229'],
+        array $typesOr          = ['202', '203', '208', '211', '213', '216', '220', '222', '223', '224', '229', '231', '233', '245', '252', '254', '255', '502', '503', '504', '590', '591', '602', '701', 'CIS'],
         int $anneeMin = 2025
     ) {
         parent::__construct();
@@ -141,6 +141,7 @@ class OrCsaATraiterListeModel extends Model
                     WHEN (seor_delai - TODAY) <= {$h} THEN 'A_ALLOUER'
                     ELSE 'A_VENIR'
                 END AS code_couleur
+                ,sitv_comment  as job_description
             FROM {$this->dbIps}.sav_eor
             INNER JOIN {$this->dbIps}.agr_ces
                 ON aces_soc = seor_soc
@@ -149,6 +150,13 @@ class OrCsaATraiterListeModel extends Model
                 ON slor_soc  = seor_soc
                AND slor_succ = seor_succ
                AND slor_numor = seor_numor
+            LEFT JOIN sav_itv sa 
+                on sitv_soc = slor_soc 
+                and sitv_succ = slor_succ
+                and sitv_numor = slor_numor
+                and sitv_interv = slor_nogrp/100
+            INNER JOIN {$this->dbIps}.agr_tab t
+                ON t.atab_code = seor_servcrt
             WHERE seor_typeor IN ({$typesOrSql})
               AND YEAR(seor_dateor) >= {$this->anneeMin}
               AND slor_qtewait > 0
@@ -233,6 +241,35 @@ class OrCsaATraiterListeModel extends Model
 
             if ($code && $libelle) {
                 // On crée la clé d'affichage : "222 - CSA JOB"
+                $choices["{$code} - {$libelle}"] = $code;
+            }
+        }
+
+        return $choices;
+    }
+    /**
+     * Récupère les libellés des types d'OR depuis agr_ces pour le formulaire de recherche.
+     */
+    public function getDeptsCredited(): array
+    {
+        $deptsCreditedSql = implode(', ', array_map(
+            static fn(string $t): string => "'" . str_replace("'", "''", $t) . "'",
+            $this->typesOr
+        ));
+
+        $statement = "SELECT DISTINCT atab_lib 
+                      FROM {$this->dbIps}.agr_tab 
+                      ORDER BY atab_lib DESC";
+        $result = $this->connect->executeQuery($statement);
+        $data   = $this->convertirEnUtf8($this->connect->fetchResults($result));
+
+        $choices = [];
+        foreach ($data as $row) {
+            // Prise en charge des majuscules/minuscules selon le driver
+            $code    = $row['atab_lib'] ?? $row['ATAB_LIB'] ?? null;
+            $libelle    = $row['atab_lib'] ?? $row['ATAB_LIB'] ?? null;
+
+            if ($code && $libelle) {
                 $choices["{$code} - {$libelle}"] = $code;
             }
         }

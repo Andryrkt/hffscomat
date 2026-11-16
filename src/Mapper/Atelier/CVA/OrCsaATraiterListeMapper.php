@@ -33,6 +33,7 @@ class OrCsaATraiterListeMapper
         $dto->nbJoursDispoLib  = $this->pick($row, 'nb_jours_dispo_lib');
         $dto->statutAllocation = $this->pick($row, 'statut_allocation');
         $dto->codeCouleur      = $this->pick($row, 'code_couleur');
+        $dto->jobDescription   = $this->pick($row, 'job_description');
 
         return $dto;
     }

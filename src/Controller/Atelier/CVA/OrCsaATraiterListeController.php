@@ -41,10 +41,12 @@ class OrCsaATraiterListeController extends Controller
 
         $dtoSearch =  $this->getSessionService()->has('criteria_for_or_csa_a_traiter_liste') ? $this->getSessionService()->get('criteria_for_or_csa_a_traiter_liste') : new OrCsaATraiterSearchDto();
         $typesOrChoices = $this->orCsaATraiterListeModel->getTypesOrChoices();
+        $deptsCredited = $this->orCsaATraiterListeModel->getDeptsCredited();
         //création et initialisation du formulaire de la recherche
         $form = $this->getFormFactory()->createBuilder(OrCsaATraiterSearchType::class, $dtoSearch, [
             'method' => 'GET',
             'types_or_choices' => $typesOrChoices,
+            'depts_credited' => $deptsCredited,
         ])->getForm();
         $dtoSearch  = $this->traitementFormulaireRecherche($form, $request, $dtoSearch);
 
