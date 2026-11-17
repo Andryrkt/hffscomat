@@ -34,7 +34,7 @@ class GeneratePdfCdeMagasin extends GeneratePdf
     private const ROW_COLOR         = [200, 200, 200];
     private const DOTTED_LINE_COLOR = [50, 50, 50];
 
-    /** @var array{numCdeLbl:int|float,numCde:int|float,typeCdeLbl:int|float,typeCde:int|float,delaiExpLbl:int|float,frnLbl:int|float,numFrn:int|float,nomFrn:int|float,responsableLbl:int|float} $headerWidth */
+    /** @var array{numCdeLbl:int|float,numCde:int|float,typeCdeLbl:int|float,typeCde:int|float,dateExpLbl:int|float,frnLbl:int|float,numFrn:int|float,nomFrn:int|float,responsableLbl:int|float} $headerWidth */
     private array $headerWidth = [];
 
     /** @var array{img1X:int|float,img1Y:int|float,img1W:int|float,img1H:int|float,img2X:int|float,img2Y:int|float,img2W:int|float,img2H:int|float} $imgConfig */
@@ -132,10 +132,10 @@ class GeneratePdfCdeMagasin extends GeneratePdf
         $this->pdf->Cell($this->headerWidth['typeCde'], self::MAIN_TEXT_HEIGHT, $this->dto->typeCde, 0, 0);
 
         $this->pdf->setFont(self::FONT, "I", self::MAIN_TEXT_SIZE);
-        $this->cellUnderline($this->headerWidth['delaiExpLbl'], self::MAIN_TEXT_HEIGHT, "Délai d'expédition:", 0, 0);
+        $this->cellUnderline($this->headerWidth['dateExpLbl'], self::MAIN_TEXT_HEIGHT, "Date d'expédition:", 0, 0);
 
         $this->pdf->setFont(self::FONT, "", self::MAIN_TEXT_SIZE);
-        $this->pdf->Cell(0, self::MAIN_TEXT_HEIGHT, $this->dto->getDelaiExpedition(), 0, 1);
+        $this->pdf->Cell(0, self::MAIN_TEXT_HEIGHT, $this->dto->getDateExpeditionFormatted(), 0, 1);
 
         $this->pdf->setFont(self::FONT, "I", self::MAIN_TEXT_SIZE);
         $this->cellUnderline($this->headerWidth['frnLbl'], self::MAIN_TEXT_HEIGHT, "Fournisseur:", 0, 0);
@@ -415,7 +415,7 @@ class GeneratePdfCdeMagasin extends GeneratePdf
         $this->headerWidth['numCdeLbl']          =
             $this->headerWidth['typeCdeLbl']     =
             $this->headerWidth['typeCde']        =
-            $this->headerWidth['delaiExpLbl']    =
+            $this->headerWidth['dateExpLbl']     =
             $this->headerWidth['frnLbl']         =
             $this->headerWidth['responsableLbl'] = 24;
 

@@ -45,6 +45,18 @@ class CdeSoumissionModel extends Model
                 FROM {$this->dbIps}.agr_tab
                 WHERE atab_code = fcde_typcde AND atab_nom  = 'TOP'
             ) AS type_cde,
+            (
+                SELECT slnk_date2
+                FROM {$this->dbIpsRegix}.sip_lnk
+                WHERE slnk_tabname IN ('frn_cdl', 'frn_cde')
+                AND slnk_pk1 = '$numCde'
+                AND slnk_id = (
+                    SELECT MAX(m.slnk_id)
+                    FROM {$this->dbIpsRegix}.sip_lnk m
+                    WHERE m.slnk_tabname IN ('frn_cdl', 'frn_cde')
+                    AND m.slnk_pk1 = '$numCde'
+                )
+            ) AS date_expedition,
             fcde_numfou AS num_frn,
             TRIM(fbse_nomfou) AS nom_frn,
             fbse_devise AS devise_code,
