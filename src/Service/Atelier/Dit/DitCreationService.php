@@ -107,7 +107,7 @@ class DitCreationService
         $dto->statutDemande = StatutDitConstant::STATUT_CLOTUREE_VALIDER;
 
         // ---------- 4. Champs calculés ----------
-        $leadTime       = $this->calculerLeadTime($orData['date_prevue_travaux'] ?? null);
+        $leadTime = $this->toDateSlashString($orData['date_prevue_travaux'] ?? null) ?? '';
         $numeroMateriel = $dto->idMateriel ?? '';
         $dto->objetDemande  = trim(sprintf('CVI %s %s ', $numeroMateriel, $leadTime));
         $dto->detailDemande  = '...';
@@ -224,14 +224,10 @@ class DitCreationService
         }
     }
 
-    private function calculerLeadTime($dateDelai): string
+    private function toDateSlashString($value): ?string
     {
-        $dt = $this->toDateTime($dateDelai);
-        if (!$dt) {
-            return '';
-        }
-        $jours = (int) (new \DateTime('today'))->diff($dt)->format('%r%a');
-        return $jours > 0 ? $jours . 'j' : '0j';
+        $dt = $this->toDateTime($value);
+        return $dt ? $dt->format('Y/m/d') : null;
     }
 
     /**

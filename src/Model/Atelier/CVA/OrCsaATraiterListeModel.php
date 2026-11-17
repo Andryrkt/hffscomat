@@ -15,6 +15,7 @@ class OrCsaATraiterListeModel extends Model
     private int   $delaiAllocation;
     private int   $toleranceFenetre;
     private array $typesOr;
+    private array $exculdeTypesOr;
     private int   $anneeMin;
 
     private FiltreService $filtreService;
@@ -25,6 +26,7 @@ class OrCsaATraiterListeModel extends Model
         int $toleranceFenetre = 10,
         // Types a changer en ['222', '229'] pour la prod et exemple: ['202', '209'] pour le test local
         array $typesOr          = ['202', '203', '208', '211', '213', '216', '220', '222', '223', '224', '229', '231', '233', '245', '252', '254', '255', '502', '503', '504', '590', '591', '602', '701', 'CIS'],
+        array $exculdeTypesOr   = ['205', '230', '253', '590', '801'],
         int $anneeMin = 2025
     ) {
         parent::__construct();
@@ -32,10 +34,8 @@ class OrCsaATraiterListeModel extends Model
         $this->delaiAllocation  = $delaiAllocation;
         $this->toleranceFenetre = $toleranceFenetre;
         $this->typesOr          = $typesOr;
+        $this->exculdeTypesOr   = $exculdeTypesOr;
         $this->anneeMin         = $anneeMin;
-
-        // ⚠️ FiltreService doit aussi connaître délai/tolérance pour
-        // traduire les codes TOUS / RETARD / AUTOUR_J90 / A_VENIR.
         $this->filtreService = new FiltreService($securityService);
     }
 
@@ -53,7 +53,6 @@ class OrCsaATraiterListeModel extends Model
 
         $innerQuery = $this->buildBaseQuery($conditions, $conditionsMultisucursal);
         // ---------- Requête paginée ----------
-
         $statement = "
             SELECT SKIP {$skip} FIRST {$perPage} t.*
             FROM ({$innerQuery}) AS t
@@ -108,9 +107,9 @@ class OrCsaATraiterListeModel extends Model
     {
         // Liste des types OR, échappée par sécurité (paramètres serveur,
         // pas d'input utilisateur direct ici, mais on protège).
-        $typesOrSql = implode(', ', array_map(
+        $excludetypesOrSql = implode(', ', array_map(
             static fn(string $t): string => "'" . str_replace("'", "''", $t) . "'",
-            $this->typesOr
+            $this->exculdeTypesOr
         ));
 
         $d = $this->delaiAllocation;                       // seuil « J-90 »
@@ -157,7 +156,8 @@ class OrCsaATraiterListeModel extends Model
                 and sitv_interv = slor_nogrp/100
             INNER JOIN {$this->dbIps}.agr_tab t
                 ON t.atab_code = seor_servcrt
-            WHERE seor_natop  in ('CES','GAR')
+            WHERE seor_natop  IN ('CES','GAR')
+              AND seor_typeor NOT IN ({$excludetypesOrSql})
               AND YEAR(seor_dateor) >= {$this->anneeMin}
               AND slor_qtewait > 0
               AND seor_serv = 'SAV'
@@ -221,19 +221,20 @@ class OrCsaATraiterListeModel extends Model
      */
     public function getTypesOrChoices(): array
     {
-        $typesOrSql = implode(', ', array_map(
+        $excludeTypesOrSql = implode(', ', array_map(
             static fn(string $t): string => "'" . str_replace("'", "''", $t) . "'",
             $this->typesOr
         ));
 
-        $statement = "SELECT DISTINCT aces_nat, aces_lib 
+        $statement = "SELECT DISTINCT aces_nat,UPPER(aces_lib) AS aces_lib 
                       FROM {$this->dbIps}.agr_ces c
                       INNER JOIN {$this->dbIps}.sav_eor e
                        ON  c.aces_soc = e.seor_soc
                        AND c.aces_nat = e.seor_typeor
                       WHERE e.seor_natop  IN ('CES','GAR')
-                      ORDER BY aces_nat";
-        
+                      AND e.seor_typeor NOT IN ({$excludeTypesOrSql})
+                      ORDER BY aces_nat, UPPER(aces_lib)";
+
         $result = $this->connect->executeQuery($statement);
         $data   = $this->convertirEnUtf8($this->connect->fetchResults($result));
 
@@ -259,7 +260,7 @@ class OrCsaATraiterListeModel extends Model
         $statement = "SELECT DISTINCT atab_lib 
                       FROM {$this->dbIps}.agr_tab t
                       WHERE t.atab_nom  = 'SER' 
-                      ORDER BY t.atab_lib DESC";
+                      ORDER BY t.atab_lib ASC";
 
         $result = $this->connect->executeQuery($statement);
         $data   = $this->convertirEnUtf8($this->connect->fetchResults($result));
