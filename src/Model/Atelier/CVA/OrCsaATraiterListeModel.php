@@ -157,7 +157,7 @@ class OrCsaATraiterListeModel extends Model
                 and sitv_interv = slor_nogrp/100
             INNER JOIN {$this->dbIps}.agr_tab t
                 ON t.atab_code = seor_servcrt
-            WHERE seor_typeor IN ({$typesOrSql})
+            WHERE seor_natop  in ('CES','GAR')
               AND YEAR(seor_dateor) >= {$this->anneeMin}
               AND slor_qtewait > 0
               AND seor_serv = 'SAV'
@@ -227,9 +227,13 @@ class OrCsaATraiterListeModel extends Model
         ));
 
         $statement = "SELECT DISTINCT aces_nat, aces_lib 
-                      FROM {$this->dbIps}.agr_ces 
-                      WHERE aces_nat IN ({$typesOrSql}) 
+                      FROM {$this->dbIps}.agr_ces c
+                      INNER JOIN {$this->dbIps}.sav_eor e
+                       ON  c.aces_soc = e.seor_soc
+                       AND c.aces_nat = e.seor_typeor
+                      WHERE e.seor_natop  IN ('CES','GAR')
                       ORDER BY aces_nat";
+        
         $result = $this->connect->executeQuery($statement);
         $data   = $this->convertirEnUtf8($this->connect->fetchResults($result));
 
@@ -252,14 +256,11 @@ class OrCsaATraiterListeModel extends Model
      */
     public function getDeptsCredited(): array
     {
-        $deptsCreditedSql = implode(', ', array_map(
-            static fn(string $t): string => "'" . str_replace("'", "''", $t) . "'",
-            $this->typesOr
-        ));
-
         $statement = "SELECT DISTINCT atab_lib 
-                      FROM {$this->dbIps}.agr_tab 
-                      ORDER BY atab_lib DESC";
+                      FROM {$this->dbIps}.agr_tab t
+                      WHERE t.atab_nom  = 'SER' 
+                      ORDER BY t.atab_lib DESC";
+
         $result = $this->connect->executeQuery($statement);
         $data   = $this->convertirEnUtf8($this->connect->fetchResults($result));
 
@@ -270,7 +271,7 @@ class OrCsaATraiterListeModel extends Model
             $libelle    = $row['atab_lib'] ?? $row['ATAB_LIB'] ?? null;
 
             if ($code && $libelle) {
-                $choices["{$code} - {$libelle}"] = $code;
+                $choices[$libelle] = $code;
             }
         }
 
@@ -304,8 +305,8 @@ class OrCsaATraiterListeModel extends Model
             e.seor_nummat           AS id_materiel,
             c.aces_lib              AS libelle_type_or,
             e.seor_typeor || ' - ' || c.aces_lib AS type_or,
-            m.mmat_recalph           AS numero_parc,
-            m.mmat_numserie           AS numero_serie
+            m.mmat_recalph          AS numero_parc,
+            m.mmat_numserie         AS numero_serie
         FROM {$this->dbIps}.sav_eor e
         INNER JOIN {$this->dbIps}.agr_ces c
             ON  c.aces_soc = e.seor_soc
