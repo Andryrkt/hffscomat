@@ -94,6 +94,11 @@ class FiltreService
             $esc = $this->esc(trim($dto->typeOr));
             $conditions[] = " AND seor_typeor = '{$esc}'";
         }
+        // 8) Dept concerned
+        if ($dto->dept_credited !== null && trim($dto->dept_credited) !== '') {
+            $esc = $this->esc(trim($dto->dept_credited));
+            $conditions[] = " AND t.atab_lib = '{$esc}'";
+        }
 
         return implode('', $conditions);
     }

@@ -11,4 +11,5 @@ class OrCsaATraiterSearchDto
     public ?string $fenetreAllocation = 'TOUS';
     public ?string $numOr = null;
     public ?string $typeOr = null;
+    public ?string $dept_credited = null;
 }

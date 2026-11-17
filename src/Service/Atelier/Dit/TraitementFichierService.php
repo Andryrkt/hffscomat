@@ -113,4 +113,57 @@ class TraitementFichierService
 
         return [$nomEtCheminFichiersEnregistrer, $nomFichierEnregistrer, $nomAvecCheminFichier, $nomFichier];
     }
+
+    /**
+     * Génère le PDF d'une DIT depuis un OR (sans upload de pièces jointes).
+     *
+     * Étapes :
+     *  1. Création du répertoire DIT
+     *  2. Génération du nom principal (même logique que le formulaire)
+     *  3. Génération de la page de garde via GenererPdfDit
+     *
+     * Retourne la même structure que traitementDeFichier() :
+     *   [$nomFichierEnregistrer, $nomFichier]
+     */
+    public function genererPdfSansFichier(DitDto $dto): array
+    {
+        $nameGenerator    = new DitNameFileService();
+        $cheminBaseUpload = $_ENV['BASE_PATH_FICHIER'] . '/dit/';
+        $path             = $cheminBaseUpload . $dto->numeroDemandeIntervention . '/';
+
+        if (!is_dir($path)) {
+            mkdir($path, 0777, true);
+        }
+
+        $agServEmetteur = str_replace('-', '', $dto->agenceServiceEmetteur ?? '');
+
+        // 1. Nom du fichier principal (même logique que enregistrementFichier())
+        $nomFichier           = $nameGenerator->generateDitNamePrincipal(
+            $dto->numeroDemandeIntervention,
+            $agServEmetteur
+        );
+        $nomAvecCheminFichier = $path . $nomFichier;
+
+        // 2. Génération de la page de garde
+        SuiviOperationService::suivre('Génération page de garde (OR)', function () use ($dto, $nomAvecCheminFichier) {
+            $ditModel      = new DitModel();
+            $idMateriel    = (int) $dto->idMateriel;
+
+            // ⚠️ Harmonisation casse : on accepte "Externe" et "EXTERNE"
+            $estExterne = strtoupper((string) $dto->internetExterne) === 'EXTERNE';
+
+            if (!$estExterne && !in_array($idMateriel, $ditModel->getNumeroMatriculePasMateriel())) {
+                $historiqueMateriel = $this->historiqueInterventionMateriel($idMateriel);
+            } else {
+                $historiqueMateriel = [];
+            }
+
+            (new GenererPdfDit())->genererPdfDit($dto, $historiqueMateriel, $nomAvecCheminFichier);
+        });
+
+        // 3. Même format de retour que traitementDeFichier()
+        $nomFichierEnregistrer = [$nomFichier];   // tableau comme dans enregistrementFichier()
+
+        return [$nomFichierEnregistrer, $nomFichier];
+    }
 }

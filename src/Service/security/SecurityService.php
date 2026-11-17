@@ -314,6 +314,14 @@ class SecurityService
     }
 
     /** 
+     * Retourne le code société de l'utilisateur
+     */
+    public function getUserEmail(): ?string
+    {
+        return $this->dataService->getUserMail();
+    }
+
+    /** 
      * Retourne le code agence de l'utilisateur
      */
     public function getCodeAgenceUser(): ?string
