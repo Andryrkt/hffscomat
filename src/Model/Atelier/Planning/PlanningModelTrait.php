@@ -120,9 +120,10 @@ trait PlanningModelTrait
         return  '';
     }
 
-    private function getDateDebutCondition(PlanningSearchDto $dto)
+    private function getDateDebutCondition(PlanningSearchDto $dto, string $codeSoc)
     {
         if (!empty($dto->dateDebut)) {
+            $dateFormat = $codeSoc === "CO" ? "d/m/Y" : "m/d/Y";
             $monthDatePlanifier = " CASE WHEN
                                         (SELECT DATE(Min(ska_d_start) ) FROM ska, skw WHERE ofh_id = seor_numor AND ofs_id=sitv_interv AND skw.skw_id = ska.skw_id )  is Null 
                                     THEN
@@ -133,18 +134,18 @@ trait PlanningModelTrait
             $monthDateNonPlanifier =  "  DATE(sitv_datdeb)  ";
             switch ($dto->planning) {
                 case "PLANIFIE":
-                    return " AND " . $monthDatePlanifier . " >= '" . $dto->dateDebut->format("d/m/Y") . "'";
+                    return " AND " . $monthDatePlanifier . " >= '" . $dto->dateDebut->format($dateFormat) . "'";
                 case "NON_PLANIFIE":
-                    return " AND " . $monthDateNonPlanifier . " >= '" . $dto->dateDebut->format("d/m/Y") . "'";
+                    return " AND " . $monthDateNonPlanifier . " >= '" . $dto->dateDebut->format($dateFormat) . "'";
             }
         }
         return '';
     }
 
-    private function getDateFinCondition(PlanningSearchDto $dto)
+    private function getDateFinCondition(PlanningSearchDto $dto, string $codeSoc)
     {
-
         if (!empty($dto->dateFin)) {
+            $dateFormat = $codeSoc === "CO" ? "d/m/Y" : "m/d/Y";
             $monthDatePlanifier = " CASE WHEN 
                                     (SELECT DATE(Min(ska_d_start) ) FROM ska, skw WHERE ofh_id = seor_numor AND ofs_id=sitv_interv AND skw.skw_id = ska.skw_id )  is Null 
                                 THEN
@@ -155,10 +156,10 @@ trait PlanningModelTrait
             $monthDateNonPlanifier =  " DATE(sitv_datdeb)  ";
             switch ($dto->planning) {
                 case "PLANIFIE":
-                    return " AND " . $monthDatePlanifier . " <= '" . $dto->dateFin->format("d/m/Y") . "'";
+                    return " AND " . $monthDatePlanifier . " <= '" . $dto->dateFin->format($dateFormat) . "'";
                     break;
                 case "NON_PLANIFIE":
-                    return " AND " . $monthDateNonPlanifier . " <= '" . $dto->dateFin->format("d/m/Y") . "'";
+                    return " AND " . $monthDateNonPlanifier . " <= '" . $dto->dateFin->format($dateFormat) . "'";
             }
         }
         return '';

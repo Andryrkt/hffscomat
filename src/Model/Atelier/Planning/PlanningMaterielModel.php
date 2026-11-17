@@ -87,8 +87,8 @@ class PlanningMaterielModel extends Model
                 {$this->getInterneExterneCondition($searchDto)}
                 {$this->getAgenceDebiteCondition($searchDto)}
                 {$this->getServiceDebiteCondition($searchDto)}
-                {$this->getDateDebutCondition($searchDto)}
-                {$this->getDateFinCondition($searchDto)}
+                {$this->getDateDebutCondition($searchDto,$codeSoc)}
+                {$this->getDateFinCondition($searchDto,$codeSoc)}
                 {$this->getNumParcCondition($searchDto)}
                 {$this->getIdMaterielCondition($searchDto)}
                 {$this->getNumOrCondition($searchDto)}
@@ -648,8 +648,8 @@ class PlanningMaterielModel extends Model
                 {$this->getInterneExterneCondition($searchDto)}
                 {$this->getAgenceDebiteCondition($searchDto)}
                 {$this->getServiceDebiteCondition($searchDto)}
-                {$this->getDateDebutCondition($searchDto)}
-                {$this->getDateFinCondition($searchDto)}
+                {$this->getDateDebutCondition($searchDto,$codeSoc)}
+                {$this->getDateFinCondition($searchDto,$codeSoc)}
                 {$this->getNumParcCondition($searchDto)}
                 {$this->getIdMaterielCondition($searchDto)}
                 {$this->getNumOrCondition($searchDto)}
@@ -682,8 +682,8 @@ class PlanningMaterielModel extends Model
             {$this->getInterneExterneCondition($searchDto)}
             {$this->getAgenceDebiteCondition($searchDto)}
             {$this->getServiceDebiteCondition($searchDto)}
-            {$this->getDateDebutCondition($searchDto)}
-            {$this->getDateFinCondition($searchDto)}
+            {$this->getDateDebutCondition($searchDto,$codeSoc)}
+            {$this->getDateFinCondition($searchDto,$codeSoc)}
             {$this->getNumParcCondition($searchDto)}
             {$this->getIdMaterielCondition($searchDto)}
             {$this->getNumOrCondition($searchDto)}
