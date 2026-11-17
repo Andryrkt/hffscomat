@@ -35,7 +35,7 @@ class PlanningCommandeFournisseurModel extends Model
                     END
                 ) AS statut,
                 CASE
-                    WHEN bo.numero_po IS NOT NULL THEN 'O'
+                    WHEN bo.numero_po IS NOT NULL AND o.total_recu = 0 THEN 'O'
                     ELSE 'N'
                 END AS back_order
             FROM (
