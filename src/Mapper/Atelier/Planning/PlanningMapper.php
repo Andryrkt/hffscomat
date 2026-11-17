@@ -71,15 +71,15 @@ class PlanningMapper
         $dto->message     = $item['message'] ?? '';
 
         $detail = [
-            'mois'       => $dto->mois,
-            'annee'      => $dto->annee,
-            'orIntv'     => $dto->orItv,
-            'qteCdm'     => $dto->qteCdm,
-            'qteLiv'     => $dto->qteLiv,
-            'qteAll'     => $dto->qteAll,
+            'mois'        => $dto->mois,
+            'annee'       => $dto->annee,
+            'orIntv'      => $dto->orItv,
+            'qteCdm'      => $dto->qteCdm,
+            'qteLiv'      => $dto->qteLiv,
+            'qteAll'      => $dto->qteAll,
             'commentaire' => $dto->commentaire,
-            'back'       => !empty($back) && in_array($item['or_itv'] , $back['num_or_itvs']) ? true :  false,
-            'statut'     => $dto->statut,
+            'back'        => !empty($back) && in_array($item['or_itv'], $back['num_or_itvs']) && $dto->qteAll + $dto->qteLiv <= 0 ? true :  false,
+            'statut'      => $dto->statut,
         ];
         $dto->addMoisDetails($detail);
 
