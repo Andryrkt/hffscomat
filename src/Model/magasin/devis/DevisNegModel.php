@@ -11,7 +11,7 @@ class DevisNegModel extends Model
     {
         $this->connect->connect();
         $skip = ($page - 1) * $limit;
-        $sucNeg = $_ENV['SUC_NEG'];
+        $sucNum = $_ENV['SUC_NUM'];
 
         try {
 
@@ -113,7 +113,7 @@ class DevisNegModel extends Model
                 --AND nent.nent_numcli   <> 1990000
                 --AND nent.nent_numcde   NOT IN (19407989,19407991,19408971,19410383,19409906,19409996)
                 AND nent.nent_datecde  >= MDY(9, 1, 2025)
-                AND nent.nent_succ = '$sucNeg'
+                AND nent.nent_succ = '$sucNum'
                 AND nent.nent_soc = '$codeSociete'
                 AND EXISTS (
                                 SELECT 1 FROM {$this->dbIps}.neg_lig nl
@@ -178,7 +178,7 @@ class DevisNegModel extends Model
     public function getDevisNegExportExcel($criteria, $codeAgenceAutoriserString, $multiSuccursale, $codeAgenceDefaut, $numDeviAExclure, $codeSociete)
     {
         $this->connect->connect();
-        $sucNeg = $_ENV['SUC_NEG'];
+        $sucNum = $_ENV['SUC_NUM'];
 
         try {
 
@@ -271,7 +271,7 @@ class DevisNegModel extends Model
                 -- AND nent.nent_numcli   <> 1990000
                 -- AND nent.nent_numcde   NOT IN (19407989,19407991,19408971,19410383,19409906,19409996)
                 AND nent.nent_datecde  >= MDY(9, 1, 2025)
-                AND nent.nent_succ = '$sucNeg'
+                AND nent.nent_succ = '$sucNum'
                 AND nent.nent_soc = '$codeSociete'
                 AND EXISTS (
                                 SELECT 1 FROM {$this->dbIps}.neg_lig nl
@@ -337,8 +337,8 @@ class DevisNegModel extends Model
             $whereClauses[] = " dneg.utilisateur LIKE '%" . $criteria['Operateur'] . "%' ";
         }
 
-        
-        
+
+
 
         // Filtre par utilisateur créateur
         if (!empty($criteria['CreePar'])) {
@@ -403,9 +403,9 @@ class DevisNegModel extends Model
         // }
 
         //Filtre par service émetteur
-        if (!empty($criteria['services'])){
+        if (!empty($criteria['services'])) {
             // $serviceCode = $criteria['emetteur']['service']->getCodeService();
-            $whereClauses[] = " nent.nent_servcrt = '".$criteria['services']."' ";
+            $whereClauses[] = " nent.nent_servcrt = '" . $criteria['services'] . "' ";
         }
 
         // Filtre par date de création (Plage de dates)
@@ -457,8 +457,8 @@ class DevisNegModel extends Model
                     break;
             }
         }
-// Filtre par numéro de PO
-        if(!empty($criteria['numeroPO'])) {
+        // Filtre par numéro de PO
+        if (!empty($criteria['numeroPO'])) {
             $numeroPO = $criteria['numeroPO'];
             $whereClauses[] = " (SELECT numero_bcc_neg 
                     FROM {$this->dbIrium}.DW_BC_Client_Negoce 
@@ -498,7 +498,7 @@ class DevisNegModel extends Model
                             utilisateur_reprise = NULL
                         WHERE numero_devis = :numeroDevis 
                         AND numero_version = (SELECT MAX(numero_version) FROM {$this->dbIrium}.devis_soumis_a_validation_neg WHERE numero_devis = :numeroDevis2)";
-                
+
                 $params = [
                     'motif' => $motif ?: "",
                     'utilisateur' => $utilisateur,
@@ -514,7 +514,7 @@ class DevisNegModel extends Model
                             utilisateur_reprise = :utilisateur
                         WHERE numero_devis = :numeroDevis 
                         AND numero_version = (SELECT MAX(numero_version) FROM {$this->dbIrium}.devis_soumis_a_validation_neg WHERE numero_devis = :numeroDevis2)";
-                
+
                 $params = [
                     'utilisateur' => $utilisateur,
                     'numeroDevis' => $numeroDevis,

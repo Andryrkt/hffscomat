@@ -38,7 +38,7 @@ final class CdeFrnSoumissionService
     public function generatePdfForSubmission(string $numCde, string $userMail, string $codeSociete): ?CdeFrnSoumisAValidationDTO
     {
         // 1. Récupération des données du document
-        $commandeSoumissionDto = $this->cdeSoumissionModel->findInfoCommande($numCde, $userMail, $_ENV['SUC_NEG'], $codeSociete);
+        $commandeSoumissionDto = $this->cdeSoumissionModel->findInfoCommande($numCde, $userMail, $_ENV['SUC_NUM'], $codeSociete);
 
         if ($commandeSoumissionDto === null) return null;
 

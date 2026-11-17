@@ -24,12 +24,12 @@ class CdeSoumissionModel extends Model
      * 
      * @param string $numCde       numéro de la commande
      * @param string $userMail     email de l'utilisateur
-     * @param string $succursale   succursale
+     * @param string $sucNum       succursale
      * @param string $codeSociete  code société
      * 
      * @return ?CommandeSoumissionDTO
      */
-    public function findInfoCommande(string $numCde, string $userMail, string $succursale = '1', string $codeSociete = 'CO'): ?CommandeSoumissionDTO
+    public function findInfoCommande(string $numCde, string $userMail, string $sucNum = '1', string $codeSociete = 'CO'): ?CommandeSoumissionDTO
     {
         $startDate = (new \DateTime('first day of -6 months'))->format("Ym");
         $endDate   = (new \DateTime('last day of last month'))->format("Ym");
@@ -119,21 +119,21 @@ class CdeSoumissionModel extends Model
                 FROM {$this->dbIps}.art_stp
                 WHERE astp_constp = fcdl_constp
                 AND astp_refp   = fcdl_refp
-                AND astp_succ   = '$succursale'
+                AND astp_succ   = '$sucNum'
             ) AS stock_dispo,
             (
                 SELECT astp_min1
                 FROM {$this->dbIps}.art_stp
                 WHERE astp_constp = fcdl_constp
                 AND astp_refp   = fcdl_refp
-                AND astp_succ   = '$succursale'
+                AND astp_succ   = '$sucNum'
             ) AS stock_min,
             (
                 SELECT astp_max1
                 FROM {$this->dbIps}.art_stp
                 WHERE astp_constp = fcdl_constp
                 AND astp_refp   = fcdl_refp
-                AND astp_succ   = '$succursale'
+                AND astp_succ   = '$sucNum'
             ) AS stock_max,
             (
                 SELECT NVL(SUM(asta_qtesor), 0)

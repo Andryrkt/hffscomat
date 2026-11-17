@@ -13,13 +13,13 @@ class PlanningNegoceModel extends Model
 
     public function recuperationAgenceDebite(string $codeSociete)
     {
-        $suc_neg = $_ENV['SUC_NEG'];
+        $sucNum = $_ENV['SUC_NUM'];
         $statement = "SELECT  trim(asuc_lib) as asuc_lib,
                             trim(asuc_num) as asuc_num
                     FROM  agr_succ , sav_itv 
                     WHERE asuc_num = sitv_succdeb 
                     AND asuc_codsoc = '$codeSociete'
-                    AND asuc_num in ('$suc_neg')
+                    AND asuc_num in ('$sucNum')
                     group by 1,2
                     order by asuc_num";
         $result = $this->connect->executeQuery($statement);
