@@ -128,7 +128,7 @@ trait PlanningModelTrait
                                     THEN
                                         DATE(sitv_datepla)  
                                     ELSE
-                                         (SELECT DATE(Min(ska_d_start) ) FROM ska, skw WHERE ofh_id = seor_numor AND ofs_id=sitv_interv AND skw.skw_id = ska.skw_id ) 
+                                        (SELECT DATE(Min(ska_d_start) ) FROM ska, skw WHERE ofh_id = seor_numor AND ofs_id=sitv_interv AND skw.skw_id = ska.skw_id ) 
                                     END";
             $monthDateNonPlanifier =  "  DATE(sitv_datdeb)  ";
             switch ($dto->planning) {
@@ -150,7 +150,7 @@ trait PlanningModelTrait
                                 THEN
                                     DATE(sitv_datepla)  
                                 ELSE
-                                     (SELECT DATE(Min(ska_d_start) ) FROM ska, skw WHERE ofh_id = seor_numor AND ofs_id=sitv_interv AND skw.skw_id = ska.skw_id ) 
+                                    (SELECT DATE(Min(ska_d_start) ) FROM ska, skw WHERE ofh_id = seor_numor AND ofs_id=sitv_interv AND skw.skw_id = ska.skw_id ) 
                                 END  ";
             $monthDateNonPlanifier =  " DATE(sitv_datdeb)  ";
             switch ($dto->planning) {
@@ -210,7 +210,7 @@ trait PlanningModelTrait
         return $this->selectCond->like('mmat_numparc', $dto->casier);
     }
 
-    private function getOrValidBackOrderCondition(PlanningSearchDto $dto, array $orItvBack, array $orsValides, array $orsSoumis): string
+    private function getOrValidBackOrderCondition(PlanningSearchDto $dto, array $orsValides, array $orsSoumis): string
     {
         if (!empty($orsValides)) {
             if ($dto->orNonValiderDw)
@@ -238,8 +238,7 @@ trait PlanningModelTrait
         CASE 
             WHEN slor_qteres = (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) AND slor_qterel > 0 
                 THEN 'A LIVRER'
-            WHEN (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) = slor_qteres 
-                 AND slor_qterel = 0 AND slor_qterea = 0 
+            WHEN (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) = slor_qteres AND slor_qterel = 0 AND slor_qterea = 0 
                 THEN 'DISPO STOCK'
             WHEN slor_qterea = (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) 
                 THEN 'LIVRE'

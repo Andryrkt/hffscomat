@@ -17,7 +17,7 @@ class PlanningMaterielModel extends Model
         $this->selectCond = new SelectWhereCondition();
     }
 
-    public function getMaterielPlanifier(array $numOrs, array $orSoumis, array $orItvBack, PlanningSearchDto $searchDto, string $codeSoc = 'HF'): array
+    public function getMaterielPlanifier(array $numOrs, array $orSoumis, PlanningSearchDto $searchDto, string $codeSoc = 'HF'): array
     {
         if (empty($numOrs)) return [];
         $statement = "SELECT
@@ -80,7 +80,7 @@ class PlanningMaterielModel extends Model
                 AND (seor_ope = ope.atab_code AND ope.atab_nom = 'OPE')
                 {$this->getFactureCondition($searchDto)}
                 AND (seor_nummat = mmat_nummat)
-                {$this->getOrValidBackOrderCondition($searchDto,$orItvBack,$numOrs,$orSoumis)}
+                {$this->getOrValidBackOrderCondition($searchDto,$numOrs,$orSoumis)}
                 {$this->getTypeLigneCondition($searchDto)}
                 {$this->getPlanningSansDateCondition($searchDto)}
                 {$this->getAgenceCondition($searchDto)}
@@ -404,7 +404,7 @@ class PlanningMaterielModel extends Model
         return $this->convertirEnUtf8($data);
     }
 
-    public function getMaterielPlanningList(array $numOrs, array $orSoumis, array $orItvBack, PlanningSearchDto $searchDto, string $codeSoc = 'HF'): array
+    public function getMaterielPlanningList(array $numOrs, array $orSoumis, PlanningSearchDto $searchDto, string $codeSoc = 'HF'): array
     {
         $statement = "SELECT 
                 trim(seor_succ)                                                                                                                 as code_suc, 
@@ -641,7 +641,7 @@ class PlanningMaterielModel extends Model
                 --AND sitv_servcrt IN ('ATE','FOR','GAR','MAN','CSP','MAS', 'LR6', 'LST')
                 AND (seor_nummat = mmat_nummat)
                 AND slor_numcf = nlig_numcde AND slor_refp = nlig_refp
-                {$this->getOrValidBackOrderCondition($searchDto,$orItvBack,$numOrs,$orSoumis)}
+                {$this->getOrValidBackOrderCondition($searchDto,$numOrs,$orSoumis)}
                 {$this->getTypeLigneCondition($searchDto)}
                 {$this->getPlanningSansDateCondition($searchDto)}
                 {$this->getAgenceCondition($searchDto)}
@@ -664,7 +664,7 @@ class PlanningMaterielModel extends Model
         return $this->connect->fetchResults($result);
     }
 
-    public function getMaterielListCount(array $numOrs, array $orSoumis, array $orItvBack, PlanningSearchDto $searchDto, string $codeSoc)
+    public function getMaterielListCount(array $numOrs, array $orSoumis, PlanningSearchDto $searchDto, string $codeSoc)
     {
         $statement = " SELECT 
                 COUNT( distinct seor_numor ||'-'||sitv_interv )  as nb_numOR,
@@ -674,9 +674,8 @@ class PlanningMaterielModel extends Model
             WHERE seor_numor = slor_numor
             AND seor_soc = '$codeSoc' AND mmat_marqmat NOT like 'Z%'
             AND (seor_nummat = mmat_nummat)
-            --AND slor_constp NOT like '%ZDI%'
             AND slor_numcf = nlig_numcde AND slor_refp = nlig_refp
-            {$this->getOrValidBackOrderCondition($searchDto,$orItvBack,$numOrs,$orSoumis)}
+            {$this->getOrValidBackOrderCondition($searchDto,$numOrs,$orSoumis)}
             {$this->getTypeLigneCondition($searchDto)}
             {$this->getPlanningSansDateCondition($searchDto)}
             {$this->getAgenceCondition($searchDto)}

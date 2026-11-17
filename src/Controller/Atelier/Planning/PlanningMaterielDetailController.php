@@ -60,7 +60,7 @@ class PlanningMaterielDetailController extends Controller
         if ($request->query->get('action') !== 'oui') {
             $numOrs = $this->planningModel->getNumeroOrValider($dto);
             $numOrSoumis = $this->planningModel->getOrsSoumis();
-            $result = $this->planningMaterielModel->getMaterielPlanningList($numOrs, $numOrSoumis, [], $dto, $codeSociete);
+            $result = $this->planningMaterielModel->getMaterielPlanningList($numOrs, $numOrSoumis, $dto, $codeSociete);
             $data = $this->planningService->getDetailledDataList($result, []);
             $this->getSessionService()->set('data_planning_detail_excel', $data['data_excel']);
         }
