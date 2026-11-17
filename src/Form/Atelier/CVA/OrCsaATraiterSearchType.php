@@ -62,6 +62,12 @@ class OrCsaATraiterSearchType extends AbstractType
                 'required'    => false,
                 'placeholder' => '-- Tous --',
                 'choices'     => $options['types_or_choices'],
+            ])
+            ->add('dept_credited', ChoiceType::class, [
+                'label'       => 'Dept Credited',
+                'required'    => false,
+                'placeholder' => '-- Tous --',
+                'choices'     => $options['depts_credited'],
             ]);
     }
 
@@ -70,6 +76,7 @@ class OrCsaATraiterSearchType extends AbstractType
         $resolver->setDefaults([
             'data_class'             => OrCsaATraiterSearchDto::class,
             'types_or_choices'  => [],
+            'depts_credited'  => [],
         ]);
     }
 }
