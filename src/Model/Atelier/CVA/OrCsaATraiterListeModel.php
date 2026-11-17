@@ -223,7 +223,7 @@ class OrCsaATraiterListeModel extends Model
     {
         $excludeTypesOrSql = implode(', ', array_map(
             static fn(string $t): string => "'" . str_replace("'", "''", $t) . "'",
-            $this->typesOr
+            $this->exculdeTypesOr
         ));
 
         $statement = "SELECT DISTINCT aces_nat,UPPER(aces_lib) AS aces_lib 
