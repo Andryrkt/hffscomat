@@ -216,15 +216,15 @@ class OrCsaATraiterApi extends Controller
     {
         $numDevis         = $this->ditModel->recupererNumdevis($numOr, $codeSociete);
         $nbSortieMagasin  = $this->ditOrSoumisAValidationModel->recupNbPieceMagasin($numOr, $codeSociete);
-        $nbAchatLocaux    = $this->ditOrSoumisAValidationModel->recupNbAchatLocaux($numOr, $codeSociete);
-        $nbPol            = $this->ditOrSoumisAValidationModel->recupNbPol($numOr, $codeSociete);
+        $nbAchatLocaux    = $this->ditOrSoumisAValidationModel->recupNbAchatLocaux($numOr, $codeSociete, true);
+
         return [
             'dateSoumission' => (new \DateTime())->format('d/m/Y'),
             'numeroVersion' => 1,
             'numDevis' => (string) ($numDevis[0]['seor_numdev'] ?? ''),
             'sortieMagasin' => (!empty($nbSortieMagasin) && $nbSortieMagasin[0]['nbr_sortie_magasin'] !== '0') ? 'OUI' : 'NON',
             'achatLocaux'   => (!empty($nbAchatLocaux)   && $nbAchatLocaux[0]['nbr_achat_locaux']     !== '0') ? 'OUI' : 'NON',
-            'pol'           => (!empty($nbPol)           && $nbPol[0]['nbr_pol']                     !== '0') ? 'OUI' : 'NON',
+            'pol'           =>  'NON',
         ];
     }
 

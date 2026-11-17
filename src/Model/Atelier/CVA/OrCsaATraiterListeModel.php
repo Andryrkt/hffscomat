@@ -105,8 +105,7 @@ class OrCsaATraiterListeModel extends Model
      */
     private function buildBaseQuery(string $conditions, string $conditionsMultisucursal): string
     {
-        // Liste des types OR, échappée par sécurité (paramètres serveur,
-        // pas d'input utilisateur direct ici, mais on protège).
+
         $excludetypesOrSql = implode(', ', array_map(
             static fn(string $t): string => "'" . str_replace("'", "''", $t) . "'",
             $this->exculdeTypesOr
