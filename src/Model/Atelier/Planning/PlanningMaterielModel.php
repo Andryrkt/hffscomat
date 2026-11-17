@@ -155,13 +155,13 @@ class PlanningMaterielModel extends Model
                             and fllf_refp = slor_refp)
                 END                                                     as num_cmd,
                 CASE 
-                    WHEN slor_qteres = (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec)and slor_qterel >0 
+                    WHEN slor_qteres = (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) and slor_qterel > 0 
                         THEN trim('A LIVRER')
                     WHEN (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) = slor_qteres and slor_qterel = 0 and slor_qterea = 0
                         THEN trim('DISPO STOCK')
                     WHEN slor_qterea =  (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) 
                         THEN trim('LIVRE')
-                    WHEN slor_natcm = 'C' THEN
+                    WHEN slor_natcm = 'C' AND slor_qterea + slor_qteres <= 0 THEN
                                 ( SELECT libelle_type
                                   FROM  {$this->dbIrium}.gcot_acknow_cat
                                   WHERE CAST( Numero_PO as varchar(10)) = CAST(slor_numcf  as varchar(10))
