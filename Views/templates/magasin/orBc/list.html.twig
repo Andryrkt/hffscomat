@@ -46,7 +46,7 @@
                             {{ item.numero_doc }}
                         </td>
 
-                        <td>{{ item.date|date('d/m/Y') }}</td>
+                        <td>{{ item.date_doc is not null ? item.date_doc|date('d/m/Y')  : '-' }}</td>
                         <td>{{ item.constructeur }}</td>
                         <td>{{ item.reference }}</td>
                         <td>{{ item.designation }}</td>

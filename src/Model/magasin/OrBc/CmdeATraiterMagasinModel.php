@@ -12,19 +12,19 @@ use App\Service\security\SecurityService;
 class CmdeATraiterMagasinModel extends Model
 {
 
-    private CmdeATraiterMagasinFiltreService $cmdeATraiterAtelierFiltreService;
+    private CmdeATraiterMagasinFiltreService $cmdeATraiterMagasinFiltreService;
 
 
     public function __construct(SecurityService $securityService)
     {
         parent::__construct();
-        $this->cmdeATraiterAtelierFiltreService = new CmdeATraiterMagasinFiltreService($securityService);
+        $this->cmdeATraiterMagasinFiltreService = new CmdeATraiterMagasinFiltreService($securityService);
     }
-    public function findPaginatedAndFiltered(string $codeSociete, CmdeATraitrerMagasinSearchDto $cmdeATraiterAtelierSearchDto, int $page, int $perPage)
+    public function findPaginatedAndFiltered(string $codeSociete, CmdeATraitrerMagasinSearchDto $cmdeATraiterMagasinSearchDto, int $page, int $perPage)
     {
         $page  = max(1, $page);
         $skip  = ($page - 1) * $perPage;
-        $conditions = $this->cmdeATraiterAtelierFiltreService->filtre($cmdeATraiterAtelierSearchDto);
+        $conditions = $this->cmdeATraiterMagasinFiltreService->filtre($cmdeATraiterMagasinSearchDto);
         $unionQuery = $this->creerJointureQuery();
 
         $statement = "SELECT SKIP $skip FIRST $perPage *
