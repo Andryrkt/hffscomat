@@ -231,7 +231,7 @@ class PlanningCommandeFournisseurModel extends Model
                     res.numcli,
                     res.nomcli,
                     CASE
-                        WHEN bo.numero_po IS NOT NULL THEN 'O'
+                        WHEN bo.numero_po IS NOT NULL AND $asCde.qte_recept = 0 THEN 'O'
                         ELSE 'N'
                     END AS back_order,
                     {$this->getColonnesEta($sipLnkActive,$asSipLnkCommande)}
