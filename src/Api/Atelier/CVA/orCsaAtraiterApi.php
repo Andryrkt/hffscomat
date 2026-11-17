@@ -15,6 +15,7 @@ use App\Model\Atelier\Dit\Soumission\DitOrSoumisAValidationModel;
 use App\Service\atelier\dit\DitCreationService;
 use App\Service\genererPdf\atelier\CVA\GenererPdfOrCsa;
 use App\Service\historiqueOperation\Atelier\Dit\HistoriqueOperationDITService;
+use App\Service\historiqueOperation\suivi\SuiviOperationService;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -256,11 +257,19 @@ class OrCsaATraiterApi extends Controller
             $dto = $this->orCsaSoumissionDtoFactory->createFromData($data, $montants, $langueIps, $lignes);
             $quelqueAffichage = $this->quelqueAffichage($data['numero_or'], $codeSociete);
 
+
+            $suffix = SuiviOperationService::suivre('Récupération du constructeur', function () use ($data) {
+                $result = $this->ditOrSoumisAValidationModel
+                    ->constructeurPieceMagasin($data['numero_or']);
+
+                return $result[0]['retour'] ?? '';
+            });
+
             $filename = sprintf(
-                'PROFORMA_INVOICE_%s_%s_%03d.pdf',
+                'oRValidation%s_%s-1#%s~CVA.pdf',
+                $langueIps === 'A' ? 'EN' : 'FR',
                 $data['numero_or'],
-                (new \DateTime())->format('YmdHis'),
-                random_int(0, 999)
+                $suffix
             );
 
             $this->genererPdfOrCsa->genererPdf($dto, $email, $filename, $numeroDit, $quelqueAffichage);
