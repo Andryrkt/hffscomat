@@ -18,7 +18,7 @@
 		<div class="container">
 			{% include "/atelier/planning/_formulaire.html.twig" %}
 			<div class="d-flex justify-content-between">
-				{% include "/partials/_statutSituationPiece.html.twig" %}
+				{% include "/partials/_statutSituationPiece.html.twig" with {bo_co: true} %}
 			</div>
 		</div>
 	</div>

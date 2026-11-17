@@ -18,6 +18,13 @@
 		<i class="fa-solid fa-circle text-primary"></i>
 		<small class="text-primary">Complet non livré |</small>
 	</div>
+	{% if bo_co %}
+		<div role="button" tabindex="0" id="bo-co">
+			<small class="border-end border-start border-warning border-3">
+				Back Order CO
+			</small> | 
+		</div>
+	{% endif %}
 	<div role="button" tabindex="0" id="back-order">
 		<small class=" border-end border-start border-danger border-3">
 			Back Order/Error
