@@ -33,7 +33,11 @@ class PlanningCommandeFournisseurModel extends Model
                         WHEN o.total_recu = 0 THEN 'Aucune reception'
                         ELSE 'Autre'
                     END
-                ) AS statut
+                ) AS statut,
+                CASE
+                    WHEN bo.numero_po IS NOT NULL THEN 'O'
+                    ELSE 'N'
+                END AS back_order
             FROM (
                 SELECT
                     l.fcdl_constp,
@@ -107,7 +111,7 @@ class PlanningCommandeFournisseurModel extends Model
                 where abse_codg = 'ST'
             ) AND o.total_qte > 0
         ) t
-        WHERE 1=1  {$this->conditionStatut($statut,$isEmptyQuery)} 
+        WHERE 1=1 {$this->conditionStatut($statut)} 
         ORDER BY t.numero_commande
         ";
 
@@ -443,15 +447,14 @@ class PlanningCommandeFournisseurModel extends Model
         return $sql;
     }
 
-    private function conditionStatut(string $statut, bool $isEmptyQuery): string
+    private function conditionStatut(string $statut): string
     {
         $statutParCondition = [
             'en_cours'            => "en_cours",
             'partiel_facture'     => "Partiellement facturé",
             'partiel_dispo'       => "Partiellement dispo",
             'complet_non_facture' => "Complet non facturé",
-            'complet_facture'     => "Complet facturé",
-            'back_order'          => "Back Order", // TODO: Pas encore de moyen pour les récupérer
+            'complet_facture'     => "Complet facturé"
         ];
 
         if ($statut === "tous") return "";
@@ -461,8 +464,6 @@ class PlanningCommandeFournisseurModel extends Model
 
         $statutCondition = $statutParCondition[$statut];
 
-        return ($statutCondition === "en_cours")
-            ? $selectWhereCondition->ne('statut', $statutParCondition['complet_facture']) //*** Par défaut ne pas afficher les commandes complet facturés
-            : $selectWhereCondition->eq('statut', $statutCondition);
+        return ($statutCondition === "en_cours") ? $selectWhereCondition->ne('statut', $statutParCondition['complet_facture']) : $selectWhereCondition->eq('statut', $statutCondition);
     }
 }
