@@ -3,18 +3,9 @@
 namespace App\Mapper\Atelier\Planning;
 
 use App\Dto\Atelier\Planning\PlanningMaterielDto;
-use App\Model\Atelier\Dit\DitModel;
 
 class PlanningMapper
 {
-
-    private DitModel $ditModel;
-
-    public function __construct()
-    {
-        $this->ditModel = new DitModel();
-    }
-
     public function toDtoArray(array $data, array $back): array
     {
         $res = [];
