@@ -76,7 +76,11 @@ class PlanningMaterielModel extends Model
                     select cbse_numcli ||'-'|| TRIM(cbse_nomcli) 
                     from {$this->dbIps}.cli_bse 
                     where cbse_numcli = seor_numcli
-                )                                             AS client
+                )                                             AS client,
+                CASE 
+                    WHEN MAX(CASE WHEN C.slor_natcm IN ('C', 'L') THEN 1 ELSE 0 END) = 1 THEN 'O' 
+                    ELSE 'N' 
+                END                                           AS nat_cm
             FROM {$this->dbIps}.sav_eor, {$this->dbIps}.sav_lor as C,
                 {$this->dbIps}.sav_itv as D,
                 {$this->dbIps}.agr_succ,
@@ -160,14 +164,14 @@ class PlanningMaterielModel extends Model
                     WHEN slor_natcm = 'L' THEN 'RECEPTION'
                 END                                                     as statut_ctrmq,
                 CASE 
-                    WHEN slor_natcm = 'C' 
-                    THEN slor_numcf
-                    WHEN slor_natcm = 'L'
-                    THEN (select max(fllf_numcde)
+                    WHEN slor_natcm = 'C' THEN slor_numcf
+                    WHEN slor_natcm = 'L' THEN (
+                        select max(fllf_numcde)
                         from {$this->dbIps}.frn_llf 
                         WHERE fllf_numliv = slor_numcf
                             and fllf_ligne = slor_noligncm
-                            and fllf_refp = slor_refp)
+                            and fllf_refp = slor_refp
+                    )
                 END                                                     as num_cmd,
                 CASE 
                     WHEN slor_qteres = (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) and slor_qterel > 0 
