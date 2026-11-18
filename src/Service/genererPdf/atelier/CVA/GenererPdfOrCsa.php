@@ -320,34 +320,62 @@ class GenererPdfOrCsa extends GeneratePdf
         $x = $pdf->GetX();
         $y = $pdf->GetY();
 
-        // Hauteur minimale d'une ligne (si le texte est vide)
-        $minHeight = 4;
-
         $pdf->setFont('helvetica', '', 9);
 
-        // Quantity
-        $pdf->Cell($colW[0], $minHeight, (string) ($ligne['quantity'] ?? ''), 0, 0, 'L');
+        // Hauteur d'une ligne de texte pour du 9pt (TCPDF utilise ~1.15–1.25 × font)
+        $lineHeight = 4.5;
+        $padding    = 1;
 
-        // Reference
-        $pdf->Cell($colW[1], $minHeight, (string) ($ligne['reference'] ?? ''), 0, 0, 'L');
+        // ✅ 1. Calculer la hauteur RÉELLE de la description (peut tenir sur plusieurs lignes)
+        $description = (string) ($ligne['description'] ?? '');
+        $descHeight  = $pdf->getStringHeight($colW[2], $description);
+        $rowHeight   = max($lineHeight, $descHeight) + $padding;
 
+        // ✅ 2. Vérifier le saut de page AVANT de dessiner (contrôle explicite)
+        $margins    = $pdf->getMargins();
+        $pageBreakY = $pdf->getPageHeight() - $margins['bottom'];
 
-        $actualHeight = $pdf->GetY() - $y;
-        if ($actualHeight < $minHeight) {
-            $actualHeight = $minHeight;
+        if ($y + $rowHeight > $pageBreakY) {
+            $pdf->AddPage();
+            $x = $pdf->GetX();
+            $y = $pdf->GetY();
         }
 
-        // On se replace en haut à droite pour le prix
+        // ✅ 3. Quantity
+        $pdf->SetXY($x, $y);
+        $pdf->Cell($colW[0], $rowHeight, (string) ($ligne['quantity'] ?? ''), 0, 0, 'L');
+
+        // ✅ 4. Reference
+        $pdf->Cell($colW[1], $rowHeight, (string) ($ligne['reference'] ?? ''), 0, 0, 'L');
+
+        // ✅ 5. Description en MultiCell (gère le multi-lignes)
+        $pdf->MultiCell(
+            $colW[2],                 // width
+            $lineHeight,              // line height
+            $description,             // txt
+            0,                        // border
+            'L',                      // align
+            false,                    // fill
+            0,                        // ln = 0 (on gère Y nous-mêmes)
+            $x + $colW[0] + $colW[1], // x
+            $y,                       // y
+            true,                     // reseth
+            0,                        // stretch
+            false,                    // ishtml
+            true,                     // autopadding
+            $rowHeight,               // maxh : on force la même hauteur que les autres cellules
+            'T'                       // valign
+        );
+
+        // ✅ 6. Unit price
         $pdf->SetXY($x + $colW[0] + $colW[1] + $colW[2], $y);
+        $pdf->Cell($colW[3], $rowHeight, $this->formaterPrix((float) ($ligne['unitPrice'] ?? 0)), 0, 0, 'R');
 
-        // Unit price
-        $pdf->Cell($colW[3], $actualHeight, $this->formaterPrix((float) ($ligne['unitPrice'] ?? 0)), 0, 0, 'L');
+        // ✅ 7. Net amount
+        $pdf->Cell($colW[4], $rowHeight, $this->formaterPrix((float) ($ligne['netAmount'] ?? 0)), 0, 0, 'R');
 
-        // Net Amount
-        $pdf->Cell($colW[4], $actualHeight, $this->formaterPrix((float) ($ligne['netAmount'] ?? 0)), 0, 0, 'R');
-
-        // ⚠️ ON PASSE À LA LIGNE SUIVANTE AVEC LA VRAIE HAUTEUR
-        $pdf->SetXY($x, $y + $actualHeight);
+        // ✅ 8. Avancer à la ligne suivante AVEC la vraie hauteur
+        $pdf->SetXY($x, $y + $rowHeight);
     }
 
 
