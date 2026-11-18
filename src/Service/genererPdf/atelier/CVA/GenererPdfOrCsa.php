@@ -52,7 +52,7 @@ class GenererPdfOrCsa extends GeneratePdf
         }
 
         $pdf = new HeaderPdf($email);
-        $pdf->SetMargins(8, 10, 8);
+        $pdf->SetMargins(8, 8, 4);
 
         // ----- PAGE (Page de garde) : Validation OR - CVA  -----
         $this->renderValidationOrCVA($pdf, $dto, $quelqueAffichage);
@@ -126,34 +126,41 @@ class GenererPdfOrCsa extends GeneratePdf
     private function renderOrScomat(HeaderPdf $pdf, OrCsaSoumissionDto $dto): void
     {
         // 1. Bloc client
-        $pdf->SetY(38);
+        $xClient = 11;   // 4 mm < marge (8 mm) => décalage de 4 mm vers la gauche
 
-        $pdf->setFont('helvetica', 'B', 11);
-        $pdf->Cell(120, 6, $dto->nomClient, 0, 1, 'L');
+        $pdf->SetY(36.5);
+        $pdf->SetX($xClient);
+        $pdf->setFont('helvetica', 'B', 10);
+        $pdf->Cell(0, 0, $dto->nomClient, 0, 1, 'L');
 
-        $pdf->setFont('helvetica', '', 9);
-        $pdf->Cell(120, 5, $dto->adresseClient, 0, 1, 'L');
-        $pdf->Cell(120, 5, $dto->bureauPostal,  0, 1, 'L');
-        $pdf->Cell(120, 5, $dto->pays,          0, 1, 'L');
+        $pdf->SetX($xClient);
+        $pdf->setFont('helvetica', '', 10);
+        $pdf->Cell(0, 0, $dto->adresseClient, 0, 1, 'L');
 
-        $pdf->Ln(8);
+        $pdf->SetX($xClient);
+        $pdf->Cell(0, 0, $dto->bureauPostal, 0, 1, 'L');
 
-        $pdf->setFont('helvetica', 'B', 12);
+        $pdf->SetX($xClient);
+        $pdf->Cell(0, 0, $dto->pays, 0, 1, 'L');
+
+        $pdf->Ln(11);
+
+        $pdf->setFont('helvetica', 'B', 10);
+        // 
+        $pdf->SetX(5);
+        $pdf->Cell(85, 1, 'PROFORMA INVOICE No. WO  ' . $dto->numeroOr, 0, 0, 'L');
 
         // 
-        $pdf->Cell(85, 1, 'PROFORMA INVOICE No. WO ' . $dto->numeroOr, 0, 0, 'L');
-
-        // 
-        $pdf->Cell(60, 1, 'Customer No. :  ' . $this->tronquer($dto->numeroClient, 20), 0, 0, 'C');
+        $pdf->Cell(60, 1, 'Customer No. :    ' . $this->tronquer($dto->numeroClient, 20), 0, 0, 'C');
         $pdf->Cell(0, 1, 'Date : ' . $dto->dateOr, 0, 1, 'R');
 
-        $pdf->setFont('helvetica', '', 8);
+        $pdf->setFont('helvetica', '', 7);
         $pdf->Cell(0, 4, sprintf('Page %d / %d', $pdf->PageNo(), $pdf->getNumPages()), 0, 1, 'R');
 
 
-        $pdf->Ln(1);
+        $pdf->Ln(0);
         $yLigne = $pdf->GetY();
-        $pdf->Line(10, $yLigne, 200, $yLigne);
+        $pdf->Line(8, $yLigne, 200, $yLigne);
 
         $labelW = 40;
         $valueW = 100;
@@ -183,9 +190,9 @@ class GenererPdfOrCsa extends GeneratePdf
         $pdf->Cell($valueW, $lineH, (string) $dto->salesman, 0, 1, 'L');
 
         // LIGNE HORIZONTALE DU BAS
-        $pdf->Ln(4);
+        $pdf->Ln(2.5);
         $yLigneBottom = $pdf->GetY();
-        $pdf->Line(10, $yLigneBottom, 200, $yLigneBottom);
+        $pdf->Line(8, $yLigneBottom, 200, $yLigneBottom);
         // 5. Tableau principal (sans bordure)
         $colW   = [
             self::COL_QUANTITY,
@@ -291,21 +298,18 @@ class GenererPdfOrCsa extends GeneratePdf
         // 4. Espace avant la suite du document
         $pdf->Ln(1);
 
-        $pdf->Cell($colW[0], $lineH, '-', 0, 0, 'R');
-        $pdf->Cell($colW[1], $lineH, '', 0, 0, 'C');
-        // Totaux segment — sans bordure ni fond
-        $pdf->setFont('helvetica', '', 9);
+        $pdf->Cell($colW[0] + $colW[1], $lineH, '', 0, 0, 'R');
         $pdf->Cell($colW[2], $lineH, 'Total amount', 0, 0, 'L');
-        $pdf->setFont('helvetica', '', 9);
-        $pdf->Cell($colW[3],  $lineH, $this->formaterPrix($dto->montantExclVat), 0, 0, 'L');
-        $pdf->Cell($colW[4],  $lineH, $this->formaterPrix($dto->montantExclVat), 0, 1, 'R');
+        $pdf->Cell($colW[3], $lineH, $this->formaterPrix($dto->montantExclVat), 0, 0, 'L');
+        $pdf->setFont('helvetica', '', 8);
+        $pdf->Cell($colW[4], $lineH, $this->formaterPrix($dto->montantExclVat), 0, 1, 'R');
 
         $pdf->Cell($colW[0] + $colW[1] + $colW[2], $lineH, '', 0, 0, 'L');
 
         // Totaux segment —
-        $pdf->setFont('helvetica', 'B', 9);
-        $pdf->Cell($colW[3], $lineH + 6, 'Total segment', 0, 0, 'L');
-        $pdf->Cell($colW[4],  $lineH + 6, $this->formaterPrix($dto->montantExclVat), 0, 1, 'R');
+        $pdf->setFont('helvetica', 'B', 8);
+        $pdf->Cell($colW[3], $lineH + 6, 'Total Segment', 0, 0, 'R');
+        $pdf->Cell($colW[4], $lineH + 6, $this->formaterPrix($dto->montantExclVat), 0, 1, 'R');
     }
 
     /**
@@ -316,34 +320,62 @@ class GenererPdfOrCsa extends GeneratePdf
         $x = $pdf->GetX();
         $y = $pdf->GetY();
 
-        // Hauteur minimale d'une ligne (si le texte est vide)
-        $minHeight = 4;
-
         $pdf->setFont('helvetica', '', 9);
 
-        // Quantity
-        $pdf->Cell($colW[0], $minHeight, (string) ($ligne['quantity'] ?? ''), 0, 0, 'L');
+        // Hauteur d'une ligne de texte pour du 9pt (TCPDF utilise ~1.15–1.25 × font)
+        $lineHeight = 4.5;
+        $padding    = 1;
 
-        // Reference
-        $pdf->Cell($colW[1], $minHeight, (string) ($ligne['reference'] ?? ''), 0, 0, 'L');
+        // ✅ 1. Calculer la hauteur RÉELLE de la description (peut tenir sur plusieurs lignes)
+        $description = (string) ($ligne['description'] ?? '');
+        $descHeight  = $pdf->getStringHeight($colW[2], $description);
+        $rowHeight   = max($lineHeight, $descHeight) + $padding;
 
+        // ✅ 2. Vérifier le saut de page AVANT de dessiner (contrôle explicite)
+        $margins    = $pdf->getMargins();
+        $pageBreakY = $pdf->getPageHeight() - $margins['bottom'];
 
-        $actualHeight = $pdf->GetY() - $y;
-        if ($actualHeight < $minHeight) {
-            $actualHeight = $minHeight;
+        if ($y + $rowHeight > $pageBreakY) {
+            $pdf->AddPage();
+            $x = $pdf->GetX();
+            $y = $pdf->GetY();
         }
 
-        // On se replace en haut à droite pour le prix
+        // ✅ 3. Quantity
+        $pdf->SetXY($x, $y);
+        $pdf->Cell($colW[0], $rowHeight, (string) ($ligne['quantity'] ?? ''), 0, 0, 'L');
+
+        // ✅ 4. Reference
+        $pdf->Cell($colW[1], $rowHeight, (string) ($ligne['reference'] ?? ''), 0, 0, 'L');
+
+        // ✅ 5. Description en MultiCell (gère le multi-lignes)
+        $pdf->MultiCell(
+            $colW[2],                 // width
+            $lineHeight,              // line height
+            $description,             // txt
+            0,                        // border
+            'L',                      // align
+            false,                    // fill
+            0,                        // ln = 0 (on gère Y nous-mêmes)
+            $x + $colW[0] + $colW[1], // x
+            $y,                       // y
+            true,                     // reseth
+            0,                        // stretch
+            false,                    // ishtml
+            true,                     // autopadding
+            $rowHeight,               // maxh : on force la même hauteur que les autres cellules
+            'T'                       // valign
+        );
+
+        // ✅ 6. Unit price
         $pdf->SetXY($x + $colW[0] + $colW[1] + $colW[2], $y);
+        $pdf->Cell($colW[3], $rowHeight, $this->formaterPrix((float) ($ligne['unitPrice'] ?? 0)), 0, 0, 'R');
 
-        // Unit price
-        $pdf->Cell($colW[3], $actualHeight, $this->formaterPrix((float) ($ligne['unitPrice'] ?? 0)), 0, 0, 'L');
+        // ✅ 7. Net amount
+        $pdf->Cell($colW[4], $rowHeight, $this->formaterPrix((float) ($ligne['netAmount'] ?? 0)), 0, 0, 'R');
 
-        // Net Amount
-        $pdf->Cell($colW[4], $actualHeight, $this->formaterPrix((float) ($ligne['netAmount'] ?? 0)), 0, 0, 'R');
-
-        // ⚠️ ON PASSE À LA LIGNE SUIVANTE AVEC LA VRAIE HAUTEUR
-        $pdf->SetXY($x, $y + $actualHeight);
+        // ✅ 8. Avancer à la ligne suivante AVEC la vraie hauteur
+        $pdf->SetXY($x, $y + $rowHeight);
     }
 
 
@@ -358,12 +390,12 @@ class GenererPdfOrCsa extends GeneratePdf
             self::COL_NET,
         ];
         $totalW = array_sum($colW);
-
+        $threeColW = $colW[0] + $colW[1] + $colW[2];
         // =====================================================================
         // 1. GESTION DU SAUT DE PAGE (LOGIQUE DE VOTRE DEMANDE)
         // =====================================================================
 
-        $footerHeight = 70;
+        $footerHeight = 58;
 
         $pageHeight = $pdf->getPageHeight();
 
@@ -382,55 +414,65 @@ class GenererPdfOrCsa extends GeneratePdf
 
         $x = $pdf->GetX();
         $y = $pdf->GetY();
-
         $pdf->Line($x, $y, $x + $totalW, $y);
-        $pdf->Ln(1);
+        $pdf->Ln(0);
 
 
-        $pdf->setFont('helvetica', 'B', 9);
-        $pdf->Cell($totalW, 1, 'VAT%', 0, 1, 'R');
-        $pdf->setFont('helvetica', '', 9);
-        $pdf->Cell($totalW, 1,  number_format($dto->tauxTva * 100, 2, '.', ''), 0, 1, 'R');
+        $pdf->setFont('helvetica', 'B', 8);
+        $pdf->SetX(16);
+        $pdf->Cell($totalW, 0.5, 'VAT%', 0, 1, 'R');
+        $pdf->setFont('helvetica', '', 8);
+        $pdf->SetX(16);
+        $pdf->Cell($totalW, 0.5, number_format($dto->tauxTva * 100, 2, '.', ''), 0, 1, 'R');
 
-        $pdf->Ln(1);
+        $pdf->Ln(2);
+        $pdf->SetLineWidth(0.4);
         $pdf->Line($x, $pdf->GetY(), $x + $totalW, $pdf->GetY());
-        $pdf->Ln(1);
+        $pdf->SetLineWidth(0.2);
+        $pdf->Ln(-0.25);
 
-        $labelWidth = $totalW - 30;
-        $valueWidth = 30;
-
+        $pdf->setFont('helvetica', 'B', 10);
         // Total excl. VAT
-        $pdf->setFont('helvetica', 'B', 9);
-        $pdf->Cell($labelWidth, 5, 'Total excl. VAT', 0, 0, 'R');
-        $pdf->Cell($valueWidth, 5, $this->formaterPrix($dto->montantExclVat), 0, 1, 'R');
+        $pdf->Cell($threeColW, 0, '', 0, 0);
+        $pdf->Cell($colW[3], 0, 'Total excl. VAT', 0, 0, 'L');
+        $pdf->Cell($colW[4], 0, $this->formaterPrix($dto->montantExclVat), 0, 1, 'R');
 
         // VAT Total
-        $pdf->Cell($labelWidth, 5, 'VAT Total', 0, 0, 'R');
-        $pdf->Cell($valueWidth, 5, $this->formaterPrix($dto->montantIncVat - $dto->montantExclVat), 0, 1, 'R');
+        $pdf->Cell($threeColW, 0, '', 0, 0);
+        $pdf->Cell($colW[3], 0, 'VAT Total', 0, 0, 'L');
+        $pdf->Cell($colW[4], 0, $this->formaterPrix($dto->montantIncVat - $dto->montantExclVat), 0, 1, 'R');
 
         // TOTAL incl. VAT
-        $pdf->Cell($labelWidth, 5, 'TOTAL incl. VAT', 0, 0, 'R');
-        $pdf->Cell($valueWidth, 5, $this->formaterPrix($dto->montantIncVat), 0, 1, 'R');
+        $pdf->Cell($threeColW, 0, '', 0, 0);
+        $pdf->Cell($colW[3], 0, 'TOTAL incl. VAT', 0, 0, 'L');
+        $pdf->Cell($colW[4], 0, $this->formaterPrix($dto->montantIncVat), 0, 1, 'R');
 
+
+        $pdf->setFont('helvetica', 'B', 8);
         // Currency
-        $pdf->Cell($labelWidth, 5, 'Currency', 0, 0, 'R');
-        $pdf->setFont('helvetica', '', 9);
-        $pdf->Cell($valueWidth, 5, 'MUR', 0, 1, 'R');
+        $pdf->Cell($threeColW, 0, '', 0, 0);
+        $pdf->Cell($colW[3], 0, 'Currency', 0, 0, 'L');
+        $pdf->setFont('helvetica', 'B', 10);
+        $pdf->Cell($colW[4], 0, 'MUR', 0, 1, 'R');
 
         // 6. Troisième ligne horizontale (bas du bloc)
-        $pdf->Ln(1);
+        $pdf->Ln(-0.25);
+        $pdf->SetLineWidth(0.4);
         $pdf->Line($x, $pdf->GetY(), $x + $totalW, $pdf->GetY());
+        $pdf->SetLineWidth(0.2);
 
         // =====================================================================
         // AJOUT DES IMAGES EN BAS DE PAGE
         // =====================================================================
-        $pdf->Ln(2); // On descend sous la ligne
-        $basePath = $_ENV['BASE_PATH_LONG'] ?? '';
+        $pdf->Ln(-5); // On descend sous la ligne
+        // $yBasBloc = $pdf->GetY();
+        // $basePath = $_ENV['BASE_PATH_LONG'] ?? '';
 
-        $footerLogosPath = $basePath . '/Views/assets/footer_scomat.png';
-        if (is_file($footerLogosPath)) {
-            $pdf->Image($footerLogosPath, 10, $pdf->GetY(), 65, 0, '', '', '', true, 300, '', false, false, 1, false, false, false);
-        }
+        // $footerLogosPath = $basePath . '/Views/assets/footer_scomat.png';
+        // if (is_file($footerLogosPath)) {
+        //     $imgY =  $yBasBloc + 1.5;
+        //     $pdf->Image($footerLogosPath, 10, $imgY, 65, 0, '', '', '', true, 300, '', false, false, 1, false, false, false);
+        // }
 
         // Si QR Code
         // $footerQrPath = $basePath . '/Views/assets/footer_qr.png';
