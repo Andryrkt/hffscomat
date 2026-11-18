@@ -159,7 +159,7 @@ class DitListeModel extends Model
                 WHERE d0_.code_societe = '$codeSociete'
                 $conditions
                 $conditionsMultisucursal
-                ORDER BY d0_.date_demande DESC, d0_.numero_demande_dit ASC              
+                ORDER BY d0_.date_demande DESC, d0_.heure_demande DESC
         ";
         // dd($statement);
         $result = $this->connect->executeQuery($statement);

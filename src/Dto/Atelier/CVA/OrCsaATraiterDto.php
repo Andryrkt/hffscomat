@@ -21,4 +21,6 @@ class OrCsaATraiterDto
     public ?string $statutAllocation = null;
 
     public ?string $codeCouleur = null;
+
+    public ?string $jobDescription = null;
 }
