@@ -60,6 +60,7 @@
 										{% set qteCdm = detail.details.qteCdm|default(0) * 1 %}
 										{% set qteLiv = detail.details.qteLiv|default(0) * 1 %}
 										{% set qteAll = detail.details.qteAll|default(0) * 1 %}
+										{% set backOrderCo = detail.details.backOrderCo|default('') %}
 										{% set back = detail.details.back|default('') %}
 
 										{% if qteCdm == qteLiv and qteCdm != '' and qteLiv != '' %}
