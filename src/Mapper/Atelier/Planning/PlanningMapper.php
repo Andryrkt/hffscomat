@@ -52,7 +52,7 @@ class PlanningMapper
         $dto->qteCdm         = (float)($item['qte_cmd'] ?? 0);
         $dto->qteLiv         = (float)($item['qte_liv'] ?? 0);
         $dto->qteAll         = (float)($item['qte_all'] ?? 0);
-        $dto->qteReliquant   = (float)($item['qte_reliquant'] ?? 0);
+        $dto->qteReliquat    = (float)($item['qte_reliquat'] ?? 0);
         $dto->qteResOr       = (float)($item['qte_res_or'] ?? 0);
 
         $dto->statutB        = $item['statut_b'] ?? '';
@@ -79,7 +79,7 @@ class PlanningMapper
             'qteAll'      => $dto->qteAll,
             'commentaire' => $dto->commentaire,
             'back'        => !empty($back) && in_array($item['or_itv'], $back['num_or_itvs']) && $dto->qteAll + $dto->qteLiv <= 0,
-            'backOrderCo' => $dto->statutCtrmq != '' && $dto->qteReliquant > 0,
+            'backOrderCo' => $dto->statutCtrmq != '' && $dto->qteReliquat > 0,
             'statut'      => $dto->statut,
         ];
         $dto->addMoisDetails($detail);

@@ -21,47 +21,62 @@ class PlanningMaterielModel extends Model
     {
         if (empty($numOrs)) return [];
         $statement = "SELECT
-                trim(seor_succ)                                           as code_suc, 
-                trim(asuc_lib)                                            as lib_suc, 
-                trim(seor_servcrt)                                        as code_serv, 
-                trim(ser.atab_lib)                                        as lib_serv, 
-                trim(sitv_comment)                                        as commentaire,
-                mmat_nummat                                               as id_mat,
-                trim(mmat_marqmat)                                        as mark_mat,
-                trim(mmat_typmat)                                         as type_mat,
-                trim(mmat_numserie)                                       as num_serie,
-                trim(mmat_recalph)                                        as num_parc,
-                trim(mmat_numparc)                                        as casier,
-                {$this->getAnneeSelectByPlanning($searchDto)}             as annee,
-                {$this->getMonthSelectByPlanning($searchDto)}             as mois,
-                seor_numor ||'-'||sitv_interv                             as or_itv,
-                (select
-                    sum(
-                        CASE WHEN slor_typlig = 'P' {$this->getTypeLigneCondition($searchDto)}  THEN
-                            slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec
-                        ELSE slor_qterea END
-                    )
-                from {$this->dbIps}.sav_lor as A, {$this->dbIps}.sav_itv  as B
-                where  A.slor_numor = B.sitv_numor
-                    and  B.sitv_interv = TRUNC(A.slor_nogrp/100)
-                    and A.slor_numor = C.slor_numor
-                    and B.sitv_interv  = D.sitv_interv {$this->getTypeLigneCondition($searchDto)}
-                )                                                           as qte_cmd,
-                (select sum(slor_qterea)
-                from {$this->dbIps}.sav_lor as A, {$this->dbIps}.sav_itv as B
-                where  A.slor_numor = B.sitv_numor
-                    and  B.sitv_interv = TRUNC(A.slor_nogrp/100)
-                    and A.slor_numor = C.slor_numor and
-                    B.sitv_interv  = D.sitv_interv {$this->getTypeLigneCondition($searchDto)}
-                )                                                           as qte_liv,
-                (select sum(slor_qteres)
-                from {$this->dbIps}.sav_lor as A, {$this->dbIps}.sav_itv  as B
-                where A.slor_numor = B.sitv_numor
-                    and B.sitv_interv = TRUNC(A.slor_nogrp/100)
-                    and A.slor_numor = C.slor_numor
-                    and B.sitv_interv  = D.sitv_interv   {$this->getTypeLigneCondition($searchDto)}
-                )                                                              as qte_all,
-                (select cbse_numcli ||'-'|| TRIM(cbse_nomcli) from {$this->dbIps}.cli_bse where cbse_numcli = seor_numcli) as client
+                trim(seor_succ)                               AS code_suc, 
+                trim(asuc_lib)                                AS lib_suc, 
+                trim(seor_servcrt)                            AS code_serv, 
+                trim(ser.atab_lib)                            AS lib_serv, 
+                trim(sitv_comment)                            AS commentaire,
+                mmat_nummat                                   AS id_mat,
+                trim(mmat_marqmat)                            AS mark_mat,
+                trim(mmat_typmat)                             AS type_mat,
+                trim(mmat_numserie)                           AS num_serie,
+                trim(mmat_recalph)                            AS num_parc,
+                trim(mmat_numparc)                            AS casier,
+                {$this->getAnneeSelectByPlanning($searchDto)} AS annee,
+                {$this->getMonthSelectByPlanning($searchDto)} AS mois,
+                seor_numor ||'-'||sitv_interv                 AS or_itv,
+                (
+                    select
+                        sum(
+                            CASE WHEN slor_typlig = 'P' {$this->getTypeLigneCondition($searchDto)}  THEN
+                                slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec
+                            ELSE slor_qterea END
+                        )
+                    from {$this->dbIps}.sav_lor as A, {$this->dbIps}.sav_itv as B
+                    where  A.slor_numor = B.sitv_numor
+                        and  B.sitv_interv = TRUNC(A.slor_nogrp/100)
+                        and A.slor_numor = C.slor_numor
+                        and B.sitv_interv  = D.sitv_interv {$this->getTypeLigneCondition($searchDto)}
+                )                                             AS qte_cmd,
+                (
+                    select sum(slor_qterea)
+                    from {$this->dbIps}.sav_lor as A, {$this->dbIps}.sav_itv as B
+                    where  A.slor_numor = B.sitv_numor
+                        and  B.sitv_interv = TRUNC(A.slor_nogrp/100)
+                        and A.slor_numor = C.slor_numor and
+                        B.sitv_interv  = D.sitv_interv {$this->getTypeLigneCondition($searchDto)}
+                )                                             AS qte_liv,
+                (
+                    select sum(slor_qterel)
+                    from {$this->dbIps}.sav_lor as A, {$this->dbIps}.sav_itv as B
+                    where  A.slor_numor = B.sitv_numor
+                        and  B.sitv_interv = TRUNC(A.slor_nogrp/100)
+                        and A.slor_numor = C.slor_numor and
+                        B.sitv_interv  = D.sitv_interv {$this->getTypeLigneCondition($searchDto)}
+                )                                             AS qte_reliquat,
+                (
+                    select sum(slor_qteres)
+                    from {$this->dbIps}.sav_lor as A, {$this->dbIps}.sav_itv as B
+                    where A.slor_numor = B.sitv_numor
+                        and B.sitv_interv = TRUNC(A.slor_nogrp/100)
+                        and A.slor_numor = C.slor_numor
+                        and B.sitv_interv  = D.sitv_interv   {$this->getTypeLigneCondition($searchDto)}
+                )                                             AS qte_all,
+                (
+                    select cbse_numcli ||'-'|| TRIM(cbse_nomcli) 
+                    from {$this->dbIps}.cli_bse 
+                    where cbse_numcli = seor_numcli
+                )                                             AS client
             FROM {$this->dbIps}.sav_eor, {$this->dbIps}.sav_lor as C,
                 {$this->dbIps}.sav_itv as D,
                 {$this->dbIps}.agr_succ,
