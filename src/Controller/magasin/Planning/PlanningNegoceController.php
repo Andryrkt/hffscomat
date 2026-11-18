@@ -80,8 +80,7 @@ class PlanningNegoceController extends Controller
 
         $numeroDevisValideBcClient = $this->planningMagasinModel->getNumeroDevisValideBcClient();
 
-
-        $data = $this->planningMagasinModel->recuperationCommadeplanifier($criteria, $condition, $codeAgence, $codeSociete, $numeroDevisValideBcClient);
+        $data = $this->planningMagasinModel->recuperationCommadeplanifier($criteria, $condition, $codeSociete, $numeroDevisValideBcClient);
         $tabObjetPlanning = $this->creationTableauObjetPlanningMagasin($data);
         $fusionResult = $this->ajoutMoiDetailMagasin($tabObjetPlanning);
         $forDisplay = $this->prepareDataForDisplay($fusionResult, $criteria->getMonths() == null ? 3 : $criteria->getMonths());
