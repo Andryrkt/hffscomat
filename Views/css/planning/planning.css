@@ -33,3 +33,8 @@
   background-color: #fff !important;
   color: #000;
 }
+
+.bordered-bo-co {
+  border-right: 4px solid violet;
+  border-left: 4px solid violet;
+}
