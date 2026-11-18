@@ -31,16 +31,9 @@ class PlanningService
     {
         $orsValides = $this->planningModel->getNumeroOrValider($dto);
         $orsSoumis = $this->planningModel->getOrsSoumis();
-
-        $rawData = $this->planningMaterielModel->getMaterielPlanifier(
-            $orsValides,
-            $orsSoumis,
-            [],
-            $dto,
-            $codeSociete
-        );
-
+        $rawData = $this->planningMaterielModel->getMaterielPlanifier($orsValides, $orsSoumis, $dto, $codeSociete);
         $dtos = $this->mapper->toDtoArray($rawData, $back);
+
         return $this->mapper->groupByMateriel($dtos);
     }
 

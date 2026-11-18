@@ -120,45 +120,46 @@ trait PlanningModelTrait
         return  '';
     }
 
-    private function getDateDebutCondition(PlanningSearchDto $dto)
+    private function getDateDebutCondition(PlanningSearchDto $dto, string $codeSoc)
     {
         if (!empty($dto->dateDebut)) {
+            $dateFormat = $codeSoc === "CO" ? "d/m/Y" : "m/d/Y";
             $monthDatePlanifier = " CASE WHEN
                                         (SELECT DATE(Min(ska_d_start) ) FROM ska, skw WHERE ofh_id = seor_numor AND ofs_id=sitv_interv AND skw.skw_id = ska.skw_id )  is Null 
                                     THEN
                                         DATE(sitv_datepla)  
                                     ELSE
-                                         (SELECT DATE(Min(ska_d_start) ) FROM ska, skw WHERE ofh_id = seor_numor AND ofs_id=sitv_interv AND skw.skw_id = ska.skw_id ) 
+                                        (SELECT DATE(Min(ska_d_start) ) FROM ska, skw WHERE ofh_id = seor_numor AND ofs_id=sitv_interv AND skw.skw_id = ska.skw_id ) 
                                     END";
             $monthDateNonPlanifier =  "  DATE(sitv_datdeb)  ";
             switch ($dto->planning) {
                 case "PLANIFIE":
-                    return " AND " . $monthDatePlanifier . " >= '" . $dto->dateDebut->format("d/m/Y") . "'";
+                    return " AND " . $monthDatePlanifier . " >= '" . $dto->dateDebut->format($dateFormat) . "'";
                 case "NON_PLANIFIE":
-                    return " AND " . $monthDateNonPlanifier . " >= '" . $dto->dateDebut->format("d/m/Y") . "'";
+                    return " AND " . $monthDateNonPlanifier . " >= '" . $dto->dateDebut->format($dateFormat) . "'";
             }
         }
         return '';
     }
 
-    private function getDateFinCondition(PlanningSearchDto $dto)
+    private function getDateFinCondition(PlanningSearchDto $dto, string $codeSoc)
     {
-
         if (!empty($dto->dateFin)) {
+            $dateFormat = $codeSoc === "CO" ? "d/m/Y" : "m/d/Y";
             $monthDatePlanifier = " CASE WHEN 
                                     (SELECT DATE(Min(ska_d_start) ) FROM ska, skw WHERE ofh_id = seor_numor AND ofs_id=sitv_interv AND skw.skw_id = ska.skw_id )  is Null 
                                 THEN
                                     DATE(sitv_datepla)  
                                 ELSE
-                                     (SELECT DATE(Min(ska_d_start) ) FROM ska, skw WHERE ofh_id = seor_numor AND ofs_id=sitv_interv AND skw.skw_id = ska.skw_id ) 
+                                    (SELECT DATE(Min(ska_d_start) ) FROM ska, skw WHERE ofh_id = seor_numor AND ofs_id=sitv_interv AND skw.skw_id = ska.skw_id ) 
                                 END  ";
             $monthDateNonPlanifier =  " DATE(sitv_datdeb)  ";
             switch ($dto->planning) {
                 case "PLANIFIE":
-                    return " AND " . $monthDatePlanifier . " <= '" . $dto->dateFin->format("d/m/Y") . "'";
+                    return " AND " . $monthDatePlanifier . " <= '" . $dto->dateFin->format($dateFormat) . "'";
                     break;
                 case "NON_PLANIFIE":
-                    return " AND " . $monthDateNonPlanifier . " <= '" . $dto->dateFin->format("d/m/Y") . "'";
+                    return " AND " . $monthDateNonPlanifier . " <= '" . $dto->dateFin->format($dateFormat) . "'";
             }
         }
         return '';
@@ -210,7 +211,7 @@ trait PlanningModelTrait
         return $this->selectCond->like('mmat_numparc', $dto->casier);
     }
 
-    private function getOrValidBackOrderCondition(PlanningSearchDto $dto, array $orItvBack, array $orsValides, array $orsSoumis): string
+    private function getOrValidBackOrderCondition(PlanningSearchDto $dto, array $orsValides, array $orsSoumis): string
     {
         if (!empty($orsValides)) {
             if ($dto->orNonValiderDw)
@@ -238,8 +239,7 @@ trait PlanningModelTrait
         CASE 
             WHEN slor_qteres = (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) AND slor_qterel > 0 
                 THEN 'A LIVRER'
-            WHEN (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) = slor_qteres 
-                 AND slor_qterel = 0 AND slor_qterea = 0 
+            WHEN (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) = slor_qteres AND slor_qterel = 0 AND slor_qterea = 0 
                 THEN 'DISPO STOCK'
             WHEN slor_qterea = (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) 
                 THEN 'LIVRE'

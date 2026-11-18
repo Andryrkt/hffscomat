@@ -83,7 +83,7 @@ class CmdeATraiterMagasinModel extends Model
 
     private function creerJointureQuery(): string
     {
-        $sucNeg = $_ENV['SUC_NEG'];
+        $sucNum = $_ENV['SUC_NUM'];
         return "
             SELECT
                     'OR-' || slor_nolign        AS id,
@@ -142,7 +142,7 @@ class CmdeATraiterMagasinModel extends Model
                     INNER JOIN art_bse a2 ON a2.abse_constp = nlig_constp
                          AND a2.abse_refp = nlig_refp
                 WHERE
-                    nlig_succ = '$sucNeg'
+                    nlig_succ = '$sucNum'
                     AND a2.abse_codg = 'ST'
                     AND a2.abse_constp <> '---'
                     AND nlig_qtecde > 0

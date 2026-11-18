@@ -17,7 +17,7 @@ class PlanningMaterielModel extends Model
         $this->selectCond = new SelectWhereCondition();
     }
 
-    public function getMaterielPlanifier(array $numOrs, array $orSoumis, array $orItvBack, PlanningSearchDto $searchDto, string $codeSoc = 'HF'): array
+    public function getMaterielPlanifier(array $numOrs, array $orSoumis, PlanningSearchDto $searchDto, string $codeSoc = 'HF'): array
     {
         if (empty($numOrs)) return [];
         $statement = "SELECT
@@ -80,15 +80,15 @@ class PlanningMaterielModel extends Model
                 AND (seor_ope = ope.atab_code AND ope.atab_nom = 'OPE')
                 {$this->getFactureCondition($searchDto)}
                 AND (seor_nummat = mmat_nummat)
-                {$this->getOrValidBackOrderCondition($searchDto,$orItvBack,$numOrs,$orSoumis)}
+                {$this->getOrValidBackOrderCondition($searchDto,$numOrs,$orSoumis)}
                 {$this->getTypeLigneCondition($searchDto)}
                 {$this->getPlanningSansDateCondition($searchDto)}
                 {$this->getAgenceCondition($searchDto)}
                 {$this->getInterneExterneCondition($searchDto)}
                 {$this->getAgenceDebiteCondition($searchDto)}
                 {$this->getServiceDebiteCondition($searchDto)}
-                {$this->getDateDebutCondition($searchDto)}
-                {$this->getDateFinCondition($searchDto)}
+                {$this->getDateDebutCondition($searchDto,$codeSoc)}
+                {$this->getDateFinCondition($searchDto,$codeSoc)}
                 {$this->getNumParcCondition($searchDto)}
                 {$this->getIdMaterielCondition($searchDto)}
                 {$this->getNumOrCondition($searchDto)}
@@ -155,13 +155,13 @@ class PlanningMaterielModel extends Model
                             and fllf_refp = slor_refp)
                 END                                                     as num_cmd,
                 CASE 
-                    WHEN slor_qteres = (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec)and slor_qterel >0 
+                    WHEN slor_qteres = (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) and slor_qterel > 0 
                         THEN trim('A LIVRER')
                     WHEN (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) = slor_qteres and slor_qterel = 0 and slor_qterea = 0
                         THEN trim('DISPO STOCK')
                     WHEN slor_qterea =  (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) 
                         THEN trim('LIVRE')
-                    WHEN slor_natcm = 'C' THEN
+                    WHEN slor_natcm = 'C' AND slor_qterea + slor_qteres <= 0 THEN
                                 ( SELECT libelle_type
                                   FROM  {$this->dbIrium}.gcot_acknow_cat
                                   WHERE CAST( Numero_PO as varchar(10)) = CAST(slor_numcf  as varchar(10))
@@ -404,7 +404,7 @@ class PlanningMaterielModel extends Model
         return $this->convertirEnUtf8($data);
     }
 
-    public function getMaterielPlanningList(array $numOrs, array $orSoumis, array $orItvBack, PlanningSearchDto $searchDto, string $codeSoc = 'HF'): array
+    public function getMaterielPlanningList(array $numOrs, array $orSoumis, PlanningSearchDto $searchDto, string $codeSoc = 'HF'): array
     {
         $statement = "SELECT 
                 trim(seor_succ)                                                                                                                 as code_suc, 
@@ -641,15 +641,15 @@ class PlanningMaterielModel extends Model
                 --AND sitv_servcrt IN ('ATE','FOR','GAR','MAN','CSP','MAS', 'LR6', 'LST')
                 AND (seor_nummat = mmat_nummat)
                 AND slor_numcf = nlig_numcde AND slor_refp = nlig_refp
-                {$this->getOrValidBackOrderCondition($searchDto,$orItvBack,$numOrs,$orSoumis)}
+                {$this->getOrValidBackOrderCondition($searchDto,$numOrs,$orSoumis)}
                 {$this->getTypeLigneCondition($searchDto)}
                 {$this->getPlanningSansDateCondition($searchDto)}
                 {$this->getAgenceCondition($searchDto)}
                 {$this->getInterneExterneCondition($searchDto)}
                 {$this->getAgenceDebiteCondition($searchDto)}
                 {$this->getServiceDebiteCondition($searchDto)}
-                {$this->getDateDebutCondition($searchDto)}
-                {$this->getDateFinCondition($searchDto)}
+                {$this->getDateDebutCondition($searchDto,$codeSoc)}
+                {$this->getDateFinCondition($searchDto,$codeSoc)}
                 {$this->getNumParcCondition($searchDto)}
                 {$this->getIdMaterielCondition($searchDto)}
                 {$this->getNumOrCondition($searchDto)}
@@ -664,7 +664,7 @@ class PlanningMaterielModel extends Model
         return $this->connect->fetchResults($result);
     }
 
-    public function getMaterielListCount(array $numOrs, array $orSoumis, array $orItvBack, PlanningSearchDto $searchDto, string $codeSoc)
+    public function getMaterielListCount(array $numOrs, array $orSoumis, PlanningSearchDto $searchDto, string $codeSoc)
     {
         $statement = " SELECT 
                 COUNT( distinct seor_numor ||'-'||sitv_interv )  as nb_numOR,
@@ -674,17 +674,16 @@ class PlanningMaterielModel extends Model
             WHERE seor_numor = slor_numor
             AND seor_soc = '$codeSoc' AND mmat_marqmat NOT like 'Z%'
             AND (seor_nummat = mmat_nummat)
-            --AND slor_constp NOT like '%ZDI%'
             AND slor_numcf = nlig_numcde AND slor_refp = nlig_refp
-            {$this->getOrValidBackOrderCondition($searchDto,$orItvBack,$numOrs,$orSoumis)}
+            {$this->getOrValidBackOrderCondition($searchDto,$numOrs,$orSoumis)}
             {$this->getTypeLigneCondition($searchDto)}
             {$this->getPlanningSansDateCondition($searchDto)}
             {$this->getAgenceCondition($searchDto)}
             {$this->getInterneExterneCondition($searchDto)}
             {$this->getAgenceDebiteCondition($searchDto)}
             {$this->getServiceDebiteCondition($searchDto)}
-            {$this->getDateDebutCondition($searchDto)}
-            {$this->getDateFinCondition($searchDto)}
+            {$this->getDateDebutCondition($searchDto,$codeSoc)}
+            {$this->getDateFinCondition($searchDto,$codeSoc)}
             {$this->getNumParcCondition($searchDto)}
             {$this->getIdMaterielCondition($searchDto)}
             {$this->getNumOrCondition($searchDto)}

@@ -18,7 +18,7 @@
 		<div class="container">
 			{% include "/atelier/planning/_formulaire.html.twig" %}
 			<div class="d-flex justify-content-between">
-				{% include "/partials/_statutSituationPiece.html.twig" with { 'avecBackOrder' : true } %}
+				{% include "/partials/_statutSituationPiece.html.twig" with {bo_co: true} %}
 			</div>
 		</div>
 	</div>
@@ -53,14 +53,14 @@
 						<td>{{ item.casier }}</td>
 						{% for month in uniqueMonths %}
 							<td>
-								{% set matchedDetails = item.filteredMonths | filter(m => m.month == month.month and m.year == month.year) %}
+								{% set matchedDetails = item.filteredMonths|filter(m => m.month == month.month and m.year == month.year) %}
 								{% if matchedDetails|length > 0 %}
 									{% for detail in matchedDetails %}
 										{% set classe = '' %}
-										{% set qteCdm = detail.details.qteCdm | default(0) * 1 %}
-										{% set qteLiv = detail.details.qteLiv | default(0) * 1 %}
-										{% set qteAll = detail.details.qteAll | default(0) * 1 %}
-										{% set back = detail.details.back | default('') %}
+										{% set qteCdm = detail.details.qteCdm|default(0) * 1 %}
+										{% set qteLiv = detail.details.qteLiv|default(0) * 1 %}
+										{% set qteAll = detail.details.qteAll|default(0) * 1 %}
+										{% set back = detail.details.back|default('') %}
 
 										{% if qteCdm == qteLiv and qteCdm != '' and qteLiv != '' %}
 											{# Tout livré #}
@@ -99,8 +99,8 @@
 
 	<!-- FIN tableau -->
 	{# body modal #}
-	{% include "/atelier/planning/_modal.html.twig"  %}
-	{% include "/atelier/dit/shared/_modalNiveauUrgence.html.twig"  %}
+	{% include "/atelier/planning/_modal.html.twig" %}
+	{% include "/atelier/dit/shared/_modalNiveauUrgence.html.twig" %}
 {% endblock %}
 
 {% block javascript %}

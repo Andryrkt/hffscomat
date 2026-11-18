@@ -40,14 +40,14 @@ class PlanningModel extends Model
 
     public function getAgenceDebite(string $codeSociete)
     {
+        $sucNum = $_ENV['SUC_NUM'];
         $statement = "SELECT
                     trim(asuc_lib) as asuc_lib,
                     trim(asuc_num) as asuc_num
             FROM  agr_succ , sav_itv 
             WHERE asuc_num = sitv_succdeb 
             AND asuc_codsoc = '$codeSociete'
-            --AND asuc_lib <> 'ANTALAHA'
-            AND asuc_num  = 1
+            AND asuc_num = '$sucNum'
             group by 1,2
             order by 1
         ";
@@ -417,19 +417,6 @@ class PlanningModel extends Model
             where slor_succ = seor_succ
                 and slor_numor = seor_numor
                 {$this->selectCond->eq('slor_numor  || ' - ' || trunc(slor_nogrp/100)',$numOrItv)}
-        ";
-
-        $result = $this->connect->executeQuery($statement);
-        return $this->connect->fetchResults($result);
-    }
-
-    public function getItvCount(string $numOr, array $restItv): array
-    {
-        $statement = "SELECT 
-                count(sitv_interv) as nb_itv
-            from sav_itv
-            where sitv_numor = '$numOr'
-                {$this->selectCond->ni($restItv)}
         ";
 
         $result = $this->connect->executeQuery($statement);
