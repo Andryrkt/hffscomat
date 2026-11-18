@@ -19,7 +19,7 @@ trait FormatageTrait
 
     private function formaterPrix($prix, $separateurMillier = " ")
     {
-        return number_format((float) $prix, 2, ',', $separateurMillier);
+        return number_format((float) $prix, 2, '.', $separateurMillier);
     }
 
     private function formatNumber($number)
