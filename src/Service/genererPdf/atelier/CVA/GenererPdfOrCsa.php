@@ -138,7 +138,7 @@ class GenererPdfOrCsa extends GeneratePdf
         $pdf->Cell(0, 0, $dto->adresseClient, 0, 1, 'L');
 
         $pdf->SetX($xClient);
-        $pdf->Cell(0, 0, "PORT LOUIS", 0, 1, 'L');
+        $pdf->Cell(0, 0, $dto->bureauPostal, 0, 1, 'L');
 
         $pdf->SetX($xClient);
         $pdf->Cell(0, 0, $dto->pays, 0, 1, 'L');
