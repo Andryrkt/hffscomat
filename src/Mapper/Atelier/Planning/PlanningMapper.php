@@ -3,18 +3,9 @@
 namespace App\Mapper\Atelier\Planning;
 
 use App\Dto\Atelier\Planning\PlanningMaterielDto;
-use App\Model\Atelier\Dit\DitModel;
 
 class PlanningMapper
 {
-
-    private DitModel $ditModel;
-
-    public function __construct()
-    {
-        $this->ditModel = new DitModel();
-    }
-
     public function toDtoArray(array $data, array $back): array
     {
         $res = [];
@@ -61,7 +52,6 @@ class PlanningMapper
         $dto->statutCtrmqCis = $item['statut_ctrmq_cis'] ?? '';
         $dto->datePlanning   = $item['date_planning'] ?? null;
         $dto->dateStatut     = $item['date_statut'] ?? null;
-
         $dto->cst            = $item['cst'] ?? '';
         $dto->ref            = $item['ref'] ?? '';
         $dto->desi           = $item['desi'] ?? '';
@@ -70,21 +60,44 @@ class PlanningMapper
         $dto->numCmdCis      = $item['num_cmd_cis'] ?? '';
         $dto->message        = $item['message'] ?? '';
 
-        $detail = [
-            'mois'        => $dto->mois,
-            'annee'       => $dto->annee,
-            'orIntv'      => $dto->orItv,
-            'qteCdm'      => $dto->qteCdm,
-            'qteLiv'      => $dto->qteLiv,
-            'qteAll'      => $dto->qteAll,
-            'commentaire' => $dto->commentaire,
-            'back'        => !empty($back) && in_array($item['or_itv'], $back['num_or_itvs']) && $dto->qteAll + $dto->qteLiv <= 0,
-            'backOrderCo' => $dto->statutCtrmq != '' && $dto->qteReliquat > 0,
-            'statut'      => $dto->statut,
-        ];
-        $dto->addMoisDetails($detail);
+        $estBackOrder = !empty($back) && in_array($dto->orItv, $back['num_or_itvs']) && $dto->qteAll + $dto->qteLiv <= 0;
+        $estBackOrderCo = $dto->qteReliquat > 0 && $item["nat_cm"] === "O";
+
+        $dto->addMoisDetails([
+            'mois'                  => $dto->mois,
+            'annee'                 => $dto->annee,
+            'orIntv'                => $dto->orItv,
+            'commentaire'           => $dto->commentaire,
+            'classeStatutLivraison' => $this->calculerClasse($dto, $estBackOrder, $estBackOrderCo),
+        ]);
 
         return $dto;
+    }
+
+    /**
+     * Classe CSS selon l'état de livraison/disponibilité des pièces
+     */
+    private function calculerClasse(PlanningMaterielDto $dto, bool $estBackOrder, bool $estBackOrderCo): string
+    {
+        $cdm = $dto->qteCdm;
+        $liv = $dto->qteLiv;
+        $all = $dto->qteAll;
+
+        $classe = '';
+
+        if ($cdm == $liv)
+            $classe = 'tout-livre bg-success text-white';
+        elseif ($liv > 0 && $cdm > $liv + $all)
+            $classe = 'partiellement-livre bg-warning text-white';
+        elseif ($liv == 0 && $all > 0 && $cdm != $all)
+            $classe = 'partiellement-dispo bg-info text-white';
+        elseif (($cdm == $all && $liv < $cdm) || ($all > 0 && $cdm == $all + $liv))
+            $classe = 'complet-non-livre bg-primary text-white';
+
+        if ($estBackOrder) $classe .= ' back-order border-end border-start border-danger border-3';
+        if ($estBackOrderCo) $classe .= ' bo-co bordered-bo-co';
+
+        return $classe;
     }
 
     /**

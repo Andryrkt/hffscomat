@@ -2,10 +2,9 @@
 
 namespace App\Model\Atelier\Planning;
 
+use App\Model\Model;
 use App\Dto\Atelier\Planning\PlanningSearchDto;
 use App\Model\Informix\SelectWhereCondition;
-use App\Model\Model;
-use App\Service\GlobalVariablesService;
 
 class PlanningMaterielModel extends Model
 {
@@ -76,7 +75,11 @@ class PlanningMaterielModel extends Model
                     select cbse_numcli ||'-'|| TRIM(cbse_nomcli) 
                     from {$this->dbIps}.cli_bse 
                     where cbse_numcli = seor_numcli
-                )                                             AS client
+                )                                             AS client,
+                CASE 
+                    WHEN MAX(CASE WHEN C.slor_natcm IN ('C', 'L') THEN 1 ELSE 0 END) = 1 THEN 'O' 
+                    ELSE 'N' 
+                END                                           AS nat_cm
             FROM {$this->dbIps}.sav_eor, {$this->dbIps}.sav_lor as C,
                 {$this->dbIps}.sav_itv as D,
                 {$this->dbIps}.agr_succ,
@@ -160,14 +163,14 @@ class PlanningMaterielModel extends Model
                     WHEN slor_natcm = 'L' THEN 'RECEPTION'
                 END                                                     as statut_ctrmq,
                 CASE 
-                    WHEN slor_natcm = 'C' 
-                    THEN slor_numcf
-                    WHEN slor_natcm = 'L'
-                    THEN (select max(fllf_numcde)
+                    WHEN slor_natcm = 'C' THEN slor_numcf
+                    WHEN slor_natcm = 'L' THEN (
+                        select max(fllf_numcde)
                         from {$this->dbIps}.frn_llf 
                         WHERE fllf_numliv = slor_numcf
                             and fllf_ligne = slor_noligncm
-                            and fllf_refp = slor_refp)
+                            and fllf_refp = slor_refp
+                    )
                 END                                                     as num_cmd,
                 CASE 
                     WHEN slor_qteres = (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) and slor_qterel > 0 
@@ -261,162 +264,6 @@ class PlanningMaterielModel extends Model
 
         $result = $this->connect->executeQuery($statement);
         return $this->connect->fetchResults($result);
-    }
-
-    public function getDetailPieceInformixModal(string $numOr, PlanningSearchDto $searchDto)
-    {
-        $vTypeLigne = "";
-        if (!empty($searchDto->typeLigne)) {
-            switch ($searchDto->typeLigne) {
-                case "PIECES_MAGASIN":
-                    $constructeurPiecesMagasin = GlobalVariablesService::get('pieces_magasin');
-                    $vTypeLigne = " AND slor_constp in ( $constructeurPiecesMagasin ) AND slor_typlig = 'P' AND (slor_refp not like '%-L' and slor_refp not like '%-CTRL') ";
-                    break;
-                case "ACHAT_LOCAUX":
-                    $constructeurAchatLocaux = GlobalVariablesService::get('achat_locaux');
-                    $vTypeLigne = " AND slor_constp in ( $constructeurAchatLocaux )";
-                    break;
-                case "LUBRIFIANTS":
-                    $constructeurLub = GlobalVariablesService::get('lub');
-                    $vTypeLigne = " AND slor_constp in ( $constructeurLub )  AND slor_typlig = 'P'";
-                    break;
-                case "PNEUMATIQUES":
-                    $constructeurPneumatique = GlobalVariablesService::get('pneumatique');
-                    $vTypeLigne = " AND slor_constp in ( $constructeurPneumatique ) ";
-                    break;
-                default:
-                    $vTypeLigne = " ";
-                    break;
-            }
-        }
-
-        if (strpos($numOr, '-') !== false) { //la chaine contient des tirer
-            $numOr = " AND slor_numor || '-' || sitv_interv = '" . $numOr . "'";
-        } else {
-            $numOr = " AND slor_numor = '" . $numOr . "'";
-        }
-
-        $statement = " SELECT {$searchDto->planning} as plan,
-                            slor_numor as numOr,
-                            slor_numcf as numCis,
-                            sitv_interv as Intv,
-                            trim(sitv_comment) as commentaire,
-                            slor_datel as datePlanning,
-                            trim(slor_constp) as cst,
-                            trim(slor_refp) as ref,
-                            trim(slor_desi) as desi,
-                            TRUNC(slor_qterel) AS QteReliquat,
-                            TRUNC(CASE 
-                              WHEN slor_typlig = 'P' 
-                                THEN
-                                  (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) 
-		                          ELSE 
-                                slor_qterea 
-	                          	END) AS QteRes_Or,
-                            TRUNC(slor_qterea) AS Qteliv,
-                            TRUNC(slor_qteres) AS QteAll,
-                            
-                      CASE  
-                        WHEN slor_natcm = 'C' THEN 'COMMANDE'
-                        WHEN slor_natcm = 'L' THEN 'RECEPTION'
-                      END AS Statut_ctrmq,
-                      CASE 
-                        WHEN slor_natcm = 'C' 
-                        THEN slor_numcf
-                        WHEN slor_natcm = 'L' 
-                        THEN (SELECT MAX(fllf_numcde) FROM {$this->dbIps}.frn_llf 
-                                WHERE fllf_numliv = slor_numcf
-                                AND fllf_ligne = slor_noligncm
-                                AND fllf_refp = slor_refp)
-                      END  AS numeroCmd,
-
-                      CASE 
-                        WHEN slor_qteres = (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) AND slor_qterel >0 
-                        THEN trim('A LIVRER')
-                        WHEN (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) = slor_qteres AND slor_qterel = 0 AND slor_qterea = 0 
-                        THEN trim('DISPO STOCK')
-                        WHEN slor_qterea =  (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) 
-                        THEN trim('LIVRE')
-                        WHEN slor_natcm = 'C' 
-                        THEN (SELECT libelle_type 
-                              FROM {$this->dbIrium}.gcot_acknow_cat 
-                              WHERE CAST(Numero_PO as varchar(10)) = CAST(slor_numcf  as varchar(10)) 
-                              AND Parts_Number = slor_refp  
-                              AND Parts_CST = slor_constp 
-                                  AND Line_Number = slor_noligncm 
-		   		                        AND id_gcot_acknow_cat = ( SELECT MAX(id_gcot_acknow_cat)
-                                                             FROM {$this->dbIrium}.gcot_acknow_cat 
-                                                             WHERE CAST(Numero_PO as varchar(10)) = CAST(slor_numcf  as varchar(10))  
-                                                             AND Parts_Number = slor_refp  
-                                                             AND Parts_CST = slor_constp 
-                                                             AND Line_Number = slor_noligncm 
-                                                             AND quantity > 0)
-                            )
-	                  END as Statut,
-
-                    CASE 
-                        WHEN slor_qteres = (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) AND slor_qterel >0 
-                        THEN TO_CHAR((SELECT spic_datepic
-                                     FROM (
-                                        SELECT spic_datepic,
-                                         ROW_NUMBER() OVER (ORDER BY spic_datepic ASC) AS rn
-                                         FROM {$this->dbIpsRegix}.sav_pic
-                                         WHERE spic_numor = slor_numor
-                                        AND spic_refp = slor_refp
-                                        AND spic_nolign = slor_nolign
-                                           ) AS ranked_dates
-                                       WHERE rn = 1
-                             ), '%Y-%m-%d')
-
-	                    WHEN slor_qterea = (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) 
-                        THEN TO_CHAR((SELECT sliv_date FROM {$this->dbIps}.sav_liv 
-                                    WHERE sliv_numor = slor_numor 
-		                            AND sliv_nolign = slor_nolign), '%Y-%m-%d')
-                        WHEN slor_natcm = 'C' 
-                        THEN TO_CHAR((SELECT date_creation
-                                    FROM {$this->dbIrium}.gcot_acknow_cat 
-                                    WHERE CAST(Numero_PO as varchar(10)) = CAST(slor_numcf  as varchar(10)) 
-                                    AND Parts_Number = slor_refp  
-                                    AND Parts_CST = slor_constp 
-                                    AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign)
-                                    AND id_gcot_acknow_cat = ( SELECT MAX(id_gcot_acknow_cat) 
-                                                               FROM {$this->dbIrium}.gcot_acknow_cat 
-                                                               WHERE CAST(Numero_PO as varchar(10)) = CAST(slor_numcf  as varchar(10))  
-                                                               AND Parts_Number = slor_refp  
-                                                               AND Parts_CST = slor_constp 
-                                                               AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign) 
-                                                               AND quantity > 0)
-                                  )
-                                ), '%Y-%m-%d')
-	                    END AS dateStatut,
-                        CASE  
-                            WHEN slor_qterea <> (slor_qterel + slor_qterea + slor_qteres + slor_qtewait - slor_qrec) 
-                            THEN ( SELECT message FROM {$this->dbIrium}.gcot_acknow_cat 
-                                    WHERE CAST(Numero_PO as varchar(10)) = CAST(slor_numcf  as varchar(10)) 
-                                    AND Parts_Number = slor_refp  
-                                    AND Parts_CST = slor_constp 
-                                    AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign)
-                                            AND id_gcot_acknow_cat = ( SELECT MAX(id_gcot_acknow_cat) 
-                                                                FROM {$this->dbIrium}.gcot_acknow_cat 
-                                                                WHERE CAST(Numero_PO as varchar(10)) = CAST(slor_numcf  as varchar(10))  
-                                                                AND Parts_Number = slor_refp  
-                                                                AND Parts_CST = slor_constp 
-                                                                AND (Line_Number = slor_noligncm OR Line_Number = slor_nolign)
-                                                                AND quantity > 0)
-                                )
-                        END as Message
-                FROM {$this->dbIps}.sav_lor
-	              JOIN sav_itv ON slor_numor = sitv_numor AND sitv_interv = TRUNC(slor_nogrp / 100)
-              LEFT JOIN neg_lig ON slor_numcf = nlig_numcde AND slor_refp = nlig_refp
-                WHERE slor_constp NOT LIKE '%ZDI%'
-                --AND slor_typlig = 'P'
-              $numOr
-              $vTypeLigne
-        ";
-
-        $result = $this->connect->executeQuery($statement);
-        $data = $this->connect->fetchResults($result);
-        return $this->convertirEnUtf8($data);
     }
 
     public function getMaterielPlanningList(array $numOrs, array $orSoumis, PlanningSearchDto $searchDto, string $codeSoc = 'HF'): array
@@ -675,37 +522,6 @@ class PlanningMaterielModel extends Model
             order by 10,14 
         ";
         // dd($statement);
-        $result = $this->connect->executeQuery($statement);
-        return $this->connect->fetchResults($result);
-    }
-
-    public function getMaterielListCount(array $numOrs, array $orSoumis, PlanningSearchDto $searchDto, string $codeSoc)
-    {
-        $statement = " SELECT 
-                COUNT( distinct seor_numor ||'-'||sitv_interv )  as nb_numOR,
-                COUNT( sitv_interv ) as nb_itv,
-                COUNT ( slor_constp) as nb_ligne
-            FROM {$this->dbIps}.sav_eor, {$this->dbIps}.sav_lor as C , {$this->dbIps}.sav_itv as D, {$this->dbIps}.agr_succ, {$this->dbIps}.agr_tab ser, {$this->dbIps}.mat_mat, {$this->dbIps}.agr_tab ope, outer {$this->dbIps}.neg_lig
-            WHERE seor_numor = slor_numor
-            AND seor_soc = '$codeSoc' AND mmat_marqmat NOT like 'Z%'
-            AND (seor_nummat = mmat_nummat)
-            AND slor_numcf = nlig_numcde AND slor_refp = nlig_refp
-            {$this->getOrValidBackOrderCondition($searchDto,$numOrs,$orSoumis)}
-            {$this->getTypeLigneCondition($searchDto)}
-            {$this->getPlanningSansDateCondition($searchDto)}
-            {$this->getAgenceCondition($searchDto)}
-            {$this->getInterneExterneCondition($searchDto)}
-            {$this->getAgenceDebiteCondition($searchDto)}
-            {$this->getServiceDebiteCondition($searchDto)}
-            {$this->getDateDebutCondition($searchDto,$codeSoc)}
-            {$this->getDateFinCondition($searchDto,$codeSoc)}
-            {$this->getNumParcCondition($searchDto)}
-            {$this->getIdMaterielCondition($searchDto)}
-            {$this->getNumOrCondition($searchDto)}
-            {$this->getNumSerieCondition($searchDto)}
-            {$this->getCasierCondition($searchDto)}
-            {$this->getSectionCondition($searchDto)}
-        ";
         $result = $this->connect->executeQuery($statement);
         return $this->connect->fetchResults($result);
     }
