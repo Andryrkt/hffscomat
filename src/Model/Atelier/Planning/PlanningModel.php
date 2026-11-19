@@ -2,12 +2,9 @@
 
 namespace App\Model\Atelier\Planning;
 
-use App\Dto\Atelier\Planning\PlanningSearchDto;
-use App\Model\connexionDote4;
-use App\Model\connexionDote4Gcot;
-use App\Model\Informix\SelectWhereCondition;
 use App\Model\Model;
-use PHPUnit\Util\Exception;
+use App\Model\Informix\SelectWhereCondition;
+use App\Dto\Atelier\Planning\PlanningSearchDto;
 
 class PlanningModel extends Model
 {
@@ -367,75 +364,5 @@ class PlanningModel extends Model
 
         $results = $this->connect->executeQuery($statement);
         return $this->connect->fetchResults($results);
-    }
-
-    public function getQteLigneCIS(string $numOr, string $numItv, string $refP): array
-    {
-        $statement = "SELECT 
-                trunc(nvl(nlig_qtecde,0)) as qteorlig,
-                trunc(nvl(nlig_qtealiv,0) )as qtealllig,
-                trunc(nvl((nlig_qtecde - nlig_qtealiv - nlig_qteliv) ,0))as qtereliquatlig,
-                trunc(nvl(nlig_qteliv,0)) as qtelivlig
-            from sav_lor
-            inner join neg_lig
-                on nlig_soc = slor_soc
-                and nlig_succd = slor_succ
-                and nlig_numcde = slor_numcf
-                and nlig_constp = slor_constp
-                and nlig_refp = slor_refp
-            where nlig_natop = 'CIS'
-                {$this->selectCond->eq('slor_numor',$numOr)}
-                {$this->selectCond->eq('trunc(slor_nogrp/100)',$numItv)}
-                {$this->selectCond->eq('slor_refp',$refP)}
-        ";
-
-        $result = $this->connect->executeQuery($statement);
-        return $this->connect->fetchResults($result);
-    }
-
-    public function getDateLivraisonCIS(string $numCIS, string $refP, string $cst): array
-    {
-        $statement = "SELECT
-                max(nliv_dateexp)   as date_livraison
-            from neg_liv, neg_llf
-            where nliv_soc = nllf_soc
-                {$this->selectCond->eq('nllf_numcde',$numCIS)}
-                and nliv_numliv = nllf_numliv
-                {$this->selectCond->eq('nllf_constp',$cst)}
-                {$this->selectCond->eq('nllf_refp',$refP)}
-        ";
-
-        $result = $this->connect->executeQuery($statement);
-        return $this->connect->fetchResults($result);
-    }
-
-    public function getOrCIS(string $numOrItv): array
-    {
-        $statement = "SELECT
-                decode(seor_succ,'01','','60','','80','','CIS') as succ
-            from sav_lor, sav_eor
-            where slor_succ = seor_succ
-                and slor_numor = seor_numor
-                {$this->selectCond->eq('slor_numor  || ' - ' || trunc(slor_nogrp/100)',$numOrItv)}
-        ";
-
-        $result = $this->connect->executeQuery($statement);
-        return $this->connect->fetchResults($result);
-    }
-
-    public function getDateAllocationCIS(string $numCIS, string $refP, string $cst): array
-    {
-        $statement = "SELECT
-                max(npic_date)   as     date_allocation
-            from neg_pic, neg_pil
-            where npic_soc = npil_soc
-                and npic_numcde = npil_numcde
-                {$this->selectCond->eq('npic_numcde',$numCIS)}
-                {$this->selectCond->eq('npil_constp',$cst)}
-                {$this->selectCond->eq('npil_refp',$refP)}
-        ";
-
-        $result = $this->connect->executeQuery($statement);
-        return $this->connect->fetchResults($result);
     }
 }
