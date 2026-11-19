@@ -61,13 +61,14 @@ class PlanningMapper
         $dto->message        = $item['message'] ?? '';
 
         $estBackOrder = !empty($back) && in_array($dto->orItv, $back['num_or_itvs']) && $dto->qteAll + $dto->qteLiv <= 0;
+        $estBackOrderCo = $dto->qteReliquat > 0 && $item["nat_cm"] === "O";
 
         $dto->addMoisDetails([
             'mois'                  => $dto->mois,
             'annee'                 => $dto->annee,
             'orIntv'                => $dto->orItv,
             'commentaire'           => $dto->commentaire,
-            'classeStatutLivraison' => $this->calculerClasse($dto, $estBackOrder),
+            'classeStatutLivraison' => $this->calculerClasse($dto, $estBackOrder, $estBackOrderCo),
         ]);
 
         return $dto;
@@ -76,7 +77,7 @@ class PlanningMapper
     /**
      * Classe CSS selon l'état de livraison/disponibilité des pièces
      */
-    private function calculerClasse(PlanningMaterielDto $dto, bool $estBackOrder): string
+    private function calculerClasse(PlanningMaterielDto $dto, bool $estBackOrder, bool $estBackOrderCo): string
     {
         $cdm = $dto->qteCdm;
         $liv = $dto->qteLiv;
@@ -94,8 +95,8 @@ class PlanningMapper
             $classe = 'complet-non-livre bg-primary text-white';
 
         if ($estBackOrder) $classe .= ' back-order border-end border-start border-danger border-3';
+        if ($estBackOrderCo) $classe .= ' bo-co bordered-bo-co';
 
-        // TODO: backOrderCo ($dto->qteReliquat > 0) => ' bo-co bordered-bo-co' (en suspens)
         return $classe;
     }
 
