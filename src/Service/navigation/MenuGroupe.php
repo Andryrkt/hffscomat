@@ -66,7 +66,6 @@ class MenuGroupe
                 'route'    => 'planning_vue',
                 'label'    => 'Planning',
                 'icon'     => 'calendar-alt',
-                'params'   => ['action' => 'oui'],
             ],
             [
                 'route'    => 'liste_planning',

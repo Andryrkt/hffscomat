@@ -50,17 +50,8 @@ class PlanningMaterielController extends Controller
             ]
         )->getForm();
 
-        $dto = $this->traitementFormulaire($form, $request);
-        $this->getSessionService()->set('planning_search_criteria', $dto);
+        $data = $this->traitementFormulaire($form, $request, $codeSociete);
 
-        $data = [];
-        $back = [];
-        if ($request->query->get('action') !== 'oui') {
-            $back = $this->planningService->getBackOrderItv($dto);
-            $data = $this->planningService->getPlanningMaterielData($dto, $back, $codeSociete);
-        }
-        $data = $this->planningService->getDataList($data, $dto->months);
-        // dd($data);
         $this->logUserVisit('planning_vue');
 
         return $this->render('atelier/planning/planning.html.twig', [
@@ -70,13 +61,21 @@ class PlanningMaterielController extends Controller
         ]);
     }
 
-    private function traitementFormulaire(FormInterface $form, Request $request)
+    private function traitementFormulaire(FormInterface $form, Request $request, string $codeSociete)
     {
         $form->handleRequest($request);
         $dto = $this->searchDto;
+        $data = [];
+        $back = [];
 
-        if ($form->isSubmitted() && $form->isValid()) $dto = $form->getData();
+        if ($form->isSubmitted() && $form->isValid()) {
+            $dto = $form->getData();
+            $this->getSessionService()->set('planning_search_criteria', $dto);
 
-        return $dto;
+            $back = $this->planningService->getBackOrderItv($dto);
+            $data = $this->planningService->getPlanningMaterielData($dto, $back, $codeSociete);
+        }
+
+        return $this->planningService->getDataList($data, $dto->months);
     }
 }
