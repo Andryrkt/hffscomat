@@ -32,7 +32,7 @@ class OrCsaSoumissionDto
     public float  $montantIncVat       = 0.0;
 
     // Langue (pour le nom du dossier DW)
-    public string $langueIps           = 'F';
+    public string $langueIps           = 'A';
 
     public string $operator           = '';
     public string $quoteNo            = '';
