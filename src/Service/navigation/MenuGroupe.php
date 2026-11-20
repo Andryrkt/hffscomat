@@ -52,7 +52,7 @@ class MenuGroupe
                 'label'    => "CVA",
                 'icon'     => 'file-invoice',
                 'subitems' => [
-                    ['label' => 'OR - CSA à traiter', 'icon' => 'list-check', 'route' => 'or_csa_a_traiter_liste'],
+                    ['label' => 'OR CVA et Cession interne à traiter', 'icon' => 'list-check', 'route' => 'or_csa_a_traiter_liste'],
                 ],
             ],
             [
