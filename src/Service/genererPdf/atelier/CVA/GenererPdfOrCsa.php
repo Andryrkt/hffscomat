@@ -13,12 +13,6 @@ class GenererPdfOrCsa extends GeneratePdf
 {
     use FormatageTrait;
 
-    // ---- Largeurs (mm) — A4, marges 10mm ------------------------
-    private const COL_QUANTITY    = 14;
-    private const COL_REFERENCE   = 34;
-    private const COL_DESCRIPTION = 62;
-    private const COL_UNIT_PRICE  = 40;
-    private const COL_NET         = 40;
 
     // ------------------------------------------------------------
     // Dépôt DocuWare
@@ -34,6 +28,24 @@ class GenererPdfOrCsa extends GeneratePdf
         return $this->copyFile($cheminDestinationLocal, $cheminFichierDistant);
     }
 
+    // ---- Largeurs (mm) — A4, marges 10mm ------------------------
+    private const COL_QUANTITY    = 14;
+    private const COL_REFERENCE   = 34;
+    private const COL_DESCRIPTION = 62;
+    private const COL_UNIT_PRICE  = 40;
+    private const COL_NET         = 40;
+
+
+    private array $labels = [];
+
+    /**
+     * Récupère un libellé traduit (retourne la clé si absente -> pas de crash).
+     */
+    private function t(string $key): string
+    {
+        return $this->labels[$key] ?? $key;
+    }
+
     // ------------------------------------------------------------
     // Génération
     // ------------------------------------------------------------
@@ -44,6 +56,8 @@ class GenererPdfOrCsa extends GeneratePdf
         string $numeroDit,
         array $quelqueAffichage
     ): void {
+        $this->labels = OrCsaLabels::forLangue($dto->langueIps);
+
         $chemin = $this->baseCheminDuFichier . 'dit/' . $numeroDit . '/' . $filename;
         $dir    = dirname($chemin);
 
@@ -151,7 +165,7 @@ class GenererPdfOrCsa extends GeneratePdf
         $pdf->Cell(85, 1, 'PROFORMA INVOICE No. WO  ' . $dto->numeroOr, 0, 0, 'L');
 
         // 
-        $pdf->Cell(60, 1, 'Customer No. :    ' . $this->tronquer($dto->numeroClient, 20), 0, 0, 'C');
+        $pdf->Cell(60, 1, $this->t('customer_no') . $this->tronquer($dto->numeroClient, 20), 0, 0, 'C');
         $pdf->Cell(0, 1, 'Date : ' . $dto->dateOr, 0, 1, 'R');
 
         $pdf->setFont('helvetica', '', 7);
@@ -170,10 +184,10 @@ class GenererPdfOrCsa extends GeneratePdf
         $pdf->Ln(1);
         $pdf->setFont('helvetica', '', 8);
         // --- Les 3 premières lignes ---
-        $pdf->Cell($labelW, $lineH, 'Customer reference', 0, 0, 'L');
+        $pdf->Cell($labelW, $lineH, $this->t('customer_reference'), 0, 0, 'L');
         $pdf->Cell($valueW, $lineH, (string) $dto->referenceClient, 0, 1, 'L');
 
-        $pdf->Cell($labelW, $lineH, 'Request reference', 0, 0, 'L');
+        $pdf->Cell($labelW, $lineH, $this->t('request_reference'), 0, 0, 'L');
         $pdf->Cell($valueW, $lineH, (string) $dto->refDemande, 0, 1, 'L');
 
         $pdf->Cell($labelW, $lineH, 'Operator', 0, 0, 'L');
@@ -244,12 +258,12 @@ class GenererPdfOrCsa extends GeneratePdf
         $pdf->Ln(2);
         // Dept. credited
         $pdf->setFont('helvetica', 'B', 10);
-        $pdf->Cell(35,  $lineH, 'Dept. credited', 0, 0, 'L');
+        $pdf->Cell(35,  $lineH, $this->t('dept_credited'), 0, 0, 'L');
         $pdf->setFont('helvetica', 'B', 10);
         $pdf->Cell($totalW - 35, $lineH, $this->libelleCombine($dto->codeService, $dto->libelleService), 0, 1, 'L');
         // Sort
         $pdf->setFont('helvetica', '', 8);
-        $pdf->Cell(35, $lineH, 'Sort', 0, 0, 'L');
+        $pdf->Cell(35, $lineH, $this->t('sort'), 0, 0, 'L');
         $pdf->Cell($totalW - 35, $lineH, $this->libelleCombine($dto->natureOperation, $dto->libelleNatureOperation), 0, 1, 'L');
         $pdf->Ln(1);
         // Hardcoded line for Replacement
@@ -434,7 +448,7 @@ class GenererPdfOrCsa extends GeneratePdf
         $pdf->setFont('helvetica', 'B', 10);
         // Total excl. VAT
         $pdf->Cell($threeColW, 0, '', 0, 0);
-        $pdf->Cell($colW[3], 0, 'Total excl. VAT', 0, 0, 'L');
+        $pdf->Cell($colW[3], 0,  $this->t('total_excl_vat'), 0, 0, 'L');
         $pdf->Cell($colW[4], 0, $this->formaterPrix($dto->montantExclVat), 0, 1, 'R');
 
         // VAT Total
@@ -444,14 +458,14 @@ class GenererPdfOrCsa extends GeneratePdf
 
         // TOTAL incl. VAT
         $pdf->Cell($threeColW, 0, '', 0, 0);
-        $pdf->Cell($colW[3], 0, 'TOTAL incl. VAT', 0, 0, 'L');
+        $pdf->Cell($colW[3], 0, $this->t('total_incl_vat'), 0, 0, 'L');
         $pdf->Cell($colW[4], 0, $this->formaterPrix($dto->montantIncVat), 0, 1, 'R');
 
 
         $pdf->setFont('helvetica', 'B', 8);
         // Currency
         $pdf->Cell($threeColW, 0, '', 0, 0);
-        $pdf->Cell($colW[3], 0, 'Currency', 0, 0, 'L');
+        $pdf->Cell($colW[3], 0, $this->t('currency'), 0, 0, 'L');
         $pdf->setFont('helvetica', 'B', 10);
         $pdf->Cell($colW[4], 0, 'MUR', 0, 1, 'R');
 
