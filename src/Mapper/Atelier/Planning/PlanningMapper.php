@@ -61,7 +61,7 @@ class PlanningMapper
         $dto->message        = $item['message'] ?? '';
 
         $estBackOrder = !empty($back) && in_array($dto->orItv, $back['num_or_itvs']) && $dto->qteAll + $dto->qteLiv <= 0;
-        $estBackOrderCo = $dto->qteReliquat > 0 && $item["nat_cm"] === "O";
+        $estBackOrderCo = $dto->qteReliquat > 0;
 
         $dto->addMoisDetails([
             'mois'                  => $dto->mois,

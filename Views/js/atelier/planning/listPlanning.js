@@ -149,22 +149,21 @@ document.addEventListener("DOMContentLoaded", (event) => {
         planningTableHeadLign.innerHTML = "";
 
         let rowHeader = `<th>N° OR</th>
-                            <th>Intv</th>
-                            <th>N° CIS</th>
-                            <th>N° Commande</th>
-                            <th>Statut ctrmrq</th>
-                            <th>CST</th>
-                            <th>Ref</th>
-                            <th>Désignation</th>
-                            <th>Qté OR</th>
-                            <th>Qté ALL</th>
-                            <th>QTé RLQ</th>
-                            <th>QTé LIV</th>
-                            <th>Statut</th>
-                            <th>Date Statut</th>
-                            <th>ETA Maurice</th>
-                            <th>ETA Magasin</th>
-                            `;
+                        <th>Intv</th>
+                        <th>N° Commande</th>
+                        <th>Statut ctrmrq</th>
+                        <th>CST</th>
+                        <th>Ref</th>
+                        <th>Désignation</th>
+                        <th>Qté OR</th>
+                        <th>Qté ALL</th>
+                        <th>QTé RLQ</th>
+                        <th>QTé LIV</th>
+                        <th>Statut</th>
+                        <th>Date Statut</th>
+                        <th>ETA Maurice</th>
+                        <th>ETA Magasin</th>
+                        `;
         if (data.data.length > 0) {
           planningTableHead.innerHTML += rowHeader;
 
@@ -181,11 +180,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
             }
             // Formater la date
             let dateStatut;
-            let numCde;
-            let statrmq;
             let statut;
-            let message;
-            let numRef;
             if (
               formaterDate(detail.datestatut) == "01/01/1970" ||
               formaterDate(detail.datestatut) == "01/01/1900"
@@ -195,52 +190,34 @@ document.addEventListener("DOMContentLoaded", (event) => {
               dateStatut = formaterDate(detail.datestatut);
             }
 
-            if (detail.num_cmd == null) {
-              numCde = "";
-            } else {
-              numCde = detail.num_cmd;
-            }
-            if (detail.ref == null) {
-              numRef = "";
-            } else {
-              numRef = detail.ref;
-            }
-            if (detail.statut_ctrmq == null) {
-              statrmq = "";
-            } else {
-              statrmq = detail.statut_ctrmq;
-            }
             if (detail.statut == null) {
               statut = "";
             } else {
               statut = detail.statut;
             }
 
-            if (detail.message == null) {
-              message = "";
-            } else {
-              message = detail.message;
-            }
-
             //reception partiel
             let cmdColor;
-            let Ord = detail.Ord;
             if (statut == "DISPO STOCK") {
               cmdColor = 'style="background-color: #c8ad7f; color: white;"';
             } else if (statut == "Error" || statut == "Back Order") {
               cmdColor = 'style="background-color: red; color: white;"';
+            } else if (
+              detail.statut_ctrmq.trim() == "COMMANDE" &&
+              parseInt(detail.qte_reliquat) > 0
+            ) {
+              cmdColor = 'style="background-color: violet;"';
             } else if (statut == "COMMANDE ENVOYEE") {
               cmdColor = 'style="background-color:#9ACD32  ; color: white;"';
             }
 
             let row = `<tr>
                         <td>${detail.num_or}</td> 
-                        <td>${detail.num_itv}</td> 
-                        <td>${detail.num_cis}</td> 
-                        <td ${cmdColor}>${numCde}</td> 
-                        <td>${statrmq}</td> 
+                        <td>${detail.num_itv}</td>
+                        <td ${cmdColor || ""}>${detail.num_cmd || ""}</td> 
+                        <td>${detail.statut_ctrmq || ""}</td> 
                         <td>${detail.cst}</td> 
-                        <td>${numRef}</td> 
+                        <td>${detail.ref || ""}</td> 
                         <td>${detail.desi}</td> 
                         <td>${parseInt(detail.qte_res_or)}</td> 
                         <td>${parseInt(detail.qte_all)}</td> 
