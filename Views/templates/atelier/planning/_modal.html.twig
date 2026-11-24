@@ -13,13 +13,11 @@
                 </div>
             </div>
             {# body du modal#}
-            <div
-                    class="modal-body">
-                <!-- Champ avec légende -->
-
+            <div class="modal-body">
                 <div class="mb-3">
                     <small style="color: #c8ad7f">DISPO STOCK |</small>
-                    <small class="text-danger">Back Order / Error |</small>
+                    <small class="text-danger">Back Order Fournisseur |</small>
+                    <small style="color: violet">Back Order CO |</small>
                     <small style="color: #9ACD32">Commande envoyée fournisseur |</small>
                     <small class="text-warning">Réception Partielle</small>
                 </div>
@@ -41,17 +39,17 @@
                         </nav>
                         <div class="tab-content p-3 border bg-light" id="nav-tabContent">
                             <div class="tab-pane fade active show" id="nav-onglet1" role="tabpanel" aria-labelledby="nav-onglet1-tab">
-                                <table class="table rounded mt-1">
+                                <table class="table rounded mt-1 align-middle">
                                     <thead class="table">
-                                    <tr id="planningTableHeadOR"></tr>
+                                        <tr id="planningTableHeadOR"></tr>
                                     </thead>
                                     <tbody id="commandesTableBodyORAte"></tbody>
                                 </table>
                             </div>
                             <div class="tab-pane fade" id="nav-onglet2" role="tabpanel" aria-labelledby="nav-onglet2-tab">
-                                <table class="table rounded mt-1">
+                                <table class="table rounded mt-1 align-middle">
                                     <thead class="table">
-                                    <tr id="planningTableHeadLign"></tr>
+                                        <tr id="planningTableHeadLign"></tr>
                                     </thead>
                                     <tbody id="commandesTableBodyLign"></tbody>
                                 </table>
@@ -59,9 +57,9 @@
                         </div>
                     </div>
                     <div id="sans_onglet" class="d-none">
-                        <table class="table rounded mt-1">
+                        <table class="table rounded mt-1 align-middle">
                             <thead class="table">
-                            <tr id="planningTableHead"></tr>
+                                <tr id="planningTableHead"></tr>
                             </thead>
                             <tbody id="commandesTableBody"></tbody>
                         </table>
@@ -71,10 +69,10 @@
                     <h3 class="fw-bold bg-warning p-2 technicien">Technicien(s) interventant(s)</h3>
                     <table class="table rounded mt-1">
                         <thead class="table">
-                        <tr>
-                            <th>Matricule</th>
-                            <th>Nom et prenom(s)</th>
-                        </tr>
+                            <tr>
+                                <th>Matricule</th>
+                                <th>Nom et prenom(s)</th>
+                            </tr>
                         </thead>
                         <tbody id="technicienTableBody"></tbody>
                     </table>

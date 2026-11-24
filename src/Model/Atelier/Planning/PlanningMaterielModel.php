@@ -87,7 +87,7 @@ class PlanningMaterielModel extends Model
                     where cbse_numcli = seor_numcli
                 )                                             AS client,
                 CASE 
-                    WHEN MAX(CASE WHEN C.slor_natcm IN ('C', 'L') THEN 1 ELSE 0 END) = 1 THEN 'O' 
+                    WHEN MAX(CASE WHEN C.slor_natcm = 'C' AND C.slor_numcf > 0 THEN 1 ELSE 0 END) = 1 THEN 'O' 
                     ELSE 'N' 
                 END                                           AS nat_cm
             FROM {$this->dbIps}.sav_eor, 
