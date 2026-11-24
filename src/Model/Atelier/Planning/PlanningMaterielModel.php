@@ -85,11 +85,7 @@ class PlanningMaterielModel extends Model
                     select cbse_numcli ||'-'|| TRIM(cbse_nomcli) 
                     from {$this->dbIps}.cli_bse 
                     where cbse_numcli = seor_numcli
-                )                                             AS client,
-                CASE 
-                    WHEN MAX(CASE WHEN C.slor_natcm = 'C' AND C.slor_numcf > 0 THEN 1 ELSE 0 END) = 1 THEN 'O' 
-                    ELSE 'N' 
-                END                                           AS nat_cm
+                )                                             AS client
             FROM {$this->dbIps}.sav_eor, 
                 {$this->dbIps}.sav_lor as C,
                 {$this->dbIps}.sav_itv as D,
