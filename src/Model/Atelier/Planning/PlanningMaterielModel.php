@@ -19,7 +19,7 @@ class PlanningMaterielModel extends Model
     public function getMaterielPlanifier(array $numOrs, array $orSoumis, PlanningSearchDto $searchDto, string $codeSoc = 'HF'): array
     {
         if (empty($numOrs)) return [];
-        $statement = "SELECT
+        $statement = "SELECT 
                 trim(seor_succ)                               AS code_suc, 
                 trim(asuc_lib)                                AS lib_suc, 
                 trim(seor_servcrt)                            AS code_serv, 
@@ -45,23 +45,30 @@ class PlanningMaterielModel extends Model
                     where  A.slor_numor = B.sitv_numor
                         and  B.sitv_interv = TRUNC(A.slor_nogrp/100)
                         and A.slor_numor = C.slor_numor
-                        and B.sitv_interv  = D.sitv_interv {$this->getTypeLigneCondition($searchDto)}
+                        and B.sitv_interv = D.sitv_interv 
+                        and A.slor_refp is not null
+                        {$this->getTypeLigneCondition($searchDto)}
                 )                                             AS qte_cmd,
                 (
                     select sum(slor_qterea)
                     from {$this->dbIps}.sav_lor as A, {$this->dbIps}.sav_itv as B
                     where  A.slor_numor = B.sitv_numor
                         and  B.sitv_interv = TRUNC(A.slor_nogrp/100)
-                        and A.slor_numor = C.slor_numor and
-                        B.sitv_interv  = D.sitv_interv {$this->getTypeLigneCondition($searchDto)}
+                        and A.slor_numor = C.slor_numor 
+                        and B.sitv_interv = D.sitv_interv 
+                        and A.slor_refp is not null 
+                        {$this->getTypeLigneCondition($searchDto)}
                 )                                             AS qte_liv,
                 (
                     select sum(slor_qterel)
                     from {$this->dbIps}.sav_lor as A, {$this->dbIps}.sav_itv as B
                     where  A.slor_numor = B.sitv_numor
                         and  B.sitv_interv = TRUNC(A.slor_nogrp/100)
-                        and A.slor_numor = C.slor_numor and
-                        B.sitv_interv  = D.sitv_interv {$this->getTypeLigneCondition($searchDto)}
+                        and A.slor_numor = C.slor_numor
+                        and B.sitv_interv = D.sitv_interv 
+                        and A.slor_refp is not null
+                        and A.slor_natcm is not null
+                        {$this->getTypeLigneCondition($searchDto)}
                 )                                             AS qte_reliquat,
                 (
                     select sum(slor_qteres)
@@ -69,7 +76,9 @@ class PlanningMaterielModel extends Model
                     where A.slor_numor = B.sitv_numor
                         and B.sitv_interv = TRUNC(A.slor_nogrp/100)
                         and A.slor_numor = C.slor_numor
-                        and B.sitv_interv  = D.sitv_interv   {$this->getTypeLigneCondition($searchDto)}
+                        and B.sitv_interv = D.sitv_interv 
+                        and A.slor_refp is not null
+                        {$this->getTypeLigneCondition($searchDto)}
                 )                                             AS qte_all,
                 (
                     select cbse_numcli ||'-'|| TRIM(cbse_nomcli) 
@@ -80,7 +89,8 @@ class PlanningMaterielModel extends Model
                     WHEN MAX(CASE WHEN C.slor_natcm IN ('C', 'L') THEN 1 ELSE 0 END) = 1 THEN 'O' 
                     ELSE 'N' 
                 END                                           AS nat_cm
-            FROM {$this->dbIps}.sav_eor, {$this->dbIps}.sav_lor as C,
+            FROM {$this->dbIps}.sav_eor, 
+                {$this->dbIps}.sav_lor as C,
                 {$this->dbIps}.sav_itv as D,
                 {$this->dbIps}.agr_succ,
                 {$this->dbIps}.agr_tab ser,
@@ -88,11 +98,13 @@ class PlanningMaterielModel extends Model
                 {$this->dbIps}.agr_tab ope,
                 outer {$this->dbIps}.agr_tab sec
             WHERE seor_numor = slor_numor
+                AND slor_refp NOT LIKE '%-L'
+                AND slor_refp NOT LIKE '%-CTRL'
                 AND seor_serv <> 'DEV'
                 AND seor_soc = '$codeSoc'
                 AND sitv_numor = slor_numor 
                 AND sitv_interv = TRUNC(slor_nogrp/100)
-                AND (seor_succ = asuc_num) -- OR mmat_succ = asuc_parc)
+                AND (seor_succ = asuc_num)
                 AND (seor_servcrt = ser.atab_code AND ser.atab_nom = 'SER')
                 AND (sitv_typitv = sec.atab_code AND sec.atab_nom = 'TYI')
                 AND (seor_ope = ope.atab_code AND ope.atab_nom = 'OPE')
