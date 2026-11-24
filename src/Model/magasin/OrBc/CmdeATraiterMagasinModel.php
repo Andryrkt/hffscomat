@@ -8,6 +8,7 @@ use App\Dto\Magasin\OrBc\CmdeATraitrerMagasinSearchDto;
 use App\Model\Model;
 use App\Service\magasin\OrBc\CmdeATraiterMagasinFiltreService;
 use App\Service\security\SecurityService;
+use App\Service\TableauEnStringService;
 
 class CmdeATraiterMagasinModel extends Model
 {
@@ -83,7 +84,11 @@ class CmdeATraiterMagasinModel extends Model
 
     private function creerJointureQuery(): string
     {
-        $sucNum = $_ENV['SUC_NUM'];
+        $sucNeg = $_ENV['SUC_NEG'];
+        //Recuperation des devis validé par le client
+        $numeroDevisValideBcClient = $this->getNumeroDevisValideBcClient();
+        $devisValideBcCLient = TableauEnStringService::like($numeroDevisValideBcClient, 'nent_libcde');
+
         return "
             SELECT
                     'OR-' || slor_nolign        AS id,
@@ -151,6 +156,7 @@ class CmdeATraiterMagasinModel extends Model
                     AND NVL(nlig_numcf, 0) = 0
                     AND nlig_nolign <> NVL(nlig_nolmait,0)
                     AND nlig_natop <> 'DEV'
+                    AND ( $devisValideBcCLient )
         ";
     }
 
@@ -173,5 +179,16 @@ class CmdeATraiterMagasinModel extends Model
         $data   = $this->convertirEnUtf8($this->connect->fetchResults($result));
 
         return array_column($data, 'constructeur');
+    }
+
+    // Recuperation des numero de devis validé clients
+    public function getNumeroDevisValideBcClient()
+    {
+        $statement = " SELECT DISTINCT bcsn.numero_devis from {$this->dbIrium}.bc_client_soumis_neg bcsn where bcsn.statut_bc like 'Valid%'";
+        $result = $this->connect->executeQuery($statement);
+        $data = $this->connect->fetchResults($result);
+        $resultat = $this->convertirEnUtf8($data);
+
+        return array_column($resultat, 'numero_devis');
     }
 }
