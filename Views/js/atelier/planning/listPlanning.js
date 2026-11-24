@@ -149,22 +149,21 @@ document.addEventListener("DOMContentLoaded", (event) => {
         planningTableHeadLign.innerHTML = "";
 
         let rowHeader = `<th>N° OR</th>
-                            <th>Intv</th>
-                            <th>N° CIS</th>
-                            <th>N° Commande</th>
-                            <th>Statut ctrmrq</th>
-                            <th>CST</th>
-                            <th>Ref</th>
-                            <th>Désignation</th>
-                            <th>Qté OR</th>
-                            <th>Qté ALL</th>
-                            <th>QTé RLQ</th>
-                            <th>QTé LIV</th>
-                            <th>Statut</th>
-                            <th>Date Statut</th>
-                            <th>ETA Maurice</th>
-                            <th>ETA Magasin</th>
-                            `;
+                        <th>Intv</th>
+                        <th>N° Commande</th>
+                        <th>Statut ctrmrq</th>
+                        <th>CST</th>
+                        <th>Ref</th>
+                        <th>Désignation</th>
+                        <th>Qté OR</th>
+                        <th>Qté ALL</th>
+                        <th>QTé RLQ</th>
+                        <th>QTé LIV</th>
+                        <th>Statut</th>
+                        <th>Date Statut</th>
+                        <th>ETA Maurice</th>
+                        <th>ETA Magasin</th>
+                        `;
         if (data.data.length > 0) {
           planningTableHead.innerHTML += rowHeader;
 
@@ -235,8 +234,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
 
             let row = `<tr>
                         <td>${detail.num_or}</td> 
-                        <td>${detail.num_itv}</td> 
-                        <td>${detail.num_cis}</td> 
+                        <td>${detail.num_itv}</td>
                         <td ${cmdColor}>${numCde}</td> 
                         <td>${statrmq}</td> 
                         <td>${detail.cst}</td> 
