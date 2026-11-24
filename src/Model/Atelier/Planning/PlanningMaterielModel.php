@@ -67,7 +67,8 @@ class PlanningMaterielModel extends Model
                         and A.slor_numor = C.slor_numor
                         and B.sitv_interv = D.sitv_interv 
                         and A.slor_refp is not null
-                        and A.slor_natcm is not null
+                        and A.slor_numcf > 0
+                        and A.slor_natcm = 'C'
                         {$this->getTypeLigneCondition($searchDto)}
                 )                                             AS qte_reliquat,
                 (
