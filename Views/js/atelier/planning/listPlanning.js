@@ -203,7 +203,7 @@ document.addEventListener("DOMContentLoaded", (event) => {
             } else if (statut == "Error" || statut == "Back Order") {
               cmdColor = 'style="background-color: red; color: white;"';
             } else if (
-              detail.statut_ctrmq.trim() == "COMMANDE" &&
+              detail.statut_ctrmq?.trim() == "COMMANDE" &&
               parseInt(detail.qte_reliquat) > 0
             ) {
               cmdColor = 'style="background-color: violet;"';
