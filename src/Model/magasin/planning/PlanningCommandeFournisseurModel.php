@@ -34,10 +34,7 @@ class PlanningCommandeFournisseurModel extends Model
                         ELSE 'Autre'
                     END
                 ) AS statut,
-                CASE
-                    WHEN bo.numero_po IS NOT NULL THEN 'O'
-                    ELSE 'N'
-                END AS back_order
+                o.back_order
             FROM (
                 SELECT
                     l.fcdl_constp,
@@ -52,7 +49,13 @@ class PlanningCommandeFournisseurModel extends Model
                     SUM(l.fcdl_qte)     AS total_qte,
                     SUM(l.qte_recue)    AS total_recu,
                     SUM(l.qte_facturee) AS total_facture,
-                    SUM(l.qte_dispo)    AS total_dispo
+                    SUM(l.qte_dispo)    AS total_dispo,
+                    MAX(
+                        CASE
+                            WHEN l.numero_po IS NOT NULL AND l.qte_recue = 0 THEN 'O'
+                            ELSE 'N'
+                        END
+                    ) AS back_order
                 FROM (
                     SELECT
                         fcdl.fcdl_constp,
@@ -66,6 +69,7 @@ class PlanningCommandeFournisseurModel extends Model
                         asuc_num,
                         atab_code,
                         fcde_datec,
+                        bo.numero_po,
                         NVL(SUM(fllf.fllf_qteliv), 0) AS qte_recue,
                         NVL(SUM(fllf.fllf_qtefac), 0) AS qte_facturee,
                         NVL(SUM(CASE WHEN fllf.fllf_majstk = 'O' THEN fllf.fllf_qteliv ELSE 0 END), 0) AS qte_dispo
@@ -84,27 +88,34 @@ class PlanningCommandeFournisseurModel extends Model
                         ON  fllf.fllf_soc = fcdl.fcdl_soc 
                         AND fllf.fllf_numcde = fcdl.fcdl_numcde 
                         AND fllf.fllf_ligne = fcdl.fcdl_ligne
+                    LEFT JOIN (
+                        SELECT DISTINCT 
+                            CAST(cat.numero_po AS VARCHAR(50)) AS numero_po,
+                            cat.parts_cst,
+                            cat.parts_number,
+                            cat.line_number
+                        FROM {$this->dbIrium}.gcot_acknow_cat AS cat
+                        WHERE CAST(cat.libelle_type AS VARCHAR(10)) = 'Back Order'
+                            AND cat.id_gcot_acknow_cat = (
+                                SELECT MAX(sub.id_gcot_acknow_cat)
+                                FROM {$this->dbIrium}.gcot_acknow_cat AS sub
+                                WHERE sub.parts_number = cat.parts_number
+                                    AND sub.numero_po    = cat.numero_po
+                                    AND sub.line_number  = cat.line_number
+                                    AND sub.quantity > 0
+                            )
+                    ) bo 
+                        ON  bo.numero_po    = CAST(fcdl.fcdl_numcde AS VARCHAR(50))
+                        AND bo.parts_cst    = fcdl.fcdl_constp
+                        AND bo.parts_number = TRIM(fcdl.fcdl_refp)
+                        AND bo.line_number  = fcdl.fcdl_ligne
                     WHERE 1=1 {$this->conditionsCommande($dto,$monthsKey)}
                         AND (fcde_cdeext NOT LIKE '%CIS%' OR fcde_cdeext IS NULL)
                         AND fcde_soc = '$codeSociete'
-                    GROUP BY fcdl.fcdl_constp, fcdl.fcdl_numcde, fcdl.fcdl_ligne, fcdl.fcdl_qte, fbse_numfou, fbse_nomfou, asuc_lib, atab_lib, asuc_num, atab_code, fcde_datec
+                    GROUP BY fcdl.fcdl_constp, fcdl.fcdl_numcde, fcdl.fcdl_ligne, fcdl.fcdl_qte, fbse_numfou, fbse_nomfou, asuc_lib, atab_lib, asuc_num, atab_code, fcde_datec, bo.numero_po
                 ) l
                 GROUP BY l.fcdl_constp, l.fcdl_numcde, l.fbse_numfou, l.fbse_nomfou, l.asuc_lib, l.atab_lib, l.asuc_num, l.atab_code, l.fcde_datec
             ) o
-            LEFT JOIN (
-                SELECT DISTINCT CAST(cat.numero_po AS VARCHAR(50)) AS numero_po
-                FROM {$this->dbIrium}.gcot_acknow_cat AS cat
-                WHERE CAST(cat.libelle_type AS VARCHAR(10)) = 'Back Order'
-                    AND cat.id_gcot_acknow_cat = (
-                        SELECT MAX(sub.id_gcot_acknow_cat)
-                        FROM {$this->dbIrium}.gcot_acknow_cat AS sub
-                        WHERE sub.parts_number = cat.parts_number
-                            AND sub.numero_po    = cat.numero_po
-                            AND sub.line_number  = cat.line_number
-                            AND sub.quantity > 0
-                    )
-            ) bo 
-                ON CAST(o.fcdl_numcde AS VARCHAR(50)) = bo.numero_po
             WHERE o.fcdl_constp IN (
                 select distinct abse_constp 
                 from {$this->dbIps}.art_bse 
@@ -220,7 +231,7 @@ class PlanningCommandeFournisseurModel extends Model
                     res.numcli,
                     res.nomcli,
                     CASE
-                        WHEN bo.numero_po IS NOT NULL THEN 'O'
+                        WHEN bo.numero_po IS NOT NULL AND $asCde.qte_recept = 0 THEN 'O'
                         ELSE 'N'
                     END AS back_order,
                     {$this->getColonnesEta($sipLnkActive,$asSipLnkCommande)}

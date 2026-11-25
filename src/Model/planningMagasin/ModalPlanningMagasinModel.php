@@ -126,8 +126,8 @@ ORDER BY 6,2, A.NLIG_NOLIGN
   // recupCIS
   public function recupOrcis($numOritv)
   {
-    $sucNeg = $_ENV['SUC_NEG'];
-    $statement = "SELECT  decode(nent_succ,'$sucNeg','','CIS') as succ
+    $sucNum = $_ENV['SUC_NUM'];
+    $statement = "SELECT  decode(nent_succ,'$sucNum','','CIS') as succ
                  from NEG_ENT, NEG_LIG 
                 where  nent_succ =nlig_succ
                 and nent_numcde = nlig_numcde

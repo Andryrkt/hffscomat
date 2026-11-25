@@ -32,7 +32,7 @@ class PlanningMaterielDto
     public ?float $qteCdm = 0.0;      // qte_cmd
     public ?float $qteLiv = 0.0;      // qte_liv
     public ?float $qteAll = 0.0;      // qte_all
-    public ?float $qteReliquant = 0.0;
+    public ?float $qteReliquat = 0.0;
     public ?float $qteResOr = 0.0;
 
     // Status & Planning
@@ -73,5 +73,4 @@ class PlanningMaterielDto
     {
         return array_sum(array_column($this->moisDetails, 'qteCdm'));
     }
-
 }

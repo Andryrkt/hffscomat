@@ -13,13 +13,13 @@ class PlanningNegoceModel extends Model
 
     public function recuperationAgenceDebite(string $codeSociete)
     {
-        $suc_neg = $_ENV['SUC_NEG'];
+        $sucNum = $_ENV['SUC_NUM'];
         $statement = "SELECT  trim(asuc_lib) as asuc_lib,
                             trim(asuc_num) as asuc_num
                     FROM  agr_succ , sav_itv 
                     WHERE asuc_num = sitv_succdeb 
                     AND asuc_codsoc = '$codeSociete'
-                    AND asuc_num in ('$suc_neg')
+                    AND asuc_num in ('$sucNum')
                     group by 1,2
                     order by asuc_num";
         $result = $this->connect->executeQuery($statement);
@@ -92,14 +92,8 @@ class PlanningNegoceModel extends Model
         return array_column($resultat, 'numero_devis');
     }
 
-    public function recuperationCommadeplanifier(
-        PlanningNegoceSearch $criteria,
-        string $condition,
-        string $codeAgence,
-        string $codeSociete,
-        array $numeroDevisValideBcClient
-    ) {
-
+    public function recuperationCommadeplanifier(PlanningNegoceSearch $criteria, string $condition, string $codeSociete, array $numeroDevisValideBcClient)
+    {
         switch ($condition) {
             case 'partiel_facture':
                 $partFact = $this->bcPartielFacture($codeSociete);
@@ -135,7 +129,6 @@ class PlanningNegoceModel extends Model
                 $numCmd = $this->numcommande($criteria);
                 break;
         }
-        // $agDebit = $this->agenceDebite($criteria, $codeAgence);
         $agDebit = "";
         $servDebit = $this->serviceDebite($criteria);
         $codeClient  = $this->codeClient($criteria);
@@ -144,7 +137,6 @@ class PlanningNegoceModel extends Model
         $numeroDevis = $this->numeroDevis($criteria);
         $orNonValideDW = $this->orNonValiderDW($criteria, $numeroDevisValideBcClient);
         $orBackOrder = $this->orBackOrder($criteria);
-        $piecesMagasin = GlobalVariablesService::get('pieces_magasin');
         $statement = "SELECT 
                         trim(nent_succ)                          AS codeSuc,
                         trim(asuc_lib)                           AS libSuc,
@@ -214,27 +206,19 @@ class PlanningNegoceModel extends Model
                             THEN SUM(CASE WHEN nlig_constp NOT IN ('ZDI','Nmc') THEN nlig_qtealiv ELSE 0 END)
                             ELSE SUM(nlig_qtealiv) 
                         END                                      AS QteALL
-
                     FROM 
                         {$this->dbIps}.neg_ent
-                        INNER JOIN {$this->dbIps}.neg_lig      ON  nlig_soc      = nent_soc
-                                                                        AND nlig_numcde   = nent_numcde
-                        INNER JOIN {$this->dbIps}.agr_succ     ON  asuc_numsoc   = nent_soc
-                                                                        AND asuc_num      = nent_succ
-                        INNER JOIN {$this->dbIps}.agr_tab ser  ON  nent_servcrt  = ser.atab_code
-                                                                        AND ser.atab_nom  = 'SER'
+                        INNER JOIN {$this->dbIps}.neg_lig      ON  nlig_soc      = nent_soc AND nlig_numcde   = nent_numcde
+                        INNER JOIN {$this->dbIps}.agr_succ     ON  asuc_numsoc   = nent_soc AND asuc_num      = nent_succ
+                        INNER JOIN {$this->dbIps}.agr_tab ser  ON  nent_servcrt  = ser.atab_code AND ser.atab_nom  = 'SER'
                         INNER JOIN {$this->dbIps}.agr_usr ope  ON  ope.ausr_num  = nent_usr  
                         INNER JOIN {$this->dbIps}.cli_bse      ON  cbse_numcli   = nent_numcli
-                        INNER JOIN {$this->dbIps}.cli_soc      ON  csoc_soc      = nent_soc
-                                                                        AND csoc_numcli   = cbse_numcli
-
-                    WHERE 
-                        nent_soc     = '$codeSociete'
+                        INNER JOIN {$this->dbIps}.cli_soc      ON  csoc_soc      = nent_soc AND csoc_numcli   = cbse_numcli
+                    WHERE nent_soc = '$codeSociete'
                     AND nent_natop NOT IN ('DEV')
                     AND nent_posf  NOT IN ('CP', 'FC')
                     AND TO_CHAR(nent_numcli) NOT LIKE '150%'
                     AND NOT nent_numcli BETWEEN 1800000 AND 1999999
-                        
                         $orNonValideDW
                         $orBackOrder
                         $numCmd

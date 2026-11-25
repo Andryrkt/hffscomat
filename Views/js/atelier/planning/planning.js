@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", function () {
     "partiellement-livre": "partiellement-livre",
     "partiellement-dispo": "partiellement-dispo",
     "complet-non-livre": "complet-non-livre",
+    "bo-co": "bo-co",
     "back-order": "back-order",
     "tout-afficher": null, // Tout afficher n'a pas de classe spécifique
   };
