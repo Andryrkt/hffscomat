@@ -22,7 +22,7 @@ class OrCsaATraiterListeModel extends Model
 
     public function __construct(
         SecurityService $securityService,
-        int $delaiAllocation = 90,
+        int $delaiAllocation  = 90,
         int $toleranceFenetre = 10,
         // Types a changer en ['222', '229'] pour la prod et exemple: ['202', '209'] pour le test local
         array $typesOr          = ['202', '203', '208', '211', '213', '216', '220', '222', '223', '224', '229', '231', '233', '245', '252', '254', '255', '502', '503', '504', '590', '591', '602', '701', 'CIS'],

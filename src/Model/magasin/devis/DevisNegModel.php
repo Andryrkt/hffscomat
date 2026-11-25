@@ -19,7 +19,7 @@ class DevisNegModel extends Model
                 nent.nent_datecde                                           AS date_cde_brute
                 ,dneg.statut_dw                                             AS statut_dw
                 ,dneg.statut_bc                                             AS statut_bc
-                ,nent.nent_numcde                                           AS numero_devis
+                ,nent.nent_numcde_lie                                           AS numero_devis
                 ,TO_CHAR(nent.nent_datecde, '%d/%m/%Y')                     AS date_creation
                 ,nent.nent_succ || ' - ' || nent_servcrt                    AS emetteur
                 ,nent.nent_numcli || ' - ' || nent_nomcli                   AS client
@@ -69,20 +69,20 @@ class DevisNegModel extends Model
                 ,TRIM(ausr.ausr_nom)                                        AS utilisateur_createur_devis
                 ,dneg.utilisateur                                           AS soumis_par
                 ,nent.nent_devise                                           AS devise
-                ,(SELECT MAX(nlig_constp) FROM {$this->dbIps}.neg_lig WHERE nlig_numcde = nent.nent_numcde AND nlig_codg='ST') AS constructeur
+                ,(SELECT MAX(nlig_constp) FROM {$this->dbIps}.neg_lig WHERE nlig_numcde = nent.nent_numcde_lie AND nlig_codg='ST') AS constructeur
                 , (SELECT numero_bcc_neg 
                     FROM {$this->dbIrium}.DW_BC_Client_Negoce 
-                    WHERE numero_devis = nent.nent_numcde 
+                    WHERE numero_devis = nent.nent_numcde_lie 
                         AND id_bcc_neg = (SELECT MAX(id_bcc_neg) 
                                         FROM {$this->dbIrium}.DW_BC_Client_Negoce 
-                                        WHERE numero_devis = nent.nent_numcde)
+                                        WHERE numero_devis = nent.nent_numcde_lie)
                 ) AS numero_po
                 , (SELECT path
                     FROM {$this->dbIrium}.DW_BC_Client_Negoce 
-                    WHERE numero_devis = nent.nent_numcde 
+                    WHERE numero_devis = nent.nent_numcde_lie 
                         AND id_bcc_neg = (SELECT MAX(id_bcc_neg) 
                                         FROM {$this->dbIrium}.DW_BC_Client_Negoce 
-                                        WHERE numero_devis = nent.nent_numcde)
+                                        WHERE numero_devis = nent.nent_numcde_lie)
                 ) AS path
             FROM {$this->dbIps}.neg_ent nent
 
@@ -91,8 +91,8 @@ class DevisNegModel extends Model
                 AND ausr.ausr_soc = nent.nent_soc
 
             LEFT JOIN {$this->dbIrium}.devis_soumis_a_validation_neg dneg
-                ON dneg.numero_devis = nent.nent_numcde
-                AND dneg.numero_version = (SELECT MAX(numero_version) FROM {$this->dbIrium}.devis_soumis_a_validation_neg WHERE numero_devis = nent.nent_numcde)
+                ON dneg.numero_devis = nent.nent_numcde_lie
+                AND dneg.numero_version = (SELECT MAX(numero_version) FROM {$this->dbIrium}.devis_soumis_a_validation_neg WHERE numero_devis = nent.nent_numcde_lie)
 
             LEFT JOIN (
                 SELECT
@@ -105,9 +105,10 @@ class DevisNegModel extends Model
                     ,(TODAY - DATE(MAX(date_de_relance))) AS delai_jours
                 FROM {$this->dbIrium}.pointage_relance
                 GROUP BY 1
-            ) rl ON rl.num_dev = nent.nent_numcde
+            ) rl ON rl.num_dev = nent.nent_numcde_lie
 
             WHERE nent.nent_natop    = 'DEV'
+
                 --AND nent.nent_servcrt  <> 'ASS'
                 --AND nent.nent_numcli   NOT BETWEEN 1990000 AND 1999999
                 --AND nent.nent_numcli   <> 1990000
@@ -117,7 +118,7 @@ class DevisNegModel extends Model
                 AND nent.nent_soc = '$codeSociete'
                 AND EXISTS (
                                 SELECT 1 FROM {$this->dbIps}.neg_lig nl
-                                WHERE nl.nlig_numcde = nent.nent_numcde
+                                WHERE nl.nlig_numcde = nent.nent_numcde_lie
                                 AND   nl.nlig_codg='ST'
 )
                 ";
@@ -150,7 +151,9 @@ class DevisNegModel extends Model
                 $statement .= " AND " . implode(" AND ", $whereClauses);
             }
 
-            $statement .= " AND nent.nent_numcde not in (select nent2.nent_numcde from {$this->dbIps}.neg_ent nent2 where nent2.nent_posl ='TR' and nent2.nent_numcde not in (select dneg2.numero_devis from {$this->dbIrium}.devis_soumis_a_validation_neg dneg2))";
+            $statement .= " AND nent.nent_numcde_lie not in (select nent2.nent_numcde_lie from {$this->dbIps}.neg_ent nent2 where nent2.nent_posl ='TR' and nent2.nent_numcde_lie not in (select dneg2.numero_devis from {$this->dbIrium}.devis_soumis_a_validation_neg dneg2))
+                            AND nent.nent_numcde_seq = (select max (n2.nent_numcde_seq) from ips_scomat:Informix.neg_ent n2 where n2.nent_numcde_lie =nent.nent_numcde_lie)
+            ";
 
             $statement .= " ORDER BY date_cde_brute DESC";
 
@@ -324,7 +327,7 @@ class DevisNegModel extends Model
     {
         // Filtre par numéro de devis
         if (!empty($criteria['numeroDevis'])) {
-            $whereClauses[] = " CAST(nent.nent_numcde AS VARCHAR(20)) LIKE '%" . $criteria['numeroDevis'] . "%' ";
+            $whereClauses[] = " (CAST(nent.nent_numcde AS VARCHAR(20)) LIKE '%" . $criteria['numeroDevis'] . "%' OR CAST(nent.nent_numcde_lie AS VARCHAR(20)) LIKE '%" . $criteria['numeroDevis'] . "%') ";
         }
 
         // Filtre par code client (nom ou numéro)
