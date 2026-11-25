@@ -240,14 +240,18 @@ class DitOrSoumisAValidationModel extends Model
         return $this->convertirEnUtf8($data);
     }
 
-    public function recupNbAchatLocaux($numOr, string $codeSociete)
+    public function recupNbAchatLocaux($numOr, string $codeSociete, bool $estCreerDepuisOR = false)
     {
+        $sousRequete = $estCreerDepuisOR
+            ? "('ZST')"
+            : "(select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST')";
+
         $statement = " SELECT
             count(slor_constp) as nbr_achat_locaux 
             from sav_lor 
             where slor_numor = '$numOr'
             and slor_soc = '$codeSociete'
-            and slor_constp in (select distinct abse_constp from art_bse abse where abse.abse_codg = 'ST')  
+            and slor_constp in $sousRequete
         ";
 
         $result = $this->connect->executeQuery($statement);

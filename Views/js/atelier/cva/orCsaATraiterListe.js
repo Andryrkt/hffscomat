@@ -192,26 +192,70 @@ document.addEventListener("DOMContentLoaded", () => {
       btnConfirmSend.innerHTML =
         '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Envoi...';
 
+      // ---------- 1) Appel API avec récupération ROBUSTE du body ----------
+      let result = null;
+      let httpError = null;
+
       try {
-        const result = await fetchManager.post(
-          `api/atelier/cva/or-csa/envoyer`,
-          { ors: selectedIds },
-        );
+        result = await fetchManager.post(`api/atelier/cva/or-csa/envoyer`, {
+          ors: selectedIds,
+        });
+      } catch (err) {
+        httpError = err;
 
-        // ⚠️ Accepte aussi les réponses 207 (partiel) — on ne throw que si tout échoue
+        // On tente de récupérer le corps JSON même si post() a throw (cas 422)
+        result =
+          err?.response?.data || // axios
+          err?.response?.body ||
+          err?.data ||
+          err?.body ||
+          err?.responseJSON || // $.ajax
+          err?.response || // fallback
+          null;
+
+        // Dernier recours : extraire un JSON de err.message (utile si wrappé)
+        if (!result && typeof err?.message === "string") {
+          try {
+            const m = err.message.match(/\{[\s\S]*\}/);
+            if (m) result = JSON.parse(m[0]);
+          } catch (_) {
+            /* ignore */
+          }
+        }
+      }
+
+      try {
+        // ---------- 2) Cas où on n'a rien récupéré ----------
         if (!result) {
-          throw new Error("Aucune réponse du serveur.");
-        }
-        const details = Array.isArray(result.details) ? result.details : [];
-        if (details.length === 0) {
-          throw new Error(result.message || "Réponse serveur inexploitable.");
+          throw new Error(
+            httpError?.message ||
+              httpError?.statusText ||
+              "Aucune réponse exploitable du serveur.",
+          );
         }
 
+        const details = Array.isArray(result.details) ? result.details : [];
+
+        // ---------- 3) Réponse sans détail : on affiche le message global ----------
+        if (details.length === 0) {
+          bootstrap.Modal.getInstance(confirmModal)?.hide();
+          Swal.fire({
+            icon: result.success ? "success" : "error",
+            title: result.success
+              ? "Transmission réussie"
+              : "Échec de la transmission",
+            html: `<p class="mb-0">${escapeHtml(
+              result.message || "Aucun détail retourné.",
+            )}</p>`,
+            confirmButtonText: "OK",
+            confirmButtonColor: result.success ? "#198754" : "#d33",
+          });
+          return;
+        }
+
+        // ---------- 4) Classification (inchangée) ----------
         bootstrap.Modal.getInstance(confirmModal)?.hide();
 
-        // ---------------------------------------------------------
-        // Classification : succès complet / partiel (PDF KO) / échec
-        // ---------------------------------------------------------
         const complets = [];
         const partiels = [];
         const echecs = [];
@@ -222,11 +266,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
           }
           if (!d.numeroDit) {
-            // Cas anormal : le backend dit "succès" mais pas de numéro DIT
-            console.error(
-              "[CVA] Réponse incohérente : succès sans numeroDit",
-              d,
-            );
+            console.error("[CVA] succès sans numeroDit", d);
             echecs.push({
               ...d,
               success: false,
@@ -238,15 +278,11 @@ document.addEventListener("DOMContentLoaded", () => {
           (pdfKo ? partiels : complets).push(d);
         });
 
-        // Index pour retrouver le détail par OR
         const detailsByOr = new Map(
           details.map((d) => [String(d.numeroOr), d]),
         );
 
-        // ---------------------------------------------------------
-        // Mise à jour du DOM : on retire uniquement les OR complets
-        // Les OR partiels sont conservés et marqués "PDF à regénérer"
-        // ---------------------------------------------------------
+        // ---------- 5) Mise à jour DOM ----------
         let removed = 0;
         let keptPartiels = 0;
 
@@ -264,18 +300,15 @@ document.addEventListener("DOMContentLoaded", () => {
               (detail.partial === true || detail.pdf?.success === false);
 
             if (isPartial) {
-              // On garde la ligne : l'utilisateur doit pouvoir relancer le PDF
               cb.checked = false;
               tr.classList.add("table-warning");
               tr.dataset.pdfFailed = "1";
 
-              // Badge visible dans la cellule PDF si elle existe
               const tdPdf = tr.querySelector("td[data-field='pdf']");
               if (tdPdf) {
                 tdPdf.innerHTML =
                   '<span class="badge bg-warning text-dark">PDF à regénérer</span>';
               } else {
-                // Fallback : ajoute un marqueur dans la première cellule
                 const first = tr.querySelector("td");
                 if (first && !first.querySelector(".pdf-ko-badge")) {
                   const badge = document.createElement("span");
@@ -289,29 +322,28 @@ document.addEventListener("DOMContentLoaded", () => {
               return;
             }
 
-            // Cas normal : suppression + décrément des compteurs
+            // ligne OK → suppression + décrément compteurs
             const statut = tr.dataset.statut;
 
             const btnStatut = statutsBar?.querySelector(
               `.cva-legend-btn[data-filter="${statut}"] .cva-legend-count`,
             );
             if (btnStatut) {
-              const current = parseInt(btnStatut.textContent, 10) || 0;
-              btnStatut.textContent = Math.max(0, current - 1);
+              const c = parseInt(btnStatut.textContent, 10) || 0;
+              btnStatut.textContent = Math.max(0, c - 1);
             }
             const btnTous = statutsBar?.querySelector(
               `.cva-legend-btn[data-filter="tous"] .cva-legend-count`,
             );
             if (btnTous) {
-              const current = parseInt(btnTous.textContent, 10) || 0;
-              btnTous.textContent = Math.max(0, current - 1);
+              const c = parseInt(btnTous.textContent, 10) || 0;
+              btnTous.textContent = Math.max(0, c - 1);
             }
 
             tr.remove();
             removed++;
           });
 
-        // Total résultats — on ne déduit que les lignes effectivement retirées
         const totalLabel = document.getElementById("nombreResultat");
         if (totalLabel) {
           const cur =
@@ -319,9 +351,7 @@ document.addEventListener("DOMContentLoaded", () => {
           totalLabel.textContent = Math.max(0, cur - removed) + " Résultats";
         }
 
-        // ---------------------------------------------------------
-        // Construction du message Swal
-        // ---------------------------------------------------------
+        // ---------- 6) Construction du message Swal ----------
         const lignesComplets = complets
           .map(
             (d) =>
@@ -335,10 +365,13 @@ document.addEventListener("DOMContentLoaded", () => {
             (d) =>
               `<li><span class="fw-bold text-warning">${escapeHtml(d.numeroDit)}</span>
              <small class="text-muted">(OR ${escapeHtml(d.numeroOr)})</small>
-             <br><small class="text-danger">${escapeHtml(d.pdf?.message || d.message || "PDF non généré")}</small></li>`,
+             <br><small class="text-danger">${escapeHtml(
+               d.pdf?.message || d.message || "PDF non généré",
+             )}</small></li>`,
           )
           .join("");
 
+        // ⬇️ les échecs — c'est CE bloc qui manquait en cas de HTTP 422
         const lignesEchecs = echecs
           .map(
             (d) =>
@@ -349,7 +382,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         let htmlMsg = "";
 
-        // Résumé chiffré — toujours en premier
         if (result.message) {
           htmlMsg += `<p class="mb-2 fw-semibold">${escapeHtml(result.message)}</p>`;
         }
@@ -362,16 +394,15 @@ document.addEventListener("DOMContentLoaded", () => {
           htmlMsg += `<p class="mb-1 mt-2 text-warning"><strong>DIT créée(s) mais PDF non déposé :</strong></p>
                     <ul class="text-start">${lignesPartiels}</ul>
                     <small class="text-muted d-block mb-2">
-                      Les lignes concernées ont été conservées dans le tableau.
-                      Relancez la génération du PDF.
+                      Les lignes concernées ont été conservées. Relancez la génération du PDF.
                     </small>`;
         }
         if (echecs.length) {
-          htmlMsg += `<p class="mb-1 mt-2">OR en échec :</p>
-                    <ul class="text-start">${lignesEchecs}</ul>`;
+          htmlMsg += `<p class="mb-1 mt-2 text-danger"><strong>OR en échec :</strong></p>
+                    <ul class="text-start" style="max-height:220px;overflow:auto;">${lignesEchecs}</ul>`;
         }
 
-        // Icône / titre / couleur : les 3 cas possibles
+        // ---------- 7) Icône / titre / couleur ----------
         let icon, title, confirmColor;
         if (echecs.length > 0) {
           icon = partiels.length || complets.length ? "warning" : "error";
@@ -403,7 +434,6 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         });
 
-        // Console : trace les partiels pour debug / support
         if (partiels.length) {
           console.warn(
             `[CVA] ${partiels.length} DIT créée(s) sans PDF :`,

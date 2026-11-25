@@ -58,6 +58,7 @@
                     <th style="width: 120px;">N° OR</th>
                     <th>Client (N° - libellé)</th>
                     <th>Référence client</th>
+                    <th>Job Description</th>
                     <th>Type OR</th>
                     <th>Lead time (date prévue)</th>
                     <th class="text-end" style="padding-right: 2rem;">Nb jours dispo / J-90</th>
@@ -93,6 +94,8 @@
                         </td>
 
                         <td class="align-middle">{{ ligne.referenceClient }}</td>
+
+                        <td class="align-middle">{{ ligne.jobDescription ? ligne.jobDescription : ''  }}</td>
 
                         <td class="align-middle">{{ ligne.typeOr }}</td>
 
