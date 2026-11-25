@@ -84,7 +84,7 @@ class CmdeATraiterMagasinModel extends Model
 
     private function creerJointureQuery(): string
     {
-        $sucNeg = $_ENV['SUC_NEG'];
+        $sucNum = $_ENV['SUC_NUM'];
         //Recuperation des devis validé par le client
         $numeroDevisValideBcClient = $this->getNumeroDevisValideBcClient();
         $devisValideBcCLient = TableauEnStringService::like($numeroDevisValideBcClient, 'nent_libcde');
