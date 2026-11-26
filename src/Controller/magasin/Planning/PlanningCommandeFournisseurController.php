@@ -41,7 +41,9 @@ class PlanningCommandeFournisseurController extends Controller
         )->getForm();
 
         $form->handleRequest($request);
-        $dto = $form->getData() ?? new PlanningCommandeFournisseurSearchDto();
+
+        /** @var PlanningCommandeFournisseurSearchDto $dto */
+        $dto = $form->getData();
 
         $defaultStatut = $dto->numeroCommande ? "tous" : "en_cours";
         $statut = $request->query->get('statut', $defaultStatut);
