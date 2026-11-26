@@ -123,7 +123,6 @@ class PlanningCommandeFournisseurModel extends Model
             ) AND o.total_qte > 0
         ) t
         WHERE 1=1 {$this->conditionStatut($statut)} 
-        WHERE 1=1 {$this->conditionStatut($statut)} 
         ORDER BY t.numero_commande
         ";
 
