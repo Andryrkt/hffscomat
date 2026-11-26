@@ -460,14 +460,12 @@ class PlanningCommandeFournisseurModel extends Model
     }
 
     private function conditionStatut(string $statut): string
-    private function conditionStatut(string $statut): string
     {
         $statutParCondition = [
             'en_cours'            => "en_cours",
             'partiel_facture'     => "Partiellement facturé",
             'partiel_dispo'       => "Partiellement dispo",
             'complet_non_facture' => "Complet non facturé",
-            'complet_facture'     => "Complet facturé"
             'complet_facture'     => "Complet facturé"
         ];
 
@@ -478,7 +476,6 @@ class PlanningCommandeFournisseurModel extends Model
 
         $statutCondition = $statutParCondition[$statut];
 
-        return ($statutCondition === "en_cours") ? $selectWhereCondition->ne('statut', $statutParCondition['complet_facture']) : $selectWhereCondition->eq('statut', $statutCondition);
         return ($statutCondition === "en_cours") ? $selectWhereCondition->ne('statut', $statutParCondition['complet_facture']) : $selectWhereCondition->eq('statut', $statutCondition);
     }
 }
