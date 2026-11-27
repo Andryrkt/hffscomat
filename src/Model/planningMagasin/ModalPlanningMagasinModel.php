@@ -77,11 +77,14 @@ class ModalPlanningMagasinModel extends Model
                              ), '%Y-%m-%d')
               WHEN A.NLIG_QTEALIV = A.NLIG_QTECDE THEN TO_CHAR(A.NLIG_DATEALLOC,'%Y-%m-%d')
               WHEN A.NLIG_QTELIV = A.NLIG_QTECDE THEN
+                  -- une ligne peut être livrée en plusieurs fois : on prend la dernière livraison
                   TO_CHAR((
-                       (SELECT (select nliv_datexp from neg_liv where nliv_soc = nllf_soc and nliv_numliv = nllf_numliv)
-                       FROM neg_llf
-                            WHERE nllf_numcde = A.NLIG_numcde
-                       AND nllf_nolign = A.NLIG_nolign)), '%Y-%m-%d')
+                       SELECT MAX(nliv_datexp)
+                       FROM neg_llf, neg_liv
+                            WHERE nliv_soc = nllf_soc
+                       AND nliv_numliv = nllf_numliv
+                       AND nllf_numcde = A.NLIG_numcde
+                       AND nllf_nolign = A.NLIG_nolign), '%Y-%m-%d')
               WHEN A.NLIG_natcm = 'C' THEN
                     TO_CHAR(( SELECT date_creation
                                     FROM  {$this->dbIrium}.gcot_acknow_cat

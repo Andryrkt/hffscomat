@@ -83,9 +83,17 @@ trait PlanningNegoceModelTrait
      */
     private function orNonValiderDW($criteria, array $numeroDevisValideBcClient)
     {
-        if (!empty($criteria->getOrNonValiderDw()) && $criteria->getOrNonValiderDw()) {
+        $bcNonValide = !empty($criteria->getOrNonValiderDw()) && $criteria->getOrNonValiderDw();
+
+        // aucun devis validé : toutes les BC sont non validées
+        if (empty($numeroDevisValideBcClient)) {
+            return $bcNonValide ? "" : " AND 1 = 0 ";
+        }
+
+        if ($bcNonValide) {
             $value = TableauEnStringService::notLike($numeroDevisValideBcClient, 'nent_libcde');
-            $orNonValiderDW = " AND  ($value) ";
+            // NOT LIKE sur NULL ne renvoie jamais vrai
+            $orNonValiderDW = " AND  (nent_libcde IS NULL OR ($value)) ";
         } else {
             $value = TableauEnStringService::like($numeroDevisValideBcClient, 'nent_libcde');
             $orNonValiderDW = " AND  ($value) ";

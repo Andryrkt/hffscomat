@@ -90,6 +90,6 @@ class TableauEnStringService
             return " $nomColone NOT LIKE '%$value%'";
         }, $numeroBc);
 
-        return implode(' OR ', $tab);
+        return implode(' AND ', $tab);
     }
 }
