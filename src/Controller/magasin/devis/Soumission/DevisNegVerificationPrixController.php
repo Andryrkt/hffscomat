@@ -136,8 +136,10 @@ class DevisNegVerificationPrixController extends Controller
         // creation du page de garde
         $generatePdfDevisMagasin = new GeneratePdfDeviMagasinVp();
         $suivi->etape('Génération page de garde', function () use ($generatePdfDevisMagasin, $dto, $nomAvecCheminFichier) {
-            $tableauMarges = $this->tableauMarge($dto->numeroDevis, $dto->codeSociete);
-            $tableauMargeReference = $this->tableauMargeReference($dto->numeroDevis, $dto->codeSociete);
+            // les tableaux de marge se basent sur le dernier numéro de commande lié au devis (repli sur le numéro de devis s'il n'existe pas)
+            $numeroCommande = (new SoumissionModel())->getNumeroCommandeLie($dto->numeroDevis) ?? $dto->numeroDevis;
+            $tableauMarges = $this->tableauMarge($numeroCommande, $dto->codeSociete);
+            $tableauMargeReference = $this->tableauMargeReference($numeroCommande, $dto->codeSociete, $dto->numeroDevis);
             $generatePdfDevisMagasin->genererPdf($dto, $nomAvecCheminFichier, $tableauMarges, $tableauMargeReference);
         });
 
@@ -203,8 +205,15 @@ class DevisNegVerificationPrixController extends Controller
         ];
     }
 
-    public function tableauMargeReference(string $numDevis, string $codeSociete): array
+    /**
+     * @param string $numDevis numéro utilisé pour récupérer les marges (numéro de commande lié au devis)
+     * @param string $codeSociete
+     * @param string|null $numDossier numéro de devis servant au dossier et au nom du fichier Excel (par défaut $numDevis)
+     */
+    public function tableauMargeReference(string $numDevis, string $codeSociete, ?string $numDossier = null): array
     {
+        $numDossier = $numDossier ?? $numDevis;
+
         $soumissionModel = new SoumissionModel();
 
         $infoDevis = $soumissionModel->getInfoDeviSansJointure($numDevis, $codeSociete);
@@ -236,7 +245,7 @@ class DevisNegVerificationPrixController extends Controller
         ];
 
         // 1. Définir le chemin où enregistrer le fichier Excel
-        $cheminFichier = $_ENV['BASE_PATH_FICHIER'] . '/magasin/devis/' . $numDevis . '/marge_ref_' . $numDevis . '.xlsx';
+        $cheminFichier = $_ENV['BASE_PATH_FICHIER'] . '/magasin/devis/' . $numDossier . '/marge_ref_' . $numDossier . '.xlsx';
         // 2. Appel de la fonction de génération Excel
         $this->genererExcelTableauMargeReference($tableauMargeReference, $cheminFichier);
 

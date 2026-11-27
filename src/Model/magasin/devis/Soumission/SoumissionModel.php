@@ -408,4 +408,25 @@ class SoumissionModel extends Model
 
         return $data;
     }
+
+    /**
+     * Récupère le dernier numéro de commande lié au devis (neg_ent.nent_numcde_lie)
+     *
+     * @param string $numeroDevis Le numéro de devis
+     * @return string|null Le numéro de commande lié, ou null s'il n'existe pas
+     */
+    public function getNumeroCommandeLie(string $numeroDevis): ?string
+    {
+        $statement = "SELECT MAX(nent_numcde) as numero_commande
+            FROM {$this->dbIps}.neg_ent
+            WHERE nent_numcde_lie = '$numeroDevis'
+        ";
+
+        $result = $this->connect->executeQuery($statement);
+        $data = $this->convertirEnUtf8($this->connect->fetchResults($result));
+
+        $numeroCommande = $data[0]['numero_commande'] ?? null;
+
+        return ($numeroCommande !== null && trim((string) $numeroCommande) !== '') ? trim((string) $numeroCommande) : null;
+    }
 }
